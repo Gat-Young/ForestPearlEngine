@@ -1,4 +1,4 @@
-#include "SimpleGDI.h"
+#include "GDI.h"
 #include <iostream>
 
 

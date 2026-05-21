@@ -128,12 +128,10 @@
     <ClInclude Include="Object\Actor.h" />
     <ClInclude Include="Object\Object.h" />
     <ClInclude Include="Renderers\Renderer.h" />
-    <ClInclude Include="Renderers\SimpleGDI\SimpleGDI.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Base.cpp" />
     <ClCompile Include="ForestPearlEngine.cpp" />
-    <ClCompile Include="Renderers\SimpleGDI\SimpleGDI.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

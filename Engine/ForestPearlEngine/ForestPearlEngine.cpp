@@ -1,7 +1,7 @@
 #include "ForestPearlEngine.h"
 #include "../ForestPearlEngine/Object/Object.h"
 #include "../ForestPearlEngine/Object/Actor.h"
-#include "Renderers/SimpleGDI/SimpleGDI.h"
+#include "Renderers/GDI/GDI.h"
 
 //½Ì±ÛÅæ ¿£Áø °´Ã¼ °¡Á®¿À±â
 ForestPearlEngine& ForestPearlEngine::GetGameEngine()

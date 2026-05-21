@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Object">
+      <UniqueIdentifier>{3e115a52-d0da-47e4-87a8-29dfc1ddfb2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Renderers">
+      <UniqueIdentifier>{e38098a3-e2d4-4dc1-a9cc-ffab0e398905}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Renderers\SimpleGDI">
+      <UniqueIdentifier>{ae8fa650-cef8-4296-92dc-4970b0708e65}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -21,16 +30,28 @@
     <ClInclude Include="ForestPearlEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Object\Actor.h">
+      <Filter>Header Files\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Object.h">
+      <Filter>Header Files\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\Renderer.h">
+      <Filter>Header Files\Renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\SimpleGDI\SimpleGDI.h">
+      <Filter>Header Files\Renderers\SimpleGDI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Base.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ForestPearlEngine.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\SimpleGDI\SimpleGDI.cpp">
+      <Filter>Header Files\Renderers\SimpleGDI</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

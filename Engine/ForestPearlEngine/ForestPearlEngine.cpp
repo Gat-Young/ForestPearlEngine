@@ -1,5 +1,9 @@
 #include "ForestPearlEngine.h"
+#include "../ForestPearlEngine/Object/Object.h"
+#include "../ForestPearlEngine/Object/Actor.h"
+#include "Renderers/SimpleGDI/SimpleGDI.h"
 
+//싱글톤 엔진 객체 가져오기
 ForestPearlEngine& ForestPearlEngine::GetGameEngine()
 {
     static ForestPearlEngine Singleton;
@@ -7,6 +11,7 @@ ForestPearlEngine& ForestPearlEngine::GetGameEngine()
     return Singleton;
 }
 
+//엔진 부팅 및 기본 설정
 bool ForestPearlEngine::Initialize()
 {
     //윈도우 생성
@@ -19,39 +24,53 @@ bool ForestPearlEngine::Initialize()
         return false;
     }
 
-    //윈도우 버퍼 생성
-    FrontHdc = GetDC(Hwnd);
-    BackHdc = CreateCompatibleDC(FrontHdc);
-    BackBitmap = CreateCompatibleBitmap(FrontHdc, WinWidth, WinHeight);
-    DefaultBitmap = (HBITMAP)SelectObject(BackHdc, BackBitmap);
-
-    //RECT rcClient = {};
-    //GetClientRect(m_hWnd, &rcClient);
-    //m_width = rcClient.right - rcClient.left;
-    //m_height = rcClient.bottom - rcClient.top;
-
-#pragma region resource
-    //m_pPlayerBitmapInfo = renderHelp::CreateBitmapInfo(L"./Resource/redbird.png");
-    //m_pEnemyBitmapInfo = renderHelp::CreateBitmapInfo(L"./Resource/graybird.png");
-
-#pragma endregion
-
+    //Render 등록
+    Render = new SimpleGDI(Hwnd);
 
     return true;
 }
 
+//메인 게임 루프
 void ForestPearlEngine::GameLoop()
 {
+    for (FPObject* obj : GameObjectList)
+    {
+        obj->BeginPlay();
+    }
+
     while (true)
     {
+        for (FPObject* obj : GameObjectList)
+        {
+            obj->Tick();
+        }
 
+        //Rendering
+        Render->Rendering(GameActorRenderList);
+    }
+
+}
+
+//엔진 종료 및 메모리 해제
+void ForestPearlEngine::Finalize()
+{
+    for (FPObject* obj : GameObjectList)
+    {
+        delete(obj);
     }
 }
 
-void ForestPearlEngine::Finalize()
+void ForestPearlEngine::AddObjectTable(FPObject* obj)
 {
+    GameObjectList.push_back(obj);
 }
 
+void ForestPearlEngine::AddRenderTable(FPActor* actor)
+{
+    GameActorRenderList.push_back(actor);
+}
+
+//윈도우 생성 함수
 HWND ForestPearlEngine::CreateFPEWindow(const wchar_t* className, const wchar_t* windowName, const int width, const int height)
 {
     WNDCLASSEX wc = {};
@@ -87,6 +106,7 @@ HWND ForestPearlEngine::CreateFPEWindow(const wchar_t* className, const wchar_t*
     return hWnd;
 }
 
+//윈도우 콜백 함수
 LRESULT CALLBACK ForestPearlEngine::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)

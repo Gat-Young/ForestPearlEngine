@@ -24,10 +24,16 @@
     <ClCompile Include="GameLoader\GameDataLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameLoader\GameDataLoader.h">
       <Filter>Header Files\GameLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="Runner.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

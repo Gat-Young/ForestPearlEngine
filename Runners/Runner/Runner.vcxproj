@@ -124,6 +124,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GameLoader\GameDataLoader.cpp" />
+    <ClCompile Include="Main.cpp" />
     <ClCompile Include="Runner.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -142,6 +143,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameLoader\GameDataLoader.h" />
+    <ClInclude Include="Runner.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

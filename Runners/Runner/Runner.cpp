@@ -2,16 +2,17 @@
 #include "GameLoader/GameDataLoader.h"
 #include <exception>
 
+#include "Runner.h"
 
 //Engine의 게임 실행 진입점
-int main()
+void Runner::Run()
 {
     ForestPearlEngine& FPEngine = ForestPearlEngine::GetGameEngine();
 
     bool bIsSuccess;
     bIsSuccess = FPEngine.Initialize();
     if (!bIsSuccess)
-        return 0;
+        return;
 
     GameDataLoader DataLoader;
     DataLoader.LoadGame();
@@ -19,6 +20,4 @@ int main()
     FPEngine.GameLoop();
 
     FPEngine.Finalize();
-
-    return 0;
 }

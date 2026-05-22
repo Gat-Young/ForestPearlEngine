@@ -130,6 +130,9 @@
     <ProjectReference Include="..\..\Engine\ForestPearlEngine\ForestPearlEngine.vcxproj">
       <Project>{205fa360-9649-4928-92d6-1e9b3f0a0b9e}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\Engine\ForestPearlEngine\Renderers\DOHWA\DOHWA\DOHWA.vcxproj">
+      <Project>{5409c873-2943-4b95-8d3a-5b8305f120c6}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\Engine\ForestPearlEngine\Renderers\GDI\GDI.vcxproj">
       <Project>{e96d3280-f6ff-43cd-89ee-b2f14fe824be}</Project>
     </ProjectReference>

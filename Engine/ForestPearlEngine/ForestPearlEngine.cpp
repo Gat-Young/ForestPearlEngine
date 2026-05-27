@@ -33,13 +33,19 @@ bool ForestPearlEngine::Initialize()
 //메인 게임 루프
 void ForestPearlEngine::GameLoop()
 {
+
     for (FPObject* obj : GameObjectList)
     {
         obj->BeginPlay();
     }
 
-    while (true)
+    while (bEngineLoop)
     {
+        if (!MessagePump())
+        {
+            break;
+        }
+
         for (FPObject* obj : GameObjectList)
         {
             obj->Tick();
@@ -49,6 +55,12 @@ void ForestPearlEngine::GameLoop()
         Render->Rendering(GameActorRenderList);
     }
 
+}
+
+//엔진 루프를 종료
+void ForestPearlEngine::StopEngine()
+{
+    bEngineLoop = false;
 }
 
 //엔진 종료 및 메모리 해제
@@ -125,4 +137,30 @@ LRESULT CALLBACK ForestPearlEngine::WndProc(HWND hWnd, UINT message, WPARAM wPar
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return 0;
+}
+
+//윈도우 메시지 펌프
+int ForestPearlEngine::MessagePump()
+{
+    MSG msg;
+    ZeroMemory(&msg, sizeof(msg)); //msg 영역 초기화
+
+    while (true)
+    {
+        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+        {
+            if (msg.message == WM_QUIT)
+                return FALSE;
+
+            //나머지 메시지 리턴
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        else
+        {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
 }

@@ -20,6 +20,7 @@ class ForestPearlEngine
 	public:
 		void AddObjectTable(FPObject* obj);
 		void AddRenderTable(FPActor* actor);
+		void StopEngine();
 
 	private:
 		ForestPearlEngine() = default;
@@ -27,11 +28,16 @@ class ForestPearlEngine
 		HWND CreateFPEWindow(const wchar_t* className, const wchar_t* windowName, const int width, const int height);
 		static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+		int MessagePump();
+
 	private:
+		////////////////////////////////
+		// Engine Property
+		bool bEngineLoop = true;
+
 		////////////////////////////////
 		// Game Property
 		std::vector<FPObject*> GameObjectList;
-
 		std::vector<FPActor*> GameActorRenderList;
 
 		////////////////////////////////
@@ -50,8 +56,8 @@ class ForestPearlEngine
 		// Render Property 
 		// Window
 		HWND Hwnd = nullptr;
-		HDC BackHdc;
-		HDC FrontHdc;
+		HDC BackHdc = nullptr;
+		HDC FrontHdc = nullptr;
 		HBITMAP BackBitmap = nullptr;
 		HBITMAP DefaultBitmap = nullptr;
 

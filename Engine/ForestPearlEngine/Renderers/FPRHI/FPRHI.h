@@ -42,17 +42,17 @@ typedef struct FPRHIRECT
 class FPRHI
 {
 	public :
-		virtual int BeginScene() = 0; //<- Device에서 호출 하네?
-		virtual int Clear(unsigned long  Count, const FPRHIRECT* pRects, unsigned long Flags, unsigned long Color, float Z, unsigned long Stencil) = 0;
-		virtual int EndScene() = 0;
-		virtual int Present() = 0;
 		virtual int CreateDevice(unsigned int Adapter, int DeviceType, HWND hFocusWindow, unsigned long BehaviorFlags, FPRHIPRESENT_PARAMETERS* pPresentationParameters, FPRHIDevice** ppReturnedDeviceInterface) = 0; //이걸로 Device를 만들고?
 
 };
 
 class FPRHIDevice
 {
-
+    public:
+        virtual int BeginScene() = 0; //<- Device에서 호출 하네?
+        virtual int Clear(unsigned long  Count, const FPRHIRECT* pRects, unsigned long Flags, unsigned long Color, float Z, unsigned long Stencil) = 0;
+        virtual int EndScene() = 0;
+        virtual int Present() = 0;
 };
 
 //RHI 생성 함수

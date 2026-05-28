@@ -19,14 +19,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FPRHI.h" />
-    <ClInclude Include="FPRHITypes.h" />
+    <ClInclude Include="DXRHI.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DXRHI.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FPRHI\FPRHI.vcxproj">
+      <Project>{a95d12e7-e8be-48f1-8cc1-ceba3c37a5fe}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{a95d12e7-e8be-48f1-8cc1-ceba3c37a5fe}</ProjectGuid>
-    <RootNamespace>FPRHI</RootNamespace>
+    <ProjectGuid>{f4ffd354-4744-4564-a189-9a7313a23754}</ProjectGuid>
+    <RootNamespace>DirectX</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

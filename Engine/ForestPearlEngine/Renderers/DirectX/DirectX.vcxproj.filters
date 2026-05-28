@@ -15,11 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FPRHI.h">
+    <ClInclude Include="DXRHI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FPRHITypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DXRHI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

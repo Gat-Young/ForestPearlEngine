@@ -6,20 +6,6 @@
 class DXImpl;
 class DXDeviceImpl;
 
-class DXRHI : public FPRHI
-{
-    private :
-        UINT DeviceVersion;
-        // DX 객체 인터페이스 포인터.
-        std::unique_ptr<DXImpl> DXimpl;
-
-
-	public :
-        DXRHI(UINT DeviceVersion);
-        ~DXRHI();
-        HRESULT CreateDevice(UINT Adapter, FPRHIDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, FPRHIPRESENT_PARAMETERS* pPresentationParameters, FPRHIDevice** ppReturnedDeviceInterface) override;
-};
-
 class DXRHIDevice : public FPRHIDevice
 {
     private:
@@ -36,5 +22,19 @@ class DXRHIDevice : public FPRHIDevice
         HRESULT Clear(DWORD Count, CONST FPRHIRECT* pRects, DWORD Flags, FPRHICOLOR Color, float Z, DWORD Stencil) override;
         HRESULT EndScene() override;
         HRESULT Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion) override;
+};
+
+class DXRHI : public FPRHI
+{
+    private :
+        UINT DeviceVersion;
+        // DX 객체 인터페이스 포인터.
+        std::unique_ptr<DXImpl> DXimpl;
+
+
+	public :
+        DXRHI(UINT DeviceVersion);
+        ~DXRHI();
+        HRESULT CreateDevice(UINT Adapter, FPRHIDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, FPRHIPRESENT_PARAMETERS* pPresentationParameters, FPRHIDevice** ppReturnedDeviceInterface) override;
 };
 

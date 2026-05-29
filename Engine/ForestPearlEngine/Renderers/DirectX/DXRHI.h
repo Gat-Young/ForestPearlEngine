@@ -2,6 +2,7 @@
 #include "../FPRHI/FPRHI.h"
 #include <memory>
 
+
 class DXRHI : public FPRHI
 {
     private :
@@ -31,8 +32,8 @@ class DXRHIDevice : public FPRHIDevice
         DXRHIDevice();
         ~DXRHIDevice();
         HRESULT BeginScene() override;
-        HRESULT Clear(DWORD Count, CONST FPRHIRECT* pRects, DWORD Flags, RHICOLOR Color, float Z, DWORD Stencil) override;
+        HRESULT Clear(DWORD Count, CONST FPRHIRECT* pRects, DWORD Flags, FPRHICOLOR Color, float Z, DWORD Stencil) override;
         HRESULT EndScene() override;
-        HRESULT Present() override;
+        HRESULT Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion) override;
 };
 

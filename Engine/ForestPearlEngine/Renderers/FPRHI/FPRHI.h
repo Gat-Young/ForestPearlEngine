@@ -13,9 +13,9 @@ class FPRHIDevice
 {
     public:
         virtual HRESULT BeginScene() = 0;
-        virtual HRESULT Clear(DWORD Count, CONST FPRHIRECT* pRects, DWORD Flags, RHICOLOR Color, float Z, DWORD Stencil) = 0;
+        virtual HRESULT Clear(DWORD Count, CONST FPRHIRECT* pRects, DWORD Flags, FPRHICOLOR Color, float Z, DWORD Stencil) = 0;
         virtual HRESULT EndScene() = 0;
-        virtual HRESULT Present() = 0;
+        virtual HRESULT Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion) = 0;
 };
 
 //RHI 생성 함수

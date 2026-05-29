@@ -38,15 +38,15 @@ typedef struct FPRHIPRESENT_PARAMETERS
 //Rect 정보
 typedef struct FPRHIRECT
 {
-    LONG left;
-    LONG top;
-    LONG rigth;
-    LONG bottom;
+    LONG x1;
+    LONG y1;
+    LONG x2;
+    LONG y2;
 
 }FPRHIRECT;
 
 // Color 정보
-typedef DWORD RHICOLOR;
+typedef DWORD FPRHICOLOR;
 
 // Format 정보
 typedef enum FPRHIFORMAT
@@ -179,3 +179,11 @@ typedef enum FPRHIDEVTYPE
     FPRHIDEVTYPE_FORCE_DWORD = 0x7fffffff
 } FPRHIDEVTYPE;
 
+/* Display Modes */
+typedef struct FPRHIDISPLAYMODE
+{
+    UINT            Width;
+    UINT            Height;
+    UINT            RefreshRate;
+    D3DFORMAT       Format;
+} FPRHIDISPLAYMODE;

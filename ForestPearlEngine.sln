@@ -25,6 +25,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectX", "Engine\ForestPea
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GDI", "Engine\ForestPearlEngine\Renderers\GDI\GDI.vcxproj", "{E96D3280-F6FF-43CD-89EE-B2F14FE824BE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mia", "Engine\ForestPearlEngine\Renderers\Mia\Mia.vcxproj", "{D1DEBD7B-89A0-44C7-96C7-B11B37D17F2F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -89,6 +91,14 @@ Global
 		{E96D3280-F6FF-43CD-89EE-B2F14FE824BE}.Release|x64.Build.0 = Release|x64
 		{E96D3280-F6FF-43CD-89EE-B2F14FE824BE}.Release|x86.ActiveCfg = Release|Win32
 		{E96D3280-F6FF-43CD-89EE-B2F14FE824BE}.Release|x86.Build.0 = Release|Win32
+		{D1DEBD7B-89A0-44C7-96C7-B11B37D17F2F}.Debug|x64.ActiveCfg = Debug|x64
+		{D1DEBD7B-89A0-44C7-96C7-B11B37D17F2F}.Debug|x64.Build.0 = Debug|x64
+		{D1DEBD7B-89A0-44C7-96C7-B11B37D17F2F}.Debug|x86.ActiveCfg = Debug|Win32
+		{D1DEBD7B-89A0-44C7-96C7-B11B37D17F2F}.Debug|x86.Build.0 = Debug|Win32
+		{D1DEBD7B-89A0-44C7-96C7-B11B37D17F2F}.Release|x64.ActiveCfg = Release|x64
+		{D1DEBD7B-89A0-44C7-96C7-B11B37D17F2F}.Release|x64.Build.0 = Release|x64
+		{D1DEBD7B-89A0-44C7-96C7-B11B37D17F2F}.Release|x86.ActiveCfg = Release|Win32
+		{D1DEBD7B-89A0-44C7-96C7-B11B37D17F2F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -102,6 +112,7 @@ Global
 		{A95D12E7-E8BE-48F1-8CC1-CEBA3C37A5FE} = {1642BA96-6445-424A-809F-34E6652F5A40}
 		{F4FFD354-4744-4564-A189-9A7313A23754} = {1642BA96-6445-424A-809F-34E6652F5A40}
 		{E96D3280-F6FF-43CD-89EE-B2F14FE824BE} = {1642BA96-6445-424A-809F-34E6652F5A40}
+		{D1DEBD7B-89A0-44C7-96C7-B11B37D17F2F} = {1642BA96-6445-424A-809F-34E6652F5A40}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {964F8A38-75AA-4C4E-898D-CAC2B108B674}

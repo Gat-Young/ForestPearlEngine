@@ -1,7 +1,7 @@
 #include "ForestPearlEngine.h"
 #include "../ForestPearlEngine/Object/Object.h"
 #include "../ForestPearlEngine/Object/Actor.h"
-#include "Renderers/GDI/GDI.h"
+#include "Renderers/Renderer.h"
 
 //½Ì±ÛÅæ ¿£Áø °´Ã¼ °¡Á®¿À±â
 ForestPearlEngine& ForestPearlEngine::GetGameEngine()
@@ -25,7 +25,8 @@ bool ForestPearlEngine::Initialize()
     }
 
     //Render µî·Ï
-    Render = new SimpleGDI(Hwnd);
+    Render = new Renderer();
+    Render->InitializeRenderer(32, Hwnd);
 
     return true;
 }

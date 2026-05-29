@@ -44,5 +44,8 @@
     <ClCompile Include="ForestPearlEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Renderers\Renderer.cpp">
+      <Filter>Renderers</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

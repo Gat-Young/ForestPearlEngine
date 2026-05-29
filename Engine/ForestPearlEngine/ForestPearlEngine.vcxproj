@@ -132,6 +132,12 @@
   <ItemGroup>
     <ClCompile Include="Base.cpp" />
     <ClCompile Include="ForestPearlEngine.cpp" />
+    <ClCompile Include="Renderers\Renderer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Renderers\FPRHI\FPRHI.vcxproj">
+      <Project>{a95d12e7-e8be-48f1-8cc1-ceba3c37a5fe}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

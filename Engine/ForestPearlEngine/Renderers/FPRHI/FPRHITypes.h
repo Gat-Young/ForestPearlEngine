@@ -4,49 +4,12 @@
 #pragma once
 /////////////////
 // 윈도우 환경에서만 동작한다.
-#include<minwindef.h>   //Windows API를 쓰기 위한 최소한의 기본 정의
-#include<mmsyscom.h>    //Windows 멀티미디어 시스템 공통 정의용 헤더
+#include <windows.h>
+#include <mmsystem.h>
 
 //윈도우 핸들 전방 선언
 struct HWND__;
 using HWND = HWND__*;
-
-//렌더 타겟 정보 파라미터
-typedef struct FPRHIPRESENT_PARAMETERS
-{
-    UINT                        BackBufferWidth;
-    UINT                        BackBufferHeight;
-    FPRHIFORMAT                 BackBufferFormat;
-    UINT                        BackBufferCount;        //백버퍼 개수
-
-    FPRHIMULTISAMPLE_TYPE       MultiSampleType;
-    DWORD                       MultiSampleQuality;
-
-    FPRHISWAPEFFECT             SwapEffect;
-    HWND                        hDeviceWindow;
-    BOOL                        Windowed;               //창모드 실행 여부
-    BOOL                        EnableAutoDepthStencil;
-    FPRHIFORMAT                 AutoDepthStencilFormat;
-    DWORD                       Flags;
-
-    /* FullScreen_RefreshRateInHz must be zero for Windowed mode */
-    UINT                FullScreen_RefreshRateInHz;
-    UINT                PresentationInterval;
-
-}FPRHIPRESENT_PARAMETERS;
-
-//Rect 정보
-typedef struct FPRHIRECT
-{
-    LONG x1;
-    LONG y1;
-    LONG x2;
-    LONG y2;
-
-}FPRHIRECT;
-
-// Color 정보
-typedef DWORD FPRHICOLOR;
 
 // Format 정보
 typedef enum FPRHIFORMAT
@@ -117,7 +80,6 @@ typedef enum FPRHIFORMAT
     FPRHIFMT_MULTI2_ARGB8 = MAKEFOURCC('M', 'E', 'T', '1'),
 
     // Floating point surface formats
-
     // s10e5 formats (16-bits per channel)
     FPRHIFMT_R16F = 111,
     FPRHIFMT_G16R16F = 112,
@@ -167,6 +129,56 @@ typedef enum FPRHISWAPEFFECT
     FPRHISWAPEFFECT_FORCE_DWORD = 0x7fffffff
 } FPRHISWAPEFFECT;
 
+//렌더 타겟 정보 파라미터
+typedef struct FPRHIPRESENT_PARAMETERS
+{
+    UINT                        BackBufferWidth;
+    UINT                        BackBufferHeight;
+    FPRHIFORMAT                 BackBufferFormat;
+    UINT                        BackBufferCount;        //백버퍼 개수
+
+    FPRHIMULTISAMPLE_TYPE       MultiSampleType;
+    DWORD                       MultiSampleQuality;
+
+    FPRHISWAPEFFECT             SwapEffect;
+    HWND                        hDeviceWindow;
+    BOOL                        Windowed;               //창모드 실행 여부
+    BOOL                        EnableAutoDepthStencil;
+    FPRHIFORMAT                 AutoDepthStencilFormat;
+    DWORD                       Flags;
+
+    /* FullScreen_RefreshRateInHz must be zero for Windowed mode */
+    UINT                FullScreen_RefreshRateInHz;
+    UINT                PresentationInterval;
+
+}FPRHIPRESENT_PARAMETERS;
+
+//Rect 정보
+typedef struct FPRHIRECT
+{
+    LONG x1;
+    LONG y1;
+    LONG x2;
+    LONG y2;
+
+}FPRHIRECT;
+
+// Color 정보
+typedef DWORD FPRHICOLOR;
+
+// maps unsigned 8 bits/channel to FPRHICOLOR
+#define FPRHICOLOR_ARGB(a,r,g,b) \
+    ((FPRHICOLOR)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
+#define FPRHICOLOR_RGBA(r,g,b,a) FPRHICOLOR_ARGB(a,r,g,b)
+#define FPRHICOLOR_XRGB(r,g,b)   FPRHICOLOR_ARGB(0xff,r,g,b)
+
+#define FPRHICOLOR_XYUV(y,u,v)   FPRHICOLOR_ARGB(0xff,y,u,v)
+#define FPRHICOLOR_AYUV(a,y,u,v) FPRHICOLOR_ARGB(a,y,u,v)
+
+// maps floating point channels (0.f to 1.f range) to FPRHICOLOR
+#define FPRHICOLOR_COLORVALUE(r,g,b,a) \
+    FPRHICOLOR_RGBA((DWORD)((r)*255.f),(DWORD)((g)*255.f),(DWORD)((b)*255.f),(DWORD)((a)*255.f))
+
 /* FPRHI Device types */
 typedef enum FPRHIDEVTYPE
 {
@@ -185,5 +197,44 @@ typedef struct FPRHIDISPLAYMODE
     UINT            Width;
     UINT            Height;
     UINT            RefreshRate;
-    D3DFORMAT       Format;
+    FPRHIFORMAT     Format;
 } FPRHIDISPLAYMODE;
+
+
+//
+// PresentationIntervals
+//
+#define FPRHIPRESENT_INTERVAL_DEFAULT     0x00000000L
+#define FPRHIPRESENT_INTERVAL_ONE         0x00000001L
+#define FPRHIPRESENT_INTERVAL_TWO         0x00000002L
+#define FPRHIPRESENT_INTERVAL_THREE       0x00000004L
+#define FPRHIPRESENT_INTERVAL_FOUR        0x00000008L
+#define FPRHIPRESENT_INTERVAL_IMMEDIATE   0x80000000L
+
+
+#define FPRHIADAPTER_DEFAULT                     0
+
+/****************************************************************************
+ *
+ * Flags for CreateDevice's BehaviorFlags
+ *
+ ****************************************************************************/
+
+#define FPRHICREATE_FPU_PRESERVE                  0x00000002L
+#define FPRHICREATE_MULTITHREADED                 0x00000004L
+
+#define FPRHICREATE_PUREDEVICE                    0x00000010L
+#define FPRHICREATE_SOFTWARE_VERTEXPROCESSING     0x00000020L
+#define FPRHICREATE_HARDWARE_VERTEXPROCESSING     0x00000040L
+#define FPRHICREATE_MIXED_VERTEXPROCESSING        0x00000080L
+
+#define FPRHICREATE_DISABLE_DRIVER_MANAGEMENT     0x00000100L
+#define FPRHICREATE_ADAPTERGROUP_DEVICE           0x00000200L
+#define FPRHICREATE_DISABLE_DRIVER_MANAGEMENT_EX  0x00000400L
+
+ /*
+  * Options for clearing
+  */
+#define FPRHICLEAR_TARGET            0x00000001l  /* Clear target surface */
+#define FPRHICLEAR_ZBUFFER           0x00000002l  /* Clear target z buffer */
+#define FPRHICLEAR_STENCIL           0x00000004l  /* Clear stencil planes */

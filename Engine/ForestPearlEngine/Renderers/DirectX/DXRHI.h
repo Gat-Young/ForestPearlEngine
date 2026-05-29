@@ -3,11 +3,13 @@
 #include <memory>
 
 
+class DXImpl;
+class DXDeviceImpl;
+
 class DXRHI : public FPRHI
 {
     private :
         UINT DeviceVersion;
-        class DXImpl;
         // DX 객체 인터페이스 포인터.
         std::unique_ptr<DXImpl> DXimpl;
 
@@ -21,7 +23,6 @@ class DXRHI : public FPRHI
 class DXRHIDevice : public FPRHIDevice
 {
     private:
-        class DXDeviceImpl;
         //DXDevice 객체 인터페이스 포인터
         std::unique_ptr<DXDeviceImpl> DXDeviceimpl;
 

@@ -49,8 +49,8 @@ class ForestPearlEngine
 		// Window Property
 		const wchar_t* WinClassName = L"MyFirstWndGame";
 		const wchar_t* WinName = L"MyFirstWndGame";
-		const int WinWidth = 1280;
-		const int WinHeight = 720;
+		const int WinWidth = 800;
+		const int WinHeight = 600;
 
 		////////////////////////////////
 		// Render Property 

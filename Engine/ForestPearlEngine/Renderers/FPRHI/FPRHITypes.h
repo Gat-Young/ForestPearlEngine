@@ -200,6 +200,30 @@ typedef struct FPRHIDISPLAYMODE
     FPRHIFORMAT     Format;
 } FPRHIDISPLAYMODE;
 
+/* Types */
+typedef enum FPRHIRESOURCETYPE {
+    FPRHIRTYPE_SURFACE = 1,
+    FPRHIRTYPE_VOLUME = 2,
+    FPRHIRTYPE_TEXTURE = 3,
+    FPRHIRTYPE_VOLUMETEXTURE = 4,
+    FPRHIRTYPE_CUBETEXTURE = 5,
+    FPRHIRTYPE_VERTEXBUFFER = 6,
+    FPRHIRTYPE_INDEXBUFFER = 7,           //if this changes, change _D3DDEVINFO_RESOURCEMANAGER definition
+
+
+    FPRHIRTYPE_FORCE_DWORD = 0x7fffffff
+} FPRHIRESOURCETYPE;
+
+/* Pool types */
+typedef enum FPRHIPOOL {
+    FPRHIPOOL_DEFAULT = 0,
+    FPRHIPOOL_MANAGED = 1,
+    FPRHIPOOL_SYSTEMMEM = 2,
+    FPRHIPOOL_SCRATCH = 3,
+
+    FPRHIPOOL_FORCE_DWORD = 0x7fffffff
+} FPRHIPOOL;
+
 
 //
 // PresentationIntervals
@@ -232,9 +256,35 @@ typedef struct FPRHIDISPLAYMODE
 #define FPRHICREATE_ADAPTERGROUP_DEVICE           0x00000200L
 #define FPRHICREATE_DISABLE_DRIVER_MANAGEMENT_EX  0x00000400L
 
+#define FPRHICREATE_NOWINDOWCHANGES				0x00000800L
+
  /*
   * Options for clearing
   */
 #define FPRHICLEAR_TARGET            0x00000001l  /* Clear target surface */
 #define FPRHICLEAR_ZBUFFER           0x00000002l  /* Clear target z buffer */
 #define FPRHICLEAR_STENCIL           0x00000004l  /* Clear stencil planes */
+
+  /* Usages */
+#define FPRHIUSAGE_RENDERTARGET       (0x00000001L)
+#define FPRHIUSAGE_DEPTHSTENCIL       (0x00000002L)
+#define FPRHIUSAGE_DYNAMIC            (0x00000200L)
+#define FPRHIUSAGE_AUTOGENMIPMAP      (0x00000400L)
+#define FPRHIUSAGE_DMAP               (0x00004000L)
+
+// The following usages are valid only for querying CheckDeviceFormat
+#define FPRHIUSAGE_QUERY_LEGACYBUMPMAP            (0x00008000L)
+#define FPRHIUSAGE_QUERY_SRGBREAD                 (0x00010000L)
+#define FPRHIUSAGE_QUERY_FILTER                   (0x00020000L)
+#define FPRHIUSAGE_QUERY_SRGBWRITE                (0x00040000L)
+#define FPRHIUSAGE_QUERY_POSTPIXELSHADER_BLENDING (0x00080000L)
+#define FPRHIUSAGE_QUERY_VERTEXTEXTURE            (0x00100000L)
+#define FPRHIUSAGE_QUERY_WRAPANDMIP	            (0x00200000L)
+
+/* Usages for Vertex/Index buffers */
+#define FPRHIUSAGE_WRITEONLY          (0x00000008L)
+#define FPRHIUSAGE_SOFTWAREPROCESSING (0x00000010L)
+#define FPRHIUSAGE_DONOTCLIP          (0x00000020L)
+#define FPRHIUSAGE_POINTS             (0x00000040L)
+#define FPRHIUSAGE_RTPATCHES          (0x00000080L)
+#define FPRHIUSAGE_NPATCHES           (0x00000100L)

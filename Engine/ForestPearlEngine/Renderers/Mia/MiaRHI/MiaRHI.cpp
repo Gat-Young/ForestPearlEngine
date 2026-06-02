@@ -127,7 +127,7 @@ HRESULT MCRHI::CreateDevice(UINT Adapter, FPRHIDEVTYPE DeviceType, HWND hFocusWi
 	// Todo : 매개변수 호출 순서 및 개수 맞추기
 }
 
-MXDeviceImpl::MXDeviceImpl() :
+MXDeviceImpl::MXDeviceImpl()
 {
 
 }

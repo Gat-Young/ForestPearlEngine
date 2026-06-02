@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -19,22 +19,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FPRHI.h" />
-    <ClInclude Include="FPRHITypes.h" />
+    <ClCompile Include="RHI\DOHWARHI.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FPRHI.cpp" />
+    <ClInclude Include="RHI\DOHWARHI.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DOHWARHI\DOHWARHI.vcxproj">
-      <Project>{e57a5a88-b814-405f-a924-4c7b2bdbb47f}</Project>
+    <ProjectReference Include="..\DOHWA\DOHWA\DOHWA.vcxproj">
+      <Project>{5409c873-2943-4b95-8d3a-5b8305f120c6}</Project>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{a95d12e7-e8be-48f1-8cc1-ceba3c37a5fe}</ProjectGuid>
-    <RootNamespace>FPRHI</RootNamespace>
+    <ProjectGuid>{e57a5a88-b814-405f-a924-4c7b2bdbb47f}</ProjectGuid>
+    <RootNamespace>DOHWARHI</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

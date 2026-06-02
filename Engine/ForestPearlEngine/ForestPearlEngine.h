@@ -20,6 +20,7 @@ class ForestPearlEngine
 	public:
 		void AddObjectTable(FPObject* obj);
 		void AddRenderTable(FPActor* actor);
+		void AddUITable(FPActor* actor);
 		void StopEngine();
 
 	private:
@@ -39,6 +40,7 @@ class ForestPearlEngine
 		// Game Property
 		std::vector<FPObject*> GameObjectList;
 		std::vector<FPActor*> GameActorRenderList;
+		std::vector<FPActor*> GameUIRenderList;
 
 		////////////////////////////////
 		// Renderer

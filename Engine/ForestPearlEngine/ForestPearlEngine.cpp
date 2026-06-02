@@ -2,6 +2,7 @@
 #include "../ForestPearlEngine/Object/Object.h"
 #include "../ForestPearlEngine/Object/Actor.h"
 #include "Renderers/Renderer.h"
+#include <iostream>
 
 //싱글톤 엔진 객체 가져오기
 ForestPearlEngine& ForestPearlEngine::GetGameEngine()
@@ -34,9 +35,14 @@ bool ForestPearlEngine::Initialize()
 //메인 게임 루프
 void ForestPearlEngine::GameLoop()
 {
-
     for (FPObject* obj : GameObjectList)
     {
+        obj->BeginPlay();
+    }
+
+    for (int i=1; i<GameObjectList.size();++i)
+    {
+        FPObject* obj = GameObjectList[i];
         obj->BeginPlay();
     }
 
@@ -53,7 +59,9 @@ void ForestPearlEngine::GameLoop()
         }
 
         //Rendering
-        Render->Rendering(GameActorRenderList);
+        Render->ObjectRendering(GameActorRenderList);
+        Render->UIRendering(GameUIRenderList);
+        Render->RenderTargetPresent();
     }
 
 }
@@ -81,6 +89,11 @@ void ForestPearlEngine::AddObjectTable(FPObject* obj)
 void ForestPearlEngine::AddRenderTable(FPActor* actor)
 {
     GameActorRenderList.push_back(actor);
+}
+
+void ForestPearlEngine::AddUITable(FPActor* actor)
+{
+    GameUIRenderList.push_back(actor);
 }
 
 //윈도우 생성 함수

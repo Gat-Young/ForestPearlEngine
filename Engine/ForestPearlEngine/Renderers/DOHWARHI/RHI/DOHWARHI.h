@@ -22,6 +22,8 @@ public:
     virtual HRESULT EndScene() override;
     virtual HRESULT Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion) override;
 
+    virtual HRESULT GetDC(HDC* phdc) override;
+
 };
 
 class DOHWARHI : public FPRHI

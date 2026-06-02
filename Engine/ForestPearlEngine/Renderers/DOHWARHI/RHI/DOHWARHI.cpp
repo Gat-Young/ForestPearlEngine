@@ -151,6 +151,8 @@ class DOHWADeviceImpl
         int EndScene();
         int Clear(FPRHICOLOR col);
         int Present();
+        
+        int GetDC(HDC* phdc);
 };
 
 DOHWADeviceImpl::DOHWADeviceImpl()
@@ -184,6 +186,12 @@ int DOHWADeviceImpl::Clear(FPRHICOLOR col)
 int DOHWADeviceImpl::Present()
 {
     DohwaDevice->Present();
+    return DOHWA_OK;
+}
+
+int DOHWADeviceImpl::GetDC(HDC* phdc)
+{
+    *phdc = DohwaDevice->GetRT();
     return DOHWA_OK;
 }
 
@@ -296,5 +304,11 @@ HRESULT DOHWARHIDevice::EndScene()
 HRESULT DOHWARHIDevice::Present(const RECT* pSourceRect, const RECT* pDestRect, HWND hDestWindowOverride, const RGNDATA* pDirtyRegion)
 {
     DOHWADeviceimpl->Present();
+    return E_NOTIMPL;
+}
+
+HRESULT DOHWARHIDevice::GetDC(HDC* phdc)
+{
+    DOHWADeviceimpl->GetDC(phdc);
     return E_NOTIMPL;
 }

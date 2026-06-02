@@ -9,6 +9,8 @@ class FPRHIDevice
         virtual HRESULT Clear(DWORD Count, CONST FPRHIRECT* pRects, DWORD Flags, FPRHICOLOR Color, float Z, DWORD Stencil) = 0;
         virtual HRESULT EndScene() = 0;
         virtual HRESULT Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion) = 0;
+
+        virtual HRESULT GetDC(HDC* phdc) = 0;
 };
 
 //Rendering Hardware Interface

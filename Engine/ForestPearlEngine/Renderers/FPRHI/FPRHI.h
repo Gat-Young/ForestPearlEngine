@@ -22,6 +22,7 @@ class FPRHIDevice
         virtual HRESULT Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion) = 0;
 
         virtual HRESULT GetDC(HDC* phdc) = 0;
+        virtual HRESULT ReleaseDC(HDC hdc) = 0;
 
         virtual HRESULT SetRenderState(FPRHIRENDERSTATETYPE State, DWORD Value) = 0;
         virtual HRESULT GetRenderState(FPRHIRENDERSTATETYPE State, DWORD* pValue) = 0;

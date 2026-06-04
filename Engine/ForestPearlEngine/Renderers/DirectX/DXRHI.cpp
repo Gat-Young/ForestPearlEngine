@@ -208,6 +208,20 @@ void ChangeD3DCOLOR(FPRHICOLOR& FPRHIColor, D3DCOLOR& D3DColor)
     D3DColor = FPRHIColor;
 }
 
+//FPRHIPARAMETERSFLAG To D3DPARAMETERSFLAG 타입 변환기
+DWORD ChangeD3DPARAMETERSFLAG(DWORD FPRHIParameterFlag)
+{
+    switch (FPRHIParameterFlag)
+    {
+    case FPRHIPRESENTFLAG_LOCKABLE_BACKBUFFER:           return D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
+    case FPRHIPRESENTFLAG_DISCARD_DEPTHSTENCIL:       return D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL;
+    case FPRHIPRESENTFLAG_DEVICECLIP:           return D3DPRESENTFLAG_DEVICECLIP;
+    case FPRHIPRESENTFLAG_VIDEO:     return D3DPRESENTFLAG_VIDEO;
+
+    default:                        return NULL;
+    }
+}
+
 //FPRHIPRESENT_PARAMETERS To D3DPRESENT_PARAMETERS 타입 변환기
 void ChangeD3DPRESENT_PARAMETERS(D3DPRESENT_PARAMETERS& D3D, FPRHIPRESENT_PARAMETERS* pPresentationParameters)
 {
@@ -224,7 +238,7 @@ void ChangeD3DPRESENT_PARAMETERS(D3DPRESENT_PARAMETERS& D3D, FPRHIPRESENT_PARAME
     D3D.Windowed = pPresentationParameters->Windowed;
     D3D.EnableAutoDepthStencil = pPresentationParameters->EnableAutoDepthStencil;
     D3D.AutoDepthStencilFormat = ChangeD3DFORMAT(pPresentationParameters->AutoDepthStencilFormat);
-    D3D.Flags = pPresentationParameters->Flags;
+    D3D.Flags = ChangeD3DPARAMETERSFLAG(pPresentationParameters->Flags);
 
     D3D.FullScreen_RefreshRateInHz = pPresentationParameters->FullScreen_RefreshRateInHz;
     D3D.PresentationInterval = pPresentationParameters->PresentationInterval;
@@ -495,6 +509,7 @@ D3DPRIMITIVETYPE ChangeD3DPRIMITIVETYPE(FPRHIPRIMITIVETYPE FPRHIPrmititiveType)
     default:                        return D3DPT_FORCE_DWORD;
     }
 }
+
 //////////////////////
 // DXVertexBufferImpl
 class DXVertexBufferImpl
@@ -556,6 +571,7 @@ class DXDeviceImpl
         HRESULT Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion);
 
         HRESULT GetDC(HDC* phdc);
+        HRESULT ReleaseDC(HDC hdc);
 
         HRESULT SetRenderState(FPRHIRENDERSTATETYPE State, DWORD Value);
         HRESULT GetRenderState(FPRHIRENDERSTATETYPE State, DWORD* pValue);
@@ -626,7 +642,25 @@ HRESULT DXDeviceImpl::GetDC(HDC* phdc)
         return hr;
 
     hr = backBuffer->GetDC(phdc);
+    backBuffer->Release();
 
+}
+
+HRESULT DXDeviceImpl::ReleaseDC(HDC hdc)
+{
+    IDirect3DSurface9* backBuffer = nullptr;
+
+    HRESULT hr = Device->GetBackBuffer(
+        0,                          // SwapChain index
+        0,                          // BackBuffer index
+        D3DBACKBUFFER_TYPE_MONO,
+        &backBuffer
+    );
+
+    if (FAILED(hr))
+        return hr;
+    backBuffer->ReleaseDC(hdc);
+    backBuffer->Release();
 }
 
 HRESULT DXDeviceImpl::SetRenderState(FPRHIRENDERSTATETYPE State, DWORD Value)
@@ -799,6 +833,12 @@ HRESULT DXRHIDevice::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWN
 HRESULT DXRHIDevice::GetDC(HDC* phdc)
 {
     DXDeviceimpl->GetDC(phdc);
+    return S_OK;
+}
+
+HRESULT DXRHIDevice::ReleaseDC(HDC hdc)
+{
+    DXDeviceimpl->ReleaseDC(hdc);
     return S_OK;
 }
 

@@ -42,6 +42,7 @@ class DXRHIDevice : public FPRHIDevice
         HRESULT Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion) override;
 
         HRESULT GetDC(HDC* phdc) override;
+        HRESULT ReleaseDC(HDC hdc) override;
 
         HRESULT SetRenderState(FPRHIRENDERSTATETYPE State, DWORD Value) override;
         HRESULT GetRenderState(FPRHIRENDERSTATETYPE State, DWORD* pValue) override;

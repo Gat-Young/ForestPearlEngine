@@ -29,6 +29,7 @@ HRESULT Renderer::InitializeRenderer(UINT DeviceVersion, HWND hwnd)
 	FPPresentParameters.BackBufferCount = 1;
 	FPPresentParameters.SwapEffect = FPRHISWAPEFFECT_DISCARD;
 	FPPresentParameters.PresentationInterval = FPRHIPRESENT_INTERVAL_IMMEDIATE;
+	FPPresentParameters.Flags = FPRHIPRESENTFLAG_LOCKABLE_BACKBUFFER;
 
 	//Device »ý¼º
 	HRESULT res = FPRender->CreateDevice(
@@ -51,11 +52,6 @@ HRESULT Renderer::InitializeRenderer(UINT DeviceVersion, HWND hwnd)
 		FF_DONTCARE,
 		_T("±¼¸²")
 	);
-
-	HDC hdc = nullptr;
-	FPRenderDevice->GetDC(&hdc);
-	SelectObject(hdc, g_hSysFont);
-
 	return S_OK;
 }
 
@@ -64,7 +60,6 @@ void Renderer::ObjectRendering(std::vector<FPActor*> RenderList)
 	FPRenderDevice->BeginScene();
 	FPRenderDevice->Clear(0, NULL, FPRHICLEAR_TARGET, FPRHICOLOR_COLORVALUE(0.0f, 0.0f, 1.0f, 1.0f), 1.0f, 0);
 	FPRenderDevice->EndScene();
-
 }
 
 void Renderer::UIRendering(std::vector<FPActor*> UIList)
@@ -103,7 +98,10 @@ void Renderer::DrawText(int x, int y, COLORREF col, const TCHAR* msg, ...)
 
 	HDC hdc = nullptr;
 	FPRenderDevice->GetDC(&hdc);
+	SelectObject(hdc, g_hSysFont);
 	SetTextColor(hdc, col);
+	SetBkMode(hdc, TRANSPARENT);
 	::DrawText(hdc, buff, (int)_tcslen(buff), &rc, DT_WORDBREAK);
 	SetTextColor(hdc, RGB(0, 255, 0));
+	FPRenderDevice->ReleaseDC(hdc);
 }

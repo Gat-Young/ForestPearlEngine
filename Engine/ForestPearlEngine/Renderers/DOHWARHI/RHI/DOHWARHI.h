@@ -19,10 +19,19 @@ public:
     ~DOHWARHIDevice();
     virtual HRESULT BeginScene() override;
     virtual HRESULT Clear(DWORD Count, CONST FPRHIRECT* pRects, DWORD Flags, FPRHICOLOR Color, float Z, DWORD Stencil) override;
+    HRESULT DrawPrimitive(FPRHIPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount) override { return S_OK; };
     virtual HRESULT EndScene() override;
     virtual HRESULT Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion) override;
 
     virtual HRESULT GetDC(HDC* phdc) override;
+
+    HRESULT SetRenderState(FPRHIRENDERSTATETYPE State, DWORD Value) override { return S_OK; };
+    HRESULT GetRenderState(FPRHIRENDERSTATETYPE State, DWORD* pValue) override { return S_OK; };
+
+
+    HRESULT CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, FPRHIPOOL Pool, FPRHIVertexBuffer** ppVertexBuffedr, HANDLE* pSharedHandle) override { return S_OK; };
+    HRESULT SetStreamSource(UINT StreamNumber, FPRHIVertexBuffer* pStreamData, UINT OffsetInBytes, UINT Stride) override { return S_OK; };
+    HRESULT SetFVF(DWORD FVF) override { return S_OK; };
 
 };
 

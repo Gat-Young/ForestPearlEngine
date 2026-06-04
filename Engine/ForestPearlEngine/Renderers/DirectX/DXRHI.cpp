@@ -441,6 +441,60 @@ D3DFILLMODE ChangeD3DFILLMODE(DWORD FPRHIFillMode)
     }
 }
 
+//FPRHIUsages To D3DUsage 타입 변환기
+long ChangeD3DUsage(long FPRHIUsage)
+{
+    switch (FPRHIUsage)
+    {
+    case FPRHIUSAGE_RENDERTARGET: return D3DUSAGE_RENDERTARGET;
+    case FPRHIUSAGE_DEPTHSTENCIL:	return D3DUSAGE_DEPTHSTENCIL;
+    case FPRHIUSAGE_DYNAMIC:	return D3DUSAGE_DYNAMIC;
+
+    case FPRHIUSAGE_AUTOGENMIPMAP:	return D3DUSAGE_AUTOGENMIPMAP;
+    case FPRHIUSAGE_DMAP:	return D3DUSAGE_DMAP;
+
+    case FPRHIUSAGE_WRITEONLY:   return D3DUSAGE_WRITEONLY;
+    case FPRHIUSAGE_SOFTWAREPROCESSING: return D3DUSAGE_SOFTWAREPROCESSING;
+    case FPRHIUSAGE_DONOTCLIP: return D3DUSAGE_DONOTCLIP;
+    case FPRHIUSAGE_POINTS: return D3DUSAGE_POINTS;
+    case FPRHIUSAGE_RTPATCHES: return D3DUSAGE_RTPATCHES;
+    case FPRHIUSAGE_NPATCHES: return D3DUSAGE_RTPATCHES;
+    default: return 0;
+
+    }
+}
+
+//FPRHIPOOL To D3DPOOL 타입 변환기
+D3DPOOL ChangeD3DPOOL(FPRHIPOOL FPRHIPool)
+{
+    switch (FPRHIPool)
+    {
+    case FPRHIPOOL_DEFAULT:           return D3DPOOL_DEFAULT;
+    case FPRHIPOOL_MANAGED:       return D3DPOOL_MANAGED;
+    case FPRHIPOOL_SYSTEMMEM:           return D3DPOOL_SYSTEMMEM;
+    case FPRHIPOOL_SCRATCH:     return D3DPOOL_SCRATCH;
+    case FPRHIPOOL_FORCE_DWORD:     return D3DPOOL_FORCE_DWORD;
+
+    default:                        return D3DPOOL_DEFAULT;
+    }
+}
+
+//FPRHIPRIMITIVETYPE To D3DPRIMITIVETYPE 타입 변환기
+D3DPRIMITIVETYPE ChangeD3DPRIMITIVETYPE(FPRHIPRIMITIVETYPE FPRHIPrmititiveType)
+{
+    switch (FPRHIPrmititiveType)
+    {
+    case FPRHIPT_POINTLIST:       return D3DPT_POINTLIST;
+    case FPRHIPT_LINELIST:        return D3DPT_LINELIST;
+    case FPRHIPT_LINESTRIP:       return D3DPT_LINESTRIP;
+    case FPRHIPT_TRIANGLELIST:    return D3DPT_TRIANGLELIST;
+    case FPRHIPT_TRIANGLESTRIP:   return D3DPT_TRIANGLESTRIP;
+    case FPRHIPT_TRIANGLEFAN:     return D3DPT_TRIANGLEFAN;
+    case FPRHIPT_FORCE_DWORD:     return D3DPT_FORCE_DWORD;
+
+    default:                        return D3DPT_FORCE_DWORD;
+    }
+}
 //////////////////////
 // DXVertexBufferImpl
 class DXVertexBufferImpl
@@ -541,7 +595,8 @@ HRESULT DXDeviceImpl::Clear(DWORD Count, const FPRHIRECT* pRects, DWORD Flags, F
 
 HRESULT DXDeviceImpl::DrawPrimitive(FPRHIPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
 {
-
+    Device->DrawPrimitive(ChangeD3DPRIMITIVETYPE(PrimitiveType), StartVertex, PrimitiveCount);
+    return S_OK;
 }
 
 HRESULT DXDeviceImpl::EndScene()
@@ -598,7 +653,8 @@ HRESULT DXDeviceImpl::GetRenderState(FPRHIRENDERSTATETYPE State, DWORD* pValue)
 
 HRESULT DXDeviceImpl::CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, FPRHIPOOL Pool, IDirect3DVertexBuffer9** ppVertexBuffedr, HANDLE* pSharedHandle)
 {
-
+    Device->CreateVertexBuffer(Length, ChangeD3DUsage(Usage), ChangeD3DFVF_FORMAT(FVF), ChangeD3DPOOL(Pool), ppVertexBuffedr, pSharedHandle);
+    return S_OK;
 }
 
 HRESULT DXDeviceImpl::SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9* pStreamData, UINT OffsetInBytes, UINT Stride)

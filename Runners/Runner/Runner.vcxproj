@@ -131,8 +131,8 @@
     <ProjectReference Include="..\..\Engine\ForestPearlEngine\ForestPearlEngine.vcxproj">
       <Project>{205fa360-9649-4928-92d6-1e9b3f0a0b9e}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\Games\DOHWA(Interface+GUID+Query)\DOHWA(Interface+GUID+Query).vcxproj">
-      <Project>{4cf5a364-1222-40bb-b2eb-8fd777c24944}</Project>
+    <ProjectReference Include="..\..\Games\05.Vertex(2D)+Face_Filling\05.Vertex(2D)+Face_Filling.vcxproj">
+      <Project>{b0995cd0-7675-48cd-90a8-ad584a4e1a04}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

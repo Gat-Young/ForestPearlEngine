@@ -16,11 +16,11 @@ class Renderer
 
 	public:
 		Renderer();
+
 		HRESULT InitializeRenderer(UINT DeviceVersion, HWND hwnd);
+
 		void ObjectRendering(std::vector<FPActor*> RenderList);
 		void UIRendering(std::vector<FPActor*> UIList);
 		void RenderTargetPresent();
-		void PutFPS(int x, int y);
-
 };
 

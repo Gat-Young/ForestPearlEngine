@@ -2,7 +2,7 @@
 #include <iostream>
 #include <Windows.h>
 
-void UI::BeginPlay()
+UI::UI()
 {
 	int UI_count = 14;
 	for (int i = 0; i < 14; ++i)
@@ -10,6 +10,10 @@ void UI::BeginPlay()
 		UIContext* UIData = new UIContext();
 		this->UI_data.push_back(UIData);
 	}
+}
+
+void UI::BeginPlay()
+{
 
 }
 
@@ -36,7 +40,7 @@ void UI::CalFPS(int x, int y)
 		oldtime = nowtime;
 	}
 
-	TCHAR text[64];
+	TCHAR text[1024];
 	_stprintf_s(text, _T("FPS=%.1f/%d"), fps, time);
 	SetUIContext(0, x, y, RGB(255, 255, 255), text);
 }

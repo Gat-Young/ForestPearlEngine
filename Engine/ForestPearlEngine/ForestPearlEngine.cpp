@@ -35,10 +35,9 @@ bool ForestPearlEngine::Initialize()
 //메인 게임 루프
 void ForestPearlEngine::GameLoop()
 {
-    for (FPObject* obj : GameObjectList)
-    {
-        obj->BeginPlay();
-    }
+    GameObjectList[0]->BeginPlay();
+
+    Render->MakeVB(GameActorRenderList);
 
     for (int i=1; i<GameObjectList.size();++i)
     {
@@ -116,8 +115,6 @@ HWND ForestPearlEngine::CreateFPEWindow(const wchar_t* className, const wchar_t*
     RECT rc = { 0, 0, width, height };
 
     AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, false);
-
-    //std::cout << "width: " << rc.right - rc.left << " height: " << rc.bottom - rc.top << std::endl;
 
     HWND hWnd = CreateWindowEx(NULL, MAKEINTATOM(classId), L"", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
         rc.right - rc.left, rc.bottom - rc.top, HWND(), HMENU(), HINSTANCE(), NULL);

@@ -130,7 +130,6 @@
     <ClInclude Include="Renderers\Renderer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Base.cpp" />
     <ClCompile Include="ForestPearlEngine.cpp" />
     <ClCompile Include="Renderers\Renderer.cpp" />
   </ItemGroup>

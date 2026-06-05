@@ -23,8 +23,18 @@ protected:
 		std::basic_string<TCHAR> msg;
 	};
 
+	struct FPMesh
+	{
+		float x;
+		float y;
+		float z;
+		float w;
+		unsigned long color;
+	};
+
 	public :
 		FPTransform Transform;
+		std::vector<FPMesh> Mesh;
 		std::vector<UIContext*> UI_data;
 
 		virtual void BeginPlay() override = 0;

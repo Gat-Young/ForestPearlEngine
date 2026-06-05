@@ -4,6 +4,7 @@
 class UI : public FPActor
 {
 	public:
+		UI();
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
 		void CalFPS(int x, int y);

@@ -9,6 +9,11 @@ Renderer::Renderer()
 {
 }
 
+Renderer::COLVTX Renderer::MakeCOLVTX(float x, float y, float z, float rhw, DWORD color)
+{
+	return COLVTX{ x, y, z, rhw, color };
+}
+
 HRESULT Renderer::InitializeRenderer(UINT DeviceVersion, HWND hwnd)
 {
 	FPRender = CreateRHI(DeviceVersion);
@@ -41,6 +46,14 @@ HRESULT Renderer::InitializeRenderer(UINT DeviceVersion, HWND hwnd)
 											&FPRenderDevice									//생성된 장치의 포인터를 받을 포인터변수.
 										);
 
+	//렌더링 옵션..
+	FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_NONE);
+	//FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_CW);
+	//FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_CCW);
+
+	bool g_bShowFrame = false;
+	FPRenderDevice->SetRenderState(FPRHIRS_FILLMODE, (g_bShowFrame) ? FPRHIFILL_WIREFRAME : FPRHIFILL_SOLID);
+
 	//폰트 생성 및 설정
 	g_hSysFont = CreateFont(
 		12, 6,
@@ -55,10 +68,54 @@ HRESULT Renderer::InitializeRenderer(UINT DeviceVersion, HWND hwnd)
 	return S_OK;
 }
 
+HRESULT Renderer::MakeVB(std::vector<FPActor*> RenderList)
+{
+	std::vector<COLVTX> Vertex;
+	for (FPActor* Actor : RenderList)
+	{
+		for (int i = 0; i < Actor->Mesh.size(); ++i)
+		{
+			Vertex.push_back(MakeCOLVTX(Actor->Mesh[i].x, Actor->Mesh[i].y, Actor->Mesh[i].z, Actor->Mesh[i].w, Actor->Mesh[i].color));
+		}
+	}
+
+	//정점 버퍼 생성.
+	if (FAILED(FPRenderDevice->CreateVertexBuffer(
+		(Vertex.size() * sizeof(COLVTX)),			//'정점 버퍼'의 크기 (바이트)
+		0,												// 버퍼 처리 유형 
+		FVF_COLVTX,										//'정점' 스타일 
+		FPRHIPOOL_MANAGED,								// 정점버퍼의 위치...MANAGED 추천.
+		&FPVertexBuffer,								// 성공시 리턴되는 버퍼 포인터ㅣ
+		NULL											// 예약됨. 그냥 NULL.
+	)))
+	{
+		return E_FAIL;
+	}
+
+	//버퍼 채우기. 
+	VOID* pVB;
+	if (FAILED(FPVertexBuffer->Lock(0, (Vertex.size() * sizeof(COLVTX)), (void**)&pVB, 0)))
+	{
+		return E_FAIL;
+	}
+	memcpy(pVB, Vertex.data(), (Vertex.size() * sizeof(COLVTX)));
+	FPVertexBuffer->Unlock();
+}
+
 void Renderer::ObjectRendering(std::vector<FPActor*> RenderList)
 {
 	FPRenderDevice->BeginScene();
 	FPRenderDevice->Clear(0, NULL, FPRHICLEAR_TARGET, FPRHICOLOR_COLORVALUE(0.0f, 0.0f, 1.0f, 1.0f), 1.0f, 0);
+
+	//출력 스트림 설정
+	FPRenderDevice->SetStreamSource(0, FPVertexBuffer, 0, sizeof(COLVTX));
+
+	//정점 형식 설정
+	FPRenderDevice->SetFVF(FVF_COLVTX);
+
+	//기하데이터 그리기
+	FPRenderDevice->DrawPrimitive(FPRHIPT_TRIANGLELIST, 0, 6);    //Face 6 개 그리기
+
 	FPRenderDevice->EndScene();
 }
 

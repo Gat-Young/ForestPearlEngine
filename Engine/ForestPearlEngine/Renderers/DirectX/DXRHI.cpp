@@ -687,7 +687,8 @@ HRESULT DXDeviceImpl::GetRenderState(FPRHIRENDERSTATETYPE State, DWORD* pValue)
 
 HRESULT DXDeviceImpl::CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, FPRHIPOOL Pool, IDirect3DVertexBuffer9** ppVertexBuffedr, HANDLE* pSharedHandle)
 {
-    Device->CreateVertexBuffer(Length, ChangeD3DUsage(Usage), ChangeD3DFVF_FORMAT(FVF), ChangeD3DPOOL(Pool), ppVertexBuffedr, pSharedHandle);
+    HRESULT hr = Device->CreateVertexBuffer(Length, ChangeD3DUsage(Usage), ChangeD3DFVF_FORMAT(FVF), ChangeD3DPOOL(Pool), ppVertexBuffedr, pSharedHandle);
+
     return S_OK;
 }
 

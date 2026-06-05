@@ -32,8 +32,16 @@ EXTERN_C const MCIID IID_IMiaDevice9;
 EXTERN_C const MCIID IID_IMiaVertexBuffer9;
 
 ////////////////////////////////
+// Interface 구현 클래스 ID (CID)
+EXTERN_C const MCCLSID CLSID_Mia;
+EXTERN_C const MCCLSID CLSID_MiaDevice9;
+EXTERN_C const MCCLSID CLSID_MiaVertexBuffer9;
+
+////////////////////////////////
 // IID 동일 여부 검사 함수
 BOOL mcIsEqualIID(const MCIID& id1, const MCIID& id2);
+
+#define mcIsEqualCLSID  mcIsEqualIID
 
 
 

@@ -9,9 +9,9 @@ class FPLevel : public FPObject
 		FPLevel() = default;
 		~FPLevel() = default;
 
-		void LoadData();
-		void BeginPlay() override;
-		void Tick() override;
-		void UnLoadData();
-		void Finalize();
+		virtual void LoadData() = 0;
+		virtual void BeginPlay() = 0;
+		virtual void Tick() = 0;
+		virtual void UnLoadData() = 0;
+		virtual void Finalize() = 0;
 };

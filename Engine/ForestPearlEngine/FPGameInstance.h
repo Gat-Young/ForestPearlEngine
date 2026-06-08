@@ -1,5 +1,6 @@
 #pragma once
 #include "GameProjectClassRegistry.h"
+#include "FPWorld.h"
 
 class FPGameInstance
 {
@@ -13,7 +14,7 @@ class FPGameInstance
 		struct WorldContext
 		{
 			std::string WorldName = "";
-			std::unique_ptr<FPObject> World = nullptr;
+			std::unique_ptr<FPWorld> World = nullptr;
 		};
 
 		WorldContext GameWorld;
@@ -30,7 +31,7 @@ class FPGameInstance
 		void OpenLevel(std::string WorldName);
 
 		//월드 반환
-		FPObject* GetWorld();
+		FPWorld* GetWorld();
 
 		void LoadData();
 		void BeginPlay();

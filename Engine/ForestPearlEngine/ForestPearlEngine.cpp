@@ -2,6 +2,7 @@
 #include "../ForestPearlEngine/Object/Object.h"
 #include "../ForestPearlEngine/Object/Actor.h"
 #include "Renderers/Renderer.h"
+#include "GameProjectLoader.h"
 #include <iostream>
 
 //싱글톤 엔진 객체 가져오기
@@ -12,8 +13,8 @@ ForestPearlEngine& ForestPearlEngine::GetGameEngine()
     return Singleton;
 }
 
-//엔진 부팅 및 기본 설정
-bool ForestPearlEngine::Initialize()
+//엔진 부팅 및 기본 설정 모듈 불러오기
+bool ForestPearlEngine::PreInitialize()
 {
     //윈도우 생성
     Hwnd = CreateFPEWindow(WinClassName, WinName, WinWidth, WinHeight);
@@ -29,6 +30,16 @@ bool ForestPearlEngine::Initialize()
     Render = new Renderer();
     Render->InitializeRenderer(32, Hwnd);
 
+    LoadClassRegist();
+
+    GameInstance = std::make_unique<FPGameInstance>();
+    return true;
+}
+
+//BaseWorld 생성 및 Begin Play 수행
+bool ForestPearlEngine::Initialize()
+{
+    FPGameInstance::Get().OpenLevel(ReturnStartWorld());
     return true;
 }
 
@@ -52,7 +63,7 @@ void ForestPearlEngine::GameLoop()
             break;
         }
 
-        for (FPObject* obj : GameObjectList)
+        for (auto& obj : GameObjectList)
         {
             obj->Tick();
         }
@@ -74,7 +85,7 @@ void ForestPearlEngine::StopEngine()
 //엔진 종료 및 메모리 해제
 void ForestPearlEngine::Finalize()
 {
-    for (FPObject* obj : GameObjectList)
+    for (auto& obj : GameObjectList)
     {
         delete(obj);
     }

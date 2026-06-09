@@ -1,32 +1,21 @@
 #pragma once
 #include "Object.h"
-#include <string>
-#include "tchar.h"
 #include <vector>
 #include "../FPLevel.h"
 
 class FPActor : public FPObject
 {
 
-protected:
-	struct FPTransform
-	{
-		float x;
-		float y;
-		float z;
-	};
-
-	struct UIContext
-	{
-		int x;
-		int y;
-		unsigned long color;
-		std::basic_string<TCHAR> msg;
-	};
+	protected:
+		struct FPTransform
+		{
+			float x;
+			float y;
+			float z;
+		};
 
 	public :
 		FPTransform Transform;
-		std::vector<UIContext*> UI_data;
 
 		virtual void Initialize() override = 0;
 		virtual void BeginPlay() override = 0;

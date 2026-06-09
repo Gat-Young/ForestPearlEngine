@@ -136,6 +136,8 @@
     <ClInclude Include="Object\Actor.h" />
     <ClInclude Include="Object\Object.h" />
     <ClInclude Include="Renderers\Renderer.h" />
+    <ClInclude Include="TextComponent.h" />
+    <ClInclude Include="TextRenderList.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssetManager.cpp" />
@@ -152,6 +154,8 @@
     </ClCompile>
     <ClCompile Include="MeshRenderList.cpp" />
     <ClCompile Include="Renderers\Renderer.cpp" />
+    <ClCompile Include="TextComponent.cpp" />
+    <ClCompile Include="TextRenderList.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Games\05.Vertex(2D)+Face_Filling\05.Vertex(2D)+Face_Filling.vcxproj">

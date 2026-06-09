@@ -16,7 +16,4 @@ class MeshComponent
 		MeshComponent(std::string MeshPath);
 
 		~MeshComponent();
-
-
-
 };

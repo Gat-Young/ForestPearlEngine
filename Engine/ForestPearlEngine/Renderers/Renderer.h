@@ -37,7 +37,7 @@ class Renderer
 		int MakeVB(std::vector<COLVTX> Vertex);
 
 		void ObjectRendering();
-		void UIRendering(std::vector<FPActor*> UIList);
+		void UIRendering();
 		void RenderTargetPresent();
 
 };

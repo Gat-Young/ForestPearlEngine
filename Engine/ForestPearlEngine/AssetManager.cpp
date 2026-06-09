@@ -53,6 +53,8 @@ int AssetManager::LordVertexVuffer(std::string MeshPath)
 	std::vector<FPMesh> LoadMesh = DummyMesh[MeshPath];
 
 	MeshMap[MeshPath] = FPRenderer->MakeVB(ChangeCOLVTX(LoadMesh));
+
+	return MeshMap[MeshPath];
 }
 
 std::vector<COLVTX> AssetManager::ChangeCOLVTX(std::vector<FPMesh> Mesh)

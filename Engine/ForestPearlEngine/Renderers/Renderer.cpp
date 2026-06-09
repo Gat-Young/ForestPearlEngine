@@ -5,6 +5,7 @@
 #include "tchar.h"
 #include <iostream>
 #include "../MeshRenderList.h"
+#include "../TextRenderList.h"
 
 Renderer::Renderer()
 {
@@ -120,14 +121,12 @@ void Renderer::ObjectRendering()
 	FPRenderDevice->EndScene();
 }
 
-void Renderer::UIRendering(std::vector<FPActor*> UIList)
+void Renderer::UIRendering()
 {
-	for(FPActor* UI : UIList)
+	std::vector<UIContextItem> RenderList = TextRenderList::Get().GetRenderList();
+	for(UIContextItem UI : RenderList)
 	{
-		for (int i = 0; i < UI->UI_data.size(); ++i)
-		{
-			Renderer::DrawText(UI->UI_data[i]->x, UI->UI_data[i]->y, UI->UI_data[i]->color, UI->UI_data[i]->msg.c_str());
-		}
+		Renderer::DrawText(*(UI.x), *(UI.y), *(UI.color), (*(UI.msg)).c_str());
 	}
 }
 

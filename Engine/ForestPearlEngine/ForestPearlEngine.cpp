@@ -68,7 +68,7 @@ void ForestPearlEngine::GameLoop()
 
         //Rendering
         Render->ObjectRendering();
-        //Render->UIRendering(GameUIRenderList);
+        Render->UIRendering();
         Render->RenderTargetPresent();
     }
 

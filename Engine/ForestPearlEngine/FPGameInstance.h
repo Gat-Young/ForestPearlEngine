@@ -33,10 +33,11 @@ class FPGameInstance
 		//월드 반환
 		FPWorld* GetWorld();
 
-		void LoadData();
+		void Initialize();
 		void BeginPlay();
 		void Tick();
 		void UnLoadData();
 		void Finalize();
+
 
 };

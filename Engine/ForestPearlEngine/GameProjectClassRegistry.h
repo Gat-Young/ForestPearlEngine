@@ -24,6 +24,7 @@ public:
 	std::unique_ptr<FPObject> Create(const std::string& className) const;
 
 	bool HasFactory(std::string ClassName);
+
 	//Single Tone
 	static GameProjectClassRegistry& Get()
 	{

@@ -3,6 +3,7 @@
 #include <string>
 #include "tchar.h"
 #include <vector>
+#include "../FPLevel.h"
 
 class FPActor : public FPObject
 {
@@ -23,22 +24,15 @@ protected:
 		std::basic_string<TCHAR> msg;
 	};
 
-	struct FPMesh
-	{
-		float x;
-		float y;
-		float z;
-		float w;
-		unsigned long color;
-	};
-
 	public :
 		FPTransform Transform;
-		std::vector<FPMesh> Mesh;
 		std::vector<UIContext*> UI_data;
 
+		virtual void Initialize() override = 0;
 		virtual void BeginPlay() override = 0;
 		virtual void Tick() override = 0;
 
 		virtual ~FPActor() = default;
+
+		virtual FPWorld* GetWorld() override final { return Outer->GetWorld(); };
 };

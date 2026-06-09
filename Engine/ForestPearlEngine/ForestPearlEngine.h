@@ -20,9 +20,6 @@ class ForestPearlEngine
 
 	//엔진 기능 Function
 	public:
-		void AddObjectTable(FPObject* obj);
-		void AddRenderTable(FPActor* actor);
-		void AddUITable(FPActor* actor);
 		void StopEngine();
 
 	private:
@@ -40,11 +37,6 @@ class ForestPearlEngine
 
 		////////////////////////////////
 		// Game Property
-		std::unique_ptr<FPGameInstance> GameInstance;
-
-		std::vector<FPObject*> GameObjectList;
-		std::vector<FPActor*> GameActorRenderList;
-		std::vector<FPActor*> GameUIRenderList;
 
 		////////////////////////////////
 		// Renderer

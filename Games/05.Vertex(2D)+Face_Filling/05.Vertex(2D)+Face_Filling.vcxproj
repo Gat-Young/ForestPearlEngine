@@ -19,12 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GameManager.h" />
+    <ClInclude Include="GameLevel.h" />
+    <ClInclude Include="GameWorld.h" />
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="UI.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GameManager.cpp" />
+    <ClCompile Include="GameLevel.cpp" />
+    <ClCompile Include="GameWorld.cpp" />
     <ClCompile Include="GameProjectLoader.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="UI.cpp" />

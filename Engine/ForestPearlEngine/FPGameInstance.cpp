@@ -14,7 +14,7 @@ void FPGameInstance::OpenLevel(std::string WorldName)
 
 		WorldObject.release();
 
-		GameWorld.World = std::make_unique<FPWorld>(World);
+		GameWorld.World.reset(World);
 	}
 }
 
@@ -23,9 +23,9 @@ FPWorld* FPGameInstance::GetWorld()
 	return GameWorld.World.get();
 }
 
-void FPGameInstance::LoadData()
+void FPGameInstance::Initialize()
 {
-	GameWorld.World->LoadData();
+	GameWorld.World->Initialize();
 }
 
 void FPGameInstance::BeginPlay()
@@ -40,7 +40,7 @@ void FPGameInstance::Tick()
 
 void FPGameInstance::UnLoadData()
 {
-	GameWorld.World->UnLoadData();
+	GameWorld.World->UnLoadData(GameWorld.WorldName);
 }
 
 void FPGameInstance::Finalize()

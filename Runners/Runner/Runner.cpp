@@ -1,5 +1,4 @@
 #include "../../Engine/ForestPearlEngine/ForestPearlEngine.h"
-#include "GameLoader/GameDataLoader.h"
 #include <exception>
 
 #include "Runner.h"
@@ -10,12 +9,14 @@ void Runner::Run()
     ForestPearlEngine& FPEngine = ForestPearlEngine::GetGameEngine();
 
     bool bIsSuccess;
-    bIsSuccess = FPEngine.Initialize();
+
+    bIsSuccess = FPEngine.PreInitialize();
     if (!bIsSuccess)
         return;
 
-    GameDataLoader DataLoader;
-    DataLoader.LoadGame();
+    bIsSuccess = FPEngine.Initialize();
+    if (!bIsSuccess)
+        return;
 
     FPEngine.GameLoop();
 

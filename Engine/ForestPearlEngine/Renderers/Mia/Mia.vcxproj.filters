@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Demo">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="RenderDevice">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="RenderDevice\Mia">
+      <UniqueIdentifier>{63c9190d-6736-43bd-9864-b3472244c31d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RenderDevice\Mia\Core">
+      <UniqueIdentifier>{ed4476de-0b38-4228-bab9-3c97b5f6a817}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RenderDevice\Mia\Dbg">
+      <UniqueIdentifier>{d3ec38ba-631e-41b7-adee-66661efeba67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RenderDevice\Mia\Device">
+      <UniqueIdentifier>{f944a611-c9dd-4a9b-91d3-4cb45ee323b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RenderDevice\Mia\Math">
+      <UniqueIdentifier>{9ee4b760-3906-4b06-b8dc-5f947a143a55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RHI">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="RHI\Header Files">
+      <UniqueIdentifier>{afe4dffc-c6b3-49aa-980a-66f3de1f2c5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RHI\Source Files">
+      <UniqueIdentifier>{dbc40940-f7e7-4c29-9175-1affa5bd9525}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Mia\Device.cpp">
+      <Filter>RenderDevice</Filter>
+    </ClCompile>
+    <ClCompile Include="Mia\Mia.cpp">
+      <Filter>RenderDevice\Mia</Filter>
+    </ClCompile>
+    <ClCompile Include="Mia\mcError.cpp">
+      <Filter>RenderDevice\Mia\Dbg</Filter>
+    </ClCompile>
+    <ClCompile Include="Mia\mcGUID.cpp">
+      <Filter>RenderDevice\Mia\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="Mia\mcMath.cpp">
+      <Filter>RenderDevice\Mia\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Mia\Render.cpp">
+      <Filter>Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="MiaRHI\MiaRHI.cpp">
+      <Filter>RHI\Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Mia\Device.h">
+      <Filter>RenderDevice</Filter>
+    </ClInclude>
+    <ClInclude Include="Mia\Mia.h">
+      <Filter>RenderDevice\Mia</Filter>
+    </ClInclude>
+    <ClInclude Include="Mia\mcDefine.h">
+      <Filter>RenderDevice\Mia\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Mia\mcError.h">
+      <Filter>RenderDevice\Mia\Dbg</Filter>
+    </ClInclude>
+    <ClInclude Include="Mia\mcGUID.h">
+      <Filter>RenderDevice\Mia\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="Mia\mcUnknownbase.h">
+      <Filter>RenderDevice\Mia\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="Mia\mcx9.h">
+      <Filter>RenderDevice\Mia\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="Mia\mcx9types.h">
+      <Filter>RenderDevice\Mia\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="Mia\mcMath.h">
+      <Filter>RenderDevice\Mia\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Mia\Render.h">
+      <Filter>Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="MiaRHI\MiaRHI.h">
+      <Filter>RHI\Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

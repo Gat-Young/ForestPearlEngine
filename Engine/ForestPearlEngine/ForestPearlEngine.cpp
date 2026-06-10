@@ -5,6 +5,7 @@
 #include "GameProjectLoader.h"
 #include "AssetManager.h"
 #include "MeshRenderList.h"
+#include "Systems/InputSystem.h"
 #include <iostream>
 
 //싱글톤 엔진 객체 가져오기
@@ -27,6 +28,10 @@ bool ForestPearlEngine::PreInitialize()
         system("pause");
         return false;
     }
+
+    // InputSystem 만들기
+    RegisterFPRawInputDevices();
+    FPInputSystem& InputSystem = FPInputSystem::GetInputSystem();
 
     //Render 등록
     Render = new Renderer();
@@ -56,7 +61,6 @@ bool ForestPearlEngine::Initialize()
 //메인 게임 루프
 void ForestPearlEngine::GameLoop()
 {
-
     while (bEngineLoop)
     {
         if (!MessagePump())
@@ -125,6 +129,11 @@ LRESULT CALLBACK ForestPearlEngine::WndProc(HWND hWnd, UINT message, WPARAM wPar
 {
     switch (message)
     {
+    case WM_INPUT:
+        FPInputSystem::GetInputSystem().HandleRawInput(lParam);
+        return DefWindowProc(hWnd, message, wParam, lParam);
+        break;
+
     case WM_KEYDOWN:
     {
 
@@ -165,4 +174,21 @@ int ForestPearlEngine::MessagePump()
     }
 
     return FALSE;
+}
+
+void ForestPearlEngine::RegisterFPRawInputDevices()
+{
+        // Raw Input 등록
+    RAWINPUTDEVICE rid[2] = {};
+    rid[0].usUsagePage = 0x01;
+    rid[0].usUsage = 0x02;  // 마우스
+    rid[0].dwFlags = 0;
+    rid[0].hwndTarget = Hwnd;
+
+    rid[1].usUsagePage = 0x01;
+    rid[1].usUsage = 0x06;  // 키보드
+    rid[1].dwFlags = 0;
+    rid[1].hwndTarget = Hwnd;
+
+    RegisterRawInputDevices(rid, 2, sizeof(RAWINPUTDEVICE));
 }

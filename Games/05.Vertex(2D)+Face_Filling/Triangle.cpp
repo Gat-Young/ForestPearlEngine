@@ -11,7 +11,7 @@ void Triangle::Initialize()
 	FPInputSystem::GetInputSystem().AddActivatedIMC(IMC);
 
 	IA = new FPInputAction();
-	IA->BindMethod(this, EKeyState::Pressed, &Triangle::Move);
+	IA->BindMethod(this, EKeyState::Down, &Triangle::Move);
 
 
 	FMappingInfo MappingInfoW = { IA , 0b00000100 };

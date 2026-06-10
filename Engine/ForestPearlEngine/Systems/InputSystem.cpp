@@ -115,11 +115,11 @@ void FPInputSystem::HandleKeyboardInput(RAWINPUT* RawInput)
         }
         else if (KeyStates[VKey] == true && KeyStates[VKey] != bIsDown)
         {
-            ChangedKeyState = EKeyState::Down;
+            ChangedKeyState = EKeyState::Up;
         }
         else if (KeyStates[VKey] == false && KeyStates[VKey] != bIsDown)
         {
-            ChangedKeyState = EKeyState::Up;
+            ChangedKeyState = EKeyState::Down;
         }
 
         for (FPInputMappingContext* IMC : ActivatedIMCs)

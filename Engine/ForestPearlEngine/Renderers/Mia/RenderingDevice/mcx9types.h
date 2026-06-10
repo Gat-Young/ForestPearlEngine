@@ -68,6 +68,7 @@ enum B3MPRIMITIVETYPE
 // 정점 규격 정의 (하나 이상의 규격 조합 가능) : D3DFVF 대응
 //
 #define  B3MFVF_XY	    0x0001 //2D 좌표. (DX 미지원)
+#define  B3MFVF_XYZ	    0x0002 //3D 좌표. (미 변환)
 #define  B3MFVF_DIFFUSE 0x0040		//확산색(Diffuse) 색상
 
 #define CHECK( value, bit) (((value) & (bit)) == bit)
@@ -97,15 +98,6 @@ enum B3MCULL {
 
 /////////////////////////////////////////////////////////////
 //
-// 정점 규격 정의 : D3DFVF 대응
-//
-#define  B3MFVF_XY			 0x0001
-#define  B3MFVF_DIFFUSE		 0x0040
-
-#define CHECK(value, bit) (((value) & (bit)) == bit)
-
-/////////////////////////////////////////////////////////////
-//
 // 렌더타겟 (백버퍼) - 정보 설정 구조체 : D3DPRESENT_PARAMETERS 대응
 //
 // Mia.h에서 가져옴
@@ -119,7 +111,7 @@ struct B3MPRESENT_PARAMETERS
 };
 
 typedef B3MPRESENT_PARAMETERS	MIAPRESENT_PARAMETERS;	// 이름 개정
-typedef B3MPRESENT_PARAMETERS	MIRESENT_PARAM;
+typedef B3MPRESENT_PARAMETERS	MCPRESENT_PARAM;
 
 
 /////////////////////////////////////////////////////////////

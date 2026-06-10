@@ -22,16 +22,18 @@ LPMIAVERTEXBUFFER9 g_pVB = NULL;
 // 정점 구조체
 struct COLVTX
 {
-	float x, y;		// 정점 좌표
+	float x, y, z;		// 정점 좌표
 	DWORD diff;     // 정점 색
 };
 
 // 정점 포멧의 플래그 조합
-#define FVF_COLVTX (B3MFVF_XY | B3MFVF_DIFFUSE)
+#define FVF_COLVTX (B3MFVF_XYZ | B3MFVF_DIFFUSE)
 
 // 렌더링 상태 변수
 BOOL g_bWireFrame = FALSE;  // 와이어 프레임 출력 플래그
 BOOL g_bCulling = FALSE;    // 뒷면제거 플래그
+
+B3MXCOLOR	g_ClearColor(0.35f, 0.35f, 0.35f, 1.0f);		//배경색
 
 ////////////////////////////////////////////////////////////
 //
@@ -57,35 +59,13 @@ void DataRelease()
 int ObjLoad()
 {
 	COLVTX	Vertices[] = {
-		// 정삼각형
-		{  50.0f, 250.0f, 0xffff0000 },
-		{ 150.0f,  50.0f, 0xff00ff00 },
-		{ 250.0f, 250.0f, 0xff00ffff },
+		{  -0.5f, 0.0f, 0.0f,  0xffff0000 },
+		{   0.0f, 1.0f, 0.0f,  0xff00ff00 },
+		{   0.5f, 0.0f, 0.0f,  0xff00ffff },
 
-		// 역삼각형
-		{  50.0f, 250.0f, 0xffff0000 },
-		{ 150.0f, 450.0f, 0xff00ff00 },
-		{ 250.0f, 250.0f, 0xff00ffff },
-
-		// CW
-		{  300.0f, 500.0f, 0xffff0000 },
-		{  400.0f, 300.0f, 0xff00ff00 },
-		{  480.0f, 430.0f, 0xff00ffff },
-
-		// CCW
-		{  500.0f, 430.0f, 0xffff0000 },
-		{  680.0f, 500.0f, 0xff00ff00 },
-		{  600.0f, 300.0f, 0xff00ffff },
-
-		// 직각 삼각형
-		{  10.0f,  30.0f, 0xffff0000 },
-		{  10.0f, 100.0f, 0xff00ff00 },
-		{  60.0f, 100.0f, 0xff00ffff },
-
-		// 직각 삼각형2
-		{  40.0f,  30.0f, 0xffff0000 },
-		{  90.0f,  30.0f, 0xff00ff00 },
-		{  90.0f, 100.0f, 0xff00ffff },
+		{  -0.5f, 0.0f, 0.0f,  0xffff0000 },
+		{   0.0f,-1.0f, 0.0f,  0xff00ff00 },
+		{   0.5f, 0.0f, 0.0f,  0xff00ffff },
 	};
 
 	if (MC_FAILED(g_pDevice->CreateVertexBuffer(sizeof(Vertices), 0, FVF_COLVTX, B3MPOOL_SYSTEMMEM, &g_pVB, NULL)))
@@ -93,7 +73,7 @@ int ObjLoad()
 		return MC_FALSE;
 	}
 
-	VOID* pBuff;
+	COLVTX* pBuff = nullptr;
 	if (MC_FAILED(g_pVB->Lock(0, sizeof(Vertices), (void**)&pBuff, 0)))
 	{
 		return MC_FALSE;
@@ -125,7 +105,7 @@ void ObjDraw()
 
 	g_pDevice->SetFVF(FVF_COLVTX);
 
-	g_pDevice->DrawPrimitive(B3MPT_TRIANGLELIST, 0, 6);
+	g_pDevice->DrawPrimitive(B3MPT_TRIANGLELIST, 0, 2);
 
 }
 
@@ -140,6 +120,10 @@ void SystemUpdate()
 
 	g_pDevice->SetRenderState(B3MRS_FILLMODE, g_bWireFrame ? B3MFILL_WIREFRAME : B3MFILL_SOLID);
 	g_pDevice->SetRenderState(B3MRS_CULLMODE, g_bCulling ? B3MCULL_CCW : B3MCULL_NONE);
+
+	// 렌더링 모드에 따른 배경색 설정
+	if (g_bWireFrame) g_ClearColor = B3MXCOLOR(0.20f, 0.20f, 0.20f, 1.0f);
+	else	g_ClearColor = B3MXCOLOR(0.0f, 0.125f, 0.35f, 1.0f);
 }
 
 //////////////////////////////////////////////
@@ -156,7 +140,7 @@ void SceneRender()
 
 	g_pDevice->BeginScene();
 
-	g_pDevice->Clear(RGB(80, 80, 80));
+	g_pDevice->Clear(g_ClearColor);
 
 	ObjDraw();
 
@@ -180,35 +164,29 @@ void ShowInfo()
 	if (!bShow) return;
 
 	{
-		//int x = 350, y = 1;			
+		//int x = 350, y = 1;
 		int x = g_Mode.Width / 2 - 100;
 		int y = 50;
-		COLORREF col = RGB(255, 255, 255);
-		COLORREF col2 = RGB(255, 255, 0);
-		COLORREF col3 = RGB(150, 150, 0);
-		COLORREF col4 = RGB(150, 150, 150);
-		COLORREF col5 = RGB(200, 200, 200);
+		B3MXCOLOR col = RGB(255, 255, 255);
+		B3MXCOLOR col2 = RGB(255, 255, 0);
+		B3MXCOLOR col3 = RGB(150, 150, 0);
+		B3MXCOLOR col4 = RGB(150, 150, 150);
+		B3MXCOLOR col5 = RGB(200, 200, 200);
+		B3MXCOLOR col7(0, 1, 1, 1);
+
 		DrawText(x, y, col, _T("■ %s"), g_WindowName);
-		DrawText(x, y += 14, col3, _T("1. 정점(Vertex) 구성"));
-		DrawText(x, y += 14, col3, _T("4. 삼각형(Face) 출력"));
-		//DrawText(x, y += 14, col3, _T("2. 정점 규격(Vertex Format) 의 이해"));
-		//DrawText(x, y += 14, col3, _T("3. 정점 버퍼(Vertex Buffer) 구축"));
-		//DrawText(x, y += 14, col3, _T("4. 삼각형(Face) 출력 : Wireframe"));
-		//DrawText(x, y += 14, col3, _T("5. 삼각형(Face) 출력 : Fill Mode"));
-		DrawText(x, y += 15, col2, _T("6. 렌더링 상태 구현 : SetRenderState"));
-		DrawText(x, y += 15, col3, _T("7. 채우기 모드(Fill Mode) 전환 : SPACE BAR"));
-		DrawText(x, y += 15, col2, _T("8. 컬링 모드(Culling Mode) 전환 : F5"));
-
-
-		y += 14 * 2;
-		DrawText(x, y += 14, col5, _T("<다음 주제>"));
-		DrawText(x, y += 14, col5, _T("* 정점 색상(Vertex Color) 처리"));
-		DrawText(x, y += 14, col5, _T("* 픽셀 색상 계산 : 선형보간(Linear Interpolation)"));
-		DrawText(x, y += 14, col5, _T("* 픽셀 색상 출력 : 레스터(Rasterization) 개정"));
-
-
 		y += 14;
-		DrawText(x, y += 14, RGB(0, 255, 255), _T("■ _DrawLine (GDI)"));
+		DrawText(x, y += 14, col2, _T("1. 렌더링 파이프라인(Rendering Pipeline) 의 이해."));
+		DrawText(x, y += 14, col2, _T("2. 3D->2D 변환 과정의 이해 및 연구."));
+		DrawText(x, y += 14, col2, _T("3. Local (Model) Space 의 이해."));
+		y += 14;
+		DrawText(x, y += 14, col2, _T("* 정점 파이프라인 (Vertex Pipeline) 구현."));
+		DrawText(x, y += 14, col2, _T("* 기하 파이프라인 (Geometry Pipeline) 구현."));
+		DrawText(x, y += 14, col2, _T("* 픽셀 파이프라인 (Pixel Pipeline) 구현."));
+
+		//y += 14;
+		y = g_Mode.Height - 100;
+		DrawText(x, y += 14, col7, _T("* _DrawFace (GDI)"));
 	}
 
 
@@ -216,7 +194,7 @@ void ShowInfo()
 	{
 		int x = 1;
 		int y = 100;
-		COLORREF col = RGB(0, 255, 0);
+		B3MXCOLOR col(0, 1, 0, 1);
 		DWORD v;
 
 		TCHAR* wmsg[] = { _T("N/A"), _T("POINT"), _T("WIRE"), _T("SOILD") };

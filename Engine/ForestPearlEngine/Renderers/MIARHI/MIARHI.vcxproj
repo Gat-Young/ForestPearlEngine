@@ -18,39 +18,12 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Core\mcB3Class.h" />
-    <ClInclude Include="Core\mcGUID.h" />
-    <ClInclude Include="Core\mcUnknownbase.h" />
-    <ClInclude Include="Debug\mcError.h" />
-    <ClInclude Include="Define\mcB3Class.h" />
-    <ClInclude Include="Define\mcDefine.h" />
-    <ClInclude Include="Define\mcMath.h" />
-    <ClInclude Include="Device.h" />
-    <ClInclude Include="MIA.h" />
-    <ClInclude Include="Render.h" />
-    <ClInclude Include="RenderingDevice\mcB3Graphics.h" />
-    <ClInclude Include="RenderingDevice\mcx9.h" />
-    <ClInclude Include="RenderingDevice\mcx9types.h" />
-    <ClInclude Include="VertexBuffer\mcB3VertexBuffer.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Core\mcGUID.cpp" />
-    <ClCompile Include="Debug\mcError.cpp" />
-    <ClCompile Include="Define\mcMath.cpp" />
-    <ClCompile Include="Device.cpp" />
-    <ClCompile Include="MIA.cpp" />
-    <ClCompile Include="Render.cpp" />
-    <ClCompile Include="RenderingDevice\mcB3Graphics.cpp" />
-    <ClCompile Include="VertexBuffer\mcB3VertexBuffer.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{d3e46d9a-f8cf-4de7-a092-ffbe9594079e}</ProjectGuid>
-    <RootNamespace>MIA</RootNamespace>
+    <ProjectGuid>{d3fabcdb-4967-4161-b929-b17617d4bb82}</ProjectGuid>
+    <RootNamespace>MIARHI</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>MIA</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -134,7 +107,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>false</ConformanceMode>
+      <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -151,7 +124,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>false</ConformanceMode>
+      <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -161,6 +134,17 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="MIARHI.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MIARHI.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MIA\MIA.vcxproj">
+      <Project>{d3e46d9a-f8cf-4de7-a092-ffbe9594079e}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

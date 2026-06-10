@@ -11,6 +11,7 @@
 #ifndef _in_
 	#define _in_            //input
 	#define _in_out_        //input & output
+	#define _inout_         //input & output
 	#define _out_           //output
 	#define _out_opt_       //output, option
 	#define _opt_           //option
@@ -34,6 +35,10 @@
 	#define MC_FAIL	MC_FALSE
 	#define MC_NULL nullptr
 #endif
+
+#define MC_CULLED	0x80000010
+#define MC_CLIPPED	0x80000020
+#define MC_CHECK(res, v) (((res) & (v)) == (v))
 
 #define _LOGFILE_ON_  //로그 파일 생성하기
 

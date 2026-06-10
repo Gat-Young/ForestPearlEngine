@@ -5,6 +5,7 @@
 #include "GameProjectLoader.h"
 #include "AssetManager.h"
 #include "MeshRenderList.h"
+#include "TextRenderList.h"
 #include "Systems/InputSystem.h"
 #include <iostream>
 
@@ -31,18 +32,20 @@ bool ForestPearlEngine::PreInitialize()
 
     // InputSystem 만들기
     RegisterFPRawInputDevices();
-    FPInputSystem& InputSystem = FPInputSystem::GetInputSystem();
+    FPInputSystem::GetInputSystem();
 
     //Render 등록
     Render = new Renderer();
     Render->InitializeRenderer(32, Hwnd);
+    
+    AssetManager::Get().SetRenderer(Render);
 
     GameProjectClassRegistry::Get();
 
     LoadClassRegist();
 
-    AssetManager::Get().SetRenderer(Render);
     MeshRenderList::Get();
+    TextRenderList::Get();
 
     FPGameInstance::Get();
 

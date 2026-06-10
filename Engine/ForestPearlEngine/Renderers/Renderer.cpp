@@ -126,7 +126,7 @@ void Renderer::UIRendering()
 	std::vector<UIContextItem> RenderList = TextRenderList::Get().GetRenderList();
 	for(UIContextItem UI : RenderList)
 	{
-		Renderer::DrawText(*(UI.x), *(UI.y), *(UI.color), (*(UI.msg)).c_str());
+		if(*(UI.active)) Renderer::DrawText(*(UI.x), *(UI.y), *(UI.color), (*(UI.msg)).c_str());
 	}
 }
 

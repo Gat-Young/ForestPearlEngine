@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -123,17 +123,44 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AssetManager.h" />
     <ClInclude Include="ForestPearlEngine.h" />
+    <ClInclude Include="FPGameInstance.h" />
+    <ClInclude Include="FPLevel.h" />
+    <ClInclude Include="FPWorld.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="GameProjectClassRegistry.h" />
+    <ClInclude Include="GameProjectLoader.h" />
+    <ClInclude Include="MeshComponent.h" />
+    <ClInclude Include="MeshRenderList.h" />
     <ClInclude Include="Object\Actor.h" />
     <ClInclude Include="Object\Object.h" />
     <ClInclude Include="Renderers\Renderer.h" />
+    <ClInclude Include="TextComponent.h" />
+    <ClInclude Include="TextRenderList.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="ForestPearlEngine.cpp" />
+    <ClCompile Include="FPGameInstance.cpp" />
+    <ClCompile Include="FPLevel.cpp" />
+    <ClCompile Include="FPWorld.cpp" />
+    <ClCompile Include="GameProjectClassRegistry.cpp" />
+    <ClCompile Include="MeshComponent.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MeshRenderList.cpp" />
     <ClCompile Include="Renderers\Renderer.cpp" />
+    <ClCompile Include="TextComponent.cpp" />
+    <ClCompile Include="TextRenderList.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Games\05.Vertex(2D)+Face_Filling\05.Vertex(2D)+Face_Filling.vcxproj">
+      <Project>{b0995cd0-7675-48cd-90a8-ad584a4e1a04}</Project>
+    </ProjectReference>
     <ProjectReference Include="Renderers\FPRHI\FPRHI.vcxproj">
       <Project>{a95d12e7-e8be-48f1-8cc1-ceba3c37a5fe}</Project>
     </ProjectReference>

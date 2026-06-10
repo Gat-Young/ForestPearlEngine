@@ -2,16 +2,21 @@
 #include <iostream>
 #include <Windows.h>
 
-void UI::BeginPlay()
+void UI::Initialize()
 {
 	int UI_count = 5;
 	for (int i = 0; i < UI_count; ++i)
 	{
-		UIContext* UIData = new UIContext();
-		this->UI_data.push_back(UIData);
+		TextComponent* TextComponet = new TextComponent();
+		TextComponets.push_back(TextComponet);
 	}
-
 }
+
+
+void UI::BeginPlay()
+{
+}
+
 
 void UI::Tick()
 {
@@ -67,9 +72,5 @@ void UI::ShowInfo()
 
 void UI::SetUIContext(int index, int x, int y, unsigned long color, std::basic_string<TCHAR> text)
 {
-	this->UI_data[index]->x = x;
-	this->UI_data[index]->y = y;
-	this->UI_data[index]->color = color;
-
-	this->UI_data[index]->msg = text;
+	this->TextComponets[index]->SetTextData(x, y, color, text);
 }

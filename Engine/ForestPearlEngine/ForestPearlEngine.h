@@ -1,6 +1,7 @@
 #pragma once
 #include "framework.h"
 #include <vector>
+#include "FPGameInstance.h"
 
 
 class FPObject;
@@ -12,15 +13,13 @@ class ForestPearlEngine
 
 	public:
 		static ForestPearlEngine& GetGameEngine();
+		bool PreInitialize();
 		bool Initialize();
 		void GameLoop();
 		void Finalize();
 
 	//엔진 기능 Function
 	public:
-		void AddObjectTable(FPObject* obj);
-		void AddRenderTable(FPActor* actor);
-		void AddUITable(FPActor* actor);
 		void StopEngine();
 
 	private:
@@ -38,9 +37,6 @@ class ForestPearlEngine
 
 		////////////////////////////////
 		// Game Property
-		std::vector<FPObject*> GameObjectList;
-		std::vector<FPActor*> GameActorRenderList;
-		std::vector<FPActor*> GameUIRenderList;
 
 		////////////////////////////////
 		// Renderer

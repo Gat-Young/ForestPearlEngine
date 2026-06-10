@@ -1,0 +1,29 @@
+#include "TextComponent.h"
+
+TextComponent::TextComponent()
+{
+	RegistMeshRenderList();
+}
+
+void TextComponent::RegistMeshRenderList()
+{
+	RenderItem = TextRenderList::Get().RegistRenderList();
+
+	RenderItem->x = &(this->x);
+	RenderItem->y = &(this->y);
+	RenderItem->color = &(this->color);
+	RenderItem->msg = &(this->msg);
+}
+
+void TextComponent::SetTextData(int x, int y, unsigned long color, std::basic_string<TCHAR> msg)
+{
+	this->x = x;
+	this->y = y;
+	this->color = color;
+	this->msg = msg;
+}
+
+TextComponent::~TextComponent()
+{
+	TextRenderList::Get().UnregistRenderList(RenderItem);
+}

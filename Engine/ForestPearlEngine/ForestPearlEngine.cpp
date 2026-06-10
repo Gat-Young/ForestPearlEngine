@@ -2,6 +2,9 @@
 #include "../ForestPearlEngine/Object/Object.h"
 #include "../ForestPearlEngine/Object/Actor.h"
 #include "Renderers/Renderer.h"
+#include "GameProjectLoader.h"
+#include "AssetManager.h"
+#include "MeshRenderList.h"
 #include <iostream>
 
 //싱글톤 엔진 객체 가져오기
@@ -12,8 +15,8 @@ ForestPearlEngine& ForestPearlEngine::GetGameEngine()
     return Singleton;
 }
 
-//엔진 부팅 및 기본 설정
-bool ForestPearlEngine::Initialize()
+//엔진 부팅 및 기본 설정 모듈 불러오기
+bool ForestPearlEngine::PreInitialize()
 {
     //윈도우 생성
     Hwnd = CreateFPEWindow(WinClassName, WinName, WinWidth, WinHeight);
@@ -29,21 +32,30 @@ bool ForestPearlEngine::Initialize()
     Render = new Renderer();
     Render->InitializeRenderer(32, Hwnd);
 
+    GameProjectClassRegistry::Get();
+
+    LoadClassRegist();
+
+    AssetManager::Get().SetRenderer(Render);
+    MeshRenderList::Get();
+
+    FPGameInstance::Get();
+
+    return true;
+}
+
+//BaseWorld 생성 및 Begin Play 수행
+bool ForestPearlEngine::Initialize()
+{
+    FPGameInstance::Get().OpenLevel(ReturnStartWorld());
+    FPGameInstance::Get().Initialize();
+    FPGameInstance::Get().BeginPlay();
     return true;
 }
 
 //메인 게임 루프
 void ForestPearlEngine::GameLoop()
 {
-    GameObjectList[0]->BeginPlay();
-
-    Render->MakeVB(GameActorRenderList);
-
-    for (int i=1; i<GameObjectList.size();++i)
-    {
-        FPObject* obj = GameObjectList[i];
-        obj->BeginPlay();
-    }
 
     while (bEngineLoop)
     {
@@ -52,14 +64,11 @@ void ForestPearlEngine::GameLoop()
             break;
         }
 
-        for (FPObject* obj : GameObjectList)
-        {
-            obj->Tick();
-        }
+        FPGameInstance::Get().Tick();
 
         //Rendering
-        Render->ObjectRendering(GameActorRenderList);
-        Render->UIRendering(GameUIRenderList);
+        Render->ObjectRendering();
+        Render->UIRendering();
         Render->RenderTargetPresent();
     }
 
@@ -74,25 +83,7 @@ void ForestPearlEngine::StopEngine()
 //엔진 종료 및 메모리 해제
 void ForestPearlEngine::Finalize()
 {
-    for (FPObject* obj : GameObjectList)
-    {
-        delete(obj);
-    }
-}
-
-void ForestPearlEngine::AddObjectTable(FPObject* obj)
-{
-    GameObjectList.push_back(obj);
-}
-
-void ForestPearlEngine::AddRenderTable(FPActor* actor)
-{
-    GameActorRenderList.push_back(actor);
-}
-
-void ForestPearlEngine::AddUITable(FPActor* actor)
-{
-    GameUIRenderList.push_back(actor);
+    FPGameInstance::Get().Finalize();
 }
 
 //윈도우 생성 함수

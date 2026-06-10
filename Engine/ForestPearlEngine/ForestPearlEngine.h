@@ -59,5 +59,9 @@ class ForestPearlEngine
 		HBITMAP BackBitmap = nullptr;
 		HBITMAP DefaultBitmap = nullptr;
 
+		////////////////////////////////
+		// Input System 
+		private:
+			void RegisterFPRawInputDevices();
 };
 

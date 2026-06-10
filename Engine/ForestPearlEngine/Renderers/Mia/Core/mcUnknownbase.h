@@ -60,3 +60,20 @@ mcinterface mcIUnknown
 	virtual ULONG AddRef(void) pure;
 	virtual ULONG Release(void) pure;
 };
+
+/////////////////////////////////////////////////////////////
+//
+// mcGetClassObject
+// : 인터페이스와 연결된 실제 구현 클래스 객체를 획득
+//
+template<class T>
+T* mcGetClassObject(mcIUnknown* ypInterface)
+{
+	T* pObj = dynamic_cast<T*>(ypInterface);
+	if (MC_INVALIED(pObj))
+	{
+		return MC_NULL;
+	}
+
+	return pObj;
+}

@@ -63,8 +63,10 @@ mcinterface IMia : public mcIUnknown
 	virtual int CreateDevice(HWND hwnd, MIAPRESENT_PARAMETERS* pp, DWORD vp, LPMIADEVICE9* pDev) pure;
 };
 
-typedef IMiaDevice9 MIADEVICE9;
 typedef IMia* LPMIA;
+typedef IMia  IMia9;
+typedef IMia9* LPMIA9;
+
 
 ////////////////////////////////
 // Mia 개체 생성 함수 (D3D9 대응)
@@ -91,7 +93,7 @@ public:
 	virtual int SetStreamSource(UINT StreamNumber, IMiaVertexBuffer9* pStreamData, UINT OffsetInBytes, UINT Stride) pure;
 	virtual int SetFVF(DWORD FVF) pure;
 	virtual int DrawPrimitive(B3MPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount) pure;
-	
+
 	////////////////////////////////
 	// 렌더링 상태 조절 메소드들
 	virtual int SetRenderState(B3MRENDERSTATETYPE State, DWORD Value) pure;
@@ -105,3 +107,4 @@ public:
 };
 
 typedef IMiaDevice9* LPMIADEVICE9;
+//typedef IMiaDevice9 MIADEVICE9;

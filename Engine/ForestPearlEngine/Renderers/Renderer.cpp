@@ -1,0 +1,164 @@
+#include "Renderer.h"
+#include <Windows.h>
+#include "mmsystem.h"
+#include <string>
+#include "tchar.h"
+#include <iostream>
+#include "../MeshRenderList.h"
+#include "../TextRenderList.h"
+
+Renderer::Renderer()
+{
+}
+
+COLVTX MakeCOLVTX(float x, float y, float z, float rhw, DWORD color)
+{
+	return COLVTX{ x, y, z, rhw, color };
+}
+
+HRESULT Renderer::InitializeRenderer(UINT DeviceVersion, HWND hwnd)
+{
+	FPRender = CreateRHI(DeviceVersion);
+
+	//디스플레이 설정
+	FPDisplayMode.Width = 800;
+	FPDisplayMode.Height = 600;
+	FPDisplayMode.RefreshRate = 0;
+	FPDisplayMode.Format = FPRHIFMT_A8R8G8B8;
+
+	//Render Target 설정
+	FPRHIPRESENT_PARAMETERS FPPresentParameters;
+	ZeroMemory(&FPPresentParameters, sizeof(FPPresentParameters));
+	FPPresentParameters.Windowed = TRUE;
+	FPPresentParameters.BackBufferWidth = FPDisplayMode.Width;
+	FPPresentParameters.BackBufferHeight = FPDisplayMode.Height;
+	FPPresentParameters.BackBufferFormat = FPDisplayMode.Format;
+	FPPresentParameters.BackBufferCount = 1;
+	FPPresentParameters.SwapEffect = FPRHISWAPEFFECT_DISCARD;
+	FPPresentParameters.PresentationInterval = FPRHIPRESENT_INTERVAL_IMMEDIATE;
+	FPPresentParameters.Flags = FPRHIPRESENTFLAG_LOCKABLE_BACKBUFFER;
+
+	//Device 생성
+	HRESULT res = FPRender->CreateDevice(
+											FPRHIADAPTER_DEFAULT,							//0번 비디오 어뎁터.
+											FPRHIDEVTYPE_HAL,								//하드웨어 레스터(HW Rasterization) 
+											hwnd,											//생성할 윈도 핸들.
+											FPRHICREATE_HARDWARE_VERTEXPROCESSING,			//정점 처리 방법.(GPU)
+											&FPPresentParameters,							//화면 설정 '옵션'
+											&FPRenderDevice									//생성된 장치의 포인터를 받을 포인터변수.
+										);
+
+	//렌더링 옵션..
+	FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_NONE);
+	//FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_CW);
+	//FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_CCW);
+
+	bool g_bShowFrame = false;
+	FPRenderDevice->SetRenderState(FPRHIRS_FILLMODE, (g_bShowFrame) ? FPRHIFILL_WIREFRAME : FPRHIFILL_SOLID);
+
+	//폰트 생성 및 설정
+	g_hSysFont = CreateFont(
+		12, 6,
+		0, 0, 1, 0, 0, 0,
+		DEFAULT_CHARSET,	//HANGUL_CHARSET  
+		OUT_DEFAULT_PRECIS,
+		CLIP_DEFAULT_PRECIS,
+		DEFAULT_QUALITY,
+		FF_DONTCARE,
+		_T("굴림")
+	);
+	return S_OK;
+}
+
+int Renderer::MakeVB(std::vector<COLVTX> Vertex)
+{
+	FPVertexBufferList.push_back(nullptr);
+	VertexBufferSize++;
+
+	//정점 버퍼 생성.
+	if (FAILED(FPRenderDevice->CreateVertexBuffer(
+		(Vertex.size() * sizeof(COLVTX)),			//'정점 버퍼'의 크기 (바이트)
+		0,												// 버퍼 처리 유형 
+		FVF_COLVTX,										//'정점' 스타일 
+		FPRHIPOOL_MANAGED,								// 정점버퍼의 위치...MANAGED 추천.
+		&FPVertexBufferList[VertexBufferSize],								// 성공시 리턴되는 버퍼 포인터ㅣ
+		NULL											// 예약됨. 그냥 NULL.
+	)))
+	{
+		return E_FAIL;
+	}
+
+	//버퍼 채우기. 
+	VOID* pVB;
+	if (FAILED(FPVertexBufferList[VertexBufferSize]->Lock(0, (Vertex.size() * sizeof(COLVTX)), (void**)&pVB, 0)))
+	{
+		return E_FAIL;
+	}
+	memcpy(pVB, Vertex.data(), (Vertex.size() * sizeof(COLVTX)));
+	FPVertexBufferList[VertexBufferSize]->Unlock();
+
+	return VertexBufferSize;
+}
+
+void Renderer::ObjectRendering()
+{
+	FPRenderDevice->BeginScene();
+	FPRenderDevice->Clear(0, NULL, FPRHICLEAR_TARGET, FPRHICOLOR_COLORVALUE(0.0f, 0.0f, 1.0f, 1.0f), 1.0f, 0);
+
+	std::vector<MeshRenderItem> RenderList = MeshRenderList::Get().GetRenderList();
+	for (MeshRenderItem RenderItem : RenderList)
+	{
+		//출력 스트림 설정
+		FPRenderDevice->SetStreamSource(0, FPVertexBufferList[*(RenderItem.VBIndex)], 0, sizeof(COLVTX));
+
+		//정점 형식 설정
+		FPRenderDevice->SetFVF(FVF_COLVTX);
+
+		//기하데이터 그리기
+		FPRenderDevice->DrawPrimitive(FPRHIPT_TRIANGLELIST, 0, 6);    //Face 6 개 그리기
+	}
+
+	FPRenderDevice->EndScene();
+}
+
+void Renderer::UIRendering()
+{
+	std::vector<UIContextItem> RenderList = TextRenderList::Get().GetRenderList();
+	for(UIContextItem UI : RenderList)
+	{
+		Renderer::DrawText(*(UI.x), *(UI.y), *(UI.color), (*(UI.msg)).c_str());
+	}
+}
+
+void Renderer::RenderTargetPresent()
+{
+	FPRenderDevice->Present(NULL, NULL, NULL, NULL);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// 문자열 출력 (GDI)
+//
+// \param	x, y	출력 화면 좌표.
+// \param	msg		출력 문자열 (형식화 문자열 지원)
+// \return	없음.
+//
+//
+void Renderer::DrawText(int x, int y, COLORREF col, const TCHAR* msg, ...)
+{
+	TCHAR buff[2048] = _T("");
+	va_list vl;
+	va_start(vl, msg);
+	_vstprintf(buff, _countof(buff), msg, vl);
+	va_end(vl);
+	RECT rc = { x, y, (LONG)(x + FPDisplayMode.Width), (LONG)(y + FPDisplayMode.Height) };
+
+	HDC hdc = nullptr;
+	FPRenderDevice->GetDC(&hdc);
+	SelectObject(hdc, g_hSysFont);
+	SetTextColor(hdc, col);
+	SetBkMode(hdc, TRANSPARENT);
+	::DrawText(hdc, buff, (int)_tcslen(buff), &rc, DT_WORDBREAK);
+	SetTextColor(hdc, RGB(0, 255, 0));
+	FPRenderDevice->ReleaseDC(hdc);
+}

@@ -1,6 +1,7 @@
 #pragma once
 #include "framework.h"
 #include <vector>
+#include "FPGameInstance.h"
 
 
 class FPObject;
@@ -12,14 +13,14 @@ class ForestPearlEngine
 
 	public:
 		static ForestPearlEngine& GetGameEngine();
+		bool PreInitialize();
 		bool Initialize();
 		void GameLoop();
 		void Finalize();
 
 	//엔진 기능 Function
 	public:
-		void AddObjectTable(FPObject* obj);
-		void AddRenderTable(FPActor* actor);
+		void StopEngine();
 
 	private:
 		ForestPearlEngine() = default;
@@ -27,12 +28,15 @@ class ForestPearlEngine
 		HWND CreateFPEWindow(const wchar_t* className, const wchar_t* windowName, const int width, const int height);
 		static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+		int MessagePump();
+
 	private:
 		////////////////////////////////
-		// Game Property
-		std::vector<FPObject*> GameObjectList;
+		// Engine Property
+		bool bEngineLoop = true;
 
-		std::vector<FPActor*> GameActorRenderList;
+		////////////////////////////////
+		// Game Property
 
 		////////////////////////////////
 		// Renderer
@@ -43,15 +47,15 @@ class ForestPearlEngine
 		// Window Property
 		const wchar_t* WinClassName = L"MyFirstWndGame";
 		const wchar_t* WinName = L"MyFirstWndGame";
-		const int WinWidth = 1280;
-		const int WinHeight = 720;
+		const int WinWidth = 800;
+		const int WinHeight = 600;
 
 		////////////////////////////////
 		// Render Property 
 		// Window
 		HWND Hwnd = nullptr;
-		HDC BackHdc;
-		HDC FrontHdc;
+		HDC BackHdc = nullptr;
+		HDC FrontHdc = nullptr;
 		HBITMAP BackBitmap = nullptr;
 		HBITMAP DefaultBitmap = nullptr;
 

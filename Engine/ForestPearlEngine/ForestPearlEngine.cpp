@@ -1,7 +1,11 @@
 #include "ForestPearlEngine.h"
 #include "../ForestPearlEngine/Object/Object.h"
 #include "../ForestPearlEngine/Object/Actor.h"
-#include "Renderers/GDI/GDI.h"
+#include "Renderers/Renderer.h"
+#include "GameProjectLoader.h"
+#include "AssetManager.h"
+#include "MeshRenderList.h"
+#include <iostream>
 
 //싱글톤 엔진 객체 가져오기
 ForestPearlEngine& ForestPearlEngine::GetGameEngine()
@@ -11,8 +15,8 @@ ForestPearlEngine& ForestPearlEngine::GetGameEngine()
     return Singleton;
 }
 
-//엔진 부팅 및 기본 설정
-bool ForestPearlEngine::Initialize()
+//엔진 부팅 및 기본 설정 모듈 불러오기
+bool ForestPearlEngine::PreInitialize()
 {
     //윈도우 생성
     Hwnd = CreateFPEWindow(WinClassName, WinName, WinWidth, WinHeight);
@@ -25,49 +29,61 @@ bool ForestPearlEngine::Initialize()
     }
 
     //Render 등록
-    Render = new SimpleGDI(Hwnd);
+    Render = new Renderer();
+    Render->InitializeRenderer(32, Hwnd);
 
+    GameProjectClassRegistry::Get();
+
+    LoadClassRegist();
+
+    AssetManager::Get().SetRenderer(Render);
+    MeshRenderList::Get();
+
+    FPGameInstance::Get();
+
+    return true;
+}
+
+//BaseWorld 생성 및 Begin Play 수행
+bool ForestPearlEngine::Initialize()
+{
+    FPGameInstance::Get().OpenLevel(ReturnStartWorld());
+    FPGameInstance::Get().Initialize();
+    FPGameInstance::Get().BeginPlay();
     return true;
 }
 
 //메인 게임 루프
 void ForestPearlEngine::GameLoop()
 {
-    for (FPObject* obj : GameObjectList)
-    {
-        obj->BeginPlay();
-    }
 
-    while (true)
+    while (bEngineLoop)
     {
-        for (FPObject* obj : GameObjectList)
+        if (!MessagePump())
         {
-            obj->Tick();
+            break;
         }
 
+        FPGameInstance::Get().Tick();
+
         //Rendering
-        Render->Rendering(GameActorRenderList);
+        Render->ObjectRendering();
+        Render->UIRendering();
+        Render->RenderTargetPresent();
     }
 
+}
+
+//엔진 루프를 종료
+void ForestPearlEngine::StopEngine()
+{
+    bEngineLoop = false;
 }
 
 //엔진 종료 및 메모리 해제
 void ForestPearlEngine::Finalize()
 {
-    for (FPObject* obj : GameObjectList)
-    {
-        delete(obj);
-    }
-}
-
-void ForestPearlEngine::AddObjectTable(FPObject* obj)
-{
-    GameObjectList.push_back(obj);
-}
-
-void ForestPearlEngine::AddRenderTable(FPActor* actor)
-{
-    GameActorRenderList.push_back(actor);
+    FPGameInstance::Get().Finalize();
 }
 
 //윈도우 생성 함수
@@ -90,8 +106,6 @@ HWND ForestPearlEngine::CreateFPEWindow(const wchar_t* className, const wchar_t*
     RECT rc = { 0, 0, width, height };
 
     AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, false);
-
-    //std::cout << "width: " << rc.right - rc.left << " height: " << rc.bottom - rc.top << std::endl;
 
     HWND hWnd = CreateWindowEx(NULL, MAKEINTATOM(classId), L"", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
         rc.right - rc.left, rc.bottom - rc.top, HWND(), HMENU(), HINSTANCE(), NULL);
@@ -125,4 +139,30 @@ LRESULT CALLBACK ForestPearlEngine::WndProc(HWND hWnd, UINT message, WPARAM wPar
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return 0;
+}
+
+//윈도우 메시지 펌프
+int ForestPearlEngine::MessagePump()
+{
+    MSG msg;
+    ZeroMemory(&msg, sizeof(msg)); //msg 영역 초기화
+
+    while (true)
+    {
+        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+        {
+            if (msg.message == WM_QUIT)
+                return FALSE;
+
+            //나머지 메시지 리턴
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        else
+        {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
 }

@@ -4,7 +4,7 @@
 #include <windows.h>
 #include <vector>
 
-class FPInputMappingComponent;
+class FPInputMappingContext;
 
 class FPInputSystem
 {
@@ -16,8 +16,8 @@ public:
 
 	void HandleRawInput(LPARAM LParam);
 
-	void AddActivatedIMC(FPInputMappingComponent* IMC);
-	void RemoveActivatedIMC(FPInputMappingComponent* IMC);
+	void AddActivatedIMC(FPInputMappingContext* IMC);
+	void RemoveActivatedIMC(FPInputMappingContext* IMC);
 
 private:
 	void HandleMouseInput(RAWINPUT* RawInput);
@@ -26,6 +26,6 @@ private:
 private:
 	int  MouseX = 0, MouseY = 0;
 	bool KeyStates[256] = {false};
-	std::vector<FPInputMappingComponent*> ActivatedIMCs;
+	std::vector<FPInputMappingContext*> ActivatedIMCs;
 };
 

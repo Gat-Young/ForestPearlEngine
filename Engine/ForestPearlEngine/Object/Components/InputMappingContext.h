@@ -12,7 +12,7 @@ struct FMappingInfo
 
 typedef unsigned short USHORT;
 
-class FPInputMappingComponent
+class FPInputMappingContext
 {
 public:
 	void OnKeyStateChanged(USHORT VKey, EKeyState KeyState);

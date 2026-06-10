@@ -1,7 +1,7 @@
 ﻿#include "InputSystem.h"
 
 #include <iostream>
-#include "../Object/Components/InputMappingComponent.h"
+#include "../Object/Components/InputMappingContext.h"
 
 FPInputSystem& FPInputSystem::GetInputSystem()
 {
@@ -56,7 +56,7 @@ void FPInputSystem::HandleRawInput(LPARAM LParam)
     }
 }
 
-void FPInputSystem::AddActivatedIMC(FPInputMappingComponent* IMC)
+void FPInputSystem::AddActivatedIMC(FPInputMappingContext* IMC)
 {
     if (IMC == nullptr)
     {
@@ -73,7 +73,7 @@ void FPInputSystem::AddActivatedIMC(FPInputMappingComponent* IMC)
     ActivatedIMCs.push_back(IMC);
 }
 
-void FPInputSystem::RemoveActivatedIMC(FPInputMappingComponent* IMC)
+void FPInputSystem::RemoveActivatedIMC(FPInputMappingContext* IMC)
 {
     if (IMC == nullptr)
     {
@@ -122,7 +122,7 @@ void FPInputSystem::HandleKeyboardInput(RAWINPUT* RawInput)
             ChangedKeyState = EKeyState::Up;
         }
 
-        for (FPInputMappingComponent* IMC : ActivatedIMCs)
+        for (FPInputMappingContext* IMC : ActivatedIMCs)
         {
             IMC->OnKeyStateChanged(VKey, ChangedKeyState);
         }

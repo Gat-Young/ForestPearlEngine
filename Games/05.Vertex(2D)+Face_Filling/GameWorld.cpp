@@ -13,13 +13,6 @@ void GameWorld::Initialize()
 
 void GameWorld::BeginPlay()
 {
-	//UI* ui = new UI();
-	//ForestPearlEngine::GetGameEngine().AddObjectTable(ui);
-	//ForestPearlEngine::GetGameEngine().AddUITable(ui);
-
-	//Triangle* tri = new Triangle();
-	//ForestPearlEngine::GetGameEngine().AddObjectTable(tri);
-	//ForestPearlEngine::GetGameEngine().AddRenderTable(tri);
 
 	__super::BeginPlay();
 

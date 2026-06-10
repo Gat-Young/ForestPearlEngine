@@ -2,10 +2,10 @@
 
 TextComponent::TextComponent()
 {
-	RegistMeshRenderList();
+	RegistTextRenderList();
 }
 
-void TextComponent::RegistMeshRenderList()
+void TextComponent::RegistTextRenderList()
 {
 	RenderItem = TextRenderList::Get().RegistRenderList();
 

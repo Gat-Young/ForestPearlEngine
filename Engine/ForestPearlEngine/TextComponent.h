@@ -20,7 +20,7 @@ class TextComponent
 		std::basic_string<TCHAR> msg;
 		UIContextItem* RenderItem = nullptr;
 
-		void RegistMeshRenderList();
+		void RegistTextRenderList();
 
 	public:
 		TextComponent();

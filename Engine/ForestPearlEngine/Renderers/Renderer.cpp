@@ -77,7 +77,7 @@ int Renderer::MakeVB(std::vector<COLVTX> Vertex)
 
 	//정점 버퍼 생성.
 	if (FAILED(FPRenderDevice->CreateVertexBuffer(
-		(Vertex.size() * sizeof(COLVTX)),			//'정점 버퍼'의 크기 (바이트)
+		(Vertex.size() * sizeof(COLVTX)),				//'정점 버퍼'의 크기 (바이트)
 		0,												// 버퍼 처리 유형 
 		FVF_COLVTX,										//'정점' 스타일 
 		FPRHIPOOL_MANAGED,								// 정점버퍼의 위치...MANAGED 추천.

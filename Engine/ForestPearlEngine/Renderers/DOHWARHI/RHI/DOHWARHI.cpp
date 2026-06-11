@@ -29,21 +29,6 @@ DOHWARESOURCETYPE ChangeDOHWARESOURCETYPE(FPRHIRESOURCETYPE ResourceType)
     }
 }
 
-//FPRHIPOOL To DOHWAPOOL 타입 변환기
-DOHWAPOOL ChangeDOHWAPOOL(FPRHIPOOL MemoryPool)
-{
-    switch (MemoryPool)
-    {
-    case FPRHIPOOL_DEFAULT: return DOHWAPOOL_DEFAULT;
-    case FPRHIPOOL_MANAGED:	return DOHWAPOOL_MANAGED;
-    case FPRHIPOOL_SYSTEMMEM:	return DOHWAPOOL_SYSTEMMEM;
-    case FPRHIPOOL_SCRATCH:	return DOHWAPOOL_SCRATCH;
-    case FPRHIPOOL_FORCE_DWORD:	return DOHWAPOOL_FORCE_DWORD;
-    default: return DOHWAPOOL_FORCE_DWORD;
-
-    }
-}
-
 //FPRHIFORMAT To DOHWAFORMAT 타입 변환기
 DOHWAFORMAT ChangeDOHWAFORMAT(FPRHIFORMAT FPRHIFormat)
 {
@@ -81,6 +66,16 @@ DOHWAFORMAT ChangeDOHWAFORMAT(FPRHIFORMAT FPRHIFormat)
     }
 }
 
+//FPRHICOLOR To COLORREF 타입 변환기
+COLORREF ChangeCOLORREF(FPRHICOLOR FPRHIColor)
+{
+    DWORD A = FPRHIColor & 0xff000000;
+    DWORD R = FPRHIColor & 0x00ff0000;
+    DWORD G = FPRHIColor & 0x0000ff00;
+    DWORD B = FPRHIColor & 0x000000ff;
+
+    return ((COLORREF)(((B) << 16) | (G) | ((R) >> 16)));
+}
 
 //FPRHIPRESENT_PARAMETERS To DOHWAPRESENT_PARAMETERS 타입 변환기
 void ChangeDOHWAPRESENT_PARAMETERS(DOHWAPRESENT_PARAMETERS& DohwaPram, FPRHIPRESENT_PARAMETERS* pPresentationParameters)
@@ -89,6 +84,61 @@ void ChangeDOHWAPRESENT_PARAMETERS(DOHWAPRESENT_PARAMETERS& DohwaPram, FPRHIPRES
     DohwaPram.Height = pPresentationParameters->BackBufferHeight;
     DohwaPram.BackBuffercnt = pPresentationParameters->BackBufferCount;
     DohwaPram.Windowed = pPresentationParameters->Windowed;
+}
+
+//FPRHIFVF To DOHWAFVF 타입 변환기
+DWORD ChangeDOHWAFVF_FORMAT(DWORD FPRHIFvf)
+{
+
+    //위치 타입만 뽑아내기
+    DWORD FPRHIPosType = FPRHIFvf & FPRHIFVF_POSITION_MASK;
+
+    DWORD D3DPosType;
+
+    switch (FPRHIPosType)
+    {
+    case  FPRHIFVF_RESERVED0: D3DPosType = DOHWAFVF_XY; break;
+    case  FPRHIFVF_XYZ:       D3DPosType = DOHWAFVF_XYZ; break;
+    case  FPRHIFVF_XYZRHW:    D3DPosType = DOHWAFVF_XYZRHW; break;
+    default:                  D3DPosType = 0x000; break;
+    }
+
+    //법선 벡터 여부
+    DWORD DXNormal = ((FPRHIFvf & FPRHIFVF_NORMAL) == DOHWAFVF_NORMAL) ? DOHWAFVF_NORMAL : 0x000;
+
+    // 점 프리미티브 크기 여부
+    DWORD DXPsize = 0x000;
+
+    //Diffuse Color 여부
+    DWORD DXDiffuse = ((FPRHIFvf & FPRHIFVF_DIFFUSE) == DOHWAFVF_DIFFUSE) ? DOHWAFVF_DIFFUSE : 0x000;
+
+    //Specular Color 여부
+    DWORD DXSpecular = ((FPRHIFvf & FPRHIFVF_SPECULAR) == DOHWAFVF_SPECULAR) ? DOHWAFVF_SPECULAR : 0x000;
+
+
+    //텍스처 좌표 개수 뽑아내기
+    DWORD FPRHITextCount = (FPRHIFvf & FPRHIFVF_TEXCOUNT_MASK);
+
+    DWORD DXTextCount;
+
+    switch (FPRHIPosType)
+    {
+    case  FPRHIFVF_TEX1:     DXTextCount = DOHWAFVF_TEX1; break;
+    case  FPRHIFVF_TEX2:     DXTextCount = DOHWAFVF_TEX2; break;
+    default:                 DXTextCount = 0x000; break;
+    }
+
+    //LASTBETA
+    DWORD FPRHILastBeta = (FPRHIFvf ^ 0x0fff);
+
+    DWORD DXLastBeta;
+
+    switch (FPRHIPosType)
+    {
+    default:                             DXLastBeta = 0x000; break;
+    }
+
+    return (D3DPosType | DXNormal | DXPsize | DXDiffuse | DXSpecular | DXTextCount | DXLastBeta);
 }
 
 //FPRHIUsages To DOHWAUsage 타입 변환기
@@ -108,6 +158,21 @@ long ChangeDOHWAUsage(long FPRHIUsage)
     }
 }
 
+//FPRHIPOOL To DOHWAPOOL 타입 변환기
+DOHWAPOOL ChangeDOHWAPOOL(FPRHIPOOL MemoryPool)
+{
+    switch (MemoryPool)
+    {
+    case FPRHIPOOL_DEFAULT: return DOHWAPOOL_DEFAULT;
+    case FPRHIPOOL_MANAGED:	return DOHWAPOOL_MANAGED;
+    case FPRHIPOOL_SYSTEMMEM:	return DOHWAPOOL_SYSTEMMEM;
+    case FPRHIPOOL_SCRATCH:	return DOHWAPOOL_SCRATCH;
+    case FPRHIPOOL_FORCE_DWORD:	return DOHWAPOOL_FORCE_DWORD;
+    default: return DOHWAPOOL_FORCE_DWORD;
+
+    }
+}
+
 //FPRHICREATE To DOHWACREATE 타입 변환기
 DWORD ChangeDOHWACREATE(DWORD FPRHICreate)
 {
@@ -121,16 +186,66 @@ DWORD ChangeDOHWACREATE(DWORD FPRHICreate)
     }
 }
 
-//FPRHICOLOR To COLORREF 타입 변환기
-COLORREF ChangeCOLORREF(FPRHICOLOR FPRHIColor)
+//FPRHIPRIMITIVETYPE To DOHWAPRIMITIVETYPE 타입 변환기
+DOHWAPRIMITIVETYPE ChangeDOHWAPRIMITIVETYPE(FPRHIPRIMITIVETYPE FPRHIPrmititiveType)
 {
-    DWORD A = FPRHIColor & 0xff000000;
-    DWORD R = FPRHIColor & 0x00ff0000;
-    DWORD G = FPRHIColor & 0x0000ff00;
-    DWORD B = FPRHIColor & 0x000000ff;
+    switch (FPRHIPrmititiveType)
+    {
+    case FPRHIPT_POINTLIST:       return DOHWAPT_POINTLIST;
+    case FPRHIPT_LINELIST:        return DOHWAPT_LINELIST;
+    case FPRHIPT_LINESTRIP:       return DOHWAPT_LINESTRIP;
+    case FPRHIPT_TRIANGLELIST:    return DOHWAPT_TRIANGLELIST;
+    case FPRHIPT_TRIANGLESTRIP:   return DOHWAPT_TRIANGLESTRIP;
+    case FPRHIPT_TRIANGLEFAN:     return DOHWAPT_TRIANGLEFAN;
+    case FPRHIPT_FORCE_DWORD:     return DOHWAPT_FORCE_DWORD;
 
-    return ((COLORREF)(((B) << 16) | (G) | ((R) >> 16)));
+    default:                        return DOHWAPT_FORCE_DWORD;
+    }
 }
+/////////////////////////////////////////////
+//
+// class DOHWAVertexBufferImpl 구현
+//
+////////////////////////////////////////////
+class DOHWAVertexBufferImpl
+{
+    private:
+        std::unique_ptr<IDohwaVertexBuffer9> VertexBuffer;
+
+    public:
+        DOHWAVertexBufferImpl();
+        ~DOHWAVertexBufferImpl();
+
+        //VertexBuffer 객체 반환
+        std::unique_ptr<IDohwaVertexBuffer9>* GetVertexBuffer() { return &(VertexBuffer); }
+
+        HRESULT Lock(UINT OffsetToLock, UINT SizeToLock, void** ppbData, DWORD Flags);
+        HRESULT Unlock();
+};
+
+DOHWAVertexBufferImpl::DOHWAVertexBufferImpl()
+{
+
+}
+
+DOHWAVertexBufferImpl::~DOHWAVertexBufferImpl()
+{
+
+}
+
+HRESULT DOHWAVertexBufferImpl::Lock(UINT OffsetToLock, UINT SizeToLock, void** ppbData, DWORD Flags)
+{
+    VertexBuffer->Lock(OffsetToLock, SizeToLock, ppbData, Flags);
+    return S_OK;
+}
+
+HRESULT DOHWAVertexBufferImpl::Unlock()
+{
+    VertexBuffer->Unlock();
+    return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////
 //
@@ -146,13 +261,24 @@ class DOHWADeviceImpl
         DOHWADeviceImpl();
         ~DOHWADeviceImpl();
 
-        std::unique_ptr<IDohwaDevice9>* GetDevice() { return &(DohwaDevice); };
+        std::unique_ptr<IDohwaDevice9>* GetDevice() { return &(DohwaDevice); }
+
         int BeginScene();
         int EndScene();
         int Clear(FPRHICOLOR col);
         int Present();
         
-        int GetDC(HDC* phdc);
+        HRESULT GetDC(HDC* phdc);
+        HRESULT ReleaseDC(HDC hdc);
+
+        HRESULT SetRenderState(FPRHIRENDERSTATETYPE State, DWORD Value);
+        HRESULT GetRenderState(FPRHIRENDERSTATETYPE State, DWORD* pValue);
+
+
+        HRESULT CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, FPRHIPOOL Pool, std::unique_ptr<IDohwaVertexBuffer9>* ppVertexBuffer, HANDLE* pSharedHandle);
+        HRESULT SetStreamSource(UINT StreamNumber, std::unique_ptr<IDohwaVertexBuffer9>& pStreamData, UINT OffsetInBytes, UINT Stride);
+        HRESULT SetFVF(DWORD FVF);
+        HRESULT DrawPrimitive(FPRHIPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount);
 };
 
 DOHWADeviceImpl::DOHWADeviceImpl()
@@ -189,13 +315,61 @@ int DOHWADeviceImpl::Present()
     return DOHWA_OK;
 }
 
-int DOHWADeviceImpl::GetDC(HDC* phdc)
+
+HRESULT DOHWADeviceImpl::DrawPrimitive(FPRHIPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
+{
+    DohwaDevice->DrawPrimitive(ChangeDOHWAPRIMITIVETYPE(PrimitiveType), StartVertex, PrimitiveCount);
+    return S_OK;
+}
+
+
+HRESULT DOHWADeviceImpl::GetDC(HDC* phdc)
 {
     *phdc = DohwaDevice->GetRT();
     return DOHWA_OK;
 }
 
+HRESULT DOHWADeviceImpl::ReleaseDC(HDC hdc)
+{
+    return DOHWA_OK;
+}
 
+HRESULT DOHWADeviceImpl::SetRenderState(FPRHIRENDERSTATETYPE State, DWORD Value)
+{
+    return S_OK;
+}
+
+HRESULT DOHWADeviceImpl::GetRenderState(FPRHIRENDERSTATETYPE State, DWORD* pValue)
+{
+    return S_OK;
+}
+
+HRESULT DOHWADeviceImpl::CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, FPRHIPOOL Pool, std::unique_ptr <IDohwaVertexBuffer9>* ppVertexBuffer, HANDLE* pSharedHandle)
+{
+    IDohwaVertexBuffer9* VertexBufferObj = nullptr;
+
+    HRESULT hr = DohwaDevice->CreateVertexBuffer(Length, ChangeDOHWAUsage(Usage), ChangeDOHWAFVF_FORMAT(FVF), ChangeDOHWAPOOL(Pool), &VertexBufferObj, pSharedHandle);
+
+    ppVertexBuffer->reset(VertexBufferObj);
+
+    return S_OK;
+}
+
+
+HRESULT DOHWADeviceImpl::SetStreamSource(UINT StreamNumber, std::unique_ptr<IDohwaVertexBuffer9>& pStreamData, UINT OffsetInBytes, UINT Stride)
+{
+    DohwaDevice->SetStreamSource(StreamNumber, pStreamData.get(), OffsetInBytes, Stride);
+    return S_OK;
+}
+
+HRESULT DOHWADeviceImpl::SetFVF(DWORD FVF)
+{
+    DohwaDevice->SetFVF(ChangeDOHWAFVF_FORMAT(FVF));
+    return S_OK;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -311,4 +485,77 @@ HRESULT DOHWARHIDevice::GetDC(HDC* phdc)
 {
     DOHWADeviceimpl->GetDC(phdc);
     return E_NOTIMPL;
+}
+
+HRESULT DOHWARHIDevice::ReleaseDC(HDC hdc)
+{
+    DOHWADeviceimpl->ReleaseDC(hdc);
+    return S_OK;
+}
+
+HRESULT DOHWARHIDevice::DrawPrimitive(FPRHIPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
+{
+    DOHWADeviceimpl->DrawPrimitive(PrimitiveType, StartVertex, PrimitiveCount);
+    return S_OK;
+}
+
+HRESULT DOHWARHIDevice::SetRenderState(FPRHIRENDERSTATETYPE State, DWORD Value)
+{
+    DOHWADeviceimpl->SetRenderState(State, Value);
+    return S_OK;
+}
+
+HRESULT DOHWARHIDevice::GetRenderState(FPRHIRENDERSTATETYPE State, DWORD* pValue)
+{
+    DOHWADeviceimpl->GetRenderState(State, pValue);
+    return S_OK;
+}
+
+HRESULT DOHWARHIDevice::CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, FPRHIPOOL Pool, FPRHIVertexBuffer** ppVertexBuffedr, HANDLE* pSharedHandle)
+{
+    DOHWAVertexBuffer* DOHWAVB = new DOHWAVertexBuffer();
+    DOHWADeviceimpl->CreateVertexBuffer(Length, Usage, FVF, Pool, DOHWAVB->DOHWAVertexBufferimpl->GetVertexBuffer(), pSharedHandle);
+    *ppVertexBuffedr = DOHWAVB;
+    return S_OK;
+}
+
+HRESULT DOHWARHIDevice::SetStreamSource(UINT StreamNumber, FPRHIVertexBuffer* pStreamData, UINT OffsetInBytes, UINT Stride)
+{
+    DOHWAVertexBuffer* DOHWAVB = dynamic_cast<DOHWAVertexBuffer*>(pStreamData);
+    DOHWADeviceimpl->SetStreamSource(StreamNumber, *(DOHWAVB->DOHWAVertexBufferimpl->GetVertexBuffer()), OffsetInBytes, Stride);
+    return S_OK;
+}
+
+HRESULT DOHWARHIDevice::SetFVF(DWORD FVF)
+{
+    DOHWADeviceimpl->SetFVF(FVF);
+    return S_OK;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////
+//
+// DOHWAVertexBuffer 구현부
+//
+////////////////////////////////////////////////////
+
+DOHWAVertexBuffer::DOHWAVertexBuffer() :DOHWAVertexBufferimpl(std::make_unique<DOHWAVertexBufferImpl>())
+{
+}
+
+DOHWAVertexBuffer::~DOHWAVertexBuffer()
+{
+}
+
+HRESULT DOHWAVertexBuffer::Lock(UINT OffsetToLock, UINT SizeToLock, void** ppbData, DWORD Flags)
+{
+    DOHWAVertexBufferimpl->Lock(OffsetToLock, SizeToLock, ppbData, Flags);
+    return S_OK;
+}
+
+HRESULT DOHWAVertexBuffer::Unlock()
+{
+    DOHWAVertexBufferimpl->Unlock();
+    return S_OK;
 }

@@ -1,6 +1,4 @@
 #pragma once
-//Object는 World 코드를 어떻게 알지?
-
 class FPObject
 {
 	protected:

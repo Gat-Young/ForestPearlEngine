@@ -1,6 +1,7 @@
 #pragma once
 #include "./Object/Object.h"
 #include "FPLevel.h"
+#include "FPAGameMode.h"
 #include "GameProjectClassRegistry.h"
 #include <memory>
 #include <vector>
@@ -8,14 +9,24 @@
 #include <unordered_set>
 
 class FPLevel;
+class FPAGameMode;
+
 class FPWorld : public FPObject
 {
 	protected:
 		//Level List, 0번 Index는 PersistentLevel
-		std::vector<std::string> LevelList;
+		struct WorldContext
+		{
+			std::vector<std::string> LevelList;
+			std::string GameMode;
+		};
+
+		WorldContext WorldSetting;
 
 		std::unique_ptr<FPLevel> PersistentLevel;
 		std::unordered_map<std::string, std::unique_ptr<FPLevel>> StreamingLevel;
+
+		std::unique_ptr<FPAGameMode> GameMode;
 
 	public:
 		FPWorld() = default;
@@ -35,6 +46,9 @@ class FPWorld : public FPObject
 
 		//레벨 전환 멤버 함수
 		void OpenLevel(std::string LevelName);
+
+		//GameController 반환
+		FPAController* GetContorller(int index) { return GameMode->GetController(index); }
 
 
 		//Class Instance 생성 템플릿 함수

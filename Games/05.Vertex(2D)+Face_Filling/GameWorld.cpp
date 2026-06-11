@@ -5,9 +5,10 @@
 
 void GameWorld::Initialize()
 {
+	//World에서 사용되는 GameMode class 등록
+	WorldSetting.GameMode = "GameMode";
 	//World에서 사용되는 레벨 class 등록
-
-	LevelList.push_back("GameLevel");
+	WorldSetting.LevelList.push_back("GameLevel");
 	__super::Initialize();
 }
 

@@ -1,27 +1,22 @@
 #include "Triangle.h"
-#include "../../Engine/ForestPearlEngine/Object/Components/InputMappingContext.h"
-#include "../../Engine/ForestPearlEngine/Object/Components/InputAction.h"
-#include "../../Engine/ForestPearlEngine/Systems/InputSystem.h"
+#include "../../Engine/ForestPearlEngine/MeshComponent.h"
+#include "../../Engine/ForestPearlEngine/Define/FPMath.h"
+#include "../../Engine/ForestPearlEngine/FPAController.h"
+#include "../../Engine/ForestPearlEngine/FPWorld.h"
+#include "../../Engine/ForestPearlEngine/Object/Components/InputComponent.h"
+
 #include <iostream>
 
 void Triangle::Initialize()
 {
 	Mesh = new MeshComponent("Triangle");
-	IMC = new FPInputMappingContext();
-	FPInputSystem::GetInputSystem().AddActivatedIMC(IMC);
 
-	IA = new FPInputAction();
-	IA->BindMethod(this, EKeyState::Down, &Triangle::Move);
+	FPAController* Controller = GetWorld()->GetController(0);
 
+	if (Controller == nullptr)
+		return;
 
-	FMappingInfo MappingInfoW = { IA , 0b00000100 };
-	FMappingInfo MappingInfoA = { IA , 0b00001001 };
-	FMappingInfo MappingInfoS = { IA , 0b00000101 };
-	FMappingInfo MappingInfoD = { IA , 0b00001000 };
-	IMC->AddMappingKey('W', MappingInfoW);
-	IMC->AddMappingKey('A', MappingInfoA);
-	IMC->AddMappingKey('S', MappingInfoS);
-	IMC->AddMappingKey('D', MappingInfoD);
+	Controller->GetInputComponent().BindMethod(this, EKeyState::Pressed, &Triangle::Move);
 }
 
 void Triangle::BeginPlay()

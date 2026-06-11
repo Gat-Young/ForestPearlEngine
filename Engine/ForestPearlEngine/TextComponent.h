@@ -3,6 +3,7 @@
 
 struct UIContext
 {
+	bool active;
 	int x;
 	int y;
 	unsigned long color;
@@ -12,17 +13,18 @@ struct UIContext
 class TextComponent
 {
 	private:
+		bool active;
 		int x;
 		int y;
 		unsigned long color;
 		std::basic_string<TCHAR> msg;
 		UIContextItem* RenderItem = nullptr;
 
-		void RegistMeshRenderList();
+		void RegistTextRenderList();
 
 	public:
 		TextComponent();
 
-		void SetTextData(int x, int y, unsigned long color, std::basic_string<TCHAR> msg);
+		void SetTextData(bool active, int x, int y, unsigned long color, std::basic_string<TCHAR> msg);
 		~TextComponent();
 };

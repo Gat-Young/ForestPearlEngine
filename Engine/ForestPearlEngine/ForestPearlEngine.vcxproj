@@ -126,6 +126,8 @@
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="Define\FPMath.h" />
     <ClInclude Include="ForestPearlEngine.h" />
+    <ClInclude Include="FPAController.h" />
+    <ClInclude Include="FPAGameMode.h" />
     <ClInclude Include="FPGameInstance.h" />
     <ClInclude Include="FPLevel.h" />
     <ClInclude Include="FPWorld.h" />
@@ -147,6 +149,8 @@
   <ItemGroup>
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="ForestPearlEngine.cpp" />
+    <ClCompile Include="FPAController.cpp" />
+    <ClCompile Include="FPAGameMode.cpp" />
     <ClCompile Include="FPGameInstance.cpp" />
     <ClCompile Include="FPLevel.cpp" />
     <ClCompile Include="FPWorld.cpp" />

@@ -2,27 +2,39 @@
 #include "FPGameInstance.h"
 #include "FPLevel.h"
 
+void FPLevel::Initialize()
+{
+	for (std::string ActorName : ActorlList)
+	{
+		//게임에 사용할 엑터를 만든다.
+		GameActorList.push_back(GetWorld()->CreateClassInstnce<FPActor>(ActorName));
+		GameActorList.back()->SetOuter(this);
+		GameActorList.back()->Initialize();
+	}
+
+}
+
 void FPLevel::BeginPlay()
 {
-	for (FPObject* obj : GameObjectList)
+	for (FPActor* actor : GameActorList)
 	{
-		obj->BeginPlay();
+		actor->BeginPlay();
 	}
 }
 
 void FPLevel::Tick()
 {
-	for (FPObject* obj : GameObjectList)
+	for (FPActor* actor : GameActorList)
 	{
-		obj->Tick();
+		actor->Tick();
 	}
 }
 
 void FPLevel::UnLoadData()
 {
-	for (FPObject* obj : GameObjectList)
+	for (FPActor* actor : GameActorList)
 	{
-		delete(obj);
+		delete(actor);
 	}
 }
 

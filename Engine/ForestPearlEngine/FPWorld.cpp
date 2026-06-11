@@ -4,20 +4,30 @@
 
 void FPWorld::Initialize()
 {
-	if (!GameProjectClassRegistry::Get().HasFactory(LevelList[0])) { return; }
 
-	PersistentLevel.reset(CreateClassInstnce<FPLevel>(LevelList[0]));
+	if (!GameProjectClassRegistry::Get().HasFactory(WorldSetting.GameMode)) { return; }
+	GameMode.reset(CreateClassInstnce<FPAGameMode>(WorldSetting.GameMode));
+	GameMode->SetOuter(this);
+	GameMode->Initialize();
+
+	if (!GameProjectClassRegistry::Get().HasFactory(WorldSetting.LevelList[0])) { return; }
+
+	PersistentLevel.reset(CreateClassInstnce<FPLevel>(WorldSetting.LevelList[0]));
 	PersistentLevel->SetOuter(this);
 	PersistentLevel->Initialize();
+
 }
 
 void FPWorld::BeginPlay()
 {
+	GameMode->BeginPlay();
 	PersistentLevel->BeginPlay();
 }
 
 void FPWorld::Tick()
 {
+	GameMode->Tick();
+
 	PersistentLevel->Tick();
 
 	for (auto& Level : StreamingLevel)
@@ -55,7 +65,7 @@ void FPWorld::Finalize()
 
 void FPWorld::OpenLevel(std::string LevelName)
 {
-	if (std::find(LevelList.begin(), LevelList.end(), LevelName) == LevelList.end()) { return; }
+	if (std::find(WorldSetting.LevelList.begin(), WorldSetting.LevelList.end(), LevelName) == WorldSetting.LevelList.end()) { return; }
 	FPLevel* Level = CreateClassInstnce<FPLevel>(LevelName);
 
 	StreamingLevel[LevelName] = std::make_unique<FPLevel>(*Level);

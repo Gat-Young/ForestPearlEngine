@@ -5,6 +5,7 @@
 
 struct UIContextItem
 {
+	bool* active;
 	int* x;
 	int* y;
 	unsigned long* color;

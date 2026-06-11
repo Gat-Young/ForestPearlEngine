@@ -1,7 +1,5 @@
 #pragma once
 #include "Object.h"
-#include <vector>
-#include "../FPLevel.h"
 
 class FPActor : public FPObject
 {
@@ -23,5 +21,5 @@ class FPActor : public FPObject
 
 		virtual ~FPActor() = default;
 
-		virtual FPWorld* GetWorld() override final { return Outer->GetWorld(); };
+		virtual FPWorld* GetWorld() override final{ return Outer->GetWorld(); }
 };

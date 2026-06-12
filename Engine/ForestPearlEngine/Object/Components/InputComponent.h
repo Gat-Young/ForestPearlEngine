@@ -4,6 +4,7 @@
 #include "InputMappingContext.h"
 #include "../../Systems/KeyStateEnum.h"
 #include "../../Define/FPMath.h"
+#include "Windows.h"
 #include <iostream>
 
 class FPInputAction;
@@ -35,7 +36,7 @@ public:
 	void ProcessInputTick();
 
 private:
-	void ProcessKeyEvent(USHORT VKey, EKeyState KeyState);
+	bool ProcessKeyEvent(USHORT VKey, EKeyState KeyState);
 
 private:
 	FPInputAction* IA = nullptr;

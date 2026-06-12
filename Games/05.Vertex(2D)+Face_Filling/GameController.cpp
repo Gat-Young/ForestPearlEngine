@@ -4,8 +4,6 @@
 
 void GameController::Initialize()
 {
-	__super::Initialize();
-
 	FMappingInfo MappingInfoW = { ESwizzle::YZX , ENegative::Positive };
 	FMappingInfo MappingInfoA = { ESwizzle::XYZ , ENegative::Negative };
 	FMappingInfo MappingInfoS = { ESwizzle::YZX , ENegative::Negative };
@@ -14,6 +12,8 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey('A', MappingInfoA);
 	GetInputComponent().AddMappingKey('S', MappingInfoS);
 	GetInputComponent().AddMappingKey('D', MappingInfoD);
+
+	__super::Initialize();
 }
 
 void GameController::BeginPlay()

@@ -31,30 +31,34 @@ void FPInputComponent::ProcessInputTick()
 {
 	std::queue<std::pair<USHORT, EKeyState>>& InputQueue = FPInputSystem::GetInputSystem().GetInputQueue();
 
-	while (InputQueue.size() != 0)
+	int size = InputQueue.size();
+	while (size>0)
 	{
 		std::pair<USHORT, EKeyState> KeyEvent = InputQueue.front();
-		ProcessKeyEvent(KeyEvent.first, KeyEvent.second);
 		InputQueue.pop();
+		std::cout << KeyEvent.first << " : " << KeyEvent.second << "\n";
+		if (!ProcessKeyEvent(KeyEvent.first, KeyEvent.second))
+			InputQueue.push(KeyEvent);
+		size--;
 	}
 }
 
-void FPInputComponent::ProcessKeyEvent(USHORT VKey, EKeyState KeyState)
+bool FPInputComponent::ProcessKeyEvent(USHORT VKey, EKeyState KeyState)
 {
 	if (IMC == nullptr)
 	{
 		std::cout << "IMC null\n";
-		return;
+		return FALSE;
 	}
 	if (IA == nullptr)
 	{
 		std::cout << "IA null\n";
-		return;
+		return FALSE;
 	}
 
 	if ((KeyState != CallKeyState) && (CallKeyState != EKeyState::Pressed || KeyState != EKeyState::Down))
 	{
-		return;
+		return FALSE;
 	}
 
 	FMappingInfo MappingInfo;
@@ -64,7 +68,7 @@ void FPInputComponent::ProcessKeyEvent(USHORT VKey, EKeyState KeyState)
 	if (SearchResult == false)
 	{
 		//std::cout << "SearchResult false\n";
-		return;
+		return FALSE;
 	}
 
 	FPVector2 InputValue;
@@ -94,8 +98,10 @@ void FPInputComponent::ProcessKeyEvent(USHORT VKey, EKeyState KeyState)
 	if (!BindFuncPtr)
 	{
 		std::cout << "BindFuncPtr is NULL!\n";
-		return;
+		return FALSE;
 	}
 
 	BindFuncPtr(InputValue);
+
+	return TRUE;
 }

@@ -1,12 +1,15 @@
 #include "UI.h"
-#include "../../Engine/ForestPearlEngine/Object/Components/InputMappingContext.h"
-#include "../../Engine/ForestPearlEngine/Object/Components/InputAction.h"
-#include "../../Engine/ForestPearlEngine/Systems/InputSystem.h"
+//#include "../../Engine/ForestPearlEngine/Object/Components/InputMappingContext.h"
+//#include "../../Engine/ForestPearlEngine/Object/Components/InputAction.h"
+//#include "../../Engine/ForestPearlEngine/Systems/InputSystem.h"
+#include "../../Engine/ForestPearlEngine/Object/Components/InputComponent.h"
 #include <iostream>
 #include <Windows.h>
 
 void UI::Initialize()
 {
+	InputComponent = new FPInputComponent();
+
 	int UI_count = 6;
 	for (int i = 0; i < UI_count; ++i)
 	{
@@ -14,16 +17,20 @@ void UI::Initialize()
 		TextComponets.push_back(TextComponet);
 	}
 
-	IMC = new FPInputMappingContext();
-	FPInputSystem::GetInputSystem().AddActivatedIMC(IMC);
+	FMappingInfo MappingInfoF1 = { ESwizzle::YZX , ENegative::Positive };
+	InputComponent->AddMappingKey(VK_F1, MappingInfoF1);
+	InputComponent->BindMethod(this, EKeyState::Down, &UI::SetActiveViewHelp);
 
-	IA = new FPInputAction();
-	IA->BindMethod(this, EKeyState::Down, &UI::SetActiveViewHelp);
+	//IMC = new FPInputMappingContext();
+	//FPInputSystem::GetInputSystem().AddActivatedIMC(IMC);
+
+	//IA = new FPInputAction();
+	//IA->BindMethod(this, EKeyState::Down, &UI::SetActiveViewHelp);
 
 
-	FMappingInfo MappingInfoF1 = { IA , 0b00000000 };
+	//FMappingInfo MappingInfoF1 = { IA , 0b00000000 };
 
-	IMC->AddMappingKey(VK_F1, MappingInfoF1);
+	//IMC->AddMappingKey(VK_F1, MappingInfoF1);
 }
 
 
@@ -34,9 +41,9 @@ void UI::BeginPlay()
 
 void UI::Tick()
 {
+	InputComponent->ProcessInputTick();
 	ShowInfo();
 	CalFPS(1, 1);
-
 }
 
 void UI::CalFPS(int x, int y)

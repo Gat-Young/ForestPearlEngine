@@ -56,38 +56,16 @@ void FPInputSystem::HandleRawInput(LPARAM LParam)
     }
 }
 
-void FPInputSystem::AddActivatedIMC(FPInputMappingContext* IMC)
+bool FPInputSystem::bIsKeyDown(USHORT VKey)
 {
-    if (IMC == nullptr)
+    if (VKey < 256)
     {
-        std::cout << "IMC is null!\n";
-        return;
+        return KeyStates[VKey];
     }
-
-    auto it = std::find(ActivatedIMCs.begin(), ActivatedIMCs.end(), IMC);
-    if (it != ActivatedIMCs.end()) {
-        std::cout << "IMC is already exist!\n";
-        return;
-    }
-
-    ActivatedIMCs.push_back(IMC);
-}
-
-void FPInputSystem::RemoveActivatedIMC(FPInputMappingContext* IMC)
-{
-    if (IMC == nullptr)
+    else
     {
-        std::cout << "IMC is null!\n";
-        return;
+        return false;
     }
-
-    auto it = std::find(ActivatedIMCs.begin(), ActivatedIMCs.end(), IMC);
-    if (it == ActivatedIMCs.end()) {
-        std::cout << "IMC is already not exist!\n";
-        return;
-    }
-
-    ActivatedIMCs.erase(it, ActivatedIMCs.end());
 }
 
 void FPInputSystem::HandleMouseInput(RAWINPUT* RawInput)
@@ -109,22 +87,20 @@ void FPInputSystem::HandleKeyboardInput(RAWINPUT* RawInput)
     {
         EKeyState ChangedKeyState = EKeyState::None;
 
-        if (KeyStates[VKey] == true && KeyStates[VKey] == bIsDown)
+        if (KeyStates[VKey] == true && bIsDown == true)
         {
             ChangedKeyState = EKeyState::Pressed;
+            InputQueue.push(std::make_pair(VKey, ChangedKeyState));
         }
-        else if (KeyStates[VKey] == true && KeyStates[VKey] != bIsDown)
-        {
-            ChangedKeyState = EKeyState::Up;
-        }
-        else if (KeyStates[VKey] == false && KeyStates[VKey] != bIsDown)
+        else if (KeyStates[VKey] == false && bIsDown == true)
         {
             ChangedKeyState = EKeyState::Down;
+            InputQueue.push(std::make_pair(VKey, ChangedKeyState));
         }
-
-        for (FPInputMappingContext* IMC : ActivatedIMCs)
+        else if (KeyStates[VKey] == true && bIsDown == false)
         {
-            IMC->OnKeyStateChanged(VKey, ChangedKeyState);
+            ChangedKeyState = EKeyState::Up;
+            InputQueue.push(std::make_pair(VKey, ChangedKeyState));
         }
 
         KeyStates[VKey] = bIsDown;

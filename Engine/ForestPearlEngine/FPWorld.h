@@ -48,7 +48,7 @@ class FPWorld : public FPObject
 		void OpenLevel(std::string LevelName);
 
 		//GameController 반환
-		FPAController* GetContorller(int index) { return GameMode->GetController(index); }
+		FPAController* GetController(int index) { return GameMode->GetController(index); }
 
 
 		//Class Instance 생성 템플릿 함수

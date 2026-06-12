@@ -1,6 +1,6 @@
 #pragma once
 
-enum class EKeyState
+enum EKeyState
 {
 	None,
 	Down,

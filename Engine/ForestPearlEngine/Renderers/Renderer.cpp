@@ -96,7 +96,7 @@ void Renderer::ObjectRendering()
 {
 
 	FPRenderDevice->BeginScene();
-	FPRenderDevice->Clear(0, NULL, FPRHICLEAR_TARGET, FPRHICOLOR_COLORVALUE(0.0f, 0.0f, 1.0f, 1.0f), 1.0f, 0);
+	FPRenderDevice->Clear(0, NULL, FPRHICLEAR_TARGET, FPRHICOLOR_COLORVALUE(0, 0.12f, 0.35f, 1.0f), 1.0f, 0);
 
 	std::vector<MeshRenderItem> RenderList = MeshRenderList::Get().GetRenderList();
 	for (MeshRenderItem RenderItem : RenderList)

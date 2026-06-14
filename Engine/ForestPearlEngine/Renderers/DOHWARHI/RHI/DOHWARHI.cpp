@@ -162,6 +162,20 @@ DOHWARENDERSTATETYPE ChangeDOHWARENDERSTATETYPE(FPRHIRENDERSTATETYPE FPRHIRender
     }
 }
 
+//FPRHICULL To DOHWACULL 타입 변환기
+DOHWACULL ChangeDOHWACULL(DWORD FPRHICull)
+{
+    switch (FPRHICull)
+    {
+    case FPRHICULL_NONE:        return DOHWACULL_NONE;
+    case FPRHICULL_CW:          return DOHWACULL_CW;
+    case FPRHICULL_CCW:         return DOHWACULL_CCW;
+    case FPRHICULL_FORCE_DWORD: return DOHWACULL_FORCE_DWORD;
+
+    default:                    return DOHWACULL_FORCE_DWORD;
+    }
+}
+
 //FPRHIFILLMODE To DOHWAFILLMODE 타입 변환기
 DOHWAFILLMODE ChangeDOHWAFILLMODE(DWORD FPRHIFillMode)
 {
@@ -170,9 +184,9 @@ DOHWAFILLMODE ChangeDOHWAFILLMODE(DWORD FPRHIFillMode)
     case FPRHIFILL_POINT:           return DOHWAFILL_POINT;
     case FPRHIFILL_WIREFRAME:       return DOHWAFILL_WIREFRAME;
     case FPRHIFILL_SOLID:           return DOHWAFILL_SOLID;
-    case FPRHIFILL_FORCE_DWORD:     return DOHWAFILL_SOLID;
+    case FPRHIFILL_FORCE_DWORD:     return DOHWAFILL_FORCE_DWORD;
 
-    default:                        return DOHWAFILL_SOLID;
+    default:                        return DOHWAFILL_FORCE_DWORD;
     }
 }
 
@@ -373,9 +387,10 @@ HRESULT DOHWADeviceImpl::ReleaseDC(HDC hdc)
 HRESULT DOHWADeviceImpl::SetRenderState(FPRHIRENDERSTATETYPE State, DWORD Value)
 {
     DOHWARENDERSTATETYPE DOHWARenderStateType = ChangeDOHWARENDERSTATETYPE(State);
+
     if (DOHWARenderStateType == DOHWARS_CULLMODE)
     {
-        //Device->SetRenderState(DOHWARenderStateType, ChangeDOHWACULL(Value));
+        DohwaDevice->SetRenderState(DOHWARenderStateType, ChangeDOHWACULL(Value));
     }
 
     if (DOHWARenderStateType == DOHWARS_FILLMODE)

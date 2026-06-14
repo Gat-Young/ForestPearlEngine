@@ -18,6 +18,7 @@ void MeshComponent::RegistMeshRenderList()
 
 	RenderItem->VBIndex = &(this->VBIndex);
 	RenderItem->isFill = &(this->isFill);
+	RenderItem->isCull = &(this->isCull);
 }
 
 MeshComponent::~MeshComponent()

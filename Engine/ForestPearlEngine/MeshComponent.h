@@ -6,8 +6,11 @@ class MeshComponent
 {
 	private:
 		std::string MeshData;
+
 		int VBIndex;
 		bool isFill = true;
+		bool isCull = true;
+
 		MeshRenderItem* RenderItem = nullptr;
 
 		int LoadVertexBuffer();
@@ -19,4 +22,5 @@ class MeshComponent
 		~MeshComponent();
 
 		void SetMeshFill(bool State) { isFill = State; };
+		void SetMeshCull(bool State) { isCull = State; };
 };

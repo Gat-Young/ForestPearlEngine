@@ -102,7 +102,7 @@ void Renderer::ObjectRendering()
 	for (MeshRenderItem RenderItem : RenderList)
 	{
 		//렌더링 옵션 설정
-		FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_NONE);
+		FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, *(RenderItem.isCull) ? FPRHICULL_CCW : FPRHICULL_NONE);
 		//FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_CW);
 		//FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_CCW);
 

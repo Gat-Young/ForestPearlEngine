@@ -14,7 +14,11 @@ class Triangle : public FPActor
 		FPInputMappingContext* IMC;
 		FPInputAction* IA = nullptr;
 
+		FPInputMappingContext* IMC2;
+		FPInputAction* IA2 = nullptr;
+
 		bool isFill = true;
+		bool isCull = true;
 
 	public:
 		Triangle() = default;
@@ -24,4 +28,5 @@ class Triangle : public FPActor
 
 		void Move(FPVector2 value);
 		void SetFillTriangel(FPVector2 Value);
+		void SetCullTriangle(FPVector2 Value);
 };

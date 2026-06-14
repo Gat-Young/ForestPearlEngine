@@ -5,6 +5,7 @@ struct MeshRenderItem
 {
 	int* VBIndex = nullptr;
 	bool* isFill = nullptr;
+	bool* isCull = nullptr;
 };
 
 class MeshRenderList

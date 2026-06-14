@@ -141,6 +141,42 @@ DWORD ChangeDOHWAFVF_FORMAT(DWORD FPRHIFvf)
     return (D3DPosType | DXNormal | DXPsize | DXDiffuse | DXSpecular | DXTextCount | DXLastBeta);
 }
 
+//FPRHIRENDERSTATETYPE To DOHWARENDERSTATETYPE 타입 변환기
+DOHWARENDERSTATETYPE ChangeDOHWARENDERSTATETYPE(FPRHIRENDERSTATETYPE FPRHIRenderStateType)
+{
+    switch (FPRHIRenderStateType)
+    {
+    case FPRHIRS_ZENABLE:                   return DOHWARS_ZENABLE;
+    case FPRHIRS_FILLMODE:                  return DOHWARS_FILLMODE;
+    case FPRHIRS_ZWRITEENABLE:              return DOHWARS_ZWRITEENABLE;
+    case FPRHIRS_ALPHATESTENABLE:           return DOHWARS_ALPHATESTENABLE;
+    case FPRHIRS_CULLMODE:                  return DOHWARS_CULLMODE;
+    case FPRHIRS_ALPHABLENDENABLE:          return DOHWARS_ALPHABLENDENABLE;
+    case FPRHIRS_FOGENABLE:                 return DOHWARS_FOGENABLE;
+    case FPRHIRS_SPECULARENABLE:            return DOHWARS_SPECULARENABLE;
+    case FPRHIRS_LIGHTING:                  return DOHWARS_LIGHTING;
+    case FPRHIRS_AMBIENT:                   return DOHWARS_AMBIENT;
+
+    case FPRHIRS_FORCE_DWORD:               return DOHWARS_MAX_;
+    default:                                return DOHWARS_MAX_;
+    }
+}
+
+//FPRHIFILLMODE To DOHWAFILLMODE 타입 변환기
+DOHWAFILLMODE ChangeDOHWAFILLMODE(DWORD FPRHIFillMode)
+{
+    switch (FPRHIFillMode)
+    {
+    case FPRHIFILL_POINT:           return DOHWAFILL_POINT;
+    case FPRHIFILL_WIREFRAME:       return DOHWAFILL_WIREFRAME;
+    case FPRHIFILL_SOLID:           return DOHWAFILL_SOLID;
+    case FPRHIFILL_FORCE_DWORD:     return DOHWAFILL_SOLID;
+
+    default:                        return DOHWAFILL_SOLID;
+    }
+}
+
+
 //FPRHIUsages To DOHWAUsage 타입 변환기
 long ChangeDOHWAUsage(long FPRHIUsage)
 {
@@ -336,6 +372,16 @@ HRESULT DOHWADeviceImpl::ReleaseDC(HDC hdc)
 
 HRESULT DOHWADeviceImpl::SetRenderState(FPRHIRENDERSTATETYPE State, DWORD Value)
 {
+    DOHWARENDERSTATETYPE DOHWARenderStateType = ChangeDOHWARENDERSTATETYPE(State);
+    if (DOHWARenderStateType == DOHWARS_CULLMODE)
+    {
+        //Device->SetRenderState(DOHWARenderStateType, ChangeDOHWACULL(Value));
+    }
+
+    if (DOHWARenderStateType == DOHWARS_FILLMODE)
+    {
+        DohwaDevice->SetRenderState(DOHWARenderStateType, ChangeDOHWAFILLMODE(Value));
+    }
     return S_OK;
 }
 

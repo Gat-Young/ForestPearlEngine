@@ -17,6 +17,7 @@ void MeshComponent::RegistMeshRenderList()
 	RenderItem = MeshRenderList::Get().RegistRenderList();
 
 	RenderItem->VBIndex = &(this->VBIndex);
+	RenderItem->isFill = &(this->isFill);
 }
 
 MeshComponent::~MeshComponent()

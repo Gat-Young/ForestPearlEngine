@@ -7,6 +7,7 @@ class MeshComponent
 	private:
 		std::string MeshData;
 		int VBIndex;
+		bool isFill = true;
 		MeshRenderItem* RenderItem = nullptr;
 
 		int LoadVertexBuffer();
@@ -16,4 +17,6 @@ class MeshComponent
 		MeshComponent(std::string MeshPath);
 
 		~MeshComponent();
+
+		void SetMeshFill(bool State) { isFill = State; };
 };

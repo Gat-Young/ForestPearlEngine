@@ -48,14 +48,6 @@ HRESULT Renderer::InitializeRenderer(UINT DeviceVersion, HWND hwnd)
 											&FPRenderDevice									//생성된 장치의 포인터를 받을 포인터변수.
 										);
 
-	//렌더링 옵션..
-	FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_NONE);
-	//FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_CW);
-	//FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_CCW);
-
-	bool g_bShowFrame = false;
-	FPRenderDevice->SetRenderState(FPRHIRS_FILLMODE, (g_bShowFrame) ? FPRHIFILL_WIREFRAME : FPRHIFILL_SOLID);
-
 	//폰트 생성 및 설정
 	g_hSysFont = CreateFont(
 		12, 6,
@@ -102,12 +94,20 @@ int Renderer::MakeVB(std::vector<COLVTX> Vertex)
 
 void Renderer::ObjectRendering()
 {
+
 	FPRenderDevice->BeginScene();
 	FPRenderDevice->Clear(0, NULL, FPRHICLEAR_TARGET, FPRHICOLOR_COLORVALUE(0.0f, 0.0f, 1.0f, 1.0f), 1.0f, 0);
 
 	std::vector<MeshRenderItem> RenderList = MeshRenderList::Get().GetRenderList();
 	for (MeshRenderItem RenderItem : RenderList)
 	{
+		//렌더링 옵션 설정
+		FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_NONE);
+		//FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_CW);
+		//FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_CCW);
+
+		FPRenderDevice->SetRenderState(FPRHIRS_FILLMODE, *(RenderItem.isFill) ? FPRHIFILL_SOLID : FPRHIFILL_WIREFRAME);
+
 		//출력 스트림 설정
 		FPRenderDevice->SetStreamSource(0, FPVertexBufferList[*(RenderItem.VBIndex)], 0, sizeof(COLVTX));
 

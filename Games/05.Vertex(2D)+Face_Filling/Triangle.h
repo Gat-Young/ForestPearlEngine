@@ -14,6 +14,8 @@ class Triangle : public FPActor
 		FPInputMappingContext* IMC;
 		FPInputAction* IA = nullptr;
 
+		bool isFill = true;
+
 	public:
 		Triangle() = default;
 		virtual void Initialize() override;
@@ -21,4 +23,5 @@ class Triangle : public FPActor
 		virtual void Tick() override;
 
 		void Move(FPVector2 value);
+		void SetFillTriangel(FPVector2 Value);
 };

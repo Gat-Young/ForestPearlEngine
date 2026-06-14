@@ -26,8 +26,8 @@
     <ClCompile Include="FPRHI.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DOHWARHI\DOHWARHI.vcxproj">
-      <Project>{e57a5a88-b814-405f-a924-4c7b2bdbb47f}</Project>
+    <ProjectReference Include="..\DirectX\DirectX.vcxproj">
+      <Project>{f4ffd354-4744-4564-a189-9a7313a23754}</Project>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -2,6 +2,7 @@
 #include <d3d9.h>
 #include <wrl/client.h>
 #include <iostream>
+#include <cmath>
 
 #pragma comment(lib, "d3d9.lib")
 
@@ -118,6 +119,31 @@ D3DFORMAT ChangeD3DFORMAT(FPRHIFORMAT FPRHIFormat)
         case FPRHIFMT_CxV8U8:   return D3DFMT_CxV8U8;
 
         case FPRHIFMT_FORCE_DWORD:   return D3DFMT_FORCE_DWORD;
+    }
+}
+
+//FPRHITRANSFORMSTATETYPE To 타입 변환기
+D3DTRANSFORMSTATETYPE ChangeD3DTRANSFORMSTATETYPE(FPRHITRANSFORMSTATETYPE FPRHITransformStateType){
+    switch (FPRHITransformStateType)
+    {
+        case FPRHITS_VIEW:          return D3DTS_VIEW;
+        case FPRHITS_PROJECTION:	return D3DTS_PROJECTION;
+        case FPRHITS_TEXTURE0:	    return D3DTS_TEXTURE0;
+        case FPRHITS_TEXTURE1:	    return D3DTS_TEXTURE1;
+        case FPRHITS_TEXTURE2:	    return D3DTS_TEXTURE2;
+        case FPRHITS_TEXTURE3:	    return D3DTS_TEXTURE3;
+        case FPRHITS_TEXTURE4:	    return D3DTS_TEXTURE4;
+        case FPRHITS_TEXTURE5:	    return D3DTS_TEXTURE5;
+        case FPRHITS_TEXTURE6:	    return D3DTS_TEXTURE6;
+        case FPRHITS_TEXTURE7:	    return D3DTS_TEXTURE7;
+        case FPRHITS_FORCE_DWORD:	return D3DTS_FORCE_DWORD;
+
+        case 256:                   return D3DTS_WORLD;
+        case 257:                   return D3DTS_WORLD1;
+        case 258:                   return D3DTS_WORLD2;
+        case 259:                   return D3DTS_WORLD3;
+
+        default:                    return D3DTS_FORCE_DWORD;
     }
 }
 
@@ -510,6 +536,128 @@ D3DPRIMITIVETYPE ChangeD3DPRIMITIVETYPE(FPRHIPRIMITIVETYPE FPRHIPrmititiveType)
     }
 }
 
+///////////////////////////////////////////////////////
+// 
+// 업데이트로 인해 사라진 행렬 변환 수학 함수
+//
+///////////////////////////////////////////////////////
+
+
+void D3DMatrixMultiply(D3DMATRIX* A, D3DMATRIX* B)
+{
+    D3DMATRIX MultiMatrix;
+
+    MultiMatrix._11 = A->_11 * B->_11 + A->_12 * B->_21 + A->_13 * B->_31 + A->_14 * B->_41;
+    MultiMatrix._12 = A->_11 * B->_12 + A->_12 * B->_22 + A->_13 * B->_32 + A->_14 * B->_42;
+    MultiMatrix._13 = A->_11 * B->_13 + A->_12 * B->_23 + A->_13 * B->_33 + A->_14 * B->_43;
+    MultiMatrix._14 = A->_11 * B->_14 + A->_12 * B->_24 + A->_13 * B->_34 + A->_14 * B->_44;
+
+    MultiMatrix._21 = A->_21 * B->_11 + A->_22 * B->_21 + A->_23 * B->_31 + A->_24 * B->_41;
+    MultiMatrix._22 = A->_21 * B->_12 + A->_22 * B->_22 + A->_23 * B->_32 + A->_24 * B->_42;
+    MultiMatrix._23 = A->_21 * B->_13 + A->_22 * B->_23 + A->_23 * B->_33 + A->_24 * B->_43;
+    MultiMatrix._24 = A->_21 * B->_14 + A->_22 * B->_24 + A->_23 * B->_34 + A->_24 * B->_44;
+
+    MultiMatrix._31 = A->_31 * B->_11 + A->_32 * B->_21 + A->_33 * B->_31 + A->_34 * B->_41;
+    MultiMatrix._32 = A->_31 * B->_12 + A->_32 * B->_22 + A->_33 * B->_32 + A->_34 * B->_42;
+    MultiMatrix._33 = A->_31 * B->_13 + A->_32 * B->_23 + A->_33 * B->_33 + A->_34 * B->_43;
+    MultiMatrix._34 = A->_31 * B->_14 + A->_32 * B->_24 + A->_33 * B->_34 + A->_34 * B->_44;
+
+    MultiMatrix._41 = A->_41 * B->_11 + A->_42 * B->_21 + A->_43 * B->_31 + A->_44 * B->_41;
+    MultiMatrix._42 = A->_41 * B->_12 + A->_42 * B->_22 + A->_43 * B->_32 + A->_44 * B->_42;
+    MultiMatrix._43 = A->_41 * B->_13 + A->_42 * B->_23 + A->_43 * B->_33 + A->_44 * B->_43;
+    MultiMatrix._44 = A->_41 * B->_14 + A->_42 * B->_24 + A->_43 * B->_34 + A->_44 * B->_44;
+
+    //행렬 곱 반환
+    *A = MultiMatrix;
+}
+
+void D3DMatrixScale(D3DMATRIX* Matrix, float Scale[3])
+{
+    D3DMATRIX ScaleMatrix =
+    {
+        Scale[0], 0.0f, 0.0f, 0.0f,
+        0.0f, Scale[1], 0.0f, 0.0f,
+        0.0f, 0.0f, Scale[2], 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f,
+    };
+
+    D3DMatrixMultiply(Matrix, &ScaleMatrix);
+}
+
+#define Radian(degree) (degree * 3.141592f / 180.0f)
+
+//Pitch
+void D3DMatrixRotationPitch(D3DMATRIX* Matrix, float Rotation)
+{
+    D3DMATRIX RotationMatrixPitch =
+    {
+        1.0f, 0.0f,                   0.0f,                     0.0f,
+        0.0f, cosf(Radian(Rotation)), sinf(Radian(Rotation)),  0.0f,
+        0.0f, -sinf(Radian(Rotation)), cosf(Radian(Rotation)),   0.0f,
+        0.0f, 0.0f,                   0.0f,                     1.0f,
+    };
+
+    D3DMatrixMultiply(Matrix, &RotationMatrixPitch);
+}
+
+//Yaw
+void D3DMatrixRotationYaw(D3DMATRIX* Matrix, float Rotation)
+{
+    D3DMATRIX RotationMatrixYaw =
+    {
+        cosf(Radian(Rotation)),     0.0f,                   -sinf(Radian(Rotation)),     0.0f,
+        0.0f,                       1.0f,                   0.0f,                       0.0f,
+        sinf(Radian(Rotation)),    0.0f,                   cosf(Radian(Rotation)),     0.0f,
+        0.0f,                       0.0f,                   0.0f,                       1.0f,
+    };
+
+    D3DMatrixMultiply(Matrix, &RotationMatrixYaw);
+}
+
+//Roll
+void D3DMatrixRotationRoll(D3DMATRIX* Matrix, float Rotation)
+{
+    D3DMATRIX RotationMatrixRoll =
+    {
+        cosf(Radian(Rotation)),     sinf(Radian(Rotation)),                   0.0f,                     0.0f,
+        -sinf(Radian(Rotation)),     cosf(Radian(Rotation)),                    0.0f,                     0.0f,
+        0.0f,                       0.0f,                                      1.0f,                     0.0f,
+        0.0f,                       0.0f,                                      0.0f,                     1.0f,
+    };
+
+    D3DMatrixMultiply(Matrix, &RotationMatrixRoll);
+}
+void D3DMatrixRotation(D3DMATRIX* Matrix, float Rotation[3])
+{
+    D3DMATRIX RotationMatrix =
+    {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f,
+    };
+
+    D3DMatrixRotationRoll(&RotationMatrix, Rotation[2]);
+    D3DMatrixRotationPitch(&RotationMatrix, Rotation[0]);
+    D3DMatrixRotationYaw(&RotationMatrix, Rotation[1]);
+
+    D3DMatrixMultiply(Matrix, &RotationMatrix);
+}
+
+void D3DMatrixTransform(D3DMATRIX* Matrix, float Transform[3])
+{
+    D3DMATRIX TransformMatrix =
+    {
+        1.0f,         0.0f,         0.0f,         0.0f,
+        0.0f,         1.0f,         0.0f,         0.0f,
+        0.0f,         0.0f,         1.0f,         0.0f,
+        Transform[0], Transform[1], Transform[2], 1.0f,
+    };
+
+    D3DMatrixMultiply(Matrix, &TransformMatrix);
+
+}
+
 //////////////////////
 // DXVertexBufferImpl
 class DXVertexBufferImpl
@@ -580,6 +728,8 @@ class DXDeviceImpl
         HRESULT CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, FPRHIPOOL Pool, IDirect3DVertexBuffer9** ppVertexBuffedr, HANDLE* pSharedHandle);
         HRESULT SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9* pStreamData, UINT OffsetInBytes, UINT Stride);
         HRESULT SetFVF(DWORD FVF);
+
+        HRESULT SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRANSFORMMATRIX* pMatrix);
 };
 
 DXDeviceImpl::DXDeviceImpl() = default;
@@ -670,11 +820,15 @@ HRESULT DXDeviceImpl::SetRenderState(FPRHIRENDERSTATETYPE State, DWORD Value)
     {
         Device->SetRenderState(D3DRenderStateType, ChangeD3DCULL(Value));
     }
-
-    if (D3DRenderStateType == D3DRS_FILLMODE)
+    else if (D3DRenderStateType == D3DRS_FILLMODE)
     {
         Device->SetRenderState(D3DRenderStateType, ChangeD3DFILLMODE(Value));
     }
+    else
+    {
+        Device->SetRenderState(D3DRenderStateType, Value);
+    }
+
     return S_OK;
 }
 
@@ -701,6 +855,41 @@ HRESULT DXDeviceImpl::SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9*
 HRESULT DXDeviceImpl::SetFVF(DWORD FVF)
 {
     Device->SetFVF(ChangeD3DFVF_FORMAT(FVF));
+    return S_OK;
+}
+
+HRESULT DXDeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRANSFORMMATRIX* pMatrix)
+{
+    D3DTRANSFORMSTATETYPE TransformStateType = ChangeD3DTRANSFORMSTATETYPE(State);
+
+    D3DMATRIX DMatrix = 
+    {
+    1.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 1.0f,
+    };
+
+    if (TransformStateType >= D3DTS_WORLD && TransformStateType <= D3DTS_WORLD3)
+    {
+        //스케일 처리.
+        //..
+        float scale[3] = { pMatrix->scale_x, pMatrix->scale_y, pMatrix->scale_z };
+        D3DMatrixScale(&DMatrix, scale);
+        
+        //회전 처리.
+        //
+        float rotation[3] = { pMatrix->rotation_x, pMatrix->rotation_y, pMatrix->rotation_z };
+        D3DMatrixRotation(&DMatrix, rotation);
+        
+        //이동 처리.
+        //
+        float position[3] = { pMatrix->position_x, pMatrix->position_y, pMatrix->position_z };
+        //D3DMatrixTransform(&DMatrix, position);
+
+    }
+
+    Device->SetTransform(TransformStateType, &DMatrix);
     return S_OK;
 }
 
@@ -873,6 +1062,13 @@ HRESULT DXRHIDevice::SetStreamSource(UINT StreamNumber, FPRHIVertexBuffer* pStre
 HRESULT DXRHIDevice::SetFVF(DWORD FVF)
 {
     DXDeviceimpl->SetFVF(FVF);
+    return S_OK;
+}
+
+HRESULT DXRHIDevice::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRANSFORMMATRIX* pMatrix)
+{
+    DXDeviceimpl->SetTransform(State, pMatrix);
+
     return S_OK;
 }
 

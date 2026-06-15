@@ -22,6 +22,8 @@ class Triangle : public FPActor
 		bool isFill = true;
 		bool isCull = true;
 
+		float angle = 0;
+
 	public:
 		Triangle() = default;
 		virtual void Initialize() override;

@@ -74,3 +74,8 @@ void FPWorld::OpenLevel(std::string LevelName)
 
 	StreamingLevel[LevelName]->BeginPlay();
 }
+
+GameTimer* FPWorld::GetGameTimer()
+{
+	return FPGameInstance::Get().GetGameTimer();
+}

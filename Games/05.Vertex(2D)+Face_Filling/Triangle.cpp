@@ -1,7 +1,10 @@
 #include "Triangle.h"
-#include "../../Engine/ForestPearlEngine/Object/Components/InputMappingContext.h"
-#include "../../Engine/ForestPearlEngine/Object/Components/InputAction.h"
-#include "../../Engine/ForestPearlEngine/Systems/InputSystem.h"
+#include "../../Engine/ForestPearlEngine/MeshComponent.h"
+#include "../../Engine/ForestPearlEngine/Define/FPMath.h"
+#include "../../Engine/ForestPearlEngine/FPAController.h"
+#include "../../Engine/ForestPearlEngine/FPWorld.h"
+#include "../../Engine/ForestPearlEngine/Object/Components/InputComponent.h"
+
 #include <iostream>
 
 void Triangle::Initialize()

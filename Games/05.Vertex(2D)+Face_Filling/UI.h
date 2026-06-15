@@ -4,15 +4,19 @@
 #include "../../Engine/ForestPearlEngine/Systems/KeyStateEnum.h"
 #include "../../Engine/ForestPearlEngine/Define/FPMath.h"
 
-class FPInputMappingContext;
-class FPInputAction;
+//class FPInputMappingContext;
+//class FPInputAction;
+class FPInputComponent;
 
 class UI : public FPActor
 {
 	private:
 		std::vector<TextComponent*> TextComponets;
-		FPInputMappingContext*	IMC;
-		FPInputAction* IA = nullptr;
+
+		FPInputComponent* InputComponent;
+
+		//FPInputMappingContext*	IMC;
+		//FPInputAction* IA = nullptr;
 		bool bShow = true;
 
 	public:
@@ -23,4 +27,5 @@ class UI : public FPActor
 		void ShowInfo();
 		void SetUIContext(int index, bool actieve, int x, int y, unsigned long color, std::basic_string<TCHAR> text);
 		void SetActiveViewHelp(FPVector2 value);
+		FPInputComponent& GetInputComponent() { return *InputComponent; }
 };

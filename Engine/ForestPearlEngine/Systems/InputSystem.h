@@ -2,7 +2,8 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <vector>
+#include <queue>
+#include <utility>
 
 class FPInputMappingContext;
 
@@ -16,8 +17,9 @@ public:
 
 	void HandleRawInput(LPARAM LParam);
 
-	void AddActivatedIMC(FPInputMappingContext* IMC);
-	void RemoveActivatedIMC(FPInputMappingContext* IMC);
+	bool bIsKeyDown(USHORT VKey);
+
+	std::queue<std::pair<USHORT, enum EKeyState>>& GetInputQueue() { return InputQueue; }
 
 private:
 	void HandleMouseInput(RAWINPUT* RawInput);
@@ -26,6 +28,6 @@ private:
 private:
 	int  MouseX = 0, MouseY = 0;
 	bool KeyStates[256] = {false};
-	std::vector<FPInputMappingContext*> ActivatedIMCs;
+	std::queue<std::pair<USHORT, enum EKeyState>> InputQueue;
 };
 

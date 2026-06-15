@@ -139,6 +139,7 @@
     <ClInclude Include="MeshRenderList.h" />
     <ClInclude Include="Object\Actor.h" />
     <ClInclude Include="Object\Components\InputAction.h" />
+    <ClInclude Include="Object\Components\InputComponent.h" />
     <ClInclude Include="Object\Components\InputMappingContext.h" />
     <ClInclude Include="Object\Object.h" />
     <ClInclude Include="Renderers\Renderer.h" />
@@ -166,6 +167,7 @@
     </ClCompile>
     <ClCompile Include="MeshRenderList.cpp" />
     <ClCompile Include="Object\Components\InputAction.cpp" />
+    <ClCompile Include="Object\Components\InputComponent.cpp" />
     <ClCompile Include="Object\Components\InputMappingContext.cpp" />
     <ClCompile Include="Renderers\Renderer.cpp" />
     <ClCompile Include="Systems\InputSystem.cpp" />

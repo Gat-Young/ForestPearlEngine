@@ -12,5 +12,5 @@ class Triangle : public FPActor
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
 
-		void Move(struct FPVector2 value);
+		void Move(struct FInputValue value);
 };

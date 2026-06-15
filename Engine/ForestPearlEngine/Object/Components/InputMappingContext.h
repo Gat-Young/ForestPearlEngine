@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <string>
 #include "../../Systems/KeyStateEnum.h"
 
 class FPInputAction;
@@ -17,7 +18,7 @@ enum class ENegative : bool
 	Positive = true
 };
 
-struct FMappingInfo
+struct FModifyInfo
 {
 	ESwizzle Swizzle = ESwizzle::XYZ;
 	ENegative bIsPositive = ENegative::Positive;
@@ -28,12 +29,11 @@ typedef unsigned short USHORT;
 class FPInputMappingContext
 {
 public:
-	void AddMappingKey(USHORT VKey, FMappingInfo MappingInfo);
-	bool SearchMappingInfo(USHORT VKey, FMappingInfo& OutMappingInfo);
+	void AddMappingKey(std::string IANAme, USHORT VKey, FModifyInfo MappingInfo);
+	bool SearchMappingInfo(USHORT VKey, std::string& IANAme, FModifyInfo& OutMappingInfo);
 	//void RemoveMappingKey(USHORT VKey);
 
 private:
-	std::map<USHORT/*Key*/, FMappingInfo> MappingKeys;
-
+	std::map<USHORT/*Key*/, std::pair<std::string, FModifyInfo>> MappingKeys;
 };
 

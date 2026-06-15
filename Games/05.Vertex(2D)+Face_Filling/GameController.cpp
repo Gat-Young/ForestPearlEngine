@@ -4,14 +4,15 @@
 
 void GameController::Initialize()
 {
-	FMappingInfo MappingInfoW = { ESwizzle::YZX , ENegative::Positive };
-	FMappingInfo MappingInfoA = { ESwizzle::XYZ , ENegative::Negative };
-	FMappingInfo MappingInfoS = { ESwizzle::YZX , ENegative::Negative };
-	FMappingInfo MappingInfoD = { ESwizzle::XYZ , ENegative::Positive };
-	GetInputComponent().AddMappingKey('W', MappingInfoW);
-	GetInputComponent().AddMappingKey('A', MappingInfoA);
-	GetInputComponent().AddMappingKey('S', MappingInfoS);
-	GetInputComponent().AddMappingKey('D', MappingInfoD);
+	FModifyInfo ModifyInfoW = { ESwizzle::YZX , ENegative::Positive };
+	FModifyInfo ModifyInfoA = { ESwizzle::XYZ , ENegative::Negative };
+	FModifyInfo ModifyInfoS = { ESwizzle::YZX , ENegative::Negative };
+	FModifyInfo ModifyInfoD = { ESwizzle::XYZ , ENegative::Positive };
+	//GetInputComponent().AddMappingKey("IA_Move", VK_LBUTTON, ModifyInfoD);
+	GetInputComponent().AddMappingKey("IA_Move", 'W', ModifyInfoW);
+	GetInputComponent().AddMappingKey("IA_Move", 'A', ModifyInfoA);
+	GetInputComponent().AddMappingKey("IA_Move", 'S', ModifyInfoS);
+	GetInputComponent().AddMappingKey("IA_Move", 'D', ModifyInfoD);
 
 	__super::Initialize();
 }

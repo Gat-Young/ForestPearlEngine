@@ -2,14 +2,15 @@
 //#include "../../Engine/ForestPearlEngine/Object/Components/InputMappingContext.h"
 //#include "../../Engine/ForestPearlEngine/Object/Components/InputAction.h"
 //#include "../../Engine/ForestPearlEngine/Systems/InputSystem.h"
+#include "../../Engine/ForestPearlEngine/FPWorld.h"
+#include "../../Engine/ForestPearlEngine/FPAController.h"
 #include "../../Engine/ForestPearlEngine/Object/Components/InputComponent.h"
+#include "../../Engine/ForestPearlEngine/InputValue.h"
 #include <iostream>
 #include <Windows.h>
 
 void UI::Initialize()
 {
-	InputComponent = new FPInputComponent();
-
 	int UI_count = 6;
 	for (int i = 0; i < UI_count; ++i)
 	{
@@ -17,9 +18,17 @@ void UI::Initialize()
 		TextComponets.push_back(TextComponet);
 	}
 
-	FMappingInfo MappingInfoF1 = { ESwizzle::YZX , ENegative::Positive };
-	InputComponent->AddMappingKey(VK_F1, MappingInfoF1);
-	InputComponent->BindMethod(this, EKeyState::Down, &UI::SetActiveViewHelp);
+	FPAController* Controller = GetWorld()->GetController(0);
+
+	if (Controller == nullptr)
+		return;
+
+	FModifyInfo ModifyInfoF1 = { ESwizzle::YZX , ENegative::Positive };
+	Controller->GetInputComponent().AddMappingKey("IA_InfoOff", VK_F1, ModifyInfoF1);
+
+	Controller->GetInputComponent().BindMethod("IA_InfoOff", this, EKeyState::Pressed, &UI::SetActiveViewHelp);
+
+	//InputComponent->BindMethod(this, EKeyState::Down, &UI::SetActiveViewHelp);
 
 	//IMC = new FPInputMappingContext();
 	//FPInputSystem::GetInputSystem().AddActivatedIMC(IMC);
@@ -87,7 +96,7 @@ void UI::SetUIContext(int index, bool actieve, int x, int y, unsigned long color
 	this->TextComponets[index]->SetTextData(actieve, x, y, color, text);
 }
 
-void UI::SetActiveViewHelp(FPVector2 value)
+void UI::SetActiveViewHelp(FInputValue value)
 {
 	std::cout << "F1 : ";
 	bShow = !(bShow);

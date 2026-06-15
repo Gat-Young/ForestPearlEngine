@@ -71,6 +71,54 @@ bool FPInputSystem::bIsKeyDown(USHORT VKey)
 void FPInputSystem::HandleMouseInput(RAWINPUT* RawInput)
 {
     //std::cout << "HandleMouseInput Begin\n";
+
+    RAWMOUSE& m = RawInput->data.mouse;
+
+    bool isAbsolute = (m.usFlags & MOUSE_MOVE_ABSOLUTE) != 0;
+    static int  rawDeltaX = 0, rawDeltaY = 0;
+    static int  mouseX = 0, mouseY = 0;
+
+    USHORT VKey;
+    EKeyState ChangedKeyState = EKeyState::None;
+
+    if (m.usButtonFlags & RI_MOUSE_LEFT_BUTTON_DOWN)
+    {
+        VKey = VK_LBUTTON;
+        ChangedKeyState = EKeyState::Down;
+    }
+    else if (m.usButtonFlags & RI_MOUSE_LEFT_BUTTON_UP)
+    {
+        VKey = VK_LBUTTON;
+        ChangedKeyState = EKeyState::Up;
+    }
+    else if (m.usButtonFlags & RI_MOUSE_RIGHT_BUTTON_DOWN)
+    {
+        VKey = VK_RBUTTON;
+        ChangedKeyState = EKeyState::Down;
+    }
+    else if (m.usButtonFlags & RI_MOUSE_RIGHT_BUTTON_UP)
+    {
+        VKey = VK_RBUTTON;
+        ChangedKeyState = EKeyState::Up;
+    }
+    else if (m.usButtonFlags & RI_MOUSE_MIDDLE_BUTTON_DOWN)
+    {
+        VKey = VK_MBUTTON;
+        ChangedKeyState = EKeyState::Down;
+    }
+    else
+    {
+        return;
+    }
+
+    POINT pt;
+    HWND hwnd = GetActiveWindow();
+    GetCursorPos(&pt);
+    ScreenToClient(hwnd, &pt);
+    FInputValue InputValue = { pt.x, pt.y, 0.0f, true, 0.0f };
+
+    FKeyInputInfo KeyInputInfo = { VKey, ChangedKeyState, InputValue };
+    InputQueue.push(KeyInputInfo);
 }
 
 void FPInputSystem::HandleKeyboardInput(RAWINPUT* RawInput)
@@ -90,19 +138,20 @@ void FPInputSystem::HandleKeyboardInput(RAWINPUT* RawInput)
         if (KeyStates[VKey] == true && bIsDown == true)
         {
             ChangedKeyState = EKeyState::Pressed;
-            InputQueue.push(std::make_pair(VKey, ChangedKeyState));
         }
         else if (KeyStates[VKey] == false && bIsDown == true)
         {
             ChangedKeyState = EKeyState::Down;
-            InputQueue.push(std::make_pair(VKey, ChangedKeyState));
         }
         else if (KeyStates[VKey] == true && bIsDown == false)
         {
             ChangedKeyState = EKeyState::Up;
-            InputQueue.push(std::make_pair(VKey, ChangedKeyState));
         }
 
+        FInputValue InputValue = { 1.0f, 0.0f, 0.0f, true, 1.0f };
+        FKeyInputInfo KeyInputInfo = { VKey, ChangedKeyState, InputValue };
+
+        InputQueue.push(KeyInputInfo);
         KeyStates[VKey] = bIsDown;
     }
 }

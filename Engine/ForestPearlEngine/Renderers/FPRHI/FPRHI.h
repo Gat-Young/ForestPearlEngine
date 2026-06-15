@@ -32,6 +32,8 @@ class FPRHIDevice
         virtual HRESULT SetStreamSource(UINT StreamNumber, FPRHIVertexBuffer* pStreamData, UINT OffsetInBytes, UINT Stride) = 0;
         virtual HRESULT SetFVF(DWORD FVF) = 0;
 
+        virtual HRESULT SetTransform(FPRHITRANSFORMSTATETYPE State, CONST FPRHITRANSFORMMATRIX* pMatrix) = 0;
+
 };
 
 //Rendering Hardware Interface

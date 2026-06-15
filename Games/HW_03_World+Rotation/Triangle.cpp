@@ -2,12 +2,14 @@
 #include "../../Engine/ForestPearlEngine/Object/Components/InputMappingContext.h"
 #include "../../Engine/ForestPearlEngine/Object/Components/InputAction.h"
 #include "../../Engine/ForestPearlEngine/Systems/InputSystem.h"
+#include "../../Engine/ForestPearlEngine/GameTimer.h"
+#include "../../Engine/ForestPearlEngine/FPWorld.h"
 #include <iostream>
 
 void Triangle::Initialize()
 {
 	Transform = new TransformCompoenent();
-	Transform->transfrom.position.x = 0.0f;
+	Transform->transfrom.position.x = 30.0f;
 	Transform->transfrom.position.y = 0.0f;
 	Transform->transfrom.position.z = 0.0f;
 
@@ -16,10 +18,10 @@ void Triangle::Initialize()
 	Transform->transfrom.rotation.z = 0.0f;
 
 	Transform->transfrom.scale.x = 1.0f;
-	Transform->transfrom.scale.x = 1.0f;
-	Transform->transfrom.scale.x = 1.0f;
+	Transform->transfrom.scale.y = 1.0f;
+	Transform->transfrom.scale.z = 1.0f;
 
-	Mesh = new MeshComponent("Triangle", &(Transform->transfrom));
+	Mesh = new MeshComponent("Triangle2", &(Transform->transfrom));
 	IMC = new FPInputMappingContext();
 	FPInputSystem::GetInputSystem().AddActivatedIMC(IMC);
 
@@ -35,16 +37,6 @@ void Triangle::Initialize()
 	IA2->BindMethod(this, EKeyState::Down, &Triangle::SetCullTriangle);
 	FMappingInfo MappingInfoSpace2 = { IA2,0b00000100 };
 	IMC2->AddMappingKey(VK_F5, MappingInfoSpace2);
-
-	//FMappingInfo MappingInfoW = { IA , 0b00000100 };
-	//FMappingInfo MappingInfoA = { IA , 0b00001001 };
-	//FMappingInfo MappingInfoS = { IA , 0b00000101 };
-	//FMappingInfo MappingInfoD = { IA , 0b00001000 };
-
-	//IMC->AddMappingKey('W', MappingInfoW);
-	//IMC->AddMappingKey('A', MappingInfoA);
-	//IMC->AddMappingKey('S', MappingInfoS);
-	//IMC->AddMappingKey('D', MappingInfoD);
 }
 
 void Triangle::BeginPlay()
@@ -53,6 +45,8 @@ void Triangle::BeginPlay()
 
 void Triangle::Tick()
 {
+	angle += 3.141592f * 0.5f * 1/GetWorld()->GetGameTimer()->DeltaTimeMS();
+	Transform->transfrom.rotation.z = angle;
 }
 
 void Triangle::Move(FPVector2 Value)

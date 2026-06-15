@@ -11,9 +11,9 @@ Renderer::Renderer()
 {
 }
 
-COLVTX MakeCOLVTX(float x, float y, float z, float rhw, DWORD color)
+COLVTX MakeCOLVTX(float x, float y, float z, DWORD color)
 {
-	return COLVTX{ x, y, z, rhw, color };
+	return COLVTX{ x, y, z, color };
 }
 
 HRESULT Renderer::InitializeRenderer(UINT DeviceVersion, HWND hwnd)
@@ -101,6 +101,9 @@ void Renderer::ObjectRendering()
 	std::vector<MeshRenderItem> RenderList = MeshRenderList::Get().GetRenderList();
 	for (MeshRenderItem RenderItem : RenderList)
 	{
+		//조명 끄기
+		FPRenderDevice->SetRenderState(FPRHIRS_LIGHTING, FALSE);
+
 		//렌더링 옵션 설정
 		FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, *(RenderItem.isCull) ? FPRHICULL_CCW : FPRHICULL_NONE);
 		//FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_CW);
@@ -114,8 +117,25 @@ void Renderer::ObjectRendering()
 		//정점 형식 설정
 		FPRenderDevice->SetFVF(FVF_COLVTX);
 
+		FPRHITRANSFORMMATRIX g_mTM; //변환 행렬
+
+		g_mTM.position_x = RenderItem.transform->position.x;
+		g_mTM.position_y = RenderItem.transform->position.y;
+		g_mTM.position_z = RenderItem.transform->position.z;
+
+		g_mTM.rotation_x = RenderItem.transform->rotation.x;
+		g_mTM.rotation_y = RenderItem.transform->rotation.y;
+		g_mTM.rotation_z = RenderItem.transform->rotation.z;
+
+		g_mTM.scale_x = RenderItem.transform->scale.x;
+		g_mTM.scale_y = RenderItem.transform->scale.y;
+		g_mTM.scale_z = RenderItem.transform->scale.z;
+
+		//월드 변환 행렬 설정 : 렌더링 전에 설정 되어야 합니다.
+		FPRenderDevice->SetTransform(FPRHITS_WORLD, &g_mTM);		//★ 
+
 		//기하데이터 그리기
-		FPRenderDevice->DrawPrimitive(FPRHIPT_TRIANGLELIST, 0, 6);    //Face 6 개 그리기
+		FPRenderDevice->DrawPrimitive(FPRHIPT_TRIANGLELIST, 0, *(RenderItem.FaceSize));    //Face 그리기
 	}
 
 	FPRenderDevice->EndScene();

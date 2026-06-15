@@ -1,11 +1,12 @@
 #pragma once
 #include "GameProjectClassRegistry.h"
+#include "GameTimer.h"
 #include "FPWorld.h"
 
 class FPGameInstance
 {
 	private:
-		FPGameInstance() = default;
+		FPGameInstance() { Gametimer = new GameTimer; };
 		~FPGameInstance() = default;
 
 		FPGameInstance(const FPGameInstance&) = delete;
@@ -18,6 +19,8 @@ class FPGameInstance
 		};
 
 		WorldContext GameWorld;
+
+		GameTimer* Gametimer;
 
 	public:
 		//Single Tone
@@ -32,6 +35,8 @@ class FPGameInstance
 
 		//월드 반환
 		FPWorld* GetWorld();
+
+		GameTimer* GetGameTimer() { return Gametimer; }
 
 		void Initialize();
 		void BeginPlay();

@@ -19,22 +19,27 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FPRHI.h" />
-    <ClInclude Include="FPRHITypes.h" />
+    <ClInclude Include="GameController.h" />
+    <ClInclude Include="GameLevel.h" />
+    <ClInclude Include="GameMode.h" />
+    <ClInclude Include="GameWorld.h" />
+    <ClInclude Include="Triangle.h" />
+    <ClInclude Include="UI.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FPRHI.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DirectX\DirectX.vcxproj">
-      <Project>{f4ffd354-4744-4564-a189-9a7313a23754}</Project>
-    </ProjectReference>
+    <ClCompile Include="GameController.cpp" />
+    <ClCompile Include="GameLevel.cpp" />
+    <ClCompile Include="GameMode.cpp" />
+    <ClCompile Include="GameWorld.cpp" />
+    <ClCompile Include="GameProjectLoader.cpp" />
+    <ClCompile Include="Triangle.cpp" />
+    <ClCompile Include="UI.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{a95d12e7-e8be-48f1-8cc1-ceba3c37a5fe}</ProjectGuid>
-    <RootNamespace>FPRHI</RootNamespace>
+    <ProjectGuid>{3d64de99-9fc1-4052-aad8-97fc31bf41df}</ProjectGuid>
+    <RootNamespace>HW_03_World_Rotation</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

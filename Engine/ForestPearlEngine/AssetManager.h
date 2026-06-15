@@ -7,7 +7,6 @@ struct FPMesh
 	float x;
 	float y;
 	float z;
-	float w;
 	unsigned long color;
 };
 
@@ -37,6 +36,6 @@ class AssetManager
 			return Instance;
 		}
 
-		int LordVertexVuffer(std::string MeshPath);
+		std::pair<int, int> LordVertexVuffer(std::string MeshPath);
 		void SetRenderer(Renderer* Renderer);
 };

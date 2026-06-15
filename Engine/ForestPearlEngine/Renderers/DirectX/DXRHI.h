@@ -51,6 +51,8 @@ class DXRHIDevice : public FPRHIDevice
         HRESULT CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, FPRHIPOOL Pool, FPRHIVertexBuffer** ppVertexBuffedr, HANDLE* pSharedHandle) override;
         HRESULT SetStreamSource(UINT StreamNumber, FPRHIVertexBuffer* pStreamData, UINT OffsetInBytes, UINT Stride) override;
         HRESULT SetFVF(DWORD FVF) override;
+
+        HRESULT SetTransform(FPRHITRANSFORMSTATETYPE State, CONST FPRHITRANSFORMMATRIX* pMatrix) override;
 };
 
 class DXRHI : public FPRHI

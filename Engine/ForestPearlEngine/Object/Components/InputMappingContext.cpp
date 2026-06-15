@@ -3,17 +3,18 @@
 #include "../../Define/FPMath.h"
 #include <iostream>
 
-void FPInputMappingContext::AddMappingKey(USHORT VKey, FMappingInfo MappingInfo)
+void FPInputMappingContext::AddMappingKey(std::string IANAme, USHORT VKey, FModifyInfo MappingInfo)
 {
 	//std::cout << "AddMappingKey :: " << VKey << "\n";
-	MappingKeys.insert({ VKey, MappingInfo });
+	MappingKeys.insert({ VKey, { IANAme, MappingInfo } });
 }
 
-bool FPInputMappingContext::SearchMappingInfo(USHORT VKey, FMappingInfo& OutMappingInfo)
+bool FPInputMappingContext::SearchMappingInfo(USHORT VKey, std::string& IANAme, FModifyInfo& OutMappingInfo)
 {
 	if (MappingKeys.find(VKey) != MappingKeys.end())
 	{
-		OutMappingInfo = MappingKeys[VKey];
+		IANAme = MappingKeys[VKey].first;
+		OutMappingInfo = MappingKeys[VKey].second;
 		return true;
 	}
 	else

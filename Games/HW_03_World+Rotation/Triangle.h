@@ -7,17 +7,13 @@
 
 class FPInputMappingContext;
 class FPInputAction;
+struct FInputValue;
 
 class Triangle : public FPActor
 {
 	private:
 		TransformCompoenent* Transform;
 		MeshComponent* Mesh;
-		FPInputMappingContext* IMC;
-		FPInputAction* IA = nullptr;
-
-		FPInputMappingContext* IMC2;
-		FPInputAction* IA2 = nullptr;
 
 		bool isFill = true;
 		bool isCull = true;
@@ -30,7 +26,7 @@ class Triangle : public FPActor
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
 
-		void Move(FPVector2 value);
-		void SetFillTriangel(FPVector2 Value);
-		void SetCullTriangle(FPVector2 Value);
+		void Move(FInputValue value);
+		void SetFillTriangel(FInputValue Value);
+		void SetCullTriangle(FInputValue Value);
 };

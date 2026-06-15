@@ -4,6 +4,14 @@
 #include <windows.h>
 #include <queue>
 #include <utility>
+#include "../InputValue.h"
+
+struct FKeyInputInfo
+{
+	USHORT VKey;
+	enum EKeyState KeyState;
+	struct FInputValue InputValue;
+};
 
 class FPInputMappingContext;
 
@@ -19,7 +27,7 @@ public:
 
 	bool bIsKeyDown(USHORT VKey);
 
-	std::queue<std::pair<USHORT, enum EKeyState>>& GetInputQueue() { return InputQueue; }
+	std::queue<FKeyInputInfo>& GetInputQueue() { return InputQueue; }
 
 private:
 	void HandleMouseInput(RAWINPUT* RawInput);
@@ -28,6 +36,6 @@ private:
 private:
 	int  MouseX = 0, MouseY = 0;
 	bool KeyStates[256] = {false};
-	std::queue<std::pair<USHORT, enum EKeyState>> InputQueue;
+	std::queue<FKeyInputInfo> InputQueue;
 };
 

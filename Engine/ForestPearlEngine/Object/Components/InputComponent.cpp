@@ -5,21 +5,23 @@
 
 FPInputComponent::FPInputComponent()
 {
-
-	IA = new FPInputAction();
 	IMC = new FPInputMappingContext();
 }
 
 FPInputComponent::~FPInputComponent()
 {
-	delete IA;
 	delete IMC;
+
+	for (auto& pair : ActivatedIA) {
+		delete pair.second;
+	}
+	ActivatedIA.clear();
 }
 
-void FPInputComponent::AddMappingKey(USHORT VKey, FMappingInfo MappingInfo)
+void FPInputComponent::AddMappingKey(std::string IANAme, USHORT VKey, FModifyInfo MappingInfo)
 {
 	//std::cout << "AddMappingKey Begin\n";
-	IMC->AddMappingKey(VKey, MappingInfo);
+	IMC->AddMappingKey(IANAme, VKey, MappingInfo);
 }
 
 //void FPInputComponent::RemoveMappingKey(USHORT VKey)
@@ -29,41 +31,38 @@ void FPInputComponent::AddMappingKey(USHORT VKey, FMappingInfo MappingInfo)
 
 void FPInputComponent::ProcessInputTick()
 {
-	std::queue<std::pair<USHORT, EKeyState>>& InputQueue = FPInputSystem::GetInputSystem().GetInputQueue();
+	std::queue<FKeyInputInfo>& InputQueue = FPInputSystem::GetInputSystem().GetInputQueue();
 
-	int size = InputQueue.size();
-	while (size>0)
+	while (InputQueue.size() != 0)
 	{
-		std::pair<USHORT, EKeyState> KeyEvent = InputQueue.front();
+		FKeyInputInfo KeyEvent = InputQueue.front();
+		ProcessKeyEvent(KeyEvent);
 		InputQueue.pop();
-		std::cout << KeyEvent.first << " : " << KeyEvent.second << "\n";
-		if (!ProcessKeyEvent(KeyEvent.first, KeyEvent.second))
-			InputQueue.push(KeyEvent);
-		size--;
 	}
+
+	//int size = InputQueue.size();
+	//while (size>0)
+	//{
+	//	std::pair<USHORT, EKeyState> KeyEvent = InputQueue.front();
+	//	InputQueue.pop();
+	//	//std::cout << KeyEvent.first << " : " << KeyEvent.second << "\n";
+	//	if (!ProcessKeyEvent(KeyEvent.first, KeyEvent.second))
+	//		InputQueue.push(KeyEvent);
+	//	size--;
+	//}
 }
 
-bool FPInputComponent::ProcessKeyEvent(USHORT VKey, EKeyState KeyState)
+bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)
 {
 	if (IMC == nullptr)
 	{
 		std::cout << "IMC null\n";
 		return FALSE;
 	}
-	if (IA == nullptr)
-	{
-		std::cout << "IA null\n";
-		return FALSE;
-	}
 
-	if ((KeyState != CallKeyState) && (CallKeyState != EKeyState::Pressed || KeyState != EKeyState::Down))
-	{
-		return FALSE;
-	}
-
-	FMappingInfo MappingInfo;
-
-	bool SearchResult = IMC->SearchMappingInfo(VKey, MappingInfo);
+	std::string IAName;
+	FModifyInfo ModifyInfo;
+	bool SearchResult = IMC->SearchMappingInfo(KeyInputInfo.VKey, IAName, ModifyInfo);
 
 	if (SearchResult == false)
 	{
@@ -71,37 +70,63 @@ bool FPInputComponent::ProcessKeyEvent(USHORT VKey, EKeyState KeyState)
 		return FALSE;
 	}
 
-	FPVector2 InputValue;
-	float Value = 1.0;
-
-	if (MappingInfo.bIsPositive != ENegative::Positive)
+	if (ActivatedIA.find(IAName) == ActivatedIA.end())
 	{
-		Value *= -1;
-	}
-
-	switch (MappingInfo.Swizzle)
-	{
-	case ESwizzle::XYZ :
-		InputValue.x = Value;
-		break;
-	case ESwizzle::YZX :
-		InputValue.y = Value;
-		break;
-	default:
-		InputValue.x = Value;
-		break;
-	//case ESwizzle::ZXY :
-	//	InputValue.z = Value;
-	//	break;
-	}
-
-	if (!BindFuncPtr)
-	{
-		std::cout << "BindFuncPtr is NULL!\n";
+		std::cout << "IA null\n";
 		return FALSE;
 	}
 
-	BindFuncPtr(InputValue);
+	std::vector<FBindInfo>& BindInfos = ActivatedIA[IAName]->GetBindInfos();
+
+	for (FBindInfo BindInfo : BindInfos)
+	{
+		EKeyState CallKeyState = BindInfo.CallState;
+		std::function<void(FInputValue)> BindFuncPtr = BindInfo.BindFuncPtr;
+
+		if ((KeyInputInfo.KeyState != CallKeyState) && (CallKeyState != EKeyState::Pressed || KeyInputInfo.KeyState != EKeyState::Down))
+		{
+			continue;
+		}
+
+		FInputValue InputData = KeyInputInfo.InputValue;
+
+		if (ModifyInfo.bIsPositive != ENegative::Positive)
+		{
+			InputData = InputData * -1;
+		}
+
+		float X, Y, Z = 0.0f;
+
+		switch (ModifyInfo.Swizzle)
+		{
+		case ESwizzle::YZX:
+			X = InputData.X;
+			Y = InputData.Y;
+			Z = InputData.Z;
+			InputData.Y = X;
+			InputData.Z = Y;
+			InputData.X = Z;
+			break;
+		case ESwizzle::ZXY :
+			X = InputData.X;
+			Y = InputData.Y;
+			Z = InputData.Z;
+			InputData.Z = X;
+			InputData.X = Y;
+			InputData.Y = Z;
+			break;
+		default:
+			break;
+		}
+
+		if (!BindFuncPtr)
+		{
+			std::cout << "BindFuncPtr is NULL!\n";
+			return FALSE;
+		}
+
+		BindFuncPtr(InputData);
+	}
 
 	return TRUE;
 }

@@ -195,3 +195,4 @@ void ForestPearlEngine::RegisterFPRawInputDevices()
 
     RegisterRawInputDevices(rid, 2, sizeof(RAWINPUTDEVICE));
 }
+

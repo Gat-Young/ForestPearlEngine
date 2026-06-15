@@ -95,6 +95,25 @@ typedef enum FPRHIFORMAT
     FPRHIFMT_FORCE_DWORD = 0x7fffffff
 } FPRHIFORMAT;
 
+typedef enum FPRHITRANSFORMSTATETYPE {
+    FPRHITS_VIEW = 2,
+    FPRHITS_PROJECTION = 3,
+    FPRHITS_TEXTURE0 = 16,
+    FPRHITS_TEXTURE1 = 17,
+    FPRHITS_TEXTURE2 = 18,
+    FPRHITS_TEXTURE3 = 19,
+    FPRHITS_TEXTURE4 = 20,
+    FPRHITS_TEXTURE5 = 21,
+    FPRHITS_TEXTURE6 = 22,
+    FPRHITS_TEXTURE7 = 23,
+    FPRHITS_FORCE_DWORD = 0x7fffffff, /* force 32-bit size enum */
+};
+
+#define FPRHITS_WORLDMATRIX(index) (FPRHITRANSFORMSTATETYPE)(index + 256)
+#define FPRHITS_WORLD  FPRHITS_WORLDMATRIX(0)
+#define FPRHITS_WORLD1 FPRHITS_WORLDMATRIX(1)
+#define FPRHITS_WORLD2 FPRHITS_WORLDMATRIX(2)
+#define FPRHITS_WORLD3 FPRHITS_WORLDMATRIX(3)
 
 typedef enum FPRHIRENDERSTATETYPE {
     FPRHIRS_ZENABLE = 7,    /* FPRHIZBUFFERTYPE (or TRUE/FALSE for legacy) */
@@ -464,3 +483,20 @@ typedef enum FPRHIFILLMODE {
 #define FPRHIPRESENTFLAG_DISCARD_DEPTHSTENCIL     0x00000002
 #define FPRHIPRESENTFLAG_DEVICECLIP               0x00000004
 #define FPRHIPRESENTFLAG_VIDEO                    0x00000010
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct FPRHITRANSFORMMATRIX {
+    union {
+        struct {
+            float        position_x, position_y, position_z;
+            float        rotation_x, rotation_y, rotation_z;
+            float        scale_x,    scale_y,    scale_z;
+        };
+        float m[3][3];
+    };
+} FPRHITRANSFORMMATRIX;

@@ -35,6 +35,7 @@ void FPGameInstance::BeginPlay()
 
 void FPGameInstance::Tick()
 {
+	Gametimer->Tick();
 	GameWorld.World->Tick();
 }
 

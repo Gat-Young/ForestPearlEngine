@@ -4,6 +4,23 @@
 
 class DOHWAImpl;
 class DOHWADeviceImpl;
+class DOHWAVertexBufferImpl;
+
+class DOHWAVertexBuffer : public FPRHIVertexBuffer
+{
+    private:
+        std::unique_ptr< DOHWAVertexBufferImpl> DOHWAVertexBufferimpl;
+
+        //DXRHIDevice에서 VertexBuffer에 접근하기 위해 사용
+        friend class DOHWARHIDevice;
+
+    public :
+        DOHWAVertexBuffer();
+        ~DOHWAVertexBuffer();
+
+        HRESULT Lock(UINT OffsetToLock, UINT SizeToLock, void** ppbData, DWORD Flags) override;
+        HRESULT Unlock() override;
+};
 
 class DOHWARHIDevice : public FPRHIDevice
 {
@@ -19,19 +36,20 @@ public:
     ~DOHWARHIDevice();
     virtual HRESULT BeginScene() override;
     virtual HRESULT Clear(DWORD Count, CONST FPRHIRECT* pRects, DWORD Flags, FPRHICOLOR Color, float Z, DWORD Stencil) override;
-    HRESULT DrawPrimitive(FPRHIPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount) override { return S_OK; };
+    HRESULT DrawPrimitive(FPRHIPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount) override;
     virtual HRESULT EndScene() override;
     virtual HRESULT Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion) override;
 
     virtual HRESULT GetDC(HDC* phdc) override;
+    virtual HRESULT ReleaseDC(HDC hdc) override;
 
-    HRESULT SetRenderState(FPRHIRENDERSTATETYPE State, DWORD Value) override { return S_OK; };
-    HRESULT GetRenderState(FPRHIRENDERSTATETYPE State, DWORD* pValue) override { return S_OK; };
+    HRESULT SetRenderState(FPRHIRENDERSTATETYPE State, DWORD Value) override;
+    HRESULT GetRenderState(FPRHIRENDERSTATETYPE State, DWORD* pValue) override;
 
 
-    HRESULT CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, FPRHIPOOL Pool, FPRHIVertexBuffer** ppVertexBuffedr, HANDLE* pSharedHandle) override { return S_OK; };
-    HRESULT SetStreamSource(UINT StreamNumber, FPRHIVertexBuffer* pStreamData, UINT OffsetInBytes, UINT Stride) override { return S_OK; };
-    HRESULT SetFVF(DWORD FVF) override { return S_OK; };
+    HRESULT CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, FPRHIPOOL Pool, FPRHIVertexBuffer** ppVertexBuffedr, HANDLE* pSharedHandle) override;
+    HRESULT SetStreamSource(UINT StreamNumber, FPRHIVertexBuffer* pStreamData, UINT OffsetInBytes, UINT Stride) override;
+    HRESULT SetFVF(DWORD FVF) override;
 
 };
 

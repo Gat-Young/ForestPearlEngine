@@ -1,9 +1,12 @@
 #include "Triangle.h"
-#include "../../Engine/ForestPearlEngine/Object/Components/InputMappingContext.h"
-#include "../../Engine/ForestPearlEngine/Object/Components/InputAction.h"
-#include "../../Engine/ForestPearlEngine/Systems/InputSystem.h"
-#include "../../Engine/ForestPearlEngine/GameTimer.h"
+#include "../../Engine/ForestPearlEngine/MeshComponent.h"
+#include "../../Engine/ForestPearlEngine/Define/FPMath.h"
+#include "../../Engine/ForestPearlEngine/FPAController.h"
 #include "../../Engine/ForestPearlEngine/FPWorld.h"
+#include "../../Engine/ForestPearlEngine/Object/Components/InputComponent.h"
+#include "../../Engine/ForestPearlEngine/InputValue.h"
+#include "../../Engine/ForestPearlEngine/TransformComponent.h"
+#include "../../Engine/ForestPearlEngine/GameTimer.h"
 #include <iostream>
 
 void Triangle::Initialize()
@@ -22,21 +25,28 @@ void Triangle::Initialize()
 	Transform->transfrom.scale.z = 1.0f;
 
 	Mesh = new MeshComponent("Triangle2", &(Transform->transfrom));
-	IMC = new FPInputMappingContext();
-	FPInputSystem::GetInputSystem().AddActivatedIMC(IMC);
 
-	IA = new FPInputAction();
-	IA->BindMethod(this, EKeyState::Down, &Triangle::SetFillTriangel);
-	FMappingInfo MappingInfoSpace = { IA,0b00000100 };
-	IMC->AddMappingKey(VK_SPACE, MappingInfoSpace);
+	FPAController* Controller = GetWorld()->GetController(0);
 
-	IMC2 = new FPInputMappingContext();
-	FPInputSystem::GetInputSystem().AddActivatedIMC(IMC2);
-	IA2 = new FPInputAction();
+	if (Controller == nullptr)
+		return;
 
-	IA2->BindMethod(this, EKeyState::Down, &Triangle::SetCullTriangle);
-	FMappingInfo MappingInfoSpace2 = { IA2,0b00000100 };
-	IMC2->AddMappingKey(VK_F5, MappingInfoSpace2);
+	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Pressed, &Triangle::Move);
+
+	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &Triangle::SetFillTriangel);
+	Controller->GetInputComponent().BindMethod("IA_SetCullTriangle", this, EKeyState::Down, &Triangle::SetCullTriangle);
+
+
+
+
+	//FMappingInfo MappingInfoSpace = { IA,0b00000100 };
+	//IMC->AddMappingKey(VK_SPACE, MappingInfoSpace);
+
+	//IMC2 = new FPInputMappingContext();
+	//FPInputSystem::GetInputSystem().AddActivatedIMC(IMC2);
+
+	//FMappingInfo MappingInfoSpace2 = { IA2,0b00000100 };
+	//IMC2->AddMappingKey(VK_F5, MappingInfoSpace2);
 }
 
 void Triangle::BeginPlay()
@@ -49,19 +59,19 @@ void Triangle::Tick()
 	Transform->transfrom.rotation.z = angle;
 }
 
-void Triangle::Move(FPVector2 Value)
+void Triangle::Move(FInputValue Value)
 {
-	std::cout << "Move Begin!! [ " << Value.x << " : " << Value.y << " ]\n";
+	std::cout << "Move Begin!! [ " << Value.X << " : " << Value.Y << " ]\n";
 }
 
-void Triangle::SetFillTriangel(FPVector2 Value)
+void Triangle::SetFillTriangel(FInputValue Value)
 {
 	std::cout << "FillMode : " << isFill << "\n";
 	isFill = !isFill;
 	Mesh->SetMeshFill(isFill);
 }
 
-void Triangle::SetCullTriangle(FPVector2 Value)
+void Triangle::SetCullTriangle(FInputValue Value)
 {
 	std::cout << "CullMode : " << isCull << "\n";
 	isCull = !isCull;

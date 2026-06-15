@@ -885,7 +885,7 @@ HRESULT DXDeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRA
         //이동 처리.
         //
         float position[3] = { pMatrix->position_x, pMatrix->position_y, pMatrix->position_z };
-        //D3DMatrixTransform(&DMatrix, position);
+        D3DMatrixTransform(&DMatrix, position);
 
     }
 

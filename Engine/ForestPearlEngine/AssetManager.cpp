@@ -7,9 +7,9 @@ AssetManager::AssetManager()
 	//»ï°¢ÇüÀ» À§ÇÑ 3°³ÀÇ Á¤Á¡ ¼±¾ð. : Á¤Á¡ÀÇ ÁÂÇ¥°ªÀº È­¸é(Screen)ÁÂÇ¥.
 	//Face 0 : Á¤»ï°¢Çü.(CW) 
 	// ÁÂÇ¥ (x, y)    »ö»ó( a, r, g, b)   a, °ð Alpha ´Â ±âº»°ª 255 (1.0f)
-	DummyMesh["Triangle"].push_back({ 50.0f, 250.0f, 0.5f,  0xffff0000 });		//v0, Red.	¡Ú
-	DummyMesh["Triangle"].push_back({ 150.0f,  50.0f, 0.5f, 0xff00ff00 });		//v1, Green ¡Ú
-	DummyMesh["Triangle"].push_back({ 250.0f, 250.0f, 0.5f, 0xff0000ff });		//v2, Blue ¡Ú
+	DummyMesh["Triangle"].push_back({ -0.5f, 0.0f, 0.0f, 0xffff0000 });			//v0, Red.	¡Ú
+	DummyMesh["Triangle"].push_back({ 0.0f, 1.0f, 0.0f,  0xff00ff00 });		//v1, Green ¡Ú
+	DummyMesh["Triangle"].push_back({ 0.5f, 0.0f, 0.0f,  0xff0000ff });		//v2, Blue ¡Ú
 
 	//Face 1 : ¿ª»ï°¢Çü.(CCW) 
 	DummyMesh["Triangle"].push_back({ 50.0f, 250.0f, 0.5f,  0xffff0000 });

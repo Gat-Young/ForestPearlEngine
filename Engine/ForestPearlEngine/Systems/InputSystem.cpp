@@ -115,7 +115,12 @@ void FPInputSystem::HandleMouseInput(RAWINPUT* RawInput)
     HWND hwnd = GetActiveWindow();
     GetCursorPos(&pt);
     ScreenToClient(hwnd, &pt);
-    FInputValue InputValue = { pt.x, pt.y, 0.0f, true, 0.0f };
+
+    float ValueX = (pt.x -400) / 400.0f;
+    float ValueY = (pt.y - 300) / 300.0f;
+    ValueY *= -1;
+
+    FInputValue InputValue = { ValueX, ValueY, 0.0f, true, 0.0f };
 
     FKeyInputInfo KeyInputInfo = { VKey, ChangedKeyState, InputValue };
     InputQueue.push(KeyInputInfo);

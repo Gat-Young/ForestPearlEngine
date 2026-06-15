@@ -5,6 +5,7 @@ class Triangle : public FPActor
 {
 	private:
 		class MeshComponent* Mesh;
+		class TransformCompoenent* Transform;
 
 	public:
 		Triangle() = default;

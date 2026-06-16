@@ -9,12 +9,6 @@
 
 void UI::Initialize()
 {
-	int UI_count = 7;
-	for (int i = 0; i < UI_count; ++i)
-	{
-		TextComponent* TextComponet = new TextComponent();
-		TextComponets.push_back(TextComponet);
-	}
 
 	FPAController* Controller = GetWorld()->GetController(0);
 
@@ -22,6 +16,7 @@ void UI::Initialize()
 		return;
 
 	Controller->GetInputComponent().BindMethod("IA_SetUITriangel", this, EKeyState::Pressed, &UI::SetActiveViewHelp);
+	SetUIContext(true, 1, 1, RGB(255, 255, 255), _T(""));
 }
 
 
@@ -55,7 +50,7 @@ void UI::CalFPS(int x, int y)
 
 	TCHAR text[64];
 	_stprintf_s(text, _T("FPS=%.1f/%d"), fps, time);
-	SetUIContext(0,true, x, y, RGB(255, 255, 255), text);
+	this->TextComponets[0]->SetTextData(true, x, y, RGB(255, 255, 255), text);
 }
 
 void UI::ShowInfo()
@@ -65,20 +60,25 @@ void UI::ShowInfo()
 	COLORREF col = RGB(255, 255, 255);
 	TCHAR text[1024];
 	_stprintf_s(text, _T("■ %s"), _T("HW_03_World+Rotation"));
-	SetUIContext(1, bShow, x, y, col, text);
+	SetUIContext( bShow, x, y, col, text);
 	y += 15;
-	SetUIContext(2, bShow, x, y += 15, col, _T("1.정점 파이프라인(Vertex Pipeline) 의 이해"));
-	SetUIContext(3, bShow, x, y += 15, col, _T("2.월드 변환 (World Transform): 스케일-회전-이동 변환 구현."));
+	SetUIContext( bShow, x, y += 15, col, _T("1.정점 파이프라인(Vertex Pipeline) 의 이해"));
+	SetUIContext( bShow, x, y += 15, col, _T("2.월드 변환 (World Transform): 스케일-회전-이동 변환 구현."));
 	y += 15;
-	SetUIContext(4, bShow, x, y += 15, col, _T("* 뷰-투영변환 없음 *"));
+	SetUIContext( bShow, x, y += 15, col, _T("* 뷰-투영변환 없음 *"));
 	y += 15;
-	SetUIContext(5, bShow, x, y += 15, col, _T("3.B3Yena SW Renderer 의 결과와 비교해 봅시다."));
-	SetUIContext(6, bShow, x, y += 15, col, _T("4.B3Yena SW Renderer 의 결과와 비교시 도움말을 끄십시요.(F1)"));
+	SetUIContext( bShow, x, y += 15, RGB(255, 255, 0), _T("* 정점 파이프라인 (Vertex Pipeline) 구현."));
+	SetUIContext( bShow, x, y += 15, RGB(255, 255, 0), _T("* 기하 파이프라인 (Geometry Pipeline) 구현."));
+	SetUIContext( bShow, x, y += 15, RGB(255, 255, 0), _T("* 픽셀 파이프라인 (Pixel Pipeline) 구현."));
+
+	SetUIContext( bShow, x, y += 15, RGB(255, 0, 0), _T("행렬 클래스 및 함수 제작"));
 }
 
-void UI::SetUIContext(int index, bool actieve, int x, int y, unsigned long color, std::basic_string<TCHAR> text)
+void UI::SetUIContext( bool actieve, int x, int y, unsigned long color, std::basic_string<TCHAR> text)
 {
-	this->TextComponets[index]->SetTextData(actieve, x, y, color, text);
+	TextComponent* TextComponet = new TextComponent();
+	TextComponet->SetTextData(actieve, x, y, color, text);
+	TextComponets.push_back(TextComponet);
 }
 
 void UI::SetActiveViewHelp(FInputValue Value)

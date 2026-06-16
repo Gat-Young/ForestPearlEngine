@@ -10,5 +10,6 @@ class GameController : public FPAController
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
 
-private:
+	private:
+		void OnMouseLButtonDown(struct FInputValue InputValue);
 };

@@ -23,7 +23,7 @@
     <ClInclude Include="GameLevel.h" />
     <ClInclude Include="GameMode.h" />
     <ClInclude Include="GameWorld.h" />
-    <ClInclude Include="Triangle.h" />
+    <ClInclude Include="Orb.h" />
     <ClInclude Include="UI.h" />
   </ItemGroup>
   <ItemGroup>
@@ -32,7 +32,7 @@
     <ClCompile Include="GameMode.cpp" />
     <ClCompile Include="GameProjectLoader.cpp" />
     <ClCompile Include="GameWorld.cpp" />
-    <ClCompile Include="Triangle.cpp" />
+    <ClCompile Include="Orb.cpp" />
     <ClCompile Include="UI.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

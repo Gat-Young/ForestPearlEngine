@@ -1,4 +1,5 @@
 #include "GameMode.h"
+#include "../../Engine/ForestPearlEngine/Define/FPMath.h"
 
 void GameMode::Initialize()
 {
@@ -14,4 +15,8 @@ void GameMode::BeginPlay()
 void GameMode::Tick()
 {
 	__super::Tick();
+}
+
+void GameMode::AddOrb(FPVector2 SpawnPos)
+{
 }

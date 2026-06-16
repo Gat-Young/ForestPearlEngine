@@ -9,4 +9,6 @@ class GameMode : public FPAGameMode
 		virtual void Tick() override;
 
 		virtual ~GameMode() = default;
+
+		void AddOrb(struct FPVector2 SpawnPos);
 };

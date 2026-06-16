@@ -7,4 +7,6 @@ class GameWorld : public FPWorld
 		virtual void Initialize() override;
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
+
+		FPAGameMode& GetGameMode() { return *GameMode; }
 };

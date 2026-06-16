@@ -1,7 +1,7 @@
 #include "GameWorld.h"
 #include "../../Engine/ForestPearlEngine/ForestPearlEngine.h"
 #include "UI.h"
-#include "Triangle.h"
+#include "Orb.h"
 
 void GameWorld::Initialize()
 {

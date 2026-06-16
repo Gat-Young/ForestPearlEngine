@@ -729,7 +729,7 @@ class DXDeviceImpl
         HRESULT SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9* pStreamData, UINT OffsetInBytes, UINT Stride);
         HRESULT SetFVF(DWORD FVF);
 
-        HRESULT SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRANSFORMMATRIX* pMatrix);
+        HRESULT SetTransform(FPRHITRANSFORMSTATETYPE State, std::stack<FPRHITRANSFORMMATRIX>* pMatrix);
 };
 
 DXDeviceImpl::DXDeviceImpl() = default;
@@ -858,7 +858,7 @@ HRESULT DXDeviceImpl::SetFVF(DWORD FVF)
     return S_OK;
 }
 
-HRESULT DXDeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRANSFORMMATRIX* pMatrix)
+HRESULT DXDeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, std::stack<FPRHITRANSFORMMATRIX>* pMatrix)
 {
     D3DTRANSFORMSTATETYPE TransformStateType = ChangeD3DTRANSFORMSTATETYPE(State);
 
@@ -870,23 +870,27 @@ HRESULT DXDeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRA
     0.0f, 0.0f, 0.0f, 1.0f,
     };
 
-    if (TransformStateType >= D3DTS_WORLD && TransformStateType <= D3DTS_WORLD3)
+    while (!pMatrix->empty())
     {
-        //胶纳老 贸府.
-        //..
-        float scale[3] = { pMatrix->scale_x, pMatrix->scale_y, pMatrix->scale_z };
-        D3DMatrixScale(&DMatrix, scale);
-        
-        //雀傈 贸府.
-        //
-        float rotation[3] = { pMatrix->rotation_x, pMatrix->rotation_y, pMatrix->rotation_z };
-        D3DMatrixRotation(&DMatrix, rotation);
-        
-        //捞悼 贸府.
-        //
-        float position[3] = { pMatrix->position_x, pMatrix->position_y, pMatrix->position_z };
-        D3DMatrixTransform(&DMatrix, position);
+        if (TransformStateType >= D3DTS_WORLD && TransformStateType <= D3DTS_WORLD3)
+        {
+            FPRHITRANSFORMMATRIX Matrix = pMatrix->top();
+            pMatrix->pop();
+            //胶纳老 贸府.
+            //..
+            float scale[3] = { Matrix.scale_x, Matrix.scale_y, Matrix.scale_z };
+            D3DMatrixScale(&DMatrix, scale);
 
+            //雀傈 贸府.
+            //
+            float rotation[3] = { Matrix.rotation_x, Matrix.rotation_y, Matrix.rotation_z };
+            D3DMatrixRotation(&DMatrix, rotation);
+
+            //捞悼 贸府.
+            //
+            float position[3] = { Matrix.position_x, Matrix.position_y, Matrix.position_z };
+            D3DMatrixTransform(&DMatrix, position);
+        }
     }
 
     Device->SetTransform(TransformStateType, &DMatrix);
@@ -1065,7 +1069,7 @@ HRESULT DXRHIDevice::SetFVF(DWORD FVF)
     return S_OK;
 }
 
-HRESULT DXRHIDevice::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRANSFORMMATRIX* pMatrix)
+HRESULT DXRHIDevice::SetTransform(FPRHITRANSFORMSTATETYPE State, std::stack<FPRHITRANSFORMMATRIX>* pMatrix)
 {
     DXDeviceimpl->SetTransform(State, pMatrix);
 

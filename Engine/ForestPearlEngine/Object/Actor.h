@@ -3,18 +3,10 @@
 
 class FPActor : public FPObject
 {
-
 	protected:
-		struct FPTransform
-		{
-			float x;
-			float y;
-			float z;
-		};
+
 
 	public :
-		FPTransform Transform;
-
 		virtual void Initialize() override = 0;
 		virtual void BeginPlay() override = 0;
 		virtual void Tick() override = 0;

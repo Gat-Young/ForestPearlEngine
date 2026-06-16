@@ -55,8 +55,9 @@ void Triangle::BeginPlay()
 
 void Triangle::Tick()
 {
-	angle += 3.141592f * 0.5f * 1/GetWorld()->GetGameTimer()->DeltaTimeMS();
+	angle += 10.0f;//3.141592f;//  *1 / GetWorld()->GetGameTimer()->DeltaTimeMS();
 	Transform->transfrom.rotation.z = angle;
+	//std::cout << "angle : " << angle << "\n";
 }
 
 void Triangle::Move(FInputValue Value)

@@ -471,17 +471,17 @@ HRESULT DOHWADeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, CONST FPRHI
 
     if (TransformStateType == DOHWATS_WORLD)
     {
-        //������ ó��.
+        //스케일 행렬
         //..
         float scale[3] = { pMatrix->scale_x, pMatrix->scale_y, pMatrix->scale_z };
         DOHWAXMatrixScale(&DMatrix, scale);
 
-        //ȸ�� ó��.
+        //회전 행렬
         //
         float rotation[3] = { pMatrix->rotation_x, pMatrix->rotation_y, pMatrix->rotation_z };
         DOHWAXMatrixRotation(&DMatrix, rotation);
 
-        //�̵� ó��.
+        //위치 행렬
         //
         float position[3] = { pMatrix->position_x, pMatrix->position_y, pMatrix->position_z };
         DOHWAXMatrixTransform(&DMatrix, position);

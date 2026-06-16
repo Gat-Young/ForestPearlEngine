@@ -141,6 +141,30 @@ DWORD ChangeDOHWAFVF_FORMAT(DWORD FPRHIFvf)
     return (D3DPosType | DXNormal | DXPsize | DXDiffuse | DXSpecular | DXTextCount | DXLastBeta);
 }
 
+//FPRHITRANSFORMSTATETYPE To DOHWATRANSFORMSTATETYPE타입 변환기
+DOHWATRANSFORMSTATETYPE ChangeDOHWATRANSFORMSTATETYPE(FPRHITRANSFORMSTATETYPE FPRHITransformStateType) {
+    switch (FPRHITransformStateType)
+    {
+    case FPRHITS_VIEW:          return DOHWATS_VIEW;
+    case FPRHITS_PROJECTION:	return DOHWATS_PROJECTION;
+    case FPRHITS_TEXTURE0:	    return DOHWATS_TEXTURE0;
+    case FPRHITS_TEXTURE1:	    return DOHWATS_TEXTURE1;
+    case FPRHITS_TEXTURE2:	    return DOHWATS_TEXTURE2;
+    case FPRHITS_TEXTURE3:	    return DOHWATS_TEXTURE3;
+    case FPRHITS_TEXTURE4:	    return DOHWATS_TEXTURE4;
+    case FPRHITS_TEXTURE5:	    return DOHWATS_TEXTURE5;
+    case FPRHITS_TEXTURE6:	    return DOHWATS_TEXTURE6;
+    case FPRHITS_TEXTURE7:	    return DOHWATS_TEXTURE7;
+    case FPRHITS_FORCE_DWORD:	return DOHWATS_MAX_;
+
+    case 256:                   return DOHWATS_WORLD;
+    //case 257:                   return DOHWATS_WORLD1;
+    //case 258:                   return DOHWATS_WORLD2;
+    //case 259:                   return DOHWATS_WORLD3;
+
+    default:                    return DOHWATS_MAX_;
+    }
+}
 //FPRHIRENDERSTATETYPE To DOHWARENDERSTATETYPE 타입 변환기
 DOHWARENDERSTATETYPE ChangeDOHWARENDERSTATETYPE(FPRHIRENDERSTATETYPE FPRHIRenderStateType)
 {
@@ -434,6 +458,36 @@ HRESULT DOHWADeviceImpl::SetFVF(DWORD FVF)
 }
 HRESULT DOHWADeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, CONST FPRHITRANSFORMMATRIX* pMatrix)
 {
+    DOHWATRANSFORMSTATETYPE TransformStateType = ChangeDOHWATRANSFORMSTATETYPE(State);
+
+    DOHWAXMATRIX DMatrix =
+    {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f,
+    };
+
+    if (TransformStateType == DOHWATS_WORLD)
+    {
+        //스케일 처리.
+        //..
+        float scale[3] = { pMatrix->scale_x, pMatrix->scale_y, pMatrix->scale_z };
+        DOHWAXMatrixScale(&DMatrix, scale);
+
+        //회전 처리.
+        //
+        float rotation[3] = { pMatrix->rotation_x, pMatrix->rotation_y, pMatrix->rotation_z };
+        DOHWAXMatrixRotation(&DMatrix, rotation);
+
+        //이동 처리.
+        //
+        float position[3] = { pMatrix->position_x, pMatrix->position_y, pMatrix->position_z };
+        DOHWAXMatrixTransform(&DMatrix, position);
+
+    }
+
+    DohwaDevice->SetTransform(TransformStateType, &DMatrix);
     return S_OK;
 }
 

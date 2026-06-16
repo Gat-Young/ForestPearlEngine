@@ -1,4 +1,5 @@
 #pragma once
+#include "MeshRenderList.h"
 
 struct Position;
 
@@ -11,7 +12,7 @@ struct Transform;
 class TransformCompoenent
 {
 	public:
-		Transform transfrom;
+		Transform transform;
 
 	public:
 		TransformCompoenent() = default;

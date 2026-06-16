@@ -13,19 +13,19 @@
 void Triangle::Initialize()
 {
 	Transform = new TransformCompoenent();
-	Transform->transfrom.position.x = 0.0f;
-	Transform->transfrom.position.y = 0.0f;
-	Transform->transfrom.position.z = 0.0f;
+	Transform->transform.position.x = 0.0f;
+	Transform->transform.position.y = 0.0f;
+	Transform->transform.position.z = 0.0f;
+					 
+	Transform->transform.rotation.x = 0.0f;
+	Transform->transform.rotation.y = 0.0f;
+	Transform->transform.rotation.z = 0.0f;
 
-	Transform->transfrom.rotation.x = 0.0f;
-	Transform->transfrom.rotation.y = 0.0f;
-	Transform->transfrom.rotation.z = 0.0f;
+	Transform->transform.scale.x = 1.0f;
+	Transform->transform.scale.y = 1.0f;
+	Transform->transform.scale.z = 1.0f;
 
-	Transform->transfrom.scale.x = 1.0f;
-	Transform->transfrom.scale.y = 1.0f;
-	Transform->transfrom.scale.z = 1.0f;
-
-	Mesh = new MeshComponent("Triangle", &(Transform->transfrom));
+	Mesh = new MeshComponent("Triangle", &(Transform->transform));
 
 	FPAController* Controller = GetWorld()->GetController(0);
 
@@ -47,8 +47,8 @@ void Triangle::Move(FInputValue Value)
 {
 	std::cout << "Move Begin!! [ " << Value.X << " : " << Value.Y << " ]\n";
 
-	Transform->transfrom.position.x = Value.X;
-	Transform->transfrom.position.y = Value.Y;
+	Transform->transform.position.x = Value.X;
+	Transform->transform.position.y = Value.Y;
 
 	//Transform->transfrom.position.x = Value.X *1.f * 1 / GetWorld()->GetGameTimer()->DeltaTimeMS();
 	//Transform->transfrom.position.y = Value.Y *1.f * 1 / GetWorld()->GetGameTimer()->DeltaTimeMS();

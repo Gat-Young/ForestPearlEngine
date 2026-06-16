@@ -75,7 +75,7 @@ std::pair<int, int> AssetManager::LordVertexVuffer(std::string MeshPath)
 {
 	if (MeshMap.count(MeshPath) > 0)
 	{
-		return { MeshMap[MeshPath], DummyMesh[MeshPath].size() };
+		return { MeshMap[MeshPath], DummyMesh[MeshPath].size()/3 };
 	}
 
 	//추후 메시 파일 로드로 변경

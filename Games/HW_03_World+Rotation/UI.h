@@ -23,5 +23,5 @@ class UI : public FPActor
 		void CalFPS(int x, int y);
 		void ShowInfo();
 		void SetUIContext(int index, bool actieve, int x, int y, unsigned long color, std::basic_string<TCHAR> text);
-		void SetActiveViewHelp(FPVector2 value);
+		void SetActiveViewHelp(struct FInputValue Value);
 };

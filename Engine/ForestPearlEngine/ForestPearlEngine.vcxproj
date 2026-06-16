@@ -175,8 +175,8 @@
     <ClCompile Include="TextRenderList.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Games\05.Vertex(2D)+Face_Filling\05.Vertex(2D)+Face_Filling.vcxproj">
-      <Project>{b0995cd0-7675-48cd-90a8-ad584a4e1a04}</Project>
+    <ProjectReference Include="..\..\Games\HW_03_World+Rotation\HW_03_World+Rotation.vcxproj">
+      <Project>{3d64de99-9fc1-4052-aad8-97fc31bf41df}</Project>
     </ProjectReference>
     <ProjectReference Include="Renderers\FPRHI\FPRHI.vcxproj">
       <Project>{a95d12e7-e8be-48f1-8cc1-ceba3c37a5fe}</Project>

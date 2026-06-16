@@ -1,7 +1,7 @@
 #include "UI.h"
-#include "../../Engine/ForestPearlEngine/Object/Components/InputMappingContext.h"
-#include "../../Engine/ForestPearlEngine/Object/Components/InputAction.h"
-#include "../../Engine/ForestPearlEngine/Systems/InputSystem.h"
+#include "../../Engine/ForestPearlEngine/FPAController.h"
+#include "../../Engine/ForestPearlEngine/InputValue.h"
+#include "../../Engine/ForestPearlEngine/Object/Components/InputComponent.h"
 #include "../../Engine/ForestPearlEngine/GameTimer.h"
 #include "../../Engine/ForestPearlEngine/FPWorld.h"
 #include <iostream>
@@ -16,16 +16,12 @@ void UI::Initialize()
 		TextComponets.push_back(TextComponet);
 	}
 
-	IMC = new FPInputMappingContext();
-	FPInputSystem::GetInputSystem().AddActivatedIMC(IMC);
+	FPAController* Controller = GetWorld()->GetController(0);
 
-	IA = new FPInputAction();
-	IA->BindMethod(this, EKeyState::Down, &UI::SetActiveViewHelp);
+	if (Controller == nullptr)
+		return;
 
-
-	FMappingInfo MappingInfoF1 = { IA , 0b00000000 };
-
-	IMC->AddMappingKey(VK_F1, MappingInfoF1);
+	Controller->GetInputComponent().BindMethod("IA_SetUITriangel", this, EKeyState::Pressed, &UI::SetActiveViewHelp);
 }
 
 
@@ -85,7 +81,7 @@ void UI::SetUIContext(int index, bool actieve, int x, int y, unsigned long color
 	this->TextComponets[index]->SetTextData(actieve, x, y, color, text);
 }
 
-void UI::SetActiveViewHelp(FPVector2 value)
+void UI::SetActiveViewHelp(FInputValue Value)
 {
 	std::cout << "F1 : ";
 	bShow = !(bShow);

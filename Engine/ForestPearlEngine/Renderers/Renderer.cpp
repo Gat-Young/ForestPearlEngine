@@ -81,7 +81,7 @@ int Renderer::MakeVB(std::vector<COLVTX> Vertex)
 	}
 
 	//버퍼 채우기. 
-	VOID* pVB;
+	VOID* pVB = nullptr;
 	if (FAILED(FPVertexBufferList[VertexBufferSize]->Lock(0, (Vertex.size() * sizeof(COLVTX)), (void**)&pVB, 0)))
 	{
 		return E_FAIL;

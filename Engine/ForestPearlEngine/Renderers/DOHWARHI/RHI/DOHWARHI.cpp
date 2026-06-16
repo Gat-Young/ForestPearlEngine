@@ -214,7 +214,7 @@ DOHWAPOOL ChangeDOHWAPOOL(FPRHIPOOL MemoryPool)
     switch (MemoryPool)
     {
     case FPRHIPOOL_DEFAULT: return DOHWAPOOL_DEFAULT;
-    case FPRHIPOOL_MANAGED:	return DOHWAPOOL_MANAGED;
+    case FPRHIPOOL_MANAGED:	return DOHWAPOOL_SYSTEMMEM;//return DOHWAPOOL_MANAGED;
     case FPRHIPOOL_SYSTEMMEM:	return DOHWAPOOL_SYSTEMMEM;
     case FPRHIPOOL_SCRATCH:	return DOHWAPOOL_SCRATCH;
     case FPRHIPOOL_FORCE_DWORD:	return DOHWAPOOL_FORCE_DWORD;
@@ -252,6 +252,8 @@ DOHWAPRIMITIVETYPE ChangeDOHWAPRIMITIVETYPE(FPRHIPRIMITIVETYPE FPRHIPrmititiveTy
     default:                        return DOHWAPT_FORCE_DWORD;
     }
 }
+
+
 /////////////////////////////////////////////
 //
 // class DOHWAVertexBufferImpl ±¸Çö
@@ -329,6 +331,8 @@ class DOHWADeviceImpl
         HRESULT SetStreamSource(UINT StreamNumber, std::unique_ptr<IDohwaVertexBuffer9>& pStreamData, UINT OffsetInBytes, UINT Stride);
         HRESULT SetFVF(DWORD FVF);
         HRESULT DrawPrimitive(FPRHIPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount);
+
+        HRESULT SetTransform(FPRHITRANSFORMSTATETYPE State, CONST FPRHITRANSFORMMATRIX* pMatrix);
 };
 
 DOHWADeviceImpl::DOHWADeviceImpl()
@@ -426,6 +430,10 @@ HRESULT DOHWADeviceImpl::SetStreamSource(UINT StreamNumber, std::unique_ptr<IDoh
 HRESULT DOHWADeviceImpl::SetFVF(DWORD FVF)
 {
     DohwaDevice->SetFVF(ChangeDOHWAFVF_FORMAT(FVF));
+    return S_OK;
+}
+HRESULT DOHWADeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, CONST FPRHITRANSFORMMATRIX* pMatrix)
+{
     return S_OK;
 }
 
@@ -590,6 +598,13 @@ HRESULT DOHWARHIDevice::SetStreamSource(UINT StreamNumber, FPRHIVertexBuffer* pS
 HRESULT DOHWARHIDevice::SetFVF(DWORD FVF)
 {
     DOHWADeviceimpl->SetFVF(FVF);
+    return S_OK;
+}
+
+HRESULT DOHWARHIDevice::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRANSFORMMATRIX* pMatrix)
+{
+    DOHWADeviceimpl->SetTransform(State, pMatrix);
+
     return S_OK;
 }
 

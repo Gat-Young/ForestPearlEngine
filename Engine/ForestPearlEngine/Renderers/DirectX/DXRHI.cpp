@@ -896,7 +896,7 @@ HRESULT DXDeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, std::stack<FPR
     0.0f, 0.0f, 0.0f, 1.0f,
     };
 
-    std::queue<FPRHITRANSFORMMATRIX> q;
+    std::stack<FPRHITRANSFORMMATRIX> q;
 
     while (!pMatrix->empty())
     {
@@ -906,24 +906,24 @@ HRESULT DXDeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, std::stack<FPR
             q.push(Matrix);
             pMatrix->pop();
 
-                //胶纳老 贸府.
-            if (pMatrix->empty())
-            {
-                float scale[3] = { Matrix.scale_x, Matrix.scale_y, Matrix.scale_z };
-                D3DMatrixScale(&DMatrix, scale);
+            //    //胶纳老 贸府.
+            //if (pMatrix->empty())
+            //{
+            //    float scale[3] = { Matrix.scale_x, Matrix.scale_y, Matrix.scale_z };
+            //    D3DMatrixScale(&DMatrix, scale);
 
 
-                //雀傈 贸府.
-                //
-                float rotation[3] = { Matrix.rotation_x, Matrix.rotation_y, Matrix.rotation_z };
-                D3DMatrixRotation(&DMatrix, rotation);
+            //    //雀傈 贸府.
+            //    //
+            //    float rotation[3] = { Matrix.rotation_x, Matrix.rotation_y, Matrix.rotation_z };
+            //    D3DMatrixRotation(&DMatrix, rotation);
 
 
-                //捞悼 贸府.
-                //
-                float position[3] = { Matrix.position_x, Matrix.position_y, Matrix.position_z };
-                D3DMatrixTransform(&DMatrix, position);
-            }
+            //    //捞悼 贸府.
+            //    //
+            //    float position[3] = { Matrix.position_x, Matrix.position_y, Matrix.position_z };
+            //    D3DMatrixTransform(&DMatrix, position);
+            //}
 
         }
     }
@@ -933,36 +933,32 @@ HRESULT DXDeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, std::stack<FPR
 
     while (!q.empty())
     {
-        FPRHITRANSFORMMATRIX Matrix = q.front();
+        FPRHITRANSFORMMATRIX Matrix = q.top();
         q.pop();
 
-        if (q.empty()) break;
-
-        if (q.size() == 1)
+        if (!flag)
         {
+            float scale[3] = { Matrix.scale_x, Matrix.scale_y, Matrix.scale_z };
+            D3DMatrixScale(&DMatrix, scale);
+        }
+
             //雀傈 贸府.
                 //
             float rotation[3] = { Matrix.rotation_x, Matrix.rotation_y, Matrix.rotation_z };
             D3DMatrixRotation(&DMatrix, rotation);
-        }
+
+            
         //捞悼 贸府.
                 //
         float position[3] = { Matrix.position_x, Matrix.position_y, Matrix.position_z };
-        D3DMatrixTransform(&DMatrixPosition, position);
+        D3DMatrixTransform(&DMatrix, position);
 
-        if (flag)
-        {
-            //雀傈 贸府.
-                    //
-            float rotation[3] = { parent.rotation_x, parent.rotation_y, parent.rotation_z };
-            D3DMatrixRotation(&DMatrixPosition, rotation);
-        }
 
         parent = Matrix;
         flag = true;
     }
 
-    D3DMatrixMultiply(&DMatrix, &DMatrixPosition);
+    //D3DMatrixMultiply(&DMatrix, &DMatrixPosition);
 
     Device->SetTransform(TransformStateType, &DMatrix);
     return S_OK;

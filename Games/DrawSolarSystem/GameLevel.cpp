@@ -43,7 +43,7 @@ void GameLevel::BeginPlay()
 	ChildTransform->scale.y = 0.3f;
 	ChildTransform->scale.z = 0.3f;
 
-	GrandChildTransform->position.y = 0.2f;
+	GrandChildTransform->position.y = 0.8f;
 	GrandChildTransform->scale.x = 0.15f;
 	GrandChildTransform->scale.y = 0.15f;
 	GrandChildTransform->scale.z = 0.15f;
@@ -65,8 +65,8 @@ void GameLevel::Tick()
 	}
 
 	Transform* ParentTransform = &Parent->GetTransform().transform;
-	ParentTransform->rotation.z += 0.0001 * 1/GetWorld()->GetGameTimer()->DeltaTime();
+	ParentTransform->rotation.z += 0.01 * 1/GetWorld()->GetGameTimer()->DeltaTime();
 
 	Transform* GrandChildTransform = &GrandChild->GetTransform().transform;
-	GrandChildTransform->rotation.z += 0.0002 * 1 / GetWorld()->GetGameTimer()->DeltaTime();
+	GrandChildTransform->rotation.z += 0.02 * 1 / GetWorld()->GetGameTimer()->DeltaTime();
 }

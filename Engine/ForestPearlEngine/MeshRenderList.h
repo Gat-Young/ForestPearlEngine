@@ -21,6 +21,7 @@ struct Transform
 	Position position;
 	Rotation rotation;
 	Scale scale;
+	Transform* Parent = nullptr;
 };
 
 struct MeshRenderItem

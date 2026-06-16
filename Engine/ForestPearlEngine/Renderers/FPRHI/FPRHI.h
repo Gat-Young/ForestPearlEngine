@@ -1,6 +1,6 @@
 #pragma once
 #include "FPRHITypes.h"
-
+#include <stack>
 
 //Vertex Buffer Interface
 class FPRHIVertexBuffer
@@ -32,7 +32,8 @@ class FPRHIDevice
         virtual HRESULT SetStreamSource(UINT StreamNumber, FPRHIVertexBuffer* pStreamData, UINT OffsetInBytes, UINT Stride) = 0;
         virtual HRESULT SetFVF(DWORD FVF) = 0;
 
-        virtual HRESULT SetTransform(FPRHITRANSFORMSTATETYPE State, CONST FPRHITRANSFORMMATRIX* pMatrix) = 0;
+        //나중에 꼭 수정
+        virtual HRESULT SetTransform(FPRHITRANSFORMSTATETYPE State, std::stack<FPRHITRANSFORMMATRIX>* pMatrix) = 0;
 
 };
 

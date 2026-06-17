@@ -24,7 +24,7 @@ void GameMode::Tick()
 
 void GameMode::AddOrb(FPVector2 SpawnPos)
 {
-	std::cout << " SpawnPos :: " << SpawnPos.x << ", " << SpawnPos.y << "\n";
+	std::cout << " Clicked Pos :: " << SpawnPos.x << ", " << SpawnPos.y << "\n";
 
 	GameWorld* GW = dynamic_cast<GameWorld*>(GetWorld());
 	if (GW == nullptr)
@@ -47,10 +47,23 @@ void GameMode::AddOrb(FPVector2 SpawnPos)
 		std::cout << "AddOrb :: No ParentActor" << "\n";
 	}
 
+	Transform* ParentTransform = &ParentActor->GetTransform().transform;
+	Transform* ChildTransform = &SpawnedActor->GetTransform().transform;
+
+	float ParentRotationTheta = fmodf(ParentTransform->rotation.z, 360) * 3.14159265358979323846f / 180.0f;
+	float Direction = sqrt(pow(SpawnPos.x, 2) + pow(SpawnPos.y, 2));
+
 	SpawnedActor->GetTransform().transform.Parent = &ParentActor->GetTransform().transform;
 
-	SpawnedActor->GetTransform().transform.position.x = SpawnPos.x;
-	SpawnedActor->GetTransform().transform.position.y = SpawnPos.y;
+	std::cout << "ParentRotationDegree ::" << ParentRotationTheta << "\n";
+
+	float SpawnPosX = SpawnPos.x * cos(ParentRotationTheta) + SpawnPos.y * sin(ParentRotationTheta);
+	float SpawnPosY = -SpawnPos.x * sin(ParentRotationTheta) + SpawnPos.y * cos(ParentRotationTheta);
+
+	std::cout << "SpawnPos ::" << SpawnPosX << ", " << SpawnPosY << "\n";
+
+	SpawnedActor->GetTransform().transform.position.x = SpawnPosX;
+	SpawnedActor->GetTransform().transform.position.y = SpawnPosY;
 	SpawnedActor->GetTransform().transform.scale.x = 0.2;
 	SpawnedActor->GetTransform().transform.scale.y = 0.2;
 	SpawnedActor->GetTransform().transform.scale.z = 0.2;

@@ -3,7 +3,7 @@
 #include <wrl/client.h>
 #include <iostream>
 #include <cmath>
-
+#include <DirectXMath.h>
 #pragma comment(lib, "d3d9.lib")
 
 template<typename T>
@@ -887,6 +887,45 @@ HRESULT DXDeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRA
         float position[3] = { pMatrix->position_x, pMatrix->position_y, pMatrix->position_z };
         D3DMatrixTransform(&DMatrix, position);
 
+    }
+
+    //뷰행렬 처리
+    if (TransformStateType == D3DTS_VIEW)
+    {
+        //<DX> 수학 사용
+        DirectX::XMFLOAT4X4 xm;
+        DirectX::XMVECTOR eye, lookat, up;
+        eye = DirectX::XMVectorSet(pMatrix->position_x, pMatrix->position_y, pMatrix->position_z, 1);
+        lookat = DirectX::XMVectorSet(pMatrix->LookAt_x, pMatrix->LookAt_y, pMatrix->LookAt_z, 1);
+        up = DirectX::XMVectorSet(pMatrix->Up_x, pMatrix->Up_y, pMatrix->Up_z, 0);
+        XMStoreFloat4x4(&xm, DirectX::XMMatrixLookAtLH(eye, lookat, up));
+
+        D3DMATRIX xmDMatrix =
+        {
+            xm._11, xm._12, xm._13, xm._14,
+            xm._21, xm._22, xm._23, xm._24,
+            xm._31, xm._32, xm._33, xm._34,
+            xm._41, xm._42, xm._43, xm._44,
+        };
+
+        D3DMatrixMultiply(&DMatrix, &xmDMatrix);
+    }
+
+    //투영 행렬 처리
+    if (TransformStateType == D3DTS_PROJECTION)
+    {
+        //수학 사용. (과제 제시, 참고용)
+        DirectX::XMFLOAT4X4 xm;
+        DirectX::XMStoreFloat4x4(&xm, DirectX::XMMatrixPerspectiveFovLH(Radian(pMatrix->Fov), pMatrix->Aspect, pMatrix->Zn, pMatrix->Zf));
+        D3DMATRIX xmDMatrix =
+        {
+            xm._11, xm._12, xm._13, xm._14,
+            xm._21, xm._22, xm._23, xm._24,
+            xm._31, xm._32, xm._33, xm._34,
+            xm._41, xm._42, xm._43, xm._44,
+        };
+
+        D3DMatrixMultiply(&DMatrix, &xmDMatrix);
     }
 
     Device->SetTransform(TransformStateType, &DMatrix);

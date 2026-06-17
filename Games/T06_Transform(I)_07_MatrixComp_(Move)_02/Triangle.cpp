@@ -24,7 +24,7 @@ void Triangle::Initialize()
 	Transform->transfrom.scale.y = 1.0f;
 	Transform->transfrom.scale.z = 1.0f;
 
-	Mesh = new MeshComponent("Triangle2", &(Transform->transfrom));
+	Mesh = new MeshComponent("Triangle3", &(Transform->transfrom));
 
 	FPAController* Controller = GetWorld()->GetController(0);
 
@@ -55,14 +55,18 @@ void Triangle::BeginPlay()
 
 void Triangle::Tick()
 {
-	angle += 10.0f;//3.141592f;//  *1 / GetWorld()->GetGameTimer()->DeltaTimeMS();
-	Transform->transfrom.rotation.z = angle;
-	//std::cout << "angle : " << angle << "\n";
+	angle += 1/(3.141592f * GetWorld()->GetGameTimer()->DeltaTimeMS());
+
+	Transform->transfrom.rotation.y = angle;
+	std::cout << "angle : " << angle << "\n";
 }
 
 void Triangle::Move(FInputValue Value)
 {
 	std::cout << "Move Begin!! [ " << Value.X << " : " << Value.Y << " ]\n";
+	float mov = 0.5f;
+	Transform->transfrom.position.x += Value.X * mov * 1 / (GetWorld()->GetGameTimer()->DeltaTimeMS());
+	Transform->transfrom.position.z += Value.Y * mov * 1 / (GetWorld()->GetGameTimer()->DeltaTimeMS());
 }
 
 void Triangle::SetFillTriangel(FInputValue Value)

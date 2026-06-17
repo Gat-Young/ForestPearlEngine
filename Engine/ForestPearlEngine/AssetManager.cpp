@@ -64,6 +64,12 @@ AssetManager::AssetManager()
 	DummyMesh["Triangle2"].push_back({ 0.0f,-1.0f, 5.0f, 1.0f, 0xff00ff00 });
 	DummyMesh["Triangle2"].push_back({ 0.5f, 0.0f, 5.0f, 1.0f, 0xff0000ff });
 	*/
+
+	//Face 0 : Á¤»ï°¢Çü.(CW) 
+	// 3D ÁÂÇ¥ (x, y, z)   »ö»ó( a, r, g, b)   a, °ð Alpha ´Â ±âº»°ª 255 (1.0f) 
+	DummyMesh["Triangle3"].push_back({ -0.5f, 0.0f, 0.0f, 0xffff0000 });			//v0, Red.	¡Ú
+	DummyMesh["Triangle3"].push_back({ 0.0f, 1.0f, 0.0f,  0xff00ff00 });		//v1, Green ¡Ú
+	DummyMesh["Triangle3"].push_back({ 0.5f, 0.0f, 0.0f,  0xff0000ff });		//v2, Blue ¡Ú
 }
 
 void AssetManager::SetRenderer(Renderer* Renderer)

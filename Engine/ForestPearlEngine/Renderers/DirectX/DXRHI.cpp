@@ -584,7 +584,7 @@ void D3DMatrixScale(D3DMATRIX* Matrix, float Scale[3])
     D3DMatrixMultiply(Matrix, &ScaleMatrix);
 }
 
-#define Radian(degree) (degree * 3.141592f / 180.0f)
+#define Radian(degree) (degree / 180.0f * 3.141592f)
 
 //Pitch
 void D3DMatrixRotationPitch(D3DMATRIX* Matrix, float Rotation)
@@ -872,20 +872,59 @@ HRESULT DXDeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRA
 
     if (TransformStateType >= D3DTS_WORLD && TransformStateType <= D3DTS_WORLD3)
     {
+        DirectX::XMMATRIX ModelingMatrix;
+
         //스케일 처리.
         //..
         float scale[3] = { pMatrix->scale_x, pMatrix->scale_y, pMatrix->scale_z };
-        D3DMatrixScale(&DMatrix, scale);
+        //D3DMatrixScale(&DMatrix, scale);
         
+        DirectX::XMFLOAT4X4  xmScale;
+        DirectX::XMStoreFloat4x4(&xmScale, DirectX::XMMatrixScaling(pMatrix->scale_x, pMatrix->scale_y, pMatrix->scale_z));
+        DirectX::XMMATRIX Scale = DirectX::XMLoadFloat4x4(&xmScale);
+
+        DirectX::XMMATRIX Rotation;
         //회전 처리.
         //
         float rotation[3] = { pMatrix->rotation_x, pMatrix->rotation_y, pMatrix->rotation_z };
-        D3DMatrixRotation(&DMatrix, rotation);
-        
+        //D3DMatrixRotation(&DMatrix, rotation);
+        DirectX::XMFLOAT4X4 xmRotationZ;
+        DirectX::XMStoreFloat4x4(&xmRotationZ, DirectX::XMMatrixRotationZ(pMatrix->rotation_z));
+        DirectX::XMMATRIX RotationZ = DirectX::XMLoadFloat4x4(&xmRotationZ);
+
+
+        DirectX::XMFLOAT4X4 xmRotationY;
+        DirectX::XMStoreFloat4x4(&xmRotationY, DirectX::XMMatrixRotationY(pMatrix->rotation_y));
+        DirectX::XMMATRIX RotationY = DirectX::XMLoadFloat4x4(&xmRotationY);
+
+        DirectX::XMFLOAT4X4 xmRotationX;
+        DirectX::XMStoreFloat4x4(&xmRotationX, DirectX::XMMatrixRotationX(pMatrix->rotation_x));
+        DirectX::XMMATRIX RotationX = DirectX::XMLoadFloat4x4(&xmRotationX);
+
+        Rotation = DirectX::XMMatrixMultiply(RotationZ, RotationY);
+        Rotation = DirectX::XMMatrixMultiply(Rotation, RotationX);
+
+        ModelingMatrix = DirectX::XMMatrixMultiply(Scale, Rotation);
         //이동 처리.
         //
         float position[3] = { pMatrix->position_x, pMatrix->position_y, pMatrix->position_z };
-        D3DMatrixTransform(&DMatrix, position);
+        //D3DMatrixTransform(&DMatrix, position);
+        DirectX::XMFLOAT4X4  xmPosition;
+        DirectX::XMStoreFloat4x4(&xmPosition, DirectX::XMMatrixTranslation(pMatrix->position_x, pMatrix->position_y, pMatrix->position_z));
+        DirectX::XMMATRIX Position = DirectX::XMLoadFloat4x4(&xmPosition);
+
+        ModelingMatrix = DirectX::XMMatrixMultiply(ModelingMatrix, Position);
+
+        DirectX::XMFLOAT4X4 temp;
+        DirectX::XMStoreFloat4x4(&temp, ModelingMatrix);
+
+        DMatrix =
+        {
+            temp._11, temp._12, temp._13, temp._14,
+            temp._21, temp._22, temp._23, temp._24,
+            temp._31, temp._32, temp._33, temp._34,
+            temp._41, temp._42, temp._43, temp._44,
+        };
 
     }
 
@@ -900,15 +939,13 @@ HRESULT DXDeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRA
         up = DirectX::XMVectorSet(pMatrix->Up_x, pMatrix->Up_y, pMatrix->Up_z, 0);
         XMStoreFloat4x4(&xm, DirectX::XMMatrixLookAtLH(eye, lookat, up));
 
-        D3DMATRIX xmDMatrix =
+        DMatrix =
         {
             xm._11, xm._12, xm._13, xm._14,
             xm._21, xm._22, xm._23, xm._24,
             xm._31, xm._32, xm._33, xm._34,
             xm._41, xm._42, xm._43, xm._44,
         };
-
-        D3DMatrixMultiply(&DMatrix, &xmDMatrix);
     }
 
     //투영 행렬 처리
@@ -917,15 +954,13 @@ HRESULT DXDeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRA
         //수학 사용. (과제 제시, 참고용)
         DirectX::XMFLOAT4X4 xm;
         DirectX::XMStoreFloat4x4(&xm, DirectX::XMMatrixPerspectiveFovLH(Radian(pMatrix->Fov), pMatrix->Aspect, pMatrix->Zn, pMatrix->Zf));
-        D3DMATRIX xmDMatrix =
+        DMatrix =
         {
             xm._11, xm._12, xm._13, xm._14,
             xm._21, xm._22, xm._23, xm._24,
             xm._31, xm._32, xm._33, xm._34,
             xm._41, xm._42, xm._43, xm._44,
         };
-
-        D3DMatrixMultiply(&DMatrix, &xmDMatrix);
     }
 
     Device->SetTransform(TransformStateType, &DMatrix);

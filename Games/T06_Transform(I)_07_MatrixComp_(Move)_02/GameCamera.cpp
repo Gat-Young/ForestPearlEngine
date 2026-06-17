@@ -25,6 +25,8 @@ void GameCamera::Initialize()
 	Camera->Zn = 1.0f;				//근평면 거리
 	Camera->Zf = 100.0f;			//원평면 거리
 
+	Camera->Active = true;			//카메라 사용 설정
+
 	Camera->RegistCamera(); //카메라 컴포넌트 등록
 }
 

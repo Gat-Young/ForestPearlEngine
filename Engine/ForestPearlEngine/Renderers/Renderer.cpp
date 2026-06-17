@@ -109,8 +109,8 @@ void Renderer::ObjectRendering()
 		//FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_CW);
 		//FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_CCW);
 
-		//FPRenderDevice->SetRenderState(FPRHIRS_FILLMODE, *(RenderItem.isFill) ? FPRHIFILL_SOLID : FPRHIFILL_WIREFRAME);
-		FPRenderDevice->SetRenderState(FPRHIRS_FILLMODE, FPRHIFILL_WIREFRAME);
+		FPRenderDevice->SetRenderState(FPRHIRS_FILLMODE, *(RenderItem.isFill) ? FPRHIFILL_SOLID : FPRHIFILL_WIREFRAME);
+	
 
 
 		//출력 스트림 설정

@@ -17,16 +17,16 @@ void FPOrb::Initialize()
 	Transform->transform.position.x = 0.0f;
 	Transform->transform.position.y = 0.0f;
 	Transform->transform.position.z = 0.0f;
-					 
+
 	Transform->transform.rotation.x = 0.0f;
 	Transform->transform.rotation.y = 0.0f;
 	Transform->transform.rotation.z = 0.0f;
-					 
+
 	Transform->transform.scale.x = 1.0f;
 	Transform->transform.scale.y = 1.0f;
 	Transform->transform.scale.z = 1.0f;
 
-	Mesh = new MeshComponent("Triangle2", &(Transform->transform));
+	Mesh = new MeshComponent("Orb", &(Transform->transform));
 
 	FPAController* Controller = GetWorld()->GetController(0);
 

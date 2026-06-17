@@ -33,6 +33,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BaseGame", "Games\BaseGame\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HW_03_World+Rotation", "Games\HW_03_World+Rotation\HW_03_World+Rotation.vcxproj", "{3D64DE99-9FC1-4052-AAD8-97FC31BF41DF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "T06_Transform(I)_07_MatrixComp_(Move)_02", "Games\T06_Transform(I)_07_MatrixComp_(Move)_02\T06_Transform(I)_07_MatrixComp_(Move)_02.vcxproj", "{BDFFFD59-8B08-4AED-9DA7-22D1EDB5C5F0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -129,6 +131,14 @@ Global
 		{3D64DE99-9FC1-4052-AAD8-97FC31BF41DF}.Release|x64.Build.0 = Release|x64
 		{3D64DE99-9FC1-4052-AAD8-97FC31BF41DF}.Release|x86.ActiveCfg = Release|Win32
 		{3D64DE99-9FC1-4052-AAD8-97FC31BF41DF}.Release|x86.Build.0 = Release|Win32
+		{BDFFFD59-8B08-4AED-9DA7-22D1EDB5C5F0}.Debug|x64.ActiveCfg = Debug|x64
+		{BDFFFD59-8B08-4AED-9DA7-22D1EDB5C5F0}.Debug|x64.Build.0 = Debug|x64
+		{BDFFFD59-8B08-4AED-9DA7-22D1EDB5C5F0}.Debug|x86.ActiveCfg = Debug|Win32
+		{BDFFFD59-8B08-4AED-9DA7-22D1EDB5C5F0}.Debug|x86.Build.0 = Debug|Win32
+		{BDFFFD59-8B08-4AED-9DA7-22D1EDB5C5F0}.Release|x64.ActiveCfg = Release|x64
+		{BDFFFD59-8B08-4AED-9DA7-22D1EDB5C5F0}.Release|x64.Build.0 = Release|x64
+		{BDFFFD59-8B08-4AED-9DA7-22D1EDB5C5F0}.Release|x86.ActiveCfg = Release|Win32
+		{BDFFFD59-8B08-4AED-9DA7-22D1EDB5C5F0}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -146,6 +156,7 @@ Global
 		{E57A5A88-B814-405F-A924-4C7B2BDBB47F} = {1642BA96-6445-424A-809F-34E6652F5A40}
 		{B64A70A8-69C4-486F-9950-ED5EF36D116F} = {C1104179-D58E-4830-8C1F-B527E94E6800}
 		{3D64DE99-9FC1-4052-AAD8-97FC31BF41DF} = {C1104179-D58E-4830-8C1F-B527E94E6800}
+		{BDFFFD59-8B08-4AED-9DA7-22D1EDB5C5F0} = {C1104179-D58E-4830-8C1F-B527E94E6800}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {964F8A38-75AA-4C4E-898D-CAC2B108B674}

@@ -6,6 +6,7 @@
 #include <iostream>
 #include "../MeshRenderList.h"
 #include "../TextRenderList.h"
+#include "../CameraList.h"
 
 Renderer::Renderer()
 {
@@ -94,6 +95,49 @@ int Renderer::MakeVB(std::vector<COLVTX> Vertex)
 
 void Renderer::ObjectRendering()
 {
+	std::vector<CameraItem> CamList = CameraList::Get().GetRenderList();
+
+	for (CameraItem CamItem : CamList)
+	{
+		if (!*(CamItem.Active)) continue;
+
+		FPRHITRANSFORMMATRIX g_mTM; //카메라 행렬
+
+		g_mTM.position_x = CamItem.Position->x;
+		g_mTM.position_y = CamItem.Position->y;
+		g_mTM.position_z = CamItem.Position->z;
+		g_mTM.position_w = 1.0f;
+
+		g_mTM.rotation_x = CamItem.Rotation->x;
+		g_mTM.rotation_y = CamItem.Rotation->y;
+		g_mTM.rotation_z = CamItem.Rotation->z;
+		g_mTM.rotation_z = 1.0f;
+
+		g_mTM.scale_x = CamItem.Scale->x;
+		g_mTM.scale_y = CamItem.Scale->y;
+		g_mTM.scale_z = CamItem.Scale->z;
+		g_mTM.scale_w = 1.0f;
+		
+		g_mTM.LookAt_x = CamItem.LookAt->x;
+		g_mTM.LookAt_y = CamItem.LookAt->y;
+		g_mTM.LookAt_z = CamItem.LookAt->z;
+		g_mTM.LookAt_w = 1.0f;
+
+		g_mTM.Up_x = CamItem.Up->x;
+		g_mTM.Up_y = CamItem.Up->y;
+		g_mTM.Up_z = CamItem.Up->z;
+		g_mTM.Up_w = 1.0f;
+
+		g_mTM.Fov = *(CamItem.Fov);
+		g_mTM.Aspect = *(CamItem.Aspect);
+		g_mTM.Zn = *(CamItem.Zn);
+		g_mTM.Zf = *(CamItem.Zf);
+
+
+		FPRenderDevice->SetTransform(FPRHITS_VIEW, &g_mTM);
+
+		FPRenderDevice->SetTransform(FPRHITS_PROJECTION, &g_mTM);
+	}
 
 	FPRenderDevice->BeginScene();
 	FPRenderDevice->Clear(0, NULL, FPRHICLEAR_TARGET, FPRHICOLOR_COLORVALUE(0, 0.12f, 0.35f, 1.0f), 1.0f, 0);
@@ -148,7 +192,10 @@ void Renderer::UIRendering()
 	std::vector<UIContextItem> RenderList = TextRenderList::Get().GetRenderList();
 	for(UIContextItem UI : RenderList)
 	{
-		if(*(UI.active)) Renderer::DrawText(*(UI.x), *(UI.y), *(UI.color), (*(UI.msg)).c_str());
+		if (*(*(UI.active)))
+		{
+			Renderer::DrawText(*(UI.x), *(UI.y), *(UI.color), (*(UI.msg)).c_str());
+		}
 	}
 }
 

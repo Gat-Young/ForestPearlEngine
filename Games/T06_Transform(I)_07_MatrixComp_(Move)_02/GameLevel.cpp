@@ -7,6 +7,7 @@ void GameLevel::Initialize()
 	ActorlList.push_back("GameCamera");
 	ActorlList.push_back("Triangle");
 	ActorlList.push_back("UI");
+	ActorlList.push_back("Grid");
 	__super::Initialize();
 }
 

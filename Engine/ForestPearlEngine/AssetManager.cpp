@@ -77,6 +77,7 @@ void AssetManager::SetRenderer(Renderer* Renderer)
 	FPRenderer = Renderer;
 }
 
+
 std::pair<int, int> AssetManager::LordVertexVuffer(std::string MeshPath)
 {
 	if (MeshMap.count(MeshPath) > 0)
@@ -92,13 +93,18 @@ std::pair<int, int> AssetManager::LordVertexVuffer(std::string MeshPath)
 	return {MeshMap[MeshPath], LoadMesh.size()/3};
 }
 
+int AssetManager::MakeVertexVuffer(std::vector<FPMesh> Mesh)
+{
+	return FPRenderer->MakeVB(ChangeCOLVTX(Mesh));
+}
+
 std::vector<COLVTX> AssetManager::ChangeCOLVTX(std::vector<FPMesh> Mesh)
 {
 	std::vector<COLVTX> Vertex;
 
 	for (int i = 0; i < Mesh.size(); ++i)
 	{
-		Vertex.push_back(MakeCOLVTX(Mesh[i].x, Mesh[i].y, Mesh[i].z, Mesh[i].color));
+		Vertex.push_back(MakeCOLVTX(Mesh[i].vPos.x, Mesh[i].vPos.y, Mesh[i].vPos.z, Mesh[i].color));
 	}
 
 	return Vertex;

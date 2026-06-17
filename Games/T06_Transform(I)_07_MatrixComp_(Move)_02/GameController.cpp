@@ -19,6 +19,8 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_SetCullTriangel", VK_F5, ModifyInfoTriger);
 	GetInputComponent().AddMappingKey("IA_SetUITriangel", VK_F1, ModifyInfoTriger);
 
+	GetInputComponent().AddMappingKey("IA_SetGrid", VK_F2, ModifyInfoTriger);
+
 	__super::Initialize();
 }
 

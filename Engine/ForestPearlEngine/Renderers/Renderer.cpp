@@ -7,6 +7,7 @@
 #include "../MeshRenderList.h"
 #include "../TextRenderList.h"
 #include "../CameraList.h"
+#include "../GizmoRenderList.h"
 
 Renderer::Renderer()
 {
@@ -141,6 +142,41 @@ void Renderer::ObjectRendering()
 
 	FPRenderDevice->BeginScene();
 	FPRenderDevice->Clear(0, NULL, FPRHICLEAR_TARGET, FPRHICOLOR_COLORVALUE(0, 0.12f, 0.35f, 1.0f), 1.0f, 0);
+
+	std::vector<GizmoRenderItem> GizemoRenderList = GizmoRenderList::Get().GetRenderList();
+	for (GizmoRenderItem RenderItem : GizemoRenderList)
+	{
+		if (!*(RenderItem.Active)) continue;
+
+		//조명 끄기
+		FPRenderDevice->SetRenderState(FPRHIRS_LIGHTING, FALSE);
+
+		//출력 스트림 설정
+		FPRenderDevice->SetStreamSource(0, FPVertexBufferList[*(RenderItem.VBIndex)], 0, sizeof(COLVTX));
+
+		//정점 형식 설정
+		FPRenderDevice->SetFVF(FVF_COLVTX);
+
+		FPRHITRANSFORMMATRIX g_mTM; //변환 행렬
+
+		g_mTM.position_x = RenderItem.Position->x;
+		g_mTM.position_y = RenderItem.Position->y;
+		g_mTM.position_z = RenderItem.Position->z;
+
+		g_mTM.rotation_x = RenderItem.Rotation->x;
+		g_mTM.rotation_y = RenderItem.Rotation->y;
+		g_mTM.rotation_z = RenderItem.Rotation->z;
+
+		g_mTM.scale_x = RenderItem.Scale->x;
+		g_mTM.scale_y = RenderItem.Scale->y;
+		g_mTM.scale_z = RenderItem.Scale->z;
+
+		//월드 변환 행렬 설정 : 렌더링 전에 설정 되어야 합니다.
+		FPRenderDevice->SetTransform(FPRHITS_WORLD, &g_mTM);		//★ 
+
+		//기즈모 데이터 그리기
+		FPRenderDevice->DrawPrimitive(FPRHIPT_LINELIST, 0, *(RenderItem.LineCount));    //Face 그리기
+	}
 
 	std::vector<MeshRenderItem> RenderList = MeshRenderList::Get().GetRenderList();
 	for (MeshRenderItem RenderItem : RenderList)

@@ -5,8 +5,6 @@
 #include "../../Engine/ForestPearlEngine/Define/FPMath.h"
 #include "../../Engine/ForestPearlEngine/TransformComponent.h"
 
-class FPInputMappingContext;
-class FPInputAction;
 struct FInputValue;
 
 class Triangle : public FPActor

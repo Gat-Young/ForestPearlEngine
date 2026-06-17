@@ -137,6 +137,8 @@
     <ClInclude Include="GameProjectClassRegistry.h" />
     <ClInclude Include="GameProjectLoader.h" />
     <ClInclude Include="GameTimer.h" />
+    <ClInclude Include="GizmoComponent.h" />
+    <ClInclude Include="GizmoRenderList.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="MeshRenderList.h" />
     <ClInclude Include="Object\Actor.h" />
@@ -163,6 +165,8 @@
     <ClCompile Include="FPWorld.cpp" />
     <ClCompile Include="GameProjectClassRegistry.cpp" />
     <ClCompile Include="GameTimer.cpp" />
+    <ClCompile Include="GizmoComponent.cpp" />
+    <ClCompile Include="GizmoRenderList.cpp" />
     <ClCompile Include="MeshComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>

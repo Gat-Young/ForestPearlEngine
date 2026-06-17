@@ -7,7 +7,7 @@
 #include "../../Engine/ForestPearlEngine/InputValue.h"
 #include "../../Engine/ForestPearlEngine/TransformComponent.h"
 #include "../../Engine/ForestPearlEngine/GameTimer.h"
-#include <iostream>
+#include "GameWorld.h"
 
 #include <iostream>
 
@@ -32,11 +32,6 @@ void FPOrb::Initialize()
 
 	if (Controller == nullptr)
 		return;
-
-	//Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Pressed, &Triangle::Move);
-
-	//Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &Triangle::SetFillTriangel);
-	//Controller->GetInputComponent().BindMethod("IA_SetCullTriangle", this, EKeyState::Down, &Triangle::SetCullTriangle);
 }
 
 void FPOrb::BeginPlay()
@@ -45,6 +40,25 @@ void FPOrb::BeginPlay()
 
 void FPOrb::Tick()
 {
+	GameWorld* GW = dynamic_cast<GameWorld*>(GetWorld());
+	if (GW == nullptr)
+	{
+		std::cout << "AddOrb :: No GameWorld" << "\n";
+	}
+
+	int MaxActorCount = GW->GetCurrentActorCount() - 1;
+	if (ParnetObjectIndex > MaxActorCount || ParnetObjectIndex == -1)
+		return;
+
+	std::vector<FPActor*> GameActorList = GW->GetGameActorList();
+
+	FPOrb* ParentActor = dynamic_cast<FPOrb*>(GameActorList[ParnetObjectIndex]);
+	if (ParentActor == nullptr)
+	{
+		std::cout << "AddOrb :: No ParentActor" << "\n";
+	}
+
+	Transform->transform.Parent = &ParentActor->GetTransform().transform;
 }
 
 void FPOrb::SetOrbType(EOrbType Type)

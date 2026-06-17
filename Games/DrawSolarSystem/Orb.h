@@ -19,6 +19,9 @@ class FPOrb : public FPActor
 		float Speed = 20.f;
 		EOrbType OrbType = EOrbType::Planet;
 
+		int ThisObjectIndex = -1;
+		int ParnetObjectIndex = -1;
+
 	public:
 		FPOrb() = default;
 		virtual void Initialize() override;
@@ -27,6 +30,8 @@ class FPOrb : public FPActor
 
 		void SetOrbType(EOrbType Type);
 		TransformCompoenent& GetTransform() { return *Transform; }
+		void SetParnetObjectIndex(int InIndex) { ParnetObjectIndex = InIndex; }
+		void SetThisObjectIndex(int InIndex) { ThisObjectIndex = InIndex; }
 
 		//void SetPosition(const MYHelper::Vector2F& pos);
 		//bool IsHitTest(D2D1_POINT_2F WorldPoint, D2D1::Matrix3x2F ViewTM);

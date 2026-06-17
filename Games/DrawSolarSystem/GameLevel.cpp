@@ -10,9 +10,13 @@
 void GameLevel::Initialize()
 {
 	ActorlList.push_back("UI");
+	CurrentActorCount++;
 	ActorlList.push_back("FPOrb"); //Parent
+	CurrentActorCount++;
 	ActorlList.push_back("FPOrb"); //Child
+	CurrentActorCount++;
 	ActorlList.push_back("FPOrb"); //Child2
+	CurrentActorCount++;
 
 	__super::Initialize();
 }
@@ -48,8 +52,8 @@ void GameLevel::BeginPlay()
 	GrandChildTransform->scale.y = 0.15f;
 	GrandChildTransform->scale.z = 0.15f;
 
-	ChildTransform->Parent = ParentTransform;
-	GrandChildTransform->Parent = ChildTransform;
+	//ChildTransform->Parent = ParentTransform;
+	//GrandChildTransform->Parent = ChildTransform;
 }
 
 void GameLevel::Tick()
@@ -57,16 +61,16 @@ void GameLevel::Tick()
 	__super::Tick();
 
 	FPOrb* Parent = dynamic_cast<FPOrb*>(GameActorList[1]);
-	FPOrb* GrandChild = dynamic_cast<FPOrb*>(GameActorList[2]);
-	if (Parent == nullptr || GrandChild == nullptr)
+	FPOrb* Child = dynamic_cast<FPOrb*>(GameActorList[2]);
+	if (Parent == nullptr || Child == nullptr)
 	{
 		std::cout << "Parent Orb == nullptr" << "\n";
 		return;
 	}
 
 	Transform* ParentTransform = &Parent->GetTransform().transform;
-	ParentTransform->rotation.z += 0.01 * 1/GetWorld()->GetGameTimer()->DeltaTime();
+	ParentTransform->rotation.z += 0.001 * 1/GetWorld()->GetGameTimer()->DeltaTime();
 
-	Transform* GrandChildTransform = &GrandChild->GetTransform().transform;
-	GrandChildTransform->rotation.z += 0.02 * 1 / GetWorld()->GetGameTimer()->DeltaTime();
+	//Transform* ChildTransform = &Child->GetTransform().transform;
+	//ChildTransform->rotation.z += 0.002 * 1 / GetWorld()->GetGameTimer()->DeltaTime();
 }

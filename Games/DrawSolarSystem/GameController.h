@@ -12,4 +12,5 @@ class GameController : public FPAController
 
 	private:
 		void OnMouseLButtonDown(struct FInputValue InputValue);
+		void OnMouseRButtonDown(struct FInputValue InputValue);
 };

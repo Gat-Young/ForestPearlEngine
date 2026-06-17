@@ -9,9 +9,9 @@ enum class EOrbType
 };
 
 class FPOrb : public FPActor
-{	
+{
 	private:
-		class TransformCompoenent* Transform;
+		class TransformCompoenent* FPTransform;
 		class MeshComponent* Mesh;
 
 		float angle = 0;
@@ -21,6 +21,8 @@ class FPOrb : public FPActor
 
 		int ThisObjectIndex = -1;
 		int ParnetObjectIndex = -1;
+		float DistanceThreshold = 0.1;
+		bool bIsFill = true;
 
 	public:
 		FPOrb() = default;
@@ -29,9 +31,11 @@ class FPOrb : public FPActor
 		virtual void Tick() override;
 
 		void SetOrbType(EOrbType Type);
-		TransformCompoenent& GetTransform() { return *Transform; }
+		TransformCompoenent& GetTransform() { return *FPTransform; }
 		void SetParnetObjectIndex(int InIndex) { ParnetObjectIndex = InIndex; }
 		void SetThisObjectIndex(int InIndex) { ThisObjectIndex = InIndex; }
+		bool IsHitObject(struct FPVector2 InPos);
+		FPVector2 GetWorldPos();
 
 		//void SetPosition(const MYHelper::Vector2F& pos);
 		//bool IsHitTest(D2D1_POINT_2F WorldPoint, D2D1::Matrix3x2F ViewTM);

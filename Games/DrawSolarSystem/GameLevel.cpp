@@ -34,6 +34,10 @@ void GameLevel::BeginPlay()
 		return;
 	}
 
+	Parent->SetThisObjectIndex(1);
+	Child->SetThisObjectIndex(2);
+	GrandChild->SetThisObjectIndex(3);
+
 	Transform* ParentTransform = &Parent->GetTransform().transform;
 	Transform* ChildTransform = &Child->GetTransform().transform;
 	Transform* GrandChildTransform = &GrandChild->GetTransform().transform;
@@ -69,8 +73,8 @@ void GameLevel::Tick()
 	}
 
 	Transform* ParentTransform = &Parent->GetTransform().transform;
-	ParentTransform->rotation.z += 0.0005 * 1/GetWorld()->GetGameTimer()->DeltaTime();
+	ParentTransform->rotation.z += 10 * GetWorld()->GetGameTimer()->DeltaTime();
 
 	Transform* ChildTransform = &Child->GetTransform().transform;
-	ChildTransform->rotation.z += 0.001 * 1 / GetWorld()->GetGameTimer()->DeltaTime();
+	ChildTransform->rotation.z += 50 * GetWorld()->GetGameTimer()->DeltaTime();
 }

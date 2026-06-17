@@ -69,7 +69,7 @@ void GameController::OnMouseRButtonDown(FInputValue InputValue)
 		FPVector2 InPos = { InputValue.X, InputValue.Y };
 		if (Orb->IsHitObject(InPos))
 		{
-			std::cout << "Orb Hitted!" << "\n";
+			//std::cout << "Orb Hitted!" << "\n";
 		}
 	}
 }

@@ -19,6 +19,9 @@
     <Filter Include="Renderers">
       <UniqueIdentifier>{e38098a3-e2d4-4dc1-a9cc-ffab0e398905}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Component">
+      <UniqueIdentifier>{6b98ecfc-d714-4dfe-8575-295ec0e874a8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -87,9 +90,6 @@
     <ClInclude Include="FPAGameMode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TransformComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GameTimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -107,6 +107,18 @@
     </ClInclude>
     <ClInclude Include="GizmoRenderList.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FPActorComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="FPSceneComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="FPPrimitiveComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="FTransform.h">
+      <Filter>Component</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -175,6 +187,9 @@
     </ClCompile>
     <ClCompile Include="GizmoComponent.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FPSceneComponent.cpp">
+      <Filter>Component</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
 #pragma once
 #include "FPActorComponent.h"
+#include "FTransform.h"
 
 ////////////////////////////////////////////////////////
 //지오메트리 표현이 필요하지 않은 위치 기반 동작을 지원
@@ -7,8 +8,12 @@
 class FPSceneComponent : public FPActorComponent
 {
 	protected:
+		FTransform WorldTransform;
+		FTransform RelativeTransform;
+		
 		FPSceneComponent* ParentComponent = nullptr;
 		std::vector<FPSceneComponent*> ChildComponent;
+
 
 		void DetachChildComponet(FPSceneComponent* Child);
 

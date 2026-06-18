@@ -68,12 +68,19 @@ AssetManager::AssetManager()
 	DummyMesh["Triangle2"].push_back({ 0.0f,-1.0f, 5.0f, 1.0f, 0xff00ff00 });
 	DummyMesh["Triangle2"].push_back({ 0.5f, 0.0f, 5.0f, 1.0f, 0xff0000ff });
 	*/
+
+	//Face 0 : Á¤»ï°¢Çü.(CW) 
+	// 3D ÁÂÇ¥ (x, y, z)   »ö»ó( a, r, g, b)   a, °ð Alpha ´Â ±âº»°ª 255 (1.0f) 
+	DummyMesh["Triangle3"].push_back({ -0.5f, 0.0f, 0.0f, 0xffff0000 });			//v0, Red.	¡Ú
+	DummyMesh["Triangle3"].push_back({ 0.0f, 1.0f, 0.0f,  0xff00ff00 });		//v1, Green ¡Ú
+	DummyMesh["Triangle3"].push_back({ 0.5f, 0.0f, 0.0f,  0xff0000ff });		//v2, Blue ¡Ú
 }
 
 void AssetManager::SetRenderer(Renderer* Renderer)
 {
 	FPRenderer = Renderer;
 }
+
 
 std::pair<int, int> AssetManager::LordVertexVuffer(std::string MeshPath)
 {
@@ -90,13 +97,18 @@ std::pair<int, int> AssetManager::LordVertexVuffer(std::string MeshPath)
 	return {MeshMap[MeshPath], LoadMesh.size()/3};
 }
 
+int AssetManager::MakeVertexVuffer(std::vector<FPMesh> Mesh)
+{
+	return FPRenderer->MakeVB(ChangeCOLVTX(Mesh));
+}
+
 std::vector<COLVTX> AssetManager::ChangeCOLVTX(std::vector<FPMesh> Mesh)
 {
 	std::vector<COLVTX> Vertex;
 
 	for (int i = 0; i < Mesh.size(); ++i)
 	{
-		Vertex.push_back(MakeCOLVTX(Mesh[i].x, Mesh[i].y, Mesh[i].z, Mesh[i].color));
+		Vertex.push_back(MakeCOLVTX(Mesh[i].vPos.x, Mesh[i].vPos.y, Mesh[i].vPos.z, Mesh[i].color));
 	}
 
 	return Vertex;

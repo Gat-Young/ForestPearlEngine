@@ -96,7 +96,16 @@
     <ClInclude Include="Object\Components\InputComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="InputValue.h">
+    <ClInclude Include="CameraComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GizmoComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GizmoRenderList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -153,6 +162,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Object\Components\InputComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GizmoRenderList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GizmoComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -13,7 +13,7 @@ struct UIContext
 class TextComponent
 {
 	private:
-		bool active;
+		bool* active;
 		int x;
 		int y;
 		unsigned long color;
@@ -25,6 +25,6 @@ class TextComponent
 	public:
 		TextComponent();
 
-		void SetTextData(bool active, int x, int y, unsigned long color, std::basic_string<TCHAR> msg);
+		void SetTextData(bool* active, int x, int y, unsigned long color, std::basic_string<TCHAR> msg);
 		~TextComponent();
 };

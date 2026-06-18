@@ -14,6 +14,7 @@ class UI : public FPActor
 		FPInputMappingContext*	IMC;
 		FPInputAction* IA = nullptr;
 		bool bShow = true;
+		bool AlwaysOn = true;
 		unsigned int time = 0;
 
 	public:
@@ -22,6 +23,6 @@ class UI : public FPActor
 		virtual void Tick() override;
 		void CalFPS(int x, int y);
 		void ShowInfo();
-		void SetUIContext(bool actieve, int x, int y, unsigned long color, std::basic_string<TCHAR> text);
+		void SetUIContext(bool* actieve, int x, int y, unsigned long color, std::basic_string<TCHAR> text);
 		void SetActiveViewHelp(struct FInputValue Value);
 };

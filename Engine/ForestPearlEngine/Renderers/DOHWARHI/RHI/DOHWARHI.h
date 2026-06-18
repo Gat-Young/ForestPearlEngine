@@ -51,6 +51,8 @@ public:
     HRESULT SetStreamSource(UINT StreamNumber, FPRHIVertexBuffer* pStreamData, UINT OffsetInBytes, UINT Stride) override;
     HRESULT SetFVF(DWORD FVF) override;
 
+    HRESULT SetTransform(FPRHITRANSFORMSTATETYPE State, CONST FPRHITRANSFORMMATRIX* pMatrix) override;
+
 };
 
 class DOHWARHI : public FPRHI

@@ -7,6 +7,8 @@
 #include <stack>
 #include "../MeshRenderList.h"
 #include "../TextRenderList.h"
+#include "../CameraList.h"
+#include "../GizmoRenderList.h"
 
 Renderer::Renderer()
 {
@@ -82,7 +84,7 @@ int Renderer::MakeVB(std::vector<COLVTX> Vertex)
 	}
 
 	//버퍼 채우기. 
-	VOID* pVB;
+	VOID* pVB = nullptr;
 	if (FAILED(FPVertexBufferList[VertexBufferSize]->Lock(0, (Vertex.size() * sizeof(COLVTX)), (void**)&pVB, 0)))
 	{
 		return E_FAIL;
@@ -95,9 +97,87 @@ int Renderer::MakeVB(std::vector<COLVTX> Vertex)
 
 void Renderer::ObjectRendering()
 {
+	std::vector<CameraItem> CamList = CameraList::Get().GetRenderList();
+
+	for (CameraItem CamItem : CamList)
+	{
+		if (!*(CamItem.Active)) continue;
+
+		FPRHITRANSFORMMATRIX g_mTM; //카메라 행렬
+
+		g_mTM.position_x = CamItem.Position->x;
+		g_mTM.position_y = CamItem.Position->y;
+		g_mTM.position_z = CamItem.Position->z;
+		g_mTM.position_w = 1.0f;
+
+		g_mTM.rotation_x = CamItem.Rotation->x;
+		g_mTM.rotation_y = CamItem.Rotation->y;
+		g_mTM.rotation_z = CamItem.Rotation->z;
+		g_mTM.rotation_z = 1.0f;
+
+		g_mTM.scale_x = CamItem.Scale->x;
+		g_mTM.scale_y = CamItem.Scale->y;
+		g_mTM.scale_z = CamItem.Scale->z;
+		g_mTM.scale_w = 1.0f;
+		
+		g_mTM.LookAt_x = CamItem.LookAt->x;
+		g_mTM.LookAt_y = CamItem.LookAt->y;
+		g_mTM.LookAt_z = CamItem.LookAt->z;
+		g_mTM.LookAt_w = 1.0f;
+
+		g_mTM.Up_x = CamItem.Up->x;
+		g_mTM.Up_y = CamItem.Up->y;
+		g_mTM.Up_z = CamItem.Up->z;
+		g_mTM.Up_w = 1.0f;
+
+		g_mTM.Fov = *(CamItem.Fov);
+		g_mTM.Aspect = *(CamItem.Aspect);
+		g_mTM.Zn = *(CamItem.Zn);
+		g_mTM.Zf = *(CamItem.Zf);
+
+
+		FPRenderDevice->SetTransform(FPRHITS_VIEW, &g_mTM);
+
+		FPRenderDevice->SetTransform(FPRHITS_PROJECTION, &g_mTM);
+	}
 
 	FPRenderDevice->BeginScene();
 	FPRenderDevice->Clear(0, NULL, FPRHICLEAR_TARGET, FPRHICOLOR_COLORVALUE(0, 0.12f, 0.35f, 1.0f), 1.0f, 0);
+
+	std::vector<GizmoRenderItem> GizemoRenderList = GizmoRenderList::Get().GetRenderList();
+	for (GizmoRenderItem RenderItem : GizemoRenderList)
+	{
+		if (!*(RenderItem.Active)) continue;
+
+		//조명 끄기
+		FPRenderDevice->SetRenderState(FPRHIRS_LIGHTING, FALSE);
+
+		//출력 스트림 설정
+		FPRenderDevice->SetStreamSource(0, FPVertexBufferList[*(RenderItem.VBIndex)], 0, sizeof(COLVTX));
+
+		//정점 형식 설정
+		FPRenderDevice->SetFVF(FVF_COLVTX);
+
+		FPRHITRANSFORMMATRIX g_mTM; //변환 행렬
+
+		g_mTM.position_x = RenderItem.Position->x;
+		g_mTM.position_y = RenderItem.Position->y;
+		g_mTM.position_z = RenderItem.Position->z;
+
+		g_mTM.rotation_x = RenderItem.Rotation->x;
+		g_mTM.rotation_y = RenderItem.Rotation->y;
+		g_mTM.rotation_z = RenderItem.Rotation->z;
+
+		g_mTM.scale_x = RenderItem.Scale->x;
+		g_mTM.scale_y = RenderItem.Scale->y;
+		g_mTM.scale_z = RenderItem.Scale->z;
+
+		//월드 변환 행렬 설정 : 렌더링 전에 설정 되어야 합니다.
+		FPRenderDevice->SetTransform(FPRHITS_WORLD, &g_mTM);		//★ 
+
+		//기즈모 데이터 그리기
+		FPRenderDevice->DrawPrimitive(FPRHIPT_LINELIST, 0, *(RenderItem.LineCount));    //Face 그리기
+	}
 
 	std::vector<MeshRenderItem> RenderList = MeshRenderList::Get().GetRenderList();
 	for (MeshRenderItem RenderItem : RenderList)
@@ -111,6 +191,8 @@ void Renderer::ObjectRendering()
 		//FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_CCW);
 
 		FPRenderDevice->SetRenderState(FPRHIRS_FILLMODE, *(RenderItem.isFill) ? FPRHIFILL_SOLID : FPRHIFILL_WIREFRAME);
+	
+
 
 		//출력 스트림 설정
 		FPRenderDevice->SetStreamSource(0, FPVertexBufferList[*(RenderItem.VBIndex)], 0, sizeof(COLVTX));
@@ -158,7 +240,10 @@ void Renderer::UIRendering()
 	std::vector<UIContextItem> RenderList = TextRenderList::Get().GetRenderList();
 	for(UIContextItem UI : RenderList)
 	{
-		if(*(UI.active)) Renderer::DrawText(*(UI.x), *(UI.y), *(UI.color), (*(UI.msg)).c_str());
+		if (*(*(UI.active)))
+		{
+			Renderer::DrawText(*(UI.x), *(UI.y), *(UI.color), (*(UI.msg)).c_str());
+		}
 	}
 }
 

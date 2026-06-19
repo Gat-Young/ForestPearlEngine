@@ -51,3 +51,23 @@ void FPActor::SetActorScale3D(FPVector3 Scale)
 {
     RootComponent->SetWorldScale3D(Scale);
 }
+
+FTransform FPActor::GetActorTransform()
+{
+    return RootComponent->GetComponentTransform();;
+}
+
+FPVector3 FPActor::GetActorLocation()
+{
+    return RootComponent->GetComponentLocation();
+}
+
+FPVector3 FPActor::GetActorRotation()
+{
+    return RootComponent->GetComponentRotation();
+}
+
+FPVector3 FPActor::GetActorScale3D()
+{
+    return RootComponent->GetComponentScale();
+}

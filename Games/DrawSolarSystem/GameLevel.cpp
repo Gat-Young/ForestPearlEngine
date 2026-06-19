@@ -1,9 +1,9 @@
 #include "GameLevel.h"
 #include "Orb.h"
 #include "UI.h"
-#include "../../Engine/ForestPearlEngine/TransformComponent.h"
 #include "../../Engine/ForestPearlEngine/MeshRenderList.h"
 #include "../../Engine/ForestPearlEngine/GameTimer.h"
+#include "../../Engine/ForestPearlEngine/FTransform.h"
 
 #include <iostream>
 
@@ -23,7 +23,6 @@ void GameLevel::Initialize()
 
 void GameLevel::BeginPlay()
 {
-	__super::BeginPlay();
 
 	FPOrb* Parent = dynamic_cast<FPOrb*>(GameActorList[1]);
 	FPOrb* Child = dynamic_cast<FPOrb*>(GameActorList[2]);
@@ -38,26 +37,19 @@ void GameLevel::BeginPlay()
 	Child->SetThisObjectIndex(2);
 	GrandChild->SetThisObjectIndex(3);
 
-	Transform* ParentTransform = &Parent->GetTransform().transform;
-	Transform* ChildTransform = &Child->GetTransform().transform;
-	Transform* GrandChildTransform = &GrandChild->GetTransform().transform;
 
-	ParentTransform->scale.x = 0.3f;
-	ParentTransform->scale.y = 0.3f;
-	ParentTransform->scale.z = 0.3f;
+	Parent->SetActorScale3D(FPVector3{0.3f, 0.3f, 0.3f});
 
-	ChildTransform->position.x = 0.5f;
-	ChildTransform->scale.x = 0.2f;
-	ChildTransform->scale.y = 0.2f;
-	ChildTransform->scale.z = 0.2f;
+	Child->SetActorLocation(FPVector3{ 0.5f, 0.0f, 0.0f });
+	Child->SetActorScale3D(FPVector3{ 0.2f, 0.2f, 0.2f });
 
-	GrandChildTransform->position.y = 0.3f;
-	GrandChildTransform->scale.x = 0.15f;
-	GrandChildTransform->scale.y = 0.15f;
-	GrandChildTransform->scale.z = 0.15f;
+	GrandChild->SetActorLocation(FPVector3{ 0.0f, 0.3f, 0.0f });
+	GrandChild->SetActorScale3D(FPVector3{ 0.15f, 0.15f, 0.15f });
 
-	ChildTransform->Parent = ParentTransform;
-	GrandChildTransform->Parent = ChildTransform;
+	Child->AttachToActor(Parent);
+	GrandChild->AttachToActor(Child);
+
+	__super::BeginPlay();
 }
 
 void GameLevel::Tick()
@@ -72,9 +64,7 @@ void GameLevel::Tick()
 		return;
 	}
 
-	Transform* ParentTransform = &Parent->GetTransform().transform;
-	ParentTransform->rotation.z += 10 * GetWorld()->GetGameTimer()->DeltaTime();
+	Parent->SetActorRotation(Parent->GetActorRotation() + FPVector3{0.0f, 0.0f, 10 * GetWorld()->GetGameTimer()->DeltaTime()});
 
-	Transform* ChildTransform = &Child->GetTransform().transform;
-	ChildTransform->rotation.z += 50 * GetWorld()->GetGameTimer()->DeltaTime();
+	Child->SetActorRotation(Child->GetActorRotation() + FPVector3{ 0.0f, 0.0f, 50 * GetWorld()->GetGameTimer()->DeltaTime() });
 }

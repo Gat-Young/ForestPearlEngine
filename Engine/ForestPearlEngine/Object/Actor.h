@@ -22,8 +22,14 @@ class FPActor : public FPObject
 		bool DetachFromActor();
 		bool SetRootComponent(FPSceneComponent* Component);
 
-		//이동
+		//이동 World
 		void SetActorLocation(struct FPVector3 Location);
 		void SetActorRotation(struct FPVector3 Rotation);
 		void SetActorScale3D(struct FPVector3 Scale);
+
+		//Transform 가져오기 World
+		struct FTransform GetActorTransform();
+		struct FPVector3 GetActorLocation();
+		struct FPVector3 GetActorRotation();
+		struct FPVector3 GetActorScale3D();
 };

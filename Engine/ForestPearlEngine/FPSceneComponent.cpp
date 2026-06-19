@@ -48,7 +48,7 @@ void FPSceneComponent::SetWorldRotation(FPVector3 Rotation)
 
 void FPSceneComponent::SetWorldScale3D(FPVector3 Scale)
 {
-	SetWorldScale3D(Scale);
+	SetRelativeScale3D(Scale);
 	WorldTransform.Scale = Scale;
 }
 

@@ -2,8 +2,8 @@
 #include "../../Engine/ForestPearlEngine/Define/FPMath.h"
 #include "GameLevel.h"
 #include "GameWorld.h"
+#include "../../../ForestPearlEngine/Engine/ForestPearlEngine/FTransform.h"
 #include "Orb.h"
-#include "../../Engine/ForestPearlEngine/TransformComponent.h"
 #include <iostream>
 
 void GameMode::Initialize()
@@ -49,12 +49,12 @@ void GameMode::AddOrb(FPVector2 SpawnPos)
 
 	SpawnedActor->SetThisObjectIndex(SpawnedActorIndex);
 
-	Transform* ParentTransform = &ParentActor->GetTransform().transform;
-	Transform* ChildTransform = &SpawnedActor->GetTransform().transform;
+	FTransform ParentTransform = ParentActor->GetActorTransform();
+	FTransform ChildTransform = SpawnedActor->GetActorTransform();
 
-	float ParentRotationTheta = fmodf(ParentTransform->rotation.z, 360) * 3.14159265358979323846f / 180.0f;
+	float ParentRotationTheta = fmodf(ParentTransform.Rotation.z, 360) * 3.14159265358979323846f / 180.0f;
 
-	SpawnedActor->GetTransform().transform.Parent = &ParentActor->GetTransform().transform;
+	SpawnedActor->AttachToActor(ParentActor);
 
 	//std::cout << "ParentRotationDegree ::" << ParentRotationTheta << "\n";
 
@@ -63,11 +63,8 @@ void GameMode::AddOrb(FPVector2 SpawnPos)
 
 	//std::cout << "SpawnPos ::" << SpawnPosX << ", " << SpawnPosY << "\n";
 
-	SpawnedActor->GetTransform().transform.position.x = SpawnPosX;
-	SpawnedActor->GetTransform().transform.position.y = SpawnPosY;
-	SpawnedActor->GetTransform().transform.scale.x = 0.2;
-	SpawnedActor->GetTransform().transform.scale.y = 0.2;
-	SpawnedActor->GetTransform().transform.scale.z = 0.2;
+	SpawnedActor->SetActorLocation(FPVector3{ SpawnPosX , SpawnPosY, 0.0f});
+	SpawnedActor->SetActorScale3D(FPVector3{ 0.2f, 0.2f, 0.2f });
 
 	SpawnedActor->SetParnetObjectIndex(1);
 }

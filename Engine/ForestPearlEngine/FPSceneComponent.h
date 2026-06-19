@@ -15,9 +15,13 @@ class FPSceneComponent : public FPActorComponent
 		std::vector<FPSceneComponent*> ChildComponent;
 
 
+		void AttachChildCompont(FPSceneComponent* Child);
 		void DetachChildComponet(FPSceneComponent* Child);
 
 	public:
 		void SetupAttachment(FPSceneComponent* Parent);
 		void DetachFromComponent();
+
+		//임시로 사용
+		void Tick() override;
 };

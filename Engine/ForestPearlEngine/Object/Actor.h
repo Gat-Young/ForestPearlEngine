@@ -4,7 +4,7 @@
 class FPActor : public FPObject
 {
 	protected:
-		class FPSceneComponent* RootComponent;
+		class FPSceneComponent* RootComponent = nullptr;
 
 	public :
 		virtual void Initialize() override = 0;
@@ -15,7 +15,8 @@ class FPActor : public FPObject
 
 		virtual FPWorld* GetWorld() override final{ return Outer->GetWorld(); }
 
-		bool AttachToComponent();
-		bool AttachToActor();
+		bool AttachToComponent(FPSceneComponent* Parent);
+		bool AttachToActor(FPActor* Parent);
 		bool DetachFromActor();
+		bool SetRootComponent(FPSceneComponent* Component);
 };

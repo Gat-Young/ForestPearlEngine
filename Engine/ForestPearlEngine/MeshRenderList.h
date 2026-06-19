@@ -1,28 +1,6 @@
 #pragma once
 #include <vector>
-
-struct Position
-{
-	float x, y, z;
-};
-
-struct Rotation
-{
-	float x, y, z;
-};
-
-struct Scale
-{
-	float x, y, z;
-};
-
-struct Transform
-{
-	Position position;
-	Rotation rotation;
-	Scale scale;
-	Transform* Parent = nullptr;
-};
+#include "Define/FPMath.h"
 
 struct MeshRenderItem
 {
@@ -30,7 +8,9 @@ struct MeshRenderItem
 	int* FaceSize = nullptr;
 	bool* isFill = nullptr;
 	bool* isCull = nullptr;
-	Transform* transform = nullptr;
+	FPVector3* Location = nullptr;
+	FPVector3* Rotation = nullptr;
+	FPVector3* Scale = nullptr;
 };
 
 class MeshRenderList

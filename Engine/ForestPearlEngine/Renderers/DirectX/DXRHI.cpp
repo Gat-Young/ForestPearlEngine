@@ -1139,7 +1139,7 @@ HRESULT DXRHIDevice::SetFVF(DWORD FVF)
     return S_OK;
 }
 
-HRESULT DXRHIDevice::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRANSFORMMATRIX* pMatrix)
+HRESULT DXRHIDevice::SetTransform(FPRHITRANSFORMSTATETYPE State, FPRHITRANSFORMMATRIX* pMatrix)
 {
     DXDeviceimpl->SetTransform(State, pMatrix);
 

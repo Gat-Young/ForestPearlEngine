@@ -33,7 +33,7 @@ class FPRHIDevice
         virtual HRESULT SetFVF(DWORD FVF) = 0;
 
         //나중에 꼭 수정
-        virtual HRESULT SetTransform(FPRHITRANSFORMSTATETYPE State, std::stack<FPRHITRANSFORMMATRIX>* pMatrix) = 0;
+        virtual HRESULT SetTransform(FPRHITRANSFORMSTATETYPE State, FPRHITRANSFORMMATRIX* pMatrix) = 0;
 
 };
 

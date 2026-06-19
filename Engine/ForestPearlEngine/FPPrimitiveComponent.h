@@ -6,5 +6,6 @@
 //박스, 캡슐, 구체 콜리전 볼륨뿐만 아니라 스태틱 메시 또는 스켈레탈 메시, 스프라이트 또는 빌보드, 파티클 시스템도 포함
 class FPPrimitiveComponent : public FPSceneComponent
 {
-
+public:
+	FPPrimitiveComponent(FPActor* Owner) : FPSceneComponent(Owner) {};
 };

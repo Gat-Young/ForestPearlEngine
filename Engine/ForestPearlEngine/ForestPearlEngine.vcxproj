@@ -133,6 +133,7 @@
     <ClInclude Include="FPAGameMode.h" />
     <ClInclude Include="FPGameInstance.h" />
     <ClInclude Include="FPLevel.h" />
+    <ClInclude Include="FPMovementComponent.h" />
     <ClInclude Include="FPPrimitiveComponent.h" />
     <ClInclude Include="FPSceneComponent.h" />
     <ClInclude Include="FPWorld.h" />
@@ -160,11 +161,14 @@
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="CameraList.cpp" />
+    <ClCompile Include="Define\FPMath.cpp" />
     <ClCompile Include="ForestPearlEngine.cpp" />
     <ClCompile Include="FPAController.cpp" />
     <ClCompile Include="FPAGameMode.cpp" />
     <ClCompile Include="FPGameInstance.cpp" />
     <ClCompile Include="FPLevel.cpp" />
+    <ClCompile Include="FPMovementCompoent.cpp" />
+    <ClCompile Include="FPMovementComponent.cpp" />
     <ClCompile Include="FPSceneComponent.cpp" />
     <ClCompile Include="FPWorld.cpp" />
     <ClCompile Include="GameProjectClassRegistry.cpp" />
@@ -178,6 +182,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="MeshRenderList.cpp" />
+    <ClCompile Include="Object\Actor.cpp" />
     <ClCompile Include="Object\Components\InputAction.cpp" />
     <ClCompile Include="Object\Components\InputComponent.cpp" />
     <ClCompile Include="Object\Components\InputMappingContext.cpp" />

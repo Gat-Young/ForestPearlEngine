@@ -200,33 +200,24 @@ void Renderer::ObjectRendering()
 		//정점 형식 설정
 		FPRenderDevice->SetFVF(FVF_COLVTX);
 
-		std::stack<FPRHITRANSFORMMATRIX> Matrxs;
+		FPRHITRANSFORMMATRIX g_mTM; //변환 행렬
 
-		Transform* NowTransform = RenderItem.transform;
-		do
-		{
-			FPRHITRANSFORMMATRIX g_mTM; //변환 행렬
+		g_mTM.position_x = RenderItem.Location->x;
+		g_mTM.position_y = RenderItem.Location->y;
+		g_mTM.position_z = RenderItem.Location->z;
 
-			g_mTM.position_x = NowTransform->position.x;
-			g_mTM.position_y = NowTransform->position.y;
-			g_mTM.position_z = NowTransform->position.z;
+		g_mTM.rotation_x = RenderItem.Rotation->x;
+		g_mTM.rotation_y = RenderItem.Rotation->y;
+		g_mTM.rotation_z = RenderItem.Rotation->z;
 
-			g_mTM.rotation_x = NowTransform->rotation.x;
-			g_mTM.rotation_y = NowTransform->rotation.y;
-			g_mTM.rotation_z = NowTransform->rotation.z;
+		g_mTM.scale_x = RenderItem.Scale->x;
+		g_mTM.scale_y = RenderItem.Scale->y;
+		g_mTM.scale_z = RenderItem.Scale->z;
 
-			g_mTM.scale_x = NowTransform->scale.x;
-			g_mTM.scale_y = NowTransform->scale.y;
-			g_mTM.scale_z = NowTransform->scale.z;
-
-			Matrxs.push(g_mTM);
-
-			NowTransform = NowTransform->Parent;
-		} while (NowTransform != nullptr);
 
 
 			//월드 변환 행렬 설정 : 렌더링 전에 설정 되어야 합니다.
-		FPRenderDevice->SetTransform(FPRHITS_WORLD, &Matrxs);		//★ 
+		FPRenderDevice->SetTransform(FPRHITS_WORLD, &g_mTM);		//★ 
 
 		//기하데이터 그리기
 		FPRenderDevice->DrawPrimitive(FPRHIPT_TRIANGLELIST, 0, *(RenderItem.FaceSize));    //Face 그리기

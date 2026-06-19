@@ -9,7 +9,9 @@ class FPActor : public FPObject
 	public :
 		virtual void Initialize() override = 0;
 		virtual void BeginPlay() override = 0;
-		virtual void Tick() override = 0;
+
+		//임시로 Component Tick 수행 반드시 __super로 실행 시킬 것
+		virtual void Tick() override;
 
 		virtual ~FPActor() = default;
 
@@ -19,4 +21,9 @@ class FPActor : public FPObject
 		bool AttachToActor(FPActor* Parent);
 		bool DetachFromActor();
 		bool SetRootComponent(FPSceneComponent* Component);
+
+		//이동
+		void SetActorLocation(struct FPVector3 Location);
+		void SetActorRotation(struct FPVector3 Rotation);
+		void SetActorScale3D(struct FPVector3 Scale);
 };

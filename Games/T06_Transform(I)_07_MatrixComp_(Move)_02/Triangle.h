@@ -3,14 +3,13 @@
 #include "../../Engine/ForestPearlEngine/MeshComponent.h"
 #include "../../Engine/ForestPearlEngine/Systems/KeyStateEnum.h"
 #include "../../Engine/ForestPearlEngine/Define/FPMath.h"
-#include "../../Engine/ForestPearlEngine/TransformComponent.h"
 
 struct FInputValue;
 
 class Triangle : public FPActor
 {
 	private:
-		TransformCompoenent* Transform;
+		
 		MeshComponent* Mesh;
 
 		bool isFill = true;

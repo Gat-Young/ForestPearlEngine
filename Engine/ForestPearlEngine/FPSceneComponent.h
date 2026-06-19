@@ -19,8 +19,32 @@ class FPSceneComponent : public FPActorComponent
 		void DetachChildComponet(FPSceneComponent* Child);
 
 	public:
+		FPSceneComponent(FPActor* Owner);
 		void SetupAttachment(FPSceneComponent* Parent);
 		void DetachFromComponent();
+
+		//이동 시키기
+		void SetRelativeLocation(FPVector3 Location);
+		void SetRelativeRotation(FPVector3 Rotation);
+		void SetRelativeScale3D(FPVector3 Scale);
+
+		void SetWorldLocation(FPVector3 Location);
+		void SetWorldRotation(FPVector3 Rotation);
+		void SetWorldScale3D(FPVector3 Scale);
+
+		//Transform 가져오기
+		FTransform GetComponentTransform();
+		FTransform GetRelativeTransform();
+		//Relative
+		FPVector3 GetRelativeLocation();
+		FPVector3 GetRelativeRotation();
+		FPVector3 GetRelativeScale3D();
+
+		//World
+		FPVector3 GetComponentLocation();
+		FPVector3 GetComponentRotation();
+		FPQuaternion GetComponentQuat();
+		FPVector3 GetComponentScale();
 
 		//임시로 사용
 		void Tick() override;

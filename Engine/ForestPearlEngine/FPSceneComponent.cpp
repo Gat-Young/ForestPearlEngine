@@ -1,5 +1,10 @@
 #include "FPSceneComponent.h"
 #include <algorithm>
+#include <iostream>
+
+FPSceneComponent::FPSceneComponent(FPActor* Owner) : FPActorComponent(Owner)
+{
+}
 
 void FPSceneComponent::SetupAttachment(FPSceneComponent* Parent)
 {
@@ -12,6 +17,84 @@ void FPSceneComponent::DetachFromComponent()
 {
 	if (ParentComponent == nullptr) return;
 	ParentComponent->DetachChildComponet(this);
+}
+
+void FPSceneComponent::SetRelativeLocation(FPVector3 Location)
+{
+	RelativeTransform.Location = Location;
+}
+
+void FPSceneComponent::SetRelativeRotation(FPVector3 Rotation)
+{
+	RelativeTransform.Rotation = Rotation;
+}
+
+void FPSceneComponent::SetRelativeScale3D(FPVector3 Scale)
+{
+	RelativeTransform.Scale = Scale;
+}
+
+void FPSceneComponent::SetWorldLocation(FPVector3 Location)
+{
+	SetRelativeLocation(Location);
+	WorldTransform.Location = Location;
+}
+
+void FPSceneComponent::SetWorldRotation(FPVector3 Rotation)
+{
+	SetRelativeRotation(Rotation);
+	WorldTransform.Rotation = Rotation;
+}
+
+void FPSceneComponent::SetWorldScale3D(FPVector3 Scale)
+{
+	SetWorldScale3D(Scale);
+	WorldTransform.Scale = Scale;
+}
+
+FTransform FPSceneComponent::GetComponentTransform()
+{
+	return WorldTransform;
+}
+
+FPVector3 FPSceneComponent::GetComponentLocation()
+{
+	return WorldTransform.Location;
+}
+
+FPVector3 FPSceneComponent::GetComponentRotation()
+{
+	return WorldTransform.Rotation;
+}
+
+FPQuaternion FPSceneComponent::GetComponentQuat()
+{
+	return WorldTransform.QuaternionRotation;
+}
+
+FPVector3 FPSceneComponent::GetComponentScale()
+{
+	return WorldTransform.Scale;
+}
+
+FTransform FPSceneComponent::GetRelativeTransform()
+{
+	return RelativeTransform;
+}
+
+FPVector3 FPSceneComponent::GetRelativeLocation()
+{
+	return RelativeTransform.Location;
+}
+
+FPVector3 FPSceneComponent::GetRelativeRotation()
+{
+	return RelativeTransform.Rotation;
+}
+
+FPVector3 FPSceneComponent::GetRelativeScale3D()
+{
+	return RelativeTransform.Scale;
 }
 
 //임시로 사용

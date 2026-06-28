@@ -180,6 +180,9 @@ void Renderer::ObjectRendering()
 	}
 
 	std::vector<MeshRenderItem> RenderList = MeshRenderList::Get().GetRenderList();
+	/*std::cout << RenderList[0].Location->x << " : " << RenderList[0].Location->y << " : " << RenderList[0].Location->z << "\n"
+		<< RenderList[0].Rotation->x << " : " << RenderList[0].Rotation->y << " : " << RenderList[0].Rotation->z << "\n"
+		<< RenderList[0].Scale->x << " : " << RenderList[0].Scale->y << " : " << RenderList[0].Scale->z << "\n\n\n";*/
 	for (MeshRenderItem RenderItem : RenderList)
 	{
 		//조명 끄기
@@ -214,7 +217,7 @@ void Renderer::ObjectRendering()
 		g_mTM.scale_y = RenderItem.Scale->y;
 		g_mTM.scale_z = RenderItem.Scale->z;
 
-
+		
 
 			//월드 변환 행렬 설정 : 렌더링 전에 설정 되어야 합니다.
 		FPRenderDevice->SetTransform(FPRHITS_WORLD, &g_mTM);		//★ 

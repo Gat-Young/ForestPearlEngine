@@ -192,8 +192,8 @@
     <ClCompile Include="TextRenderList.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Games\DrawSolarSystem\DrawSolarSystem.vcxproj">
-      <Project>{29c121c9-4f6c-47ed-b52d-e151bc76425d}</Project>
+    <ProjectReference Include="..\..\Games\SolarSystem_Ver02\SolarSystem_Ver02.vcxproj">
+      <Project>{2a5811cf-ea4e-4ad3-88f4-015ebf368592}</Project>
     </ProjectReference>
     <ProjectReference Include="Renderers\FPRHI\FPRHI.vcxproj">
       <Project>{a95d12e7-e8be-48f1-8cc1-ceba3c37a5fe}</Project>

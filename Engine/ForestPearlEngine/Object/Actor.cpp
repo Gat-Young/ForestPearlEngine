@@ -44,7 +44,7 @@ void FPActor::SetActorLocation(FPVector3 Location)
 
 void FPActor::SetActorRotation(FPVector3 Rotation)
 {
-    RootComponent->SetRelativeRotation(Rotation);
+    RootComponent->SetWorldRotation(Rotation);
 }
 
 void FPActor::SetActorScale3D(FPVector3 Scale)

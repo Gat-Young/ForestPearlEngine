@@ -15,8 +15,8 @@ class FPSceneComponent : public FPActorComponent
 		std::vector<FPSceneComponent*> ChildComponent;
 
 
-		void AttachChildCompont(FPSceneComponent* Child);
-		void DetachChildComponet(FPSceneComponent* Child);
+		void AttachChildComponent(FPSceneComponent* Child);
+		void DetachChildComponent(FPSceneComponent* Child);
 
 	public:
 		FPSceneComponent(FPActor* Owner);

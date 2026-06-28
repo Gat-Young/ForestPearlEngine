@@ -46,7 +46,11 @@ void FPOrb::Tick()
 		std::cout << "AddOrb :: No ParentActor" << "\n";
 	}
 
-	AttachToActor(ParentActor);
+	
+	RootComponent->SetRelativeRotation(RootComponent->GetRelativeRotation() + FPVector3{0.0f, 0.0f, 1 / (3.141592f * GetWorld()->GetGameTimer()->DeltaTimeMS())});
+
+	std::cout << GetActorRotation().x << " : " << GetActorRotation().y << " : " <<  GetActorRotation().z << "\n";
+ 	//AttachToActor(ParentActor);
 
 	__super::Tick();
 }

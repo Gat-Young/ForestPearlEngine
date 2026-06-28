@@ -13,9 +13,11 @@ void GameLevel::Initialize()
 	CurrentActorCount++;
 	ActorlList.push_back("FPOrb"); //Parent
 	CurrentActorCount++;
-	ActorlList.push_back("FPOrb"); //Child
-	CurrentActorCount++;
-	ActorlList.push_back("FPOrb"); //Child2
+	//ActorlList.push_back("FPOrb"); //Child
+	//CurrentActorCount++;
+	//ActorlList.push_back("FPOrb"); //Child2
+	//CurrentActorCount++;
+	ActorlList.push_back("GameCamera");
 	CurrentActorCount++;
 
 	__super::Initialize();
@@ -23,7 +25,7 @@ void GameLevel::Initialize()
 
 void GameLevel::BeginPlay()
 {
-
+	/*
 	FPOrb* Parent = dynamic_cast<FPOrb*>(GameActorList[1]);
 	FPOrb* Child = dynamic_cast<FPOrb*>(GameActorList[2]);
 	FPOrb* GrandChild = dynamic_cast<FPOrb*>(GameActorList[3]);
@@ -48,14 +50,14 @@ void GameLevel::BeginPlay()
 
 	Child->AttachToActor(Parent);
 	GrandChild->AttachToActor(Child);
-
+	*/
 	__super::BeginPlay();
 }
 
 void GameLevel::Tick()
 {
 	__super::Tick();
-
+	/*
 	FPOrb* Parent = dynamic_cast<FPOrb*>(GameActorList[1]);
 	FPOrb* Child = dynamic_cast<FPOrb*>(GameActorList[2]);
 	if (Parent == nullptr || Child == nullptr)
@@ -63,8 +65,8 @@ void GameLevel::Tick()
 		std::cout << "Parent Orb == nullptr" << "\n";
 		return;
 	}
+	*/
+	//Parent->SetActorRotation(Parent->GetActorRotation() + FPVector3{0.0f, 0.0f, 10 * GetWorld()->GetGameTimer()->DeltaTime()});
 
-	Parent->SetActorRotation(Parent->GetActorRotation() + FPVector3{0.0f, 0.0f, 10 * GetWorld()->GetGameTimer()->DeltaTime()});
-
-	Child->SetActorRotation(Child->GetActorRotation() + FPVector3{ 0.0f, 0.0f, 50 * GetWorld()->GetGameTimer()->DeltaTime() });
+	//Child->SetActorRotation(Child->GetActorRotation() + FPVector3{ 0.0f, 0.0f, 50 * GetWorld()->GetGameTimer()->DeltaTime() });
 }

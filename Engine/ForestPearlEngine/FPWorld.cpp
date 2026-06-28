@@ -79,3 +79,18 @@ GameTimer* FPWorld::GetGameTimer()
 {
 	return FPGameInstance::Get().GetGameTimer();
 }
+
+
+FPActor* FPWorld::SpawnActor(std::string ActorClassName)
+{
+	FPActor* SpawnActor = CreateClassInstnce<FPActor>(ActorClassName);
+	SpawnActor->SetOuter(PersistentLevel.get());
+	SpawnActor->Initialize();
+	SpawnActor->BeginPlay();
+
+	GL->GetGameActorList().push_back(SpawnActor);
+	int CurrentSpawnActorIndex = GL->GetCurrentActorCount();
+	GL->GetCurrentActorCount()++;
+
+	return CurrentSpawnActorIndex;
+}

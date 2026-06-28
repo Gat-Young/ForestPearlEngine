@@ -51,8 +51,13 @@ class FPWorld : public FPObject
 		//GameController 반환
 		FPAController* GetController(int index) { return GameMode->GetController(index); }
 
+		//GameMode 반환
+		FPAGameMode* GetAuthGameMode() { return GameMode.get(); }
+
 		//GameTimer 반환
 		GameTimer* GetGameTimer();
+
+		class FPActor* SpawnActor(std::string ActorClassName);
 
 		//Class Instance 생성 템플릿 함수
 		template <typename T>

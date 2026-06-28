@@ -10,13 +10,13 @@ void FPSceneComponent::SetupAttachment(FPSceneComponent* Parent)
 {
 	DetachFromComponent();
 	ParentComponent = Parent;
-	ParentComponent->AttachChildCompont(this);
+	ParentComponent->AttachChildComponent(this);
 }
 
 void FPSceneComponent::DetachFromComponent()
 {
 	if (ParentComponent == nullptr) return;
-	ParentComponent->DetachChildComponet(this);
+	ParentComponent->DetachChildComponent(this);
 }
 
 void FPSceneComponent::SetRelativeLocation(FPVector3 Location)
@@ -117,24 +117,25 @@ void FPSceneComponent::Tick()
 	RelativeTransform.QuaternionRotation = FromEuler(RelativeTransform.Rotation);
 	WorldTransform.Rotation = WorldTransform.QuaternionRotation.ToEuler();
 
+
 	for (FPSceneComponent* child : ChildComponent)
 	{
 		child->Tick();
 	}
 }
 
-void FPSceneComponent::AttachChildCompont(FPSceneComponent* Child)
+void FPSceneComponent::AttachChildComponent(FPSceneComponent* Child)
 {
 	ChildComponent.push_back(Child);
 }
 
-void FPSceneComponent::DetachChildComponet(FPSceneComponent* Child)
+void FPSceneComponent::DetachChildComponent(FPSceneComponent* Child)
 {
-
 	auto It = std::find(ChildComponent.begin(), ChildComponent.end(), Child);
 
 	if (It != ChildComponent.end())
 	{
+		std::cout << "erase" << "\n";
 		ChildComponent.erase(It);
 	}
 	else

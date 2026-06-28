@@ -28,4 +28,6 @@ class FPLevel : public FPObject
 		//월드 반환
 		virtual FPWorld* GetWorld() override final { return Outer->GetWorld(); }
 
+		//Actor List에 Actor를 등록
+		void TryAddActorToList(FPActor* Actor);
 };

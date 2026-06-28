@@ -43,3 +43,8 @@ void FPLevel::Finalize()
 {
 	UnLoadData();
 }
+
+void FPLevel::TryAddActorToList(FPActor* Actor)
+{
+	GameActorList.push_back(Actor);
+}

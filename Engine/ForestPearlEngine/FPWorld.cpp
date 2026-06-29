@@ -89,9 +89,6 @@ FPActor* FPWorld::SpawnActor(std::string ActorClassName)
 	SpawnActor->BeginPlay();
 
 	PersistentLevel.get()->TryAddActorToList(SpawnActor);
-	GL->GetGameActorList().push_back(SpawnActor);
-	int CurrentSpawnActorIndex = GL->GetCurrentActorCount();
-	GL->GetCurrentActorCount()++;
 
-	return CurrentSpawnActorIndex;
+	return SpawnActor;
 }

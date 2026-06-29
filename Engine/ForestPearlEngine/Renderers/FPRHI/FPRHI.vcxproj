@@ -25,11 +25,6 @@
   <ItemGroup>
     <ClCompile Include="FPRHI.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DirectX\DirectX.vcxproj">
-      <Project>{f4ffd354-4744-4564-a189-9a7313a23754}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

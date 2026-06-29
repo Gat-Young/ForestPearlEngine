@@ -7,9 +7,4 @@ class GameWorld : public FPWorld
 		virtual void Initialize() override;
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
-
-		FPAGameMode& GetGameMode() { return *GameMode; }
-		int SpawnActor(std::string ActorClassName);
-		std::vector<FPActor*>& GetGameActorList();
-		const int GetCurrentActorCount();
 };

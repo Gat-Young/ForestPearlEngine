@@ -30,14 +30,14 @@ void GameController::Tick()
 
 void GameController::OnMouseLButtonDown(FInputValue InputValue)
 {
-	GameWorld* World = dynamic_cast<GameWorld*>(GetWorld());
+	FPWorld* World = GetWorld();
 	if (World == nullptr)
 	{
 		std::cout << "No GameWorld" << "\n";
 		return;
 	}
 
-	GameMode* GM = dynamic_cast<GameMode*>(&World->GetGameMode());
+	GameMode* GM = dynamic_cast<GameMode*>(World->GetAuthGameMode());
 	if (GM == nullptr)
 	{
 		std::cout << "No GameMode" << "\n";

@@ -17,6 +17,9 @@ class Triangle : public FPActor
 
 		float angle = 0;
 
+		float DistanceThreshold = 0.1;
+		bool bIsFill = true;
+
 	public:
 		Triangle() = default;
 		virtual void Initialize() override;
@@ -26,4 +29,6 @@ class Triangle : public FPActor
 		void Move(FInputValue value);
 		void SetFillTriangel(FInputValue Value);
 		void SetCullTriangle(FInputValue Value);
+
+		bool IsHitObject(struct FPVector2 InPos);
 };

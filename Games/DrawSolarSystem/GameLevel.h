@@ -10,9 +10,4 @@ class GameLevel : public FPLevel
 		//상속 후 반드시 Super 할 것
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
-		std::vector<FPActor*>& GetGameActorList() {	return GameActorList; }
-		int& GetCurrentActorCount() { return CurrentActorCount; }
-
-	private:
-		int CurrentActorCount = 0;
 };

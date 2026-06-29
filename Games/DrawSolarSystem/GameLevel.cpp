@@ -10,15 +10,10 @@
 void GameLevel::Initialize()
 {
 	ActorlList.push_back("UI");
-	CurrentActorCount++;
 	ActorlList.push_back("FPOrb"); //Parent
-	CurrentActorCount++;
 	//ActorlList.push_back("FPOrb"); //Child
-	//CurrentActorCount++;
 	//ActorlList.push_back("FPOrb"); //Child2
-	//CurrentActorCount++;
 	ActorlList.push_back("GameCamera");
-	CurrentActorCount++;
 
 	__super::Initialize();
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "Object.h"
+#include <string>
 
 class FPActor : public FPObject
 {

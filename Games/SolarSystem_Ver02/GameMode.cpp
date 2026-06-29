@@ -24,28 +24,20 @@ void GameMode::Tick()
 
 void GameMode::AddOrb(FPVector2 SpawnPos)
 {
-	GameWorld* GW = dynamic_cast<GameWorld*>(GetWorld());
+	FPWorld* GW = GetWorld();
 	if (GW == nullptr)
 	{
 		std::cout << "AddOrb :: No GameWorld" << "\n";
 	}
 
-	int SpawnedActorIndex = GW->SpawnActor("FPOrb");
+	FPActor* SpawnedActor = GW->SpawnActor("Triangle");
 	std::vector<FPActor*> GameActorList = GW->GetGameActorList();
 
-	FPOrb* SpawnedActor = dynamic_cast<FPOrb*>(GameActorList[SpawnedActorIndex]);
-	if (SpawnedActor == nullptr)
-	{
-		std::cout << "AddOrb :: No SpawnedActor" << "\n";
-	}
-
-	FPOrb* ParentActor = dynamic_cast<FPOrb*>(GameActorList[1]);
+	Triangle* ParentActor = dynamic_cast<Triangle*>(GameActorList[1]);
 	if (ParentActor == nullptr)
 	{
 		std::cout << "AddOrb :: No ParentActor" << "\n";
 	}
-
-	SpawnedActor->SetThisObjectIndex(SpawnedActorIndex);
 
 	FTransform ParentTransform = ParentActor->GetActorTransform();
 	FTransform ChildTransform = SpawnedActor->GetActorTransform();
@@ -64,5 +56,4 @@ void GameMode::AddOrb(FPVector2 SpawnPos)
 	SpawnedActor->SetActorLocation(FPVector3{ SpawnPosX , SpawnPosY, 0.0f });
 	SpawnedActor->SetActorScale3D(FPVector3{ 0.2f, 0.2f, 0.2f });
 
-	SpawnedActor->SetParnetObjectIndex(1);
 }

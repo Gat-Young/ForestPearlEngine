@@ -59,3 +59,27 @@ void Triangle::SetCullTriangle(FInputValue Value)
 	Mesh->SetMeshCull(isCull);
 }
 
+bool Triangle::IsHitObject(FPVector2 InPos)
+{
+	float Distance = sqrt(pow(InPos.x - RootComponent->GetComponentLocation().x, 2) + pow(InPos.y - RootComponent->GetComponentLocation().y, 2));
+
+	bool IsHitted = Distance <= DistanceThreshold;
+
+	if (IsHitted)
+	{
+		if (bIsFill)
+		{
+			bIsFill = false;
+			Mesh->SetMeshFill(false);
+		}
+		else
+		{
+			bIsFill = true;
+			Mesh->SetMeshFill(true);
+		}
+	}
+
+	//std::cout << ThisObjectIndex << " :: " << GetWorldPos().x << ", " << GetWorldPos().y << "\n";
+
+	return Distance <= DistanceThreshold;
+}

@@ -83,7 +83,7 @@ GameTimer* FPWorld::GetGameTimer()
 }
 
 
-FPActor* FPWorld::SpawnActor(std::string ActorClassName, std::string ActorName = "")
+FPActor* FPWorld::SpawnActor(std::string ActorClassName, std::string ActorName)
 {
 	FPActor* SpawnActor = CreateClassInstnce<FPActor>(ActorClassName);
 	SpawnActor->SetOuter(PersistentLevel.get());

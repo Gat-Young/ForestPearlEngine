@@ -25,6 +25,9 @@
     <Filter Include="Define">
       <UniqueIdentifier>{991501bb-33ae-4662-af0f-36f1b227f64b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{484c2692-9984-4b3a-8718-4fdd4e7cce48}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -126,6 +129,9 @@
     <ClInclude Include="FPMovementComponent.h">
       <Filter>Component</Filter>
     </ClInclude>
+    <ClInclude Include="Utility\FPGameplayStatics.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
@@ -208,6 +214,9 @@
     </ClCompile>
     <ClCompile Include="Object\Actor.cpp">
       <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\FPGameplayStatics.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

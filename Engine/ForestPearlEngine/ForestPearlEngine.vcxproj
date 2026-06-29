@@ -156,6 +156,7 @@
     <ClInclude Include="TextComponent.h" />
     <ClInclude Include="TextRenderList.h" />
     <ClInclude Include="FTransform.h" />
+    <ClInclude Include="Utility\FPGameplayStatics.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssetManager.cpp" />
@@ -190,6 +191,7 @@
     <ClCompile Include="Systems\InputSystem.cpp" />
     <ClCompile Include="TextComponent.cpp" />
     <ClCompile Include="TextRenderList.cpp" />
+    <ClCompile Include="Utility\FPGameplayStatics.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Games\SolarSystem_Ver02\SolarSystem_Ver02.vcxproj">

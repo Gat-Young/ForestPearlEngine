@@ -1,5 +1,7 @@
 #include "GameProjectClassRegistry.h"
 #include "FPGameInstance.h"
+#include "FPLevel.h"
+#include "FPAGameMode.h"
 #include "FPWorld.h"
 
 void FPWorld::Initialize()
@@ -81,14 +83,25 @@ GameTimer* FPWorld::GetGameTimer()
 }
 
 
-FPActor* FPWorld::SpawnActor(std::string ActorClassName)
+FPActor* FPWorld::SpawnActor(std::string ActorClassName, std::string ActorName = "")
 {
 	FPActor* SpawnActor = CreateClassInstnce<FPActor>(ActorClassName);
 	SpawnActor->SetOuter(PersistentLevel.get());
 	SpawnActor->Initialize();
 	SpawnActor->BeginPlay();
+	SpawnActor->SetActorName(ActorName);
 
 	PersistentLevel.get()->TryAddActorToList(SpawnActor);
 
 	return SpawnActor;
+}
+
+FPAController* FPWorld::GetController(int index)
+{
+	return GameMode->GetController(index);
+}
+
+std::vector<FPActor*>& FPWorld::GetGameActorList()
+{
+	return PersistentLevel.get()->GetGameActorList();
 }

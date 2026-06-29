@@ -4,6 +4,7 @@
 class FPActor : public FPObject
 {
 	protected:
+		std::string ActorName = "";
 		class FPSceneComponent* RootComponent = nullptr;
 
 	public :
@@ -32,4 +33,7 @@ class FPActor : public FPObject
 		struct FPVector3 GetActorLocation();
 		struct FPVector3 GetActorRotation();
 		struct FPVector3 GetActorScale3D();
+
+		//생성된 FPActor의 이름을 설정
+		void SetActorName(std::string Name) { ActorName = Name; };
 };

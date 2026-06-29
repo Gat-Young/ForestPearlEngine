@@ -30,4 +30,7 @@ class FPLevel : public FPObject
 
 		//Actor List에 Actor를 등록
 		void TryAddActorToList(FPActor* Actor);
+
+		//ActorList 참조 전달
+		std::vector<FPActor*>& GetGameActorList() { return GameActorList; }
 };

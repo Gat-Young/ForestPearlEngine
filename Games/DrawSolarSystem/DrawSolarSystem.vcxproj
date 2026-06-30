@@ -19,20 +19,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GameCamera.h" />
     <ClInclude Include="GameController.h" />
     <ClInclude Include="GameLevel.h" />
     <ClInclude Include="GameMode.h" />
     <ClInclude Include="GameWorld.h" />
-    <ClInclude Include="Triangle.h" />
+    <ClInclude Include="Orb.h" />
     <ClInclude Include="UI.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GameCamera.cpp" />
     <ClCompile Include="GameController.cpp" />
     <ClCompile Include="GameLevel.cpp" />
     <ClCompile Include="GameMode.cpp" />
     <ClCompile Include="GameProjectLoader.cpp" />
     <ClCompile Include="GameWorld.cpp" />
-    <ClCompile Include="Triangle.cpp" />
+    <ClCompile Include="Orb.cpp" />
     <ClCompile Include="UI.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

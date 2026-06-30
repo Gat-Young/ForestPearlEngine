@@ -4,24 +4,28 @@
 
 AssetManager::AssetManager()
 {
+	DummyMesh["Orb"].push_back({ -0.5f, -0.5f, 0.0f, 0xff00f0ff });
+	DummyMesh["Orb"].push_back({ 0.0f, 0.5f, 0.0f,  0xff44ffae });
+	DummyMesh["Orb"].push_back({ 0.5f, -0.5f, 0.0f,  0xfffffd71 });
+
 	//»ï°¢ÇüÀ» À§ÇÑ 3°³ÀÇ Á¤Á¡ ¼±¾ð. : Á¤Á¡ÀÇ ÁÂÇ¥°ªÀº È­¸é(Screen)ÁÂÇ¥.
-	//Face 0 : Á¤»ï°¢Çü.(CW) 
+	//Face 0 : Á¤»ï°¢Çü.(CW)
 	// ÁÂÇ¥ (x, y)    »ö»ó( a, r, g, b)   a, °ð Alpha ´Â ±âº»°ª 255 (1.0f)
 	DummyMesh["Triangle"].push_back({ -0.5f, 0.0f, 0.0f, 0xffff0000 });			//v0, Red.	¡Ú
 	DummyMesh["Triangle"].push_back({ 0.0f, 1.0f, 0.0f,  0xff00ff00 });		//v1, Green ¡Ú
 	DummyMesh["Triangle"].push_back({ 0.5f, 0.0f, 0.0f,  0xff0000ff });		//v2, Blue ¡Ú
 
-	//Face 1 : ¿ª»ï°¢Çü.(CCW) 
+	//Face 1 : ¿ª»ï°¢Çü.(CCW)
 	DummyMesh["Triangle"].push_back({ 50.0f, 250.0f, 0.5f,  0xffff0000 });
 	DummyMesh["Triangle"].push_back({ 150.0f, 450.0f, 0.5f, 0xff00ff00 });
 	DummyMesh["Triangle"].push_back({ 250.0f, 250.0f, 0.5f, 0xff0000ff });
 
-	//Face 2: ºø°¢ »ï°¢Çü (CW) Å×½ºÆ® »ï°¢Çü 
+	//Face 2: ºø°¢ »ï°¢Çü (CW) Å×½ºÆ® »ï°¢Çü
 	DummyMesh["Triangle"].push_back({ 300.0f, 500.0f, 0.5f, 0xffff0000 });
 	DummyMesh["Triangle"].push_back({ 400.0f, 300.0f, 0.5f, 0xff00ff00 });
 	DummyMesh["Triangle"].push_back({ 480.0f, 430.0f, 0.5f, 0xff0000ff });
 
-	//Face 3: ºø°¢ »ï°¢Çü (CCW) Å×½ºÆ® »ï°¢Çü 
+	//Face 3: ºø°¢ »ï°¢Çü (CCW) Å×½ºÆ® »ï°¢Çü
 	DummyMesh["Triangle"].push_back({ 500.0f, 430.0f, 0.5f, 0xffff0000 });
 	DummyMesh["Triangle"].push_back({ 680.0f, 500.0f, 0.5f, 0xff00ff00 });
 	DummyMesh["Triangle"].push_back({ 600.0f, 300.0f, 0.5f, 0xff0000ff });
@@ -42,13 +46,13 @@ AssetManager::AssetManager()
 	//////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////
 
-	//Face 0 : Á¤»ï°¢Çü.(CW) 
-	// 3D ÁÂÇ¥ (x, y, z)   »ö»ó( a, r, g, b)   a, °ð Alpha ´Â ±âº»°ª 255 (1.0f) 
+	//Face 0 : Á¤»ï°¢Çü.(CW)
+	// 3D ÁÂÇ¥ (x, y, z)   »ö»ó( a, r, g, b)   a, °ð Alpha ´Â ±âº»°ª 255 (1.0f)
 	DummyMesh["Triangle2"].push_back({ -0.5f, 0.0f, 0.0f, 0xffff0000 });			//v0, Red.	¡Ú
 	DummyMesh["Triangle2"].push_back({ 0.0f, 1.0f, 0.0f,  0xff00ff00 });		//v1, Green ¡Ú
 	DummyMesh["Triangle2"].push_back({ 0.5f, 0.0f, 0.0f,  0xff0000ff });		//v2, Blue ¡Ú
 
-	//Face 1 : ¿ª»ï°¢Çü.(CCW) 
+	//Face 1 : ¿ª»ï°¢Çü.(CCW)
 	DummyMesh["Triangle2"].push_back({ -0.5f, 0.0f, 0.0f, 0xffff0000 });
 	DummyMesh["Triangle2"].push_back({ 0.0f,-1.0f, 0.0f, 0xff00ff00 });
 	DummyMesh["Triangle2"].push_back({ 0.5f, 0.0f, 0.0f, 0xff0000ff });
@@ -59,7 +63,7 @@ AssetManager::AssetManager()
 	DummyMesh["Triangle2"].push_back({ 0.0f, 1.0f, 5.0f,  1.0f,  0xff00ff00 });		//v1, Green ¡Ú
 	DummyMesh["Triangle2"].push_back({ 0.5f, 0.0f, 5.0f,  1.0f,	 0xff0000ff });		//v2, Blue ¡Ú
 
-	//Face 1 : ¿ª»ï°¢Çü.(CCW) 
+	//Face 1 : ¿ª»ï°¢Çü.(CCW)
 	DummyMesh["Triangle2"].push_back({ -0.5f, 0.0f, 5.0f, 1.0f, 0xffff0000 });
 	DummyMesh["Triangle2"].push_back({ 0.0f,-1.0f, 5.0f, 1.0f, 0xff00ff00 });
 	DummyMesh["Triangle2"].push_back({ 0.5f, 0.0f, 5.0f, 1.0f, 0xff0000ff });
@@ -82,7 +86,7 @@ std::pair<int, int> AssetManager::LordVertexVuffer(std::string MeshPath)
 {
 	if (MeshMap.count(MeshPath) > 0)
 	{
-		return { MeshMap[MeshPath], DummyMesh[MeshPath].size() };
+		return { MeshMap[MeshPath], DummyMesh[MeshPath].size()/3 };
 	}
 
 	//ÃßÈÄ ¸Þ½Ã ÆÄÀÏ ·Îµå·Î º¯°æ

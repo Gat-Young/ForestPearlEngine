@@ -1,7 +1,5 @@
 #pragma once
 #include "./Object/Object.h"
-#include "FPLevel.h"
-#include "FPAGameMode.h"
 #include "GameProjectClassRegistry.h"
 #include <memory>
 #include <vector>
@@ -49,10 +47,20 @@ class FPWorld : public FPObject
 		void OpenLevel(std::string LevelName);
 
 		//GameController 반환
-		FPAController* GetController(int index) { return GameMode->GetController(index); }
+		class FPAController* GetController(int index);
+
+		//GameMode 반환
+		FPAGameMode* GetAuthGameMode() { return GameMode.get(); }
 
 		//GameTimer 반환
 		GameTimer* GetGameTimer();
+
+		//Actor 생성
+		class FPActor* SpawnActor(std::string ActorClassName, std::string ActorName = "");
+
+		//ActorList 참조 전달
+		std::vector<FPActor*>& GetGameActorList();
+
 
 		//Class Instance 생성 템플릿 함수
 		template <typename T>

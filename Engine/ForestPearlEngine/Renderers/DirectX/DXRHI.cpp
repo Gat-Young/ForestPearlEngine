@@ -886,23 +886,11 @@ HRESULT DXDeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRA
         DirectX::XMMATRIX Rotation;
         //雀傈 贸府.
         //
-        float rotation[3] = { pMatrix->rotation_x, pMatrix->rotation_y, pMatrix->rotation_z };
-        //D3DMatrixRotation(&DMatrix, rotation);
-        DirectX::XMFLOAT4X4 xmRotationZ;
-        DirectX::XMStoreFloat4x4(&xmRotationZ, DirectX::XMMatrixRotationZ(pMatrix->rotation_z));
-        DirectX::XMMATRIX RotationZ = DirectX::XMLoadFloat4x4(&xmRotationZ);
 
-
-        DirectX::XMFLOAT4X4 xmRotationY;
-        DirectX::XMStoreFloat4x4(&xmRotationY, DirectX::XMMatrixRotationY(pMatrix->rotation_y));
-        DirectX::XMMATRIX RotationY = DirectX::XMLoadFloat4x4(&xmRotationY);
-
-        DirectX::XMFLOAT4X4 xmRotationX;
-        DirectX::XMStoreFloat4x4(&xmRotationX, DirectX::XMMatrixRotationX(pMatrix->rotation_x));
-        DirectX::XMMATRIX RotationX = DirectX::XMLoadFloat4x4(&xmRotationX);
-
-        Rotation = DirectX::XMMatrixMultiply(RotationZ, RotationY);
-        Rotation = DirectX::XMMatrixMultiply(Rotation, RotationX);
+        DirectX::XMFLOAT4X4 xmQuaternionRotation;
+        DirectX::XMVECTOR xmQuaternion = { pMatrix->rotation_x, pMatrix->rotation_y, pMatrix->rotation_z, pMatrix->rotation_w};
+        DirectX::XMStoreFloat4x4(&xmQuaternionRotation, DirectX::XMMatrixRotationQuaternion(xmQuaternion));
+        Rotation = DirectX::XMLoadFloat4x4(&xmQuaternionRotation);
 
         ModelingMatrix = DirectX::XMMatrixMultiply(Scale, Rotation);
         //捞悼 贸府.
@@ -1139,7 +1127,7 @@ HRESULT DXRHIDevice::SetFVF(DWORD FVF)
     return S_OK;
 }
 
-HRESULT DXRHIDevice::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRANSFORMMATRIX* pMatrix)
+HRESULT DXRHIDevice::SetTransform(FPRHITRANSFORMSTATETYPE State, FPRHITRANSFORMMATRIX* pMatrix)
 {
     DXDeviceimpl->SetTransform(State, pMatrix);
 

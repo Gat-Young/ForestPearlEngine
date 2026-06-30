@@ -4,6 +4,7 @@
 #include <string>
 #include "tchar.h"
 #include <iostream>
+#include <stack>
 #include "../MeshRenderList.h"
 #include "../TextRenderList.h"
 #include "../CameraList.h"
@@ -112,7 +113,7 @@ void Renderer::ObjectRendering()
 		g_mTM.rotation_x = CamItem.Rotation->x;
 		g_mTM.rotation_y = CamItem.Rotation->y;
 		g_mTM.rotation_z = CamItem.Rotation->z;
-		g_mTM.rotation_z = 1.0f;
+		g_mTM.rotation_w = 1.0f;
 
 		g_mTM.scale_x = CamItem.Scale->x;
 		g_mTM.scale_y = CamItem.Scale->y;
@@ -179,6 +180,9 @@ void Renderer::ObjectRendering()
 	}
 
 	std::vector<MeshRenderItem> RenderList = MeshRenderList::Get().GetRenderList();
+	/*std::cout << RenderList[0].Location->x << " : " << RenderList[0].Location->y << " : " << RenderList[0].Location->z << "\n"
+		<< RenderList[0].Rotation->x << " : " << RenderList[0].Rotation->y << " : " << RenderList[0].Rotation->z << "\n"
+		<< RenderList[0].Scale->x << " : " << RenderList[0].Scale->y << " : " << RenderList[0].Scale->z << "\n\n\n";*/
 	for (MeshRenderItem RenderItem : RenderList)
 	{
 		//조명 끄기
@@ -201,19 +205,22 @@ void Renderer::ObjectRendering()
 
 		FPRHITRANSFORMMATRIX g_mTM; //변환 행렬
 
-		g_mTM.position_x = RenderItem.transform->position.x;
-		g_mTM.position_y = RenderItem.transform->position.y;
-		g_mTM.position_z = RenderItem.transform->position.z;
+		g_mTM.position_x = RenderItem.Location->x;
+		g_mTM.position_y = RenderItem.Location->y;
+		g_mTM.position_z = RenderItem.Location->z;
 
-		g_mTM.rotation_x = RenderItem.transform->rotation.x;
-		g_mTM.rotation_y = RenderItem.transform->rotation.y;
-		g_mTM.rotation_z = RenderItem.transform->rotation.z;
+		g_mTM.rotation_x = RenderItem.Rotation->x;
+		g_mTM.rotation_y = RenderItem.Rotation->y;
+		g_mTM.rotation_z = RenderItem.Rotation->z;
+		g_mTM.rotation_w = RenderItem.Rotation->w;
 
-		g_mTM.scale_x = RenderItem.transform->scale.x;
-		g_mTM.scale_y = RenderItem.transform->scale.y;
-		g_mTM.scale_z = RenderItem.transform->scale.z;
+		g_mTM.scale_x = RenderItem.Scale->x;
+		g_mTM.scale_y = RenderItem.Scale->y;
+		g_mTM.scale_z = RenderItem.Scale->z;
 
-		//월드 변환 행렬 설정 : 렌더링 전에 설정 되어야 합니다.
+		
+
+			//월드 변환 행렬 설정 : 렌더링 전에 설정 되어야 합니다.
 		FPRenderDevice->SetTransform(FPRHITS_WORLD, &g_mTM);		//★ 
 
 		//기하데이터 그리기

@@ -9,7 +9,7 @@ struct MeshRenderItem
 	bool* isFill = nullptr;
 	bool* isCull = nullptr;
 	FPVector3* Location = nullptr;
-	FPVector3* Rotation = nullptr;
+	FPQuaternion* Rotation = nullptr;
 	FPVector3* Scale = nullptr;
 };
 

@@ -113,7 +113,7 @@ void Renderer::ObjectRendering()
 		g_mTM.rotation_x = CamItem.Rotation->x;
 		g_mTM.rotation_y = CamItem.Rotation->y;
 		g_mTM.rotation_z = CamItem.Rotation->z;
-		g_mTM.rotation_z = 1.0f;
+		g_mTM.rotation_w = 1.0f;
 
 		g_mTM.scale_x = CamItem.Scale->x;
 		g_mTM.scale_y = CamItem.Scale->y;
@@ -212,6 +212,7 @@ void Renderer::ObjectRendering()
 		g_mTM.rotation_x = RenderItem.Rotation->x;
 		g_mTM.rotation_y = RenderItem.Rotation->y;
 		g_mTM.rotation_z = RenderItem.Rotation->z;
+		g_mTM.rotation_w = RenderItem.Rotation->w;
 
 		g_mTM.scale_x = RenderItem.Scale->x;
 		g_mTM.scale_y = RenderItem.Scale->y;

@@ -88,6 +88,17 @@ struct FPQuaternion
 		return ret;
 	}
 
+	operator FPVector4() const
+	{
+		FPVector4 out;
+		out.x = x;
+		out.y = y;
+		out.z = z;
+		out.w = w;
+
+		return out;
+	}
+
 	float LengthSq() const;
 
 	float Length() const;

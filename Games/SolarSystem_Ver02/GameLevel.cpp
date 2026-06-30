@@ -29,16 +29,19 @@ void GameLevel::BeginPlay()
 		if (Actor->GetName() == "Parent")
 		{
 			Parent = dynamic_cast<Triangle*>(Actor);
+			Parent->SetAngleSpeed(0.25f);
 		}
 
 		if (Actor->GetName() == "Child")
 		{
 			Child = dynamic_cast<Triangle*>(Actor);
+			Child->SetAngleSpeed(0.4f);
 		}
 
 		if (Actor->GetName() == "GrandChild")
 		{
 			GrandChild = dynamic_cast<Triangle*>(Actor);
+			GrandChild->SetAngleSpeed(0.5f);
 		}
 	}
 

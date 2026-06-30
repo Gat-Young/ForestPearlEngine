@@ -19,6 +19,8 @@ class Triangle : public FPActor
 
 		float DistanceThreshold = 0.1;
 		bool bIsFill = true;
+		
+		float AngleSpeed = 0.25f;
 
 	public:
 		Triangle() = default;
@@ -31,4 +33,6 @@ class Triangle : public FPActor
 		void SetCullTriangle(FInputValue Value);
 
 		bool IsHitObject(struct FPVector2 InPos);
+
+		void SetAngleSpeed(float Speed) { AngleSpeed = Speed; };
 };

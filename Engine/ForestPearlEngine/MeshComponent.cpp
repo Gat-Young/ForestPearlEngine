@@ -23,7 +23,7 @@ void MeshComponent::RegistMeshRenderList()
 	RenderItem->isCull = &(this->isCull);
 	RenderItem->FaceSize = &(this->FaceSize);
 	RenderItem->Location = &(this->WorldTransform.Location);
-	RenderItem->Rotation = &(this->WorldTransform.Rotation);
+	RenderItem->Rotation = &(this->WorldTransform.QuaternionRotation);
 	RenderItem->Scale = &(this->WorldTransform.Scale);
 }
 

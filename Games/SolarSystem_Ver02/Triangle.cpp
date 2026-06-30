@@ -29,7 +29,7 @@ void Triangle::BeginPlay()
 
 void Triangle::Tick()
 {
-	angle += 1/(3.141592f * GetWorld()->GetGameTimer()->DeltaTimeMS());
+	angle += 0.05 * (GetWorld()->GetGameTimer()->DeltaTimeMS());
 	RootComponent->SetRelativeRotation(FPVector3{ 0.0f, angle, 0.0f });
 
 	__super::Tick();
@@ -37,11 +37,11 @@ void Triangle::Tick()
 
 void Triangle::Move(FInputValue Value)
 {
-	float mov = 0.5f;
+	/*float mov = 0.5f;
 	float move_x = Value.X * mov * 1 / (GetWorld()->GetGameTimer()->DeltaTimeMS());
 	float move_y = Value.Y * mov * 1 / (GetWorld()->GetGameTimer()->DeltaTimeMS());
 	std::cout << "Move Begin!! [ " << move_x << " : " << move_y << " ]\n";
-	RootComponent->SetRelativeLocation(RootComponent->GetRelativeLocation() + FPVector3{move_x, 0.0f, move_y});
+	RootComponent->SetRelativeLocation(RootComponent->GetRelativeLocation() + FPVector3{move_x, 0.0f, move_y});*/
 }
 
 void Triangle::SetFillTriangel(FInputValue Value)

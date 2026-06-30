@@ -42,10 +42,10 @@ void GameLevel::BeginPlay()
 		}
 	}
 
-	Child->SetActorLocation(FPVector3{ 0.5f, 0.0f, 0.0f });
+	Child->SetActorLocation(FPVector3{ 1.0f, 0.0f, 0.0f });
 	Child->SetActorScale3D(FPVector3{ 0.7f, 0.7f, 0.7f });
 
-	GrandChild->SetActorLocation(FPVector3{ 0.0f, 0.3f, 0.0f });
+	GrandChild->SetActorLocation(FPVector3{ 0.0f, 0.0f, -1.0f });
 	GrandChild->SetActorScale3D(FPVector3{ 0.5f, 0.5f, 0.5f });
 
 

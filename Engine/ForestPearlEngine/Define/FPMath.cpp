@@ -82,7 +82,7 @@ FPQuaternion AngleAxis(float angleRad, const FPVector3& axis)
 	float s = std::sin(half);
 	float c = std::cos(half);
 
-	return FPQuaternion{axis.x * s, axis.y * s, axis.z * s, c};
+	return FPQuaternion{axis.x * s, axis.y * s, axis.z * s, c}.Normalize();
 }
 
 FPVector3 FPQuaternion::ToEuler() const

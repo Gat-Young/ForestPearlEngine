@@ -100,6 +100,8 @@ FPVector3 FPSceneComponent::GetRelativeScale3D()
 //임시로 사용
 void FPSceneComponent::Tick()
 {
+	RelativeTransform.QuaternionRotation = FromEuler(RelativeTransform.Rotation);
+
 	if (ParentComponent == nullptr)
 	{
 		WorldTransform = RelativeTransform;
@@ -114,7 +116,6 @@ void FPSceneComponent::Tick()
 			                                                                        ,(ParentComponent->WorldTransform.Scale * RelativeTransform.Location));
 	}
 
-	RelativeTransform.QuaternionRotation = FromEuler(RelativeTransform.Rotation);
 	WorldTransform.Rotation = WorldTransform.QuaternionRotation.ToEuler();
 
 

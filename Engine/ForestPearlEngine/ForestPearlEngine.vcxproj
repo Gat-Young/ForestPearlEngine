@@ -124,17 +124,25 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AssetManager.h" />
+    <ClInclude Include="CameraComponent.h" />
+    <ClInclude Include="CameraList.h" />
     <ClInclude Include="Define\FPMath.h" />
     <ClInclude Include="ForestPearlEngine.h" />
     <ClInclude Include="FPAController.h" />
+    <ClInclude Include="FPActorComponent.h" />
     <ClInclude Include="FPAGameMode.h" />
     <ClInclude Include="FPGameInstance.h" />
     <ClInclude Include="FPLevel.h" />
+    <ClInclude Include="FPMovementComponent.h" />
+    <ClInclude Include="FPPrimitiveComponent.h" />
+    <ClInclude Include="FPSceneComponent.h" />
     <ClInclude Include="FPWorld.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GameProjectClassRegistry.h" />
     <ClInclude Include="GameProjectLoader.h" />
     <ClInclude Include="GameTimer.h" />
+    <ClInclude Include="GizmoComponent.h" />
+    <ClInclude Include="GizmoRenderList.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="MeshRenderList.h" />
     <ClInclude Include="Object\Actor.h" />
@@ -147,18 +155,27 @@
     <ClInclude Include="Systems\KeyStateEnum.h" />
     <ClInclude Include="TextComponent.h" />
     <ClInclude Include="TextRenderList.h" />
-    <ClInclude Include="TransformComponent.h" />
+    <ClInclude Include="FTransform.h" />
+    <ClInclude Include="Utility\FPGameplayStatics.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssetManager.cpp" />
+    <ClCompile Include="CameraComponent.cpp" />
+    <ClCompile Include="CameraList.cpp" />
+    <ClCompile Include="Define\FPMath.cpp" />
     <ClCompile Include="ForestPearlEngine.cpp" />
     <ClCompile Include="FPAController.cpp" />
     <ClCompile Include="FPAGameMode.cpp" />
     <ClCompile Include="FPGameInstance.cpp" />
     <ClCompile Include="FPLevel.cpp" />
+    <ClCompile Include="FPMovementCompoent.cpp" />
+    <ClCompile Include="FPMovementComponent.cpp" />
+    <ClCompile Include="FPSceneComponent.cpp" />
     <ClCompile Include="FPWorld.cpp" />
     <ClCompile Include="GameProjectClassRegistry.cpp" />
     <ClCompile Include="GameTimer.cpp" />
+    <ClCompile Include="GizmoComponent.cpp" />
+    <ClCompile Include="GizmoRenderList.cpp" />
     <ClCompile Include="MeshComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
@@ -166,6 +183,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="MeshRenderList.cpp" />
+    <ClCompile Include="Object\Actor.cpp" />
     <ClCompile Include="Object\Components\InputAction.cpp" />
     <ClCompile Include="Object\Components\InputComponent.cpp" />
     <ClCompile Include="Object\Components\InputMappingContext.cpp" />
@@ -173,10 +191,14 @@
     <ClCompile Include="Systems\InputSystem.cpp" />
     <ClCompile Include="TextComponent.cpp" />
     <ClCompile Include="TextRenderList.cpp" />
+    <ClCompile Include="Utility\FPGameplayStatics.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Games\05.Vertex(2D)+Face_Filling\05.Vertex(2D)+Face_Filling.vcxproj">
-      <Project>{b0995cd0-7675-48cd-90a8-ad584a4e1a04}</Project>
+    <ProjectReference Include="..\..\Games\SolarSystem_Ver02\SolarSystem_Ver02.vcxproj">
+      <Project>{2a5811cf-ea4e-4ad3-88f4-015ebf368592}</Project>
+    </ProjectReference>
+    <ProjectReference Include="Renderers\DirectX\DirectX.vcxproj">
+      <Project>{f4ffd354-4744-4564-a189-9a7313a23754}</Project>
     </ProjectReference>
     <ProjectReference Include="Renderers\FPRHI\FPRHI.vcxproj">
       <Project>{a95d12e7-e8be-48f1-8cc1-ceba3c37a5fe}</Project>

@@ -12,7 +12,7 @@
 void Triangle::Initialize()
 {
 	Transform = new TransformCompoenent();
-	Transform->transfrom.position.x = 30.0f;
+	Transform->transfrom.position.x = 0.0f;
 	Transform->transfrom.position.y = 0.0f;
 	Transform->transfrom.position.z = 0.0f;
 
@@ -31,10 +31,10 @@ void Triangle::Initialize()
 	if (Controller == nullptr)
 		return;
 
-	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Pressed, &Triangle::Move);
+	Controller->GetInputComponent().BindMethod("IA_SetMoveTriangel", this, EKeyState::Pressed, &Triangle::Move);
 
 	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &Triangle::SetFillTriangel);
-	Controller->GetInputComponent().BindMethod("IA_SetCullTriangle", this, EKeyState::Down, &Triangle::SetCullTriangle);
+	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &Triangle::SetCullTriangle);
 
 
 
@@ -55,8 +55,9 @@ void Triangle::BeginPlay()
 
 void Triangle::Tick()
 {
-	angle += 3.141592f * 0.5f * 1/GetWorld()->GetGameTimer()->DeltaTimeMS();
+	angle += 10.0f;//3.141592f;//  *1 / GetWorld()->GetGameTimer()->DeltaTimeMS();
 	Transform->transfrom.rotation.z = angle;
+	//std::cout << "angle : " << angle << "\n";
 }
 
 void Triangle::Move(FInputValue Value)

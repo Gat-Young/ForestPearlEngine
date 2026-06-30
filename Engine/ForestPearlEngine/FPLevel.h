@@ -8,7 +8,7 @@
 class FPLevel : public FPObject
 {
 	protected:
-		std::vector<std::string> ActorlList;
+		std::vector<std::pair<std::string, std::string> > ActorlList;
 		std::vector<FPActor*> GameActorList;
 
 	public:
@@ -28,4 +28,9 @@ class FPLevel : public FPObject
 		//월드 반환
 		virtual FPWorld* GetWorld() override final { return Outer->GetWorld(); }
 
+		//Actor List에 Actor를 등록
+		void TryAddActorToList(FPActor* Actor);
+
+		//ActorList 참조 전달
+		std::vector<FPActor*>& GetGameActorList() { return GameActorList; }
 };

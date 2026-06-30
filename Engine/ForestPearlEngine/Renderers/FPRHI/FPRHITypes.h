@@ -493,10 +493,13 @@ typedef enum FPRHIFILLMODE {
 typedef struct FPRHITRANSFORMMATRIX {
     union {
         struct {
-            float        position_x, position_y, position_z;
-            float        rotation_x, rotation_y, rotation_z;
-            float        scale_x,    scale_y,    scale_z;
+            float        position_x, position_y, position_z, position_w;
+            float        rotation_x, rotation_y, rotation_z, rotation_w;
+            float        scale_x,    scale_y,    scale_z,    scale_w;
+            float        LookAt_x,   LookAt_y,   LookAt_z,   LookAt_w;
+            float        Up_x,       Up_y,       Up_z,       Up_w;
+            float        Fov,        Aspect,     Zn,         Zf;
         };
-        float m[3][3];
+        float m[6][4];
     };
 } FPRHITRANSFORMMATRIX;

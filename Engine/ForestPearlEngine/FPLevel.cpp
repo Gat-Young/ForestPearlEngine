@@ -4,10 +4,11 @@
 
 void FPLevel::Initialize()
 {
-	for (std::string ActorName : ActorlList)
+	for (std::pair<std::string, std::string> Actor : ActorlList)
 	{
 		//게임에 사용할 엑터를 만든다.
-		GameActorList.push_back(GetWorld()->CreateClassInstnce<FPActor>(ActorName));
+		GameActorList.push_back(GetWorld()->CreateClassInstnce<FPActor>(Actor.first));
+		GameActorList.back()->SetActorName(Actor.second);
 		GameActorList.back()->SetOuter(this);
 		GameActorList.back()->Initialize();
 	}
@@ -42,4 +43,9 @@ void FPLevel::UnLoadData()
 void FPLevel::Finalize()
 {
 	UnLoadData();
+}
+
+void FPLevel::TryAddActorToList(FPActor* Actor)
+{
+	GameActorList.push_back(Actor);
 }

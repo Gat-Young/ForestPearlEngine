@@ -1,12 +1,11 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include "../ForestPearlEngine/Define/FPMath.h"
 
 struct FPMesh
 {
-	float x;
-	float y;
-	float z;
+	FPVector3 vPos;
 	unsigned long color;
 };
 
@@ -38,4 +37,6 @@ class AssetManager
 
 		std::pair<int, int> LordVertexVuffer(std::string MeshPath);
 		void SetRenderer(Renderer* Renderer);
+
+		int MakeVertexVuffer(std::vector<FPMesh> Mesh);
 };

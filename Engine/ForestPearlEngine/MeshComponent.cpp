@@ -1,12 +1,12 @@
 #include "MeshComponent.h"
 #include "AssetManager.h"
 
-MeshComponent::MeshComponent(std::string MeshPath, Transform* transform) : MeshData(MeshPath)
+MeshComponent::MeshComponent(FPActor* Owner, std::string MeshPath) : FPPrimitiveComponent(Owner), MeshData(MeshPath)
 {
 	std::pair<int, int> MeshData = LoadVertexBuffer();
 	VBIndex = MeshData.first;
 	FaceSize = MeshData.second;
-	RegistMeshRenderList(transform);
+	RegistMeshRenderList();
 }
 
 std::pair<int, int> MeshComponent::LoadVertexBuffer()
@@ -14,7 +14,7 @@ std::pair<int, int> MeshComponent::LoadVertexBuffer()
 	return AssetManager::Get().LordVertexVuffer(MeshData);
 }
 
-void MeshComponent::RegistMeshRenderList(Transform* transform)
+void MeshComponent::RegistMeshRenderList()
 {
 	RenderItem = MeshRenderList::Get().RegistRenderList();
 
@@ -22,7 +22,9 @@ void MeshComponent::RegistMeshRenderList(Transform* transform)
 	RenderItem->isFill = &(this->isFill);
 	RenderItem->isCull = &(this->isCull);
 	RenderItem->FaceSize = &(this->FaceSize);
-	RenderItem->transform = transform;
+	RenderItem->Location = &(this->WorldTransform.Location);
+	RenderItem->Rotation = &(this->WorldTransform.QuaternionRotation);
+	RenderItem->Scale = &(this->WorldTransform.Scale);
 }
 
 MeshComponent::~MeshComponent()

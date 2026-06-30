@@ -19,6 +19,15 @@
     <Filter Include="Renderers">
       <UniqueIdentifier>{e38098a3-e2d4-4dc1-a9cc-ffab0e398905}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Component">
+      <UniqueIdentifier>{6b98ecfc-d714-4dfe-8575-295ec0e874a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Define">
+      <UniqueIdentifier>{991501bb-33ae-4662-af0f-36f1b227f64b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{484c2692-9984-4b3a-8718-4fdd4e7cce48}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -51,9 +60,6 @@
     <ClInclude Include="FPLevel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MeshComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="AssetManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -78,16 +84,10 @@
     <ClInclude Include="Object\Components\InputMappingContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Define\FPMath.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FPAController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FPAGameMode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TransformComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameTimer.h">
@@ -95,6 +95,42 @@
     </ClInclude>
     <ClInclude Include="Object\Components\InputComponent.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GizmoRenderList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FPActorComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="FPSceneComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="FPPrimitiveComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="FTransform.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Define\FPMath.h">
+      <Filter>Define</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="GizmoComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="FPMovementComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\FPGameplayStatics.h">
+      <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -114,9 +150,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FPLevel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MeshComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AssetManager.cpp">
@@ -151,6 +184,39 @@
     </ClCompile>
     <ClCompile Include="Object\Components\InputComponent.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GizmoRenderList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FPSceneComponent.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Define\FPMath.cpp">
+      <Filter>Define</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshComponent.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="GizmoComponent.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="FPMovementCompoent.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="FPMovementComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\Actor.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\FPGameplayStatics.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

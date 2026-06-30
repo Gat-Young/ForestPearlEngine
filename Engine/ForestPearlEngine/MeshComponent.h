@@ -1,8 +1,9 @@
 #pragma once
 #include "MeshRenderList.h"
+#include "FPPrimitiveComponent.h"
 #include <string>
 
-class MeshComponent
+class MeshComponent : FPPrimitiveComponent
 {
 	private:
 		std::string MeshData;
@@ -15,10 +16,10 @@ class MeshComponent
 		MeshRenderItem* RenderItem = nullptr;
 
 		std::pair<int, int> LoadVertexBuffer();
-		void RegistMeshRenderList(Transform* transform);
+		void RegistMeshRenderList();
 
 	public:
-		MeshComponent(std::string MeshPath, Transform* transform);
+		MeshComponent(FPActor* Owner, std::string MeshPath);
 
 		~MeshComponent();
 

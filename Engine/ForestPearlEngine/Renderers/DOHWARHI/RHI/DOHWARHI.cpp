@@ -1,7 +1,7 @@
-#include "DOHWARHI.h"
+Ôªø#include "DOHWARHI.h"
 #include "../../DOHWA/DOHWA/Dohwa.h"
 
-//DOHWARHI ª˝º∫ «‘ºˆ
+//DOHWARHI ÏÉùÏÑ± Ìï®Ïàò
 FPRHI* CreateRHI(UINT DeviceVersion)
 {
 	return new DOHWARHI(DeviceVersion);
@@ -9,9 +9,9 @@ FPRHI* CreateRHI(UINT DeviceVersion)
 
 ///////////////////////////////////////////////
 //
-// ≈∏¿‘ ∫Ø»Ø±‚
+// ÌÉÄÏûÖ Î≥ÄÌôòÍ∏∞
 
-//FPRHIRESOURCETYPE To DOHWARESOURCETYPE ≈∏¿‘ ∫Ø»Ø±‚
+//FPRHIRESOURCETYPE To DOHWARESOURCETYPE ÌÉÄÏûÖ Î≥ÄÌôòÍ∏∞
 DOHWARESOURCETYPE ChangeDOHWARESOURCETYPE(FPRHIRESOURCETYPE ResourceType)
 {
     switch (ResourceType)
@@ -29,7 +29,7 @@ DOHWARESOURCETYPE ChangeDOHWARESOURCETYPE(FPRHIRESOURCETYPE ResourceType)
     }
 }
 
-//FPRHIFORMAT To DOHWAFORMAT ≈∏¿‘ ∫Ø»Ø±‚
+//FPRHIFORMAT To DOHWAFORMAT ÌÉÄÏûÖ Î≥ÄÌôòÍ∏∞
 DOHWAFORMAT ChangeDOHWAFORMAT(FPRHIFORMAT FPRHIFormat)
 {
     switch (FPRHIFormat)
@@ -66,7 +66,32 @@ DOHWAFORMAT ChangeDOHWAFORMAT(FPRHIFORMAT FPRHIFormat)
     }
 }
 
-//FPRHICOLOR To COLORREF ≈∏¿‘ ∫Ø»Ø±‚
+//FPRHITRANSFORMSTATETYPE To DOHWATRANSFORMSTATETYPEY ÌÉÄÏûÖ Î≥ÄÌôòÍ∏∞
+DOHWATRANSFORMSTATETYPE ChangeDOHWATRANSFORMSTATETYPE(FPRHITRANSFORMSTATETYPE FPRHITransformStateType) {
+    switch (FPRHITransformStateType)
+    {
+    case FPRHITS_VIEW:          return DOHWATS_VIEW;
+    case FPRHITS_PROJECTION:	return DOHWATS_PROJECTION;
+    case FPRHITS_TEXTURE0:	    return DOHWATS_TEXTURE0;
+    case FPRHITS_TEXTURE1:	    return DOHWATS_TEXTURE1;
+    case FPRHITS_TEXTURE2:	    return DOHWATS_TEXTURE2;
+    case FPRHITS_TEXTURE3:	    return DOHWATS_TEXTURE3;
+    case FPRHITS_TEXTURE4:	    return DOHWATS_TEXTURE4;
+    case FPRHITS_TEXTURE5:	    return DOHWATS_TEXTURE5;
+    case FPRHITS_TEXTURE6:	    return DOHWATS_TEXTURE6;
+    case FPRHITS_TEXTURE7:	    return DOHWATS_TEXTURE7;
+    case FPRHITS_FORCE_DWORD:	return DOHWATS_MAX_;
+
+    case 256:                   return DOHWATS_WORLD;
+        //case 257:                   return DOHWATS_WORLD1;
+        //case 258:                   return DOHWATS_WORLD2;
+        //case 259:                   return DOHWATS_WORLD3;
+
+    default:                    return DOHWATS_MAX_;
+    }
+}
+
+//FPRHICOLOR To COLORREF ÌÉÄÏûÖ Î≥ÄÌôòÍ∏∞
 COLORREF ChangeCOLORREF(FPRHICOLOR FPRHIColor)
 {
     DWORD A = FPRHIColor & 0xff000000;
@@ -77,7 +102,7 @@ COLORREF ChangeCOLORREF(FPRHICOLOR FPRHIColor)
     return ((COLORREF)(((B) << 16) | (G) | ((R) >> 16)));
 }
 
-//FPRHIPRESENT_PARAMETERS To DOHWAPRESENT_PARAMETERS ≈∏¿‘ ∫Ø»Ø±‚
+//FPRHIPRESENT_PARAMETERS To DOHWAPRESENT_PARAMETERS ÌÉÄÏûÖ Î≥ÄÌôòÍ∏∞
 void ChangeDOHWAPRESENT_PARAMETERS(DOHWAPRESENT_PARAMETERS& DohwaPram, FPRHIPRESENT_PARAMETERS* pPresentationParameters)
 {
     DohwaPram.Width = pPresentationParameters->BackBufferWidth;
@@ -86,11 +111,11 @@ void ChangeDOHWAPRESENT_PARAMETERS(DOHWAPRESENT_PARAMETERS& DohwaPram, FPRHIPRES
     DohwaPram.Windowed = pPresentationParameters->Windowed;
 }
 
-//FPRHIFVF To DOHWAFVF ≈∏¿‘ ∫Ø»Ø±‚
+//FPRHIFVF To DOHWAFVF ÌÉÄÏûÖ Î≥ÄÌôòÍ∏∞
 DWORD ChangeDOHWAFVF_FORMAT(DWORD FPRHIFvf)
 {
 
-    //¿ßƒ° ≈∏¿‘∏∏ ªÃæ∆≥ª±‚
+    //ÏúÑÏπò ÌÉÄÏûÖÎßå ÎΩëÏïÑÎÇ¥Í∏∞
     DWORD FPRHIPosType = FPRHIFvf & FPRHIFVF_POSITION_MASK;
 
     DWORD D3DPosType;
@@ -103,20 +128,20 @@ DWORD ChangeDOHWAFVF_FORMAT(DWORD FPRHIFvf)
     default:                  D3DPosType = 0x000; break;
     }
 
-    //π˝º± ∫§≈Õ ø©∫Œ
+    //Î≤ïÏÑ† Î≤°ÌÑ∞ Ïó¨Î∂Ä
     DWORD DXNormal = ((FPRHIFvf & FPRHIFVF_NORMAL) == DOHWAFVF_NORMAL) ? DOHWAFVF_NORMAL : 0x000;
 
-    // ¡° «¡∏ÆπÃ∆º∫Í ≈©±‚ ø©∫Œ
+    // Ï†ê ÌîÑÎ¶¨ÎØ∏Ìã∞Î∏å ÌÅ¨Í∏∞ Ïó¨Î∂Ä
     DWORD DXPsize = 0x000;
 
-    //Diffuse Color ø©∫Œ
+    //Diffuse Color Ïó¨Î∂Ä
     DWORD DXDiffuse = ((FPRHIFvf & FPRHIFVF_DIFFUSE) == DOHWAFVF_DIFFUSE) ? DOHWAFVF_DIFFUSE : 0x000;
 
-    //Specular Color ø©∫Œ
+    //Specular Color Ïó¨Î∂Ä
     DWORD DXSpecular = ((FPRHIFvf & FPRHIFVF_SPECULAR) == DOHWAFVF_SPECULAR) ? DOHWAFVF_SPECULAR : 0x000;
 
 
-    //≈ÿΩ∫√≥ ¡¬«• ∞≥ºˆ ªÃæ∆≥ª±‚
+    //ÌÖçÏä§Ï≤ò Ï¢åÌëú Í∞úÏàò ÎΩëÏïÑÎÇ¥Í∏∞
     DWORD FPRHITextCount = (FPRHIFvf & FPRHIFVF_TEXCOUNT_MASK);
 
     DWORD DXTextCount;
@@ -141,7 +166,7 @@ DWORD ChangeDOHWAFVF_FORMAT(DWORD FPRHIFvf)
     return (D3DPosType | DXNormal | DXPsize | DXDiffuse | DXSpecular | DXTextCount | DXLastBeta);
 }
 
-//FPRHIRENDERSTATETYPE To DOHWARENDERSTATETYPE ≈∏¿‘ ∫Ø»Ø±‚
+//FPRHIRENDERSTATETYPE To DOHWARENDERSTATETYPE ÌÉÄÏûÖ Î≥ÄÌôòÍ∏∞
 DOHWARENDERSTATETYPE ChangeDOHWARENDERSTATETYPE(FPRHIRENDERSTATETYPE FPRHIRenderStateType)
 {
     switch (FPRHIRenderStateType)
@@ -162,7 +187,7 @@ DOHWARENDERSTATETYPE ChangeDOHWARENDERSTATETYPE(FPRHIRENDERSTATETYPE FPRHIRender
     }
 }
 
-//FPRHICULL To DOHWACULL ≈∏¿‘ ∫Ø»Ø±‚
+//FPRHICULL To DOHWACULL ÌÉÄÏûÖ Î≥ÄÌôòÍ∏∞
 DOHWACULL ChangeDOHWACULL(DWORD FPRHICull)
 {
     switch (FPRHICull)
@@ -176,7 +201,7 @@ DOHWACULL ChangeDOHWACULL(DWORD FPRHICull)
     }
 }
 
-//FPRHIFILLMODE To DOHWAFILLMODE ≈∏¿‘ ∫Ø»Ø±‚
+//FPRHIFILLMODE To DOHWAFILLMODE ÌÉÄÏûÖ Î≥ÄÌôòÍ∏∞
 DOHWAFILLMODE ChangeDOHWAFILLMODE(DWORD FPRHIFillMode)
 {
     switch (FPRHIFillMode)
@@ -191,7 +216,7 @@ DOHWAFILLMODE ChangeDOHWAFILLMODE(DWORD FPRHIFillMode)
 }
 
 
-//FPRHIUsages To DOHWAUsage ≈∏¿‘ ∫Ø»Ø±‚
+//FPRHIUsages To DOHWAUsage ÌÉÄÏûÖ Î≥ÄÌôòÍ∏∞
 long ChangeDOHWAUsage(long FPRHIUsage)
 {
     switch (FPRHIUsage)
@@ -208,13 +233,13 @@ long ChangeDOHWAUsage(long FPRHIUsage)
     }
 }
 
-//FPRHIPOOL To DOHWAPOOL ≈∏¿‘ ∫Ø»Ø±‚
+//FPRHIPOOL To DOHWAPOOL ÌÉÄÏûÖ Î≥ÄÌôòÍ∏∞
 DOHWAPOOL ChangeDOHWAPOOL(FPRHIPOOL MemoryPool)
 {
     switch (MemoryPool)
     {
     case FPRHIPOOL_DEFAULT: return DOHWAPOOL_DEFAULT;
-    case FPRHIPOOL_MANAGED:	return DOHWAPOOL_MANAGED;
+    case FPRHIPOOL_MANAGED:	return DOHWAPOOL_SYSTEMMEM;//return DOHWAPOOL_MANAGED;
     case FPRHIPOOL_SYSTEMMEM:	return DOHWAPOOL_SYSTEMMEM;
     case FPRHIPOOL_SCRATCH:	return DOHWAPOOL_SCRATCH;
     case FPRHIPOOL_FORCE_DWORD:	return DOHWAPOOL_FORCE_DWORD;
@@ -223,7 +248,7 @@ DOHWAPOOL ChangeDOHWAPOOL(FPRHIPOOL MemoryPool)
     }
 }
 
-//FPRHICREATE To DOHWACREATE ≈∏¿‘ ∫Ø»Ø±‚
+//FPRHICREATE To DOHWACREATE ÌÉÄÏûÖ Î≥ÄÌôòÍ∏∞
 DWORD ChangeDOHWACREATE(DWORD FPRHICreate)
 {
     switch (FPRHICreate)
@@ -236,7 +261,7 @@ DWORD ChangeDOHWACREATE(DWORD FPRHICreate)
     }
 }
 
-//FPRHIPRIMITIVETYPE To DOHWAPRIMITIVETYPE ≈∏¿‘ ∫Ø»Ø±‚
+//FPRHIPRIMITIVETYPE To DOHWAPRIMITIVETYPE ÌÉÄÏûÖ Î≥ÄÌôòÍ∏∞
 DOHWAPRIMITIVETYPE ChangeDOHWAPRIMITIVETYPE(FPRHIPRIMITIVETYPE FPRHIPrmititiveType)
 {
     switch (FPRHIPrmititiveType)
@@ -252,9 +277,11 @@ DOHWAPRIMITIVETYPE ChangeDOHWAPRIMITIVETYPE(FPRHIPRIMITIVETYPE FPRHIPrmititiveTy
     default:                        return DOHWAPT_FORCE_DWORD;
     }
 }
+
+
 /////////////////////////////////////////////
 //
-// class DOHWAVertexBufferImpl ±∏«ˆ
+// class DOHWAVertexBufferImpl Íµ¨ÌòÑ
 //
 ////////////////////////////////////////////
 class DOHWAVertexBufferImpl
@@ -266,7 +293,7 @@ class DOHWAVertexBufferImpl
         DOHWAVertexBufferImpl();
         ~DOHWAVertexBufferImpl();
 
-        //VertexBuffer ∞¥√º π›»Ø
+        //VertexBuffer Í∞ùÏ≤¥ Î∞òÌôò
         std::unique_ptr<IDohwaVertexBuffer9>* GetVertexBuffer() { return &(VertexBuffer); }
 
         HRESULT Lock(UINT OffsetToLock, UINT SizeToLock, void** ppbData, DWORD Flags);
@@ -299,7 +326,7 @@ HRESULT DOHWAVertexBufferImpl::Unlock()
 
 /////////////////////////////////////////////
 //
-// class DOHWADeviceImpl ±∏«ˆ
+// class DOHWADeviceImpl Íµ¨ÌòÑ
 //
 ////////////////////////////////////////////
 class DOHWADeviceImpl
@@ -329,6 +356,8 @@ class DOHWADeviceImpl
         HRESULT SetStreamSource(UINT StreamNumber, std::unique_ptr<IDohwaVertexBuffer9>& pStreamData, UINT OffsetInBytes, UINT Stride);
         HRESULT SetFVF(DWORD FVF);
         HRESULT DrawPrimitive(FPRHIPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount);
+
+        HRESULT SetTransform(FPRHITRANSFORMSTATETYPE State, CONST FPRHITRANSFORMMATRIX* pMatrix);
 };
 
 DOHWADeviceImpl::DOHWADeviceImpl()
@@ -428,6 +457,41 @@ HRESULT DOHWADeviceImpl::SetFVF(DWORD FVF)
     DohwaDevice->SetFVF(ChangeDOHWAFVF_FORMAT(FVF));
     return S_OK;
 }
+HRESULT DOHWADeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, CONST FPRHITRANSFORMMATRIX* pMatrix)
+{
+    DOHWATRANSFORMSTATETYPE TransformStateType = ChangeDOHWATRANSFORMSTATETYPE(State);
+
+    DOHWAXMATRIX DMatrix =
+    {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f,
+    };
+
+    if (TransformStateType == DOHWATS_WORLD)
+    {
+        //Ïä§ÏºÄÏùº ÌñâÎ†¨
+        //..
+        float scale[3] = { pMatrix->scale_x, pMatrix->scale_y, pMatrix->scale_z };
+        DOHWAXMatrixScale(&DMatrix, scale);
+
+        //ÌöåÏ†Ñ ÌñâÎ†¨
+        //
+        float rotation[3] = { pMatrix->rotation_x, pMatrix->rotation_y, pMatrix->rotation_z };
+        DOHWAXMatrixRotation(&DMatrix, rotation);
+
+        //ÏúÑÏπò ÌñâÎ†¨
+        //
+        float position[3] = { pMatrix->position_x, pMatrix->position_y, pMatrix->position_z };
+        DOHWAXMatrixTransform(&DMatrix, position);
+
+    }
+
+    DohwaDevice->SetTransform(TransformStateType, &DMatrix);
+
+    return S_OK;
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -436,7 +500,7 @@ HRESULT DOHWADeviceImpl::SetFVF(DWORD FVF)
 
 /////////////////////////////////////////////
 //
-// class DOHWAImpl ±∏«ˆ
+// class DOHWAImpl Íµ¨ÌòÑ
 //
 ////////////////////////////////////////////
 class DOHWAImpl
@@ -448,10 +512,10 @@ class DOHWAImpl
         DOHWAImpl(UINT DeviceVersion);
         ~DOHWAImpl();
 
-        //Com∞¥√º π›»Ø
+        //ComÍ∞ùÏ≤¥ Î∞òÌôò
         IDohwa* GetDohwa() { return DohwaObj.get(); };
 
-        //Device ª˝º∫
+        //Device ÏÉùÏÑ±
         HRESULT CreateDevice(HWND hFocusWindow, DWORD BehaviorFlags, FPRHIPRESENT_PARAMETERS* pPresentationParameters, std::unique_ptr<IDohwaDevice9>* ppReturnedDeviceInterface);
 };
 
@@ -482,7 +546,7 @@ HRESULT DOHWAImpl::CreateDevice(HWND hFocusWindow, DWORD BehaviorFlags, FPRHIPRE
 
 /////////////////////////////////////////////////////
 //
-// DOHWARHI ±∏«ˆ∫Œ
+// DOHWARHI Íµ¨ÌòÑÎ∂Ä
 //
 ////////////////////////////////////////////////////
 
@@ -506,7 +570,7 @@ HRESULT DOHWARHI::CreateDevice(UINT Adapter, FPRHIDEVTYPE DeviceType, HWND hFocu
 
 /////////////////////////////////////////////////////
 //
-// DOHWARHIDevice ±∏«ˆ∫Œ
+// DOHWARHIDevice Íµ¨ÌòÑÎ∂Ä
 //
 ////////////////////////////////////////////////////
 
@@ -593,11 +657,18 @@ HRESULT DOHWARHIDevice::SetFVF(DWORD FVF)
     return S_OK;
 }
 
+HRESULT DOHWARHIDevice::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRANSFORMMATRIX* pMatrix)
+{
+    DOHWADeviceimpl->SetTransform(State, pMatrix);
+
+    return S_OK;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////
 //
-// DOHWAVertexBuffer ±∏«ˆ∫Œ
+// DOHWAVertexBuffer Íµ¨ÌòÑÎ∂Ä
 //
 ////////////////////////////////////////////////////
 

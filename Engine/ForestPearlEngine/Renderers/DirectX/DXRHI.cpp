@@ -3,7 +3,7 @@
 #include <wrl/client.h>
 #include <iostream>
 #include <cmath>
-
+#include <DirectXMath.h>
 #pragma comment(lib, "d3d9.lib")
 
 template<typename T>
@@ -584,7 +584,7 @@ void D3DMatrixScale(D3DMATRIX* Matrix, float Scale[3])
     D3DMatrixMultiply(Matrix, &ScaleMatrix);
 }
 
-#define Radian(degree) (degree * 3.141592f / 180.0f)
+#define Radian(degree) (degree / 180.0f * 3.141592f)
 
 //Pitch
 void D3DMatrixRotationPitch(D3DMATRIX* Matrix, float Rotation)
@@ -872,21 +872,83 @@ HRESULT DXDeviceImpl::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRA
 
     if (TransformStateType >= D3DTS_WORLD && TransformStateType <= D3DTS_WORLD3)
     {
+        DirectX::XMMATRIX ModelingMatrix;
+
         //스케일 처리.
         //..
         float scale[3] = { pMatrix->scale_x, pMatrix->scale_y, pMatrix->scale_z };
-        D3DMatrixScale(&DMatrix, scale);
+        //D3DMatrixScale(&DMatrix, scale);
         
+        DirectX::XMFLOAT4X4  xmScale;
+        DirectX::XMStoreFloat4x4(&xmScale, DirectX::XMMatrixScaling(pMatrix->scale_x, pMatrix->scale_y, pMatrix->scale_z));
+        DirectX::XMMATRIX Scale = DirectX::XMLoadFloat4x4(&xmScale);
+
+        DirectX::XMMATRIX Rotation;
         //회전 처리.
         //
-        float rotation[3] = { pMatrix->rotation_x, pMatrix->rotation_y, pMatrix->rotation_z };
-        D3DMatrixRotation(&DMatrix, rotation);
-        
+
+        DirectX::XMFLOAT4X4 xmQuaternionRotation;
+        DirectX::XMVECTOR xmQuaternion = { pMatrix->rotation_x, pMatrix->rotation_y, pMatrix->rotation_z, pMatrix->rotation_w};
+        DirectX::XMStoreFloat4x4(&xmQuaternionRotation, DirectX::XMMatrixRotationQuaternion(xmQuaternion));
+        Rotation = DirectX::XMLoadFloat4x4(&xmQuaternionRotation);
+
+        ModelingMatrix = DirectX::XMMatrixMultiply(Scale, Rotation);
         //이동 처리.
         //
         float position[3] = { pMatrix->position_x, pMatrix->position_y, pMatrix->position_z };
-        D3DMatrixTransform(&DMatrix, position);
+        //D3DMatrixTransform(&DMatrix, position);
+        DirectX::XMFLOAT4X4  xmPosition;
+        DirectX::XMStoreFloat4x4(&xmPosition, DirectX::XMMatrixTranslation(pMatrix->position_x, pMatrix->position_y, pMatrix->position_z));
+        DirectX::XMMATRIX Position = DirectX::XMLoadFloat4x4(&xmPosition);
 
+        ModelingMatrix = DirectX::XMMatrixMultiply(ModelingMatrix, Position);
+
+        DirectX::XMFLOAT4X4 temp;
+        DirectX::XMStoreFloat4x4(&temp, ModelingMatrix);
+
+        DMatrix =
+        {
+            temp._11, temp._12, temp._13, temp._14,
+            temp._21, temp._22, temp._23, temp._24,
+            temp._31, temp._32, temp._33, temp._34,
+            temp._41, temp._42, temp._43, temp._44,
+        };
+
+    }
+
+    //뷰행렬 처리
+    if (TransformStateType == D3DTS_VIEW)
+    {
+        //<DX> 수학 사용
+        DirectX::XMFLOAT4X4 xm;
+        DirectX::XMVECTOR eye, lookat, up;
+        eye = DirectX::XMVectorSet(pMatrix->position_x, pMatrix->position_y, pMatrix->position_z, 1);
+        lookat = DirectX::XMVectorSet(pMatrix->LookAt_x, pMatrix->LookAt_y, pMatrix->LookAt_z, 1);
+        up = DirectX::XMVectorSet(pMatrix->Up_x, pMatrix->Up_y, pMatrix->Up_z, 0);
+        XMStoreFloat4x4(&xm, DirectX::XMMatrixLookAtLH(eye, lookat, up));
+
+        DMatrix =
+        {
+            xm._11, xm._12, xm._13, xm._14,
+            xm._21, xm._22, xm._23, xm._24,
+            xm._31, xm._32, xm._33, xm._34,
+            xm._41, xm._42, xm._43, xm._44,
+        };
+    }
+
+    //투영 행렬 처리
+    if (TransformStateType == D3DTS_PROJECTION)
+    {
+        //수학 사용. (과제 제시, 참고용)
+        DirectX::XMFLOAT4X4 xm;
+        DirectX::XMStoreFloat4x4(&xm, DirectX::XMMatrixPerspectiveFovLH(Radian(pMatrix->Fov), pMatrix->Aspect, pMatrix->Zn, pMatrix->Zf));
+        DMatrix =
+        {
+            xm._11, xm._12, xm._13, xm._14,
+            xm._21, xm._22, xm._23, xm._24,
+            xm._31, xm._32, xm._33, xm._34,
+            xm._41, xm._42, xm._43, xm._44,
+        };
     }
 
     Device->SetTransform(TransformStateType, &DMatrix);
@@ -1065,7 +1127,7 @@ HRESULT DXRHIDevice::SetFVF(DWORD FVF)
     return S_OK;
 }
 
-HRESULT DXRHIDevice::SetTransform(FPRHITRANSFORMSTATETYPE State, const FPRHITRANSFORMMATRIX* pMatrix)
+HRESULT DXRHIDevice::SetTransform(FPRHITRANSFORMSTATETYPE State, FPRHITRANSFORMMATRIX* pMatrix)
 {
     DXDeviceimpl->SetTransform(State, pMatrix);
 

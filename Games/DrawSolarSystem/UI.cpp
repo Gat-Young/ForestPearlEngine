@@ -77,23 +77,23 @@ void UI::CalFPS(int x, int y)
 }
 
 void UI::ShowInfo()
-{	
-	int x = 300, y = 50;
+{
+	int x = 10, y = 30;
 
 	COLORREF col = RGB(255, 255, 255);
 	TCHAR text[1024];
-	_stprintf_s(text, _T("■ %s"), _T("DX(05.Vertex(2D)+Face_Filling)"));
+	_stprintf_s(text, _T("■ %s"), _T("ForestPearlEngine"));
 	SetUIContext(1, bShow, x, y, col, text);
 	y += 15;
-	SetUIContext(2, bShow, x, y += 15, col, _T("1.정점, 정점버퍼를 구성합니다."));
-	SetUIContext(3, bShow, x, y += 15, col, _T("2.정점색 보간 결과를 확인합니다."));
-	SetUIContext(4, bShow, x, y += 15, col, _T("3.B3Yena SW Renderer 의 결과와 비교해 봅시다."));
-	SetUIContext(5, bShow, x, y += 15, col, _T("4.B3Yena SW Renderer 의 결과와 비교시 도움말을 끄십시요.(F1)"));
+	SetUIContext(2, bShow, x, y += 15, col, _T("1. 가운데 부모(Sun)를 중심으로 회전합니다."));
+	SetUIContext(3, bShow, x, y += 15, col, _T("2. 부모를 중심으로 회전하는 자식(Planet)을 부모로 회전합니다."));
+	SetUIContext(4, bShow, x, y += 15, col, _T("3. 화면을 왼쪽 클릭하면 해당 위치에서 Planet이 스폰됩니다."));
+	SetUIContext(5, bShow, x, y += 15, col, _T("4. 화면을 오른쪽 클릭하면 Planet을 선택했는지 확인합니다."));
 }
 
 void UI::SetUIContext(int index, bool actieve, int x, int y, unsigned long color, std::basic_string<TCHAR> text)
 {
-	this->TextComponets[index]->SetTextData(actieve, x, y, color, text);
+	this->TextComponets[index]->SetTextData(&actieve, x, y, color, text);
 }
 
 void UI::SetActiveViewHelp(FInputValue value)

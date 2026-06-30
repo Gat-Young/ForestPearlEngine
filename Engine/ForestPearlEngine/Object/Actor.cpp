@@ -54,7 +54,7 @@ void FPActor::SetActorScale3D(FPVector3 Scale)
 
 FTransform FPActor::GetActorTransform()
 {
-    return RootComponent->GetComponentTransform();;
+    return RootComponent->GetComponentTransform();
 }
 
 FPVector3 FPActor::GetActorLocation()

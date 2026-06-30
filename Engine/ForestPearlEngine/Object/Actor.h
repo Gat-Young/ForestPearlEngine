@@ -36,5 +36,7 @@ class FPActor : public FPObject
 		struct FPVector3 GetActorScale3D();
 
 		//생성된 FPActor의 이름을 설정
-		void SetActorName(std::string Name) { ActorName = Name; };
+		void SetActorName(std::string Name) { ActorName = Name; }
+		//이름 가져오기
+		std::string GetName() { return ActorName; }
 };

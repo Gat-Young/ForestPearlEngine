@@ -18,8 +18,7 @@ void Triangle::Initialize()
 
 	if (Controller == nullptr)
 		return;
-
-	//Controller->GetInputComponent().BindMethod("IA_SetMoveTriangel", this, EKeyState::Pressed, &Triangle::Move);
+	Controller->GetInputComponent().BindMethod("IA_SetMoveTriangel", this, EKeyState::Pressed, &Triangle::Move);
 	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &Triangle::SetFillTriangel);
 	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &Triangle::SetCullTriangle);
 }
@@ -54,6 +53,7 @@ void Triangle::SetFillTriangel(FInputValue Value)
 
 void Triangle::SetCullTriangle(FInputValue Value)
 {
+	std::cout << "ActorName : " << GetName() << "\n";
 	std::cout << "CullMode : " << isCull << "\n";
 	isCull = !isCull;
 	Mesh->SetMeshCull(isCull);

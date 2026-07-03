@@ -28,6 +28,9 @@
     <Filter Include="Utility">
       <UniqueIdentifier>{484c2692-9984-4b3a-8718-4fdd4e7cce48}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Renderers\Legacy_Renderer">
+      <UniqueIdentifier>{60d0598d-1cb6-4381-8250-61314a79b035}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -41,9 +44,6 @@
     </ClInclude>
     <ClInclude Include="Object\Object.h">
       <Filter>Object</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderers\Renderer.h">
-      <Filter>Renderers</Filter>
     </ClInclude>
     <ClInclude Include="GameProjectClassRegistry.h">
       <Filter>Header Files</Filter>
@@ -132,13 +132,16 @@
     <ClInclude Include="Utility\FPGameplayStatics.h">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="Renderers\Legacy_Renderer.h">
+      <Filter>Renderers\Legacy_Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\Renderer.h">
+      <Filter>Renderers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderers\Renderer.cpp">
-      <Filter>Renderers</Filter>
     </ClCompile>
     <ClCompile Include="GameProjectClassRegistry.cpp">
       <Filter>Source Files</Filter>
@@ -217,6 +220,12 @@
     </ClCompile>
     <ClCompile Include="Utility\FPGameplayStatics.cpp">
       <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\Legacy_Renderer.cpp">
+      <Filter>Renderers\Legacy_Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\Renderer.cpp">
+      <Filter>Renderers</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

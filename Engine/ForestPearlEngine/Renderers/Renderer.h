@@ -1,43 +1,41 @@
 #pragma once
-#include <vector>
-#include "../Object/Actor.h"
-#include "FPRHI/FPRHI.h"
 
-// 정점 포멧(VERTEX FORMAT) 
-struct COLVTX
-{
-	float x, y, z;        //x(pos), y(pos), z(Depth)★
-	DWORD color;
-};
+#include <d3d11.h>
+#include <dxgi1_6.h>
+#pragma comment(lib, "D3D11")
 
-COLVTX MakeCOLVTX(float x, float y, float z, DWORD color);
+#include <Windows.h>
+#include <wrl/client.h>
+
 
 class Renderer
 {
+	template<typename T>
+	using ComPtr = Microsoft::WRL::ComPtr<T>;
+
 	private:
-		FPRHI* FPRender = nullptr;
-		FPRHIDevice* FPRenderDevice = nullptr;
-		FPRHIDISPLAYMODE FPDisplayMode;
-		std::vector<FPRHIVertexBuffer*> FPVertexBufferList;
-		int VertexBufferSize = -1;
+		//D3D Factory
+		ComPtr<IDXGIFactory2> Factory = NULL;
 
-		HFONT		g_hSysFont = NULL;
+		//D3D 장치 인터페이스
+		ComPtr<ID3D11Device> Device = NULL;
+		ComPtr<ID3D11DeviceContext> DeviceContext = NULL;
 
-		// 정점 포멧의 플래그 조합.. 
-		DWORD FVF_COLVTX = (FPRHIFVF_XYZ | FPRHIFVF_DIFFUSE);
+		//D3D 스왑체인 인터페이스
+		ComPtr<IDXGISwapChain> SwapChain = NULL;
+		ComPtr<ID3D11RenderTargetView> RenderTargetView = NULL;
 
-		void DrawText(int x, int y, COLORREF color, const TCHAR* msg, ...);
+		DXGI_MODE_DESC1 DisplayMode;
 
+		//D3D Feature Level 확인
+		D3D_FEATURE_LEVEL FeatureLevels[2] = {
+			D3D_FEATURE_LEVEL_11_1,
+			D3D_FEATURE_LEVEL_11_0,
+		};
+
+		D3D_FEATURE_LEVEL ActualLevel;
 	public:
 		Renderer();
 
-		HRESULT InitializeRenderer(UINT DeviceVersion, HWND hwnd);
-
-		int MakeVB(std::vector<COLVTX> Vertex);
-
-		void ObjectRendering();
-		void UIRendering();
-		void RenderTargetPresent();
-
+		HRESULT InitializeRenderer(HWND hwnd);
 };
-

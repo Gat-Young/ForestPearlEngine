@@ -1,276 +1,107 @@
 #include "Renderer.h"
-#include <Windows.h>
-#include "mmsystem.h"
-#include <string>
-#include "tchar.h"
+#include <assert.h>
 #include <iostream>
-#include <stack>
-#include "../MeshRenderList.h"
-#include "../TextRenderList.h"
-#include "../CameraList.h"
-#include "../GizmoRenderList.h"
 
 Renderer::Renderer()
 {
 }
 
-COLVTX MakeCOLVTX(float x, float y, float z, DWORD color)
+HRESULT Renderer::InitializeRenderer(HWND hwnd)
 {
-	return COLVTX{ x, y, z, color };
-}
+	HRESULT hr = S_OK;
 
-HRESULT Renderer::InitializeRenderer(UINT DeviceVersion, HWND hwnd)
-{
-	FPRender = CreateRHI(DeviceVersion);
+	//DXGI Display 모드 설정
+	RECT rect;
+	GetClientRect(hwnd, &rect);
+	int BackBufferWidth = rect.right - rect.left;
+	int BackBufferHeight = rect.bottom - rect.top;
 
-	//디스플레이 설정
-	FPDisplayMode.Width = 800;
-	FPDisplayMode.Height = 600;
-	FPDisplayMode.RefreshRate = 0;
-	FPDisplayMode.Format = FPRHIFMT_A8R8G8B8;
+	DisplayMode.Width = BackBufferWidth;
+	DisplayMode.Height = BackBufferHeight;
+	DisplayMode.RefreshRate = {0, 1};
+	DisplayMode.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-	//Render Target 설정
-	FPRHIPRESENT_PARAMETERS FPPresentParameters;
-	ZeroMemory(&FPPresentParameters, sizeof(FPPresentParameters));
-	FPPresentParameters.Windowed = TRUE;
-	FPPresentParameters.BackBufferWidth = FPDisplayMode.Width;
-	FPPresentParameters.BackBufferHeight = FPDisplayMode.Height;
-	FPPresentParameters.BackBufferFormat = FPDisplayMode.Format;
-	FPPresentParameters.BackBufferCount = 1;
-	FPPresentParameters.SwapEffect = FPRHISWAPEFFECT_DISCARD;
-	FPPresentParameters.PresentationInterval = FPRHIPRESENT_INTERVAL_IMMEDIATE;
-	FPPresentParameters.Flags = FPRHIPRESENTFLAG_LOCKABLE_BACKBUFFER;
 
-	//Device 생성
-	HRESULT res = FPRender->CreateDevice(
-											FPRHIADAPTER_DEFAULT,							//0번 비디오 어뎁터.
-											FPRHIDEVTYPE_HAL,								//하드웨어 레스터(HW Rasterization) 
-											hwnd,											//생성할 윈도 핸들.
-											FPRHICREATE_HARDWARE_VERTEXPROCESSING,			//정점 처리 방법.(GPU)
-											&FPPresentParameters,							//화면 설정 '옵션'
-											&FPRenderDevice									//생성된 장치의 포인터를 받을 포인터변수.
-										);
+	//DXGI Factory 생성
+	UINT DXGIFactoryFlags = 0;
+#if defined(_DEBUG) || !defined(NDEBUG)
+	DXGIFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
+#endif
+	hr = CreateDXGIFactory2(DXGIFactoryFlags, IID_PPV_ARGS(Factory.GetAddressOf()));
+	assert(SUCCEEDED(hr));
+	assert(Factory != nullptr && "Failed To Create DXGI Factory\n");
 
-	//폰트 생성 및 설정
-	g_hSysFont = CreateFont(
-		12, 6,
-		0, 0, 1, 0, 0, 0,
-		DEFAULT_CHARSET,	//HANGUL_CHARSET  
-		OUT_DEFAULT_PRECIS,
-		CLIP_DEFAULT_PRECIS,
-		DEFAULT_QUALITY,
-		FF_DONTCARE,
-		_T("굴림")
-	);
-	return S_OK;
-}
+	//현재 사용중인 Adapter(GPU)를 찾고 D3D11을 지원하는 지 확인
+	ComPtr<IDXGIAdapter1> Adapter, SelectedAdapter;
+	SIZE_T MaxDedicatedMemory = 0;
 
-int Renderer::MakeVB(std::vector<COLVTX> Vertex)
-{
-	FPVertexBufferList.push_back(nullptr);
-	VertexBufferSize++;
-
-	//정점 버퍼 생성.
-	if (FAILED(FPRenderDevice->CreateVertexBuffer(
-		(Vertex.size() * sizeof(COLVTX)),				//'정점 버퍼'의 크기 (바이트)
-		0,												// 버퍼 처리 유형 
-		FVF_COLVTX,										//'정점' 스타일 
-		FPRHIPOOL_MANAGED,								// 정점버퍼의 위치...MANAGED 추천.
-		&FPVertexBufferList[VertexBufferSize],								// 성공시 리턴되는 버퍼 포인터ㅣ
-		NULL											// 예약됨. 그냥 NULL.
-	)))
+	for (UINT i = 0; Factory->EnumAdapters1(i, &Adapter) != DXGI_ERROR_NOT_FOUND; ++i)
 	{
-		return E_FAIL;
-	}
+		DXGI_ADAPTER_DESC1 Desc;
+		Adapter->GetDesc1(&Desc);
 
-	//버퍼 채우기. 
-	VOID* pVB = nullptr;
-	if (FAILED(FPVertexBufferList[VertexBufferSize]->Lock(0, (Vertex.size() * sizeof(COLVTX)), (void**)&pVB, 0)))
-	{
-		return E_FAIL;
-	}
-	memcpy(pVB, Vertex.data(), (Vertex.size() * sizeof(COLVTX)));
-	FPVertexBufferList[VertexBufferSize]->Unlock();
+		//CPU 기반 소프트웨어 렌더러라면 무시
+		if (Desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) continue;
 
-	return VertexBufferSize;
-}
-
-void Renderer::ObjectRendering()
-{
-	std::vector<CameraItem> CamList = CameraList::Get().GetRenderList();
-
-	for (CameraItem CamItem : CamList)
-	{
-		if (!*(CamItem.Active)) continue;
-
-		FPRHITRANSFORMMATRIX g_mTM; //카메라 행렬
-
-		g_mTM.position_x = CamItem.Position->x;
-		g_mTM.position_y = CamItem.Position->y;
-		g_mTM.position_z = CamItem.Position->z;
-		g_mTM.position_w = 1.0f;
-
-		g_mTM.rotation_x = CamItem.Rotation->x;
-		g_mTM.rotation_y = CamItem.Rotation->y;
-		g_mTM.rotation_z = CamItem.Rotation->z;
-		g_mTM.rotation_w = 1.0f;
-
-		g_mTM.scale_x = CamItem.Scale->x;
-		g_mTM.scale_y = CamItem.Scale->y;
-		g_mTM.scale_z = CamItem.Scale->z;
-		g_mTM.scale_w = 1.0f;
-		
-		g_mTM.LookAt_x = CamItem.LookAt->x;
-		g_mTM.LookAt_y = CamItem.LookAt->y;
-		g_mTM.LookAt_z = CamItem.LookAt->z;
-		g_mTM.LookAt_w = 1.0f;
-
-		g_mTM.Up_x = CamItem.Up->x;
-		g_mTM.Up_y = CamItem.Up->y;
-		g_mTM.Up_z = CamItem.Up->z;
-		g_mTM.Up_w = 1.0f;
-
-		g_mTM.Fov = *(CamItem.Fov);
-		g_mTM.Aspect = *(CamItem.Aspect);
-		g_mTM.Zn = *(CamItem.Zn);
-		g_mTM.Zf = *(CamItem.Zf);
-
-
-		FPRenderDevice->SetTransform(FPRHITS_VIEW, &g_mTM);
-
-		FPRenderDevice->SetTransform(FPRHITS_PROJECTION, &g_mTM);
-	}
-
-	FPRenderDevice->BeginScene();
-	FPRenderDevice->Clear(0, NULL, FPRHICLEAR_TARGET, FPRHICOLOR_COLORVALUE(0, 0.12f, 0.35f, 1.0f), 1.0f, 0);
-
-	std::vector<GizmoRenderItem> GizemoRenderList = GizmoRenderList::Get().GetRenderList();
-	for (GizmoRenderItem RenderItem : GizemoRenderList)
-	{
-		if (!*(RenderItem.Active)) continue;
-
-		//조명 끄기
-		FPRenderDevice->SetRenderState(FPRHIRS_LIGHTING, FALSE);
-
-		//출력 스트림 설정
-		FPRenderDevice->SetStreamSource(0, FPVertexBufferList[*(RenderItem.VBIndex)], 0, sizeof(COLVTX));
-
-		//정점 형식 설정
-		FPRenderDevice->SetFVF(FVF_COLVTX);
-
-		FPRHITRANSFORMMATRIX g_mTM; //변환 행렬
-
-		g_mTM.position_x = RenderItem.Position->x;
-		g_mTM.position_y = RenderItem.Position->y;
-		g_mTM.position_z = RenderItem.Position->z;
-
-		g_mTM.rotation_x = RenderItem.Rotation->x;
-		g_mTM.rotation_y = RenderItem.Rotation->y;
-		g_mTM.rotation_z = RenderItem.Rotation->z;
-
-		g_mTM.scale_x = RenderItem.Scale->x;
-		g_mTM.scale_y = RenderItem.Scale->y;
-		g_mTM.scale_z = RenderItem.Scale->z;
-
-		//월드 변환 행렬 설정 : 렌더링 전에 설정 되어야 합니다.
-		FPRenderDevice->SetTransform(FPRHITS_WORLD, &g_mTM);		//★ 
-
-		//기즈모 데이터 그리기
-		FPRenderDevice->DrawPrimitive(FPRHIPT_LINELIST, 0, *(RenderItem.LineCount));    //Face 그리기
-	}
-
-	std::vector<MeshRenderItem> RenderList = MeshRenderList::Get().GetRenderList();
-	/*std::cout << RenderList[0].Location->x << " : " << RenderList[0].Location->y << " : " << RenderList[0].Location->z << "\n"
-		<< RenderList[0].Rotation->x << " : " << RenderList[0].Rotation->y << " : " << RenderList[0].Rotation->z << "\n"
-		<< RenderList[0].Scale->x << " : " << RenderList[0].Scale->y << " : " << RenderList[0].Scale->z << "\n\n\n";*/
-	for (MeshRenderItem RenderItem : RenderList)
-	{
-		//조명 끄기
-		FPRenderDevice->SetRenderState(FPRHIRS_LIGHTING, FALSE);
-
-		//렌더링 옵션 설정
-		FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, *(RenderItem.isCull) ? FPRHICULL_CCW : FPRHICULL_NONE);
-		//FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_CW);
-		//FPRenderDevice->SetRenderState(FPRHIRS_CULLMODE, FPRHICULL_CCW);
-
-		FPRenderDevice->SetRenderState(FPRHIRS_FILLMODE, *(RenderItem.isFill) ? FPRHIFILL_SOLID : FPRHIFILL_WIREFRAME);
-	
-
-
-		//출력 스트림 설정
-		FPRenderDevice->SetStreamSource(0, FPVertexBufferList[*(RenderItem.VBIndex)], 0, sizeof(COLVTX));
-
-		//정점 형식 설정
-		FPRenderDevice->SetFVF(FVF_COLVTX);
-
-		FPRHITRANSFORMMATRIX g_mTM; //변환 행렬
-
-		g_mTM.position_x = RenderItem.Location->x;
-		g_mTM.position_y = RenderItem.Location->y;
-		g_mTM.position_z = RenderItem.Location->z;
-
-		g_mTM.rotation_x = RenderItem.Rotation->x;
-		g_mTM.rotation_y = RenderItem.Rotation->y;
-		g_mTM.rotation_z = RenderItem.Rotation->z;
-		g_mTM.rotation_w = RenderItem.Rotation->w;
-
-		g_mTM.scale_x = RenderItem.Scale->x;
-		g_mTM.scale_y = RenderItem.Scale->y;
-		g_mTM.scale_z = RenderItem.Scale->z;
-
-		
-
-			//월드 변환 행렬 설정 : 렌더링 전에 설정 되어야 합니다.
-		FPRenderDevice->SetTransform(FPRHITS_WORLD, &g_mTM);		//★ 
-
-		//기하데이터 그리기
-		FPRenderDevice->DrawPrimitive(FPRHIPT_TRIANGLELIST, 0, *(RenderItem.FaceSize));    //Face 그리기
-	}
-
-	FPRenderDevice->EndScene();
-}
-
-void Renderer::UIRendering()
-{
-	std::vector<UIContextItem> RenderList = TextRenderList::Get().GetRenderList();
-	for(UIContextItem UI : RenderList)
-	{
-		if (*(*(UI.active)))
+		//Adapter가 DX11을 지원하는지 확인
+		if (SUCCEEDED(D3D11CreateDevice(
+			Adapter.Get(),
+			D3D_DRIVER_TYPE_UNKNOWN,
+			nullptr,
+			0,
+			nullptr,
+			0,
+			D3D11_SDK_VERSION,
+			nullptr,
+			nullptr,
+			nullptr)))
 		{
-			Renderer::DrawText(*(UI.x), *(UI.y), *(UI.color), (*(UI.msg)).c_str());
+			//가장 비디오 메모리가 큰 Adapter로 선택
+			if (Desc.DedicatedVideoMemory > MaxDedicatedMemory)
+			{
+				MaxDedicatedMemory = Desc.DedicatedVideoMemory;
+				SelectedAdapter = Adapter;
+			}
 		}
 	}
-}
+	assert(SelectedAdapter == nullptr && "No Compatible DX11 Adapter Found");
+	
+	//색상 Format 설정
+	UINT DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+#if defined(_DEBUG) || !defined(NDEBUG)
+	DeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
 
-void Renderer::RenderTargetPresent()
-{
-	FPRenderDevice->Present(NULL, NULL, NULL, NULL);
-}
+	//D3D Device 생성
+	hr = D3D11CreateDevice(
+		NULL,						//비디오 어댑터 포인터 (기본장치는 NULL)
+		D3D_DRIVER_TYPE_HARDWARE,	//HW 가속
+		nullptr,					//SW Resterizer DLL 핸들, HW 가속시에는 NULL
+		DeviceFlags,				//디바이스 생성 플래그. (기본값)
+		FeatureLevels,				//(생성할) 디바이스 기능 레벨(Feature Level) 배열
+		_countof(FeatureLevels),	//(생성할) 디바이스 기능 레벨(Feature Level) 배열 크기
+		D3D11_SDK_VERSION,			//DX SDK 버전.
+		Device.GetAddressOf(),		//[출력] 디바이스 인터페이스 얻기
+		&ActualLevel,				//[출력] (생성된) 디바이스 기능 레벨. 필요없다면 NULL 설정.
+		nullptr						//[출력] 디바이스 컨텍스트 얻기. 필요없다면 NULL 설정.
+	);
+	assert(Device != nullptr && "Failed To Create DX11 Device");
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// 문자열 출력 (GDI)
-//
-// \param	x, y	출력 화면 좌표.
-// \param	msg		출력 문자열 (형식화 문자열 지원)
-// \return	없음.
-//
-//
-void Renderer::DrawText(int x, int y, COLORREF col, const TCHAR* msg, ...)
-{
-	TCHAR buff[2048] = _T("");
-	va_list vl;
-	va_start(vl, msg);
-	_vstprintf(buff, _countof(buff), msg, vl);
-	va_end(vl);
-	RECT rc = { x, y, (LONG)(x + FPDisplayMode.Width), (LONG)(y + FPDisplayMode.Height) };
+	Device->GetImmediateContext(&DeviceContext);	//현재 디바이스 컨텐스트 얻기
 
-	HDC hdc = nullptr;
-	FPRenderDevice->GetDC(&hdc);
-	SelectObject(hdc, g_hSysFont);
-	SetTextColor(hdc, col);
-	SetBkMode(hdc, TRANSPARENT);
-	::DrawText(hdc, buff, (int)_tcslen(buff), &rc, DT_WORDBREAK);
-	SetTextColor(hdc, RGB(0, 255, 0));
-	FPRenderDevice->ReleaseDC(hdc);
+	assert(SUCCEEDED(hr) && "디바이스 / 스왑체인 생성 실패\n");
+
+	//Swap Chain 생성
+	DXGI_SWAP_CHAIN_DESC1 SwapChainDesc = {};
+	SwapChainDesc.Width = DisplayMode.Width;		//해상도 결정(백버퍼 크기)
+	SwapChainDesc.Height = DisplayMode.Height;
+	SwapChainDesc.Format = DisplayMode.Format;		//백버퍼 색상규격
+	SwapChainDesc.Stereo = FALSE;					//스테레오 3D렌더링 옵션
+	SwapChainDesc.SampleDesc = { 1, 0 };			//멀티 샘플링 설정 {Count, Quality}
+	SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;	//용도 설정 : 렌더 타겟
+	SwapChainDesc.BufferCount = 1;					//백버퍼 개수
+	SwapChainDesc.Scaling = DXGI_SCALING_STRETCH;	//출력 화면 크기가 모니터의 실제 해상도와 다를 때 어떻게 스케일링 할지 여부
+
+
+	return hr;
 }

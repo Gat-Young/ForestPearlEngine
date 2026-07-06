@@ -48,6 +48,7 @@ void FPInputSystem::HandleRawInput(LPARAM LParam)
         break;
         //키보드
     case RIM_TYPEKEYBOARD:
+        //std::cout << "RIM_TYPEKEYBOARD Begin\n";
         HandleKeyboardInput(raw);
         break;
     default:
@@ -142,7 +143,8 @@ void FPInputSystem::HandleKeyboardInput(RAWINPUT* RawInput)
 
         if (KeyStates[VKey] == true && bIsDown == true)
         {
-            ChangedKeyState = EKeyState::Pressed;
+            //ChangedKeyState = EKeyState::Pressed;
+            return;
         }
         else if (KeyStates[VKey] == false && bIsDown == true)
         {

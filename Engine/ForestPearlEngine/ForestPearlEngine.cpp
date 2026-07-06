@@ -36,7 +36,7 @@ bool ForestPearlEngine::PreInitialize()
 
     //Render 등록
     Render = new Renderer();
-    Render->InitializeRenderer(32, Hwnd);
+    Render->InitializeRenderer(Hwnd);
     
     AssetManager::Get().SetRenderer(Render);
 
@@ -74,6 +74,7 @@ void ForestPearlEngine::GameLoop()
         FPGameInstance::Get().Tick();
 
         //Rendering
+        Render->ClearBackBuffer();
         Render->ObjectRendering();
         Render->UIRendering();
         Render->RenderTargetPresent();
@@ -91,6 +92,7 @@ void ForestPearlEngine::StopEngine()
 void ForestPearlEngine::Finalize()
 {
     FPGameInstance::Get().Finalize();
+    Render->Finalize();
 }
 
 //윈도우 생성 함수

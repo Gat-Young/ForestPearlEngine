@@ -2,6 +2,30 @@
 #include <assert.h>
 #include <iostream>
 
+#include "../TextRenderList.h"
+
+//객체 해제/제거 매크로()
+#ifndef SafeRelease
+template<typename T> void _SafeRelease(T*& ptr)
+{
+	if (ptr) { ptr->Release(); ptr = nullptr; }
+}
+template<typename T> void _SafeDelete(T*& ptr)
+{
+	//if (ptr)					//조건 생략가.
+	{ delete ptr;	ptr = nullptr; }
+}
+template<typename T> void _SafeDelArray(T*& ptr)
+{
+	//if (ptr)					//조건 생략가.
+	{ delete[] ptr;	ptr = nullptr; }
+}
+#define SafeRelease		_SafeRelease
+#define SafeDelete		_SafeDelete
+#define SafeDelArray	_SafeDelArray
+#endif
+
+
 Renderer::Renderer()
 {
 }
@@ -89,19 +113,197 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 	Device->GetImmediateContext(&DeviceContext);	//현재 디바이스 컨텐스트 얻기
 
-	assert(SUCCEEDED(hr) && "디바이스 / 스왑체인 생성 실패\n");
+	assert(SUCCEEDED(hr) && "디바이스 생성 실패\n");
 
 	//Swap Chain 생성
 	DXGI_SWAP_CHAIN_DESC1 SwapChainDesc = {};
-	SwapChainDesc.Width = DisplayMode.Width;		//해상도 결정(백버퍼 크기)
+	ZeroMemory(&SwapChainDesc, sizeof(SwapChainDesc));
+	SwapChainDesc.Width = DisplayMode.Width;						//해상도 결정(백버퍼 크기)
 	SwapChainDesc.Height = DisplayMode.Height;
-	SwapChainDesc.Format = DisplayMode.Format;		//백버퍼 색상규격
-	SwapChainDesc.Stereo = FALSE;					//스테레오 3D렌더링 옵션
-	SwapChainDesc.SampleDesc = { 1, 0 };			//멀티 샘플링 설정 {Count, Quality}
+	SwapChainDesc.Format = DisplayMode.Format;						//백버퍼 색상규격
+	SwapChainDesc.Stereo = FALSE;									//스테레오 3D렌더링 옵션
+	SwapChainDesc.SampleDesc = { 1, 0 };							//멀티 샘플링 설정 {Count, Quality}
 	SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;	//용도 설정 : 렌더 타겟
-	SwapChainDesc.BufferCount = 1;					//백버퍼 개수
-	SwapChainDesc.Scaling = DXGI_SCALING_STRETCH;	//출력 화면 크기가 모니터의 실제 해상도와 다를 때 어떻게 스케일링 할지 여부
+	SwapChainDesc.BufferCount = 1;									//백버퍼 개수
+	SwapChainDesc.Scaling = DXGI_SCALING_STRETCH;					//출력 화면 크기가 모니터의 실제 해상도와 다를 때 어떻게 스케일링 할지 여부
+	SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;			//Present() 이후 백버퍼가 어떻게 처리되는지, 그리고 화면에 표시하는 방식이 무엇인지 정한다.
+	SwapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;				//알파 처리 방식
+	SwapChainDesc.Flags = 0;										//동작 옵션 플랙그
+	
+	hr = Factory->CreateSwapChainForHwnd(
+		Device.Get(),
+		hwnd,
+		&SwapChainDesc,
+		nullptr,
+		nullptr,
+		SwapChain.GetAddressOf());
 
+	assert(SUCCEEDED(hr) && "스왑체인 생성 실패\n");
+
+	//렌더 타겟(백버퍼) 획득
+	ComPtr<ID3D11Texture2D> BackBuffer;
+	hr = SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)BackBuffer.GetAddressOf());
+	assert(SUCCEEDED(hr) && "백버퍼 가져오기 실패\n");
+
+	//획득한 백버퍼에 렌더타겟 뷰 생성(렌더타겟 "형"으로 설정함)
+	hr = Device->CreateRenderTargetView(BackBuffer.Get(), NULL, RenderTargetView.GetAddressOf());
+	assert(SUCCEEDED(hr) && "백버퍼 - 렌더타겟뷰 생성 실패\n");
+
+	BackBuffer->Release();
+
+	//장치 출력병합기(Output Merger)에 렌더링 타겟 및 깊이-스탠실 버퍼 등록
+	DeviceContext->OMSetRenderTargets(
+										1,									//렌더타겟 개수. (max: D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT)
+										RenderTargetView.GetAddressOf(),	//렌더타겟("백버퍼") 등록.
+										nullptr
+										);
+
+	//뷰포트 설정
+	SetViewPort(0.0f, 0.0f, (FLOAT)DisplayMode.Width, (FLOAT)DisplayMode.Height, 0.0f, 1.0f);
+
+	GetDeviceInfo();
+	
+	FontCreate();
 
 	return hr;
+}
+
+void Renderer::SetViewPort(float TopLeftX, float TopLeftY, float Width, float Height, float MinDepth, float MaxDepth)
+{
+	//뷰포트 설정
+	D3D11_VIEWPORT ViewPort;
+	ZeroMemory(&ViewPort, sizeof(ViewPort));
+	ViewPort.TopLeftX = TopLeftX;
+	ViewPort.TopLeftY = TopLeftY;
+	ViewPort.Width = Width;
+	ViewPort.Height = Height;
+	ViewPort.MinDepth = MinDepth;
+	ViewPort.MaxDepth = MaxDepth;
+	DeviceContext->RSSetViewports(1, &ViewPort);
+}
+
+HRESULT Renderer::FontCreate()
+{
+	HRESULT hr = S_OK;
+	
+	//장치 목록 획득
+	ID3D11DeviceContext* DC = nullptr;
+	Device->GetImmediateContext(&DC);
+
+	//Sprite Batch 개체 생성
+	FontBatch = new SpriteBatch(DC);
+
+	//DirectX Toolkit : Sprite Font 객체 생성
+	//ASCII 0 ~ 255 + 특수문자'■' + Unicode 한글 완성형 총 11,440 글자, 크기:9	
+	const TCHAR* Filename = L"../Assets/Font/굴림9k.sfont";
+	try
+	{
+		Font = new SpriteFont(Device.Get(), Filename);
+		Font->SetLineSpacing(14.0f);					//폰트 9 기준, 줄간격 설정, '다중라인 출력시 흐려짐 방지용'
+		Font->SetDefaultCharacter('_');					//출력 글자값 미검색시 대신 출력할 키값.
+	}
+	catch (std::exception& e)
+	{
+		TCHAR msg[1024] = L"";
+		::mbstowcs(msg, e.what(), strlen(e.what()));
+		std::cout << "폰트 생성 실패 : " << msg << Filename << "\n";
+	}
+
+	//사용 후, 장치 목록 해제
+	SafeRelease(DC);
+
+	return hr;
+}
+
+void Renderer::FontRelease()
+{
+	SafeRelease(FontBatch);
+	SafeRelease(Font);
+}
+
+void Renderer::GetDeviceInfo()
+{
+	//장치 기능레벨 확인
+	GetFeatureLevel();
+}
+
+//DX 기능 레벨 구하기
+
+void Renderer::GetFeatureLevel()
+{
+	static const TCHAR* StrFeature[4][5] =
+	{
+		{ L"DX9",   L"DX9.1",  L"DX9.2", L"DX9.3", L"N/A"	},
+		{ L"DX10",  L"DX10.1", L"N/A",   L"N/A",   L"N/A"	},
+		{ L"DX11",  L"DX11.1", L"DX11.2",L"DX11.3",L"DX11.4"},
+		{ L"DX12",  L"DX12.1"  L"DX12.2",L"N/A",   L"N/A"	}
+	};
+
+	UINT Feat = ActualLevel;
+	UINT Ver = 0;
+	UINT Sub = 0;
+	
+	#define OFFSET 0x9;
+
+	Ver = ((Feat & 0xf000) >> 12) - OFFSET;	//메인 버전 산출
+	Sub = ((Feat & 0x0f00) >> 8);			//하위 버전 산출
+
+	StrFeatureLevel = StrFeature[Ver][Sub];
+}
+
+void Renderer::ClearBackBuffer()
+{
+	DeviceContext->ClearRenderTargetView(RenderTargetView.Get(), (float*)&BackGroundColor);
+}
+
+void Renderer::ObjectRendering()
+{
+
+}
+
+void Renderer::UIRendering()
+{
+	//int x, int y, XMFLOAT4 col, TCHAR* msg, ...;
+
+	std::vector<UIContextItem> RenderList = TextRenderList::Get().GetRenderList();
+
+	FontBatch->Begin();
+
+	for (UIContextItem UI : RenderList)
+	{
+		const DWORD Size = 2048;
+
+		TCHAR Buff[Size] = _T("");
+		va_list Vl;
+		va_start(Vl, *(UI.msg));
+		_vstprintf(Buff, UI.msg->c_str(), Vl);
+		va_end(Vl);
+
+		XMFLOAT4 Color = { (UI.color->x), (UI.color->y), (UI.color->z), (UI.color->w) };
+
+		Font->DrawString(FontBatch, Buff, XMFLOAT2((float)*(UI.x), (float)*(UI.y)), XMLoadFloat4(&Color));
+	}
+
+	FontBatch->End();
+};
+
+void Renderer::RenderTargetPresent()
+{
+	SwapChain->Present(0, 0);
+}
+
+
+
+HRESULT Renderer::Finalize()
+{
+	//장치 상태 리셋 : 제거 전에 초기화 필수 (메모리 누수 방지)
+	if (DeviceContext) DeviceContext->ClearState();
+
+	FontRelease();
+
+	RenderTargetView->Release();
+	SwapChain->Release();
+	DeviceContext->Release();
+	Device->Release();
+
 }

@@ -200,8 +200,8 @@
     <ClCompile Include="Utility\FPGameplayStatics.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Games\Release\SolarSystem_Ver02\SolarSystem_Ver02.vcxproj">
-      <Project>{2a5811cf-ea4e-4ad3-88f4-015ebf368592}</Project>
+    <ProjectReference Include="..\..\Games\Dev\DX11_SetUp_Font\DX11_SetUp_Font.vcxproj">
+      <Project>{addbd471-136c-443f-8312-edc5588d2646}</Project>
     </ProjectReference>
     <ProjectReference Include="Renderers\DirectX\DirectX.vcxproj">
       <Project>{f4ffd354-4744-4564-a189-9a7313a23754}</Project>

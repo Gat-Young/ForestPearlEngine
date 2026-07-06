@@ -48,7 +48,7 @@ bld/
 [Ll]ogs/
 
 #Game Release/Dev
-[Gg]ames/[Dd]ev/
+#[Gg]ames/[Dd]ev/
 
 # Build results on 'Bin' directories
 **/[Bb]in/*

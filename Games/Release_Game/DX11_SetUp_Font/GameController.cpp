@@ -1,5 +1,5 @@
 #include "GameController.h"
-#include "../../Engine/ForestPearlEngine/Object/Components/InputComponent.h"
+#include "ForestPearlEngine/Object/Components/InputComponent.h"
 
 void GameController::Initialize()
 {

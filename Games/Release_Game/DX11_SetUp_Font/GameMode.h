@@ -1,5 +1,5 @@
 #pragma once
-#include "../../Engine/ForestPearlEngine/FPAGameMode.h"
+#include "ForestPearlEngine/FPAGameMode.h"
 
 class GameMode : public FPAGameMode
 {

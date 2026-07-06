@@ -1,5 +1,5 @@
 #pragma once
-#include "../../Engine/ForestPearlEngine/FPAController.h"
+#include "ForestPearlEngine/FPAController.h"
 
 class GameController : public FPAController
 {

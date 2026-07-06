@@ -237,7 +237,7 @@ void Legacy_Renderer::UIRendering()
 	{
 		if (*(*(UI.active)))
 		{
-			Renderer::DrawText(*(UI.x), *(UI.y), *(UI.color), (*(UI.msg)).c_str());
+			//Renderer::DrawText(*(UI.x), *(UI.y), *(UI.color), (*(UI.msg)).c_str());
 		}
 	}
 }

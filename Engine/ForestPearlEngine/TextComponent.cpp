@@ -16,7 +16,7 @@ void TextComponent::RegistTextRenderList()
 	RenderItem->msg = &(this->msg);
 }
 
-void TextComponent::SetTextData(bool* active, int x, int y, unsigned long color, std::basic_string<TCHAR> msg)
+void TextComponent::SetTextData(bool* active, int x, int y, FPVector4 color, std::basic_string<TCHAR> msg)
 {
 	this->active = active;
 	this->x = x;

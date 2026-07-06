@@ -56,7 +56,8 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 	assert(Factory != nullptr && "Failed To Create DXGI Factory\n");
 
 	//현재 사용중인 Adapter(GPU)를 찾고 D3D11을 지원하는 지 확인
-	ComPtr<IDXGIAdapter1> Adapter, SelectedAdapter;
+	IDXGIAdapter1* Adapter = nullptr;
+	IDXGIAdapter1* SelectedAdapter = nullptr;
 	SIZE_T MaxDedicatedMemory = 0;
 
 	for (UINT i = 0; Factory->EnumAdapters1(i, &Adapter) != DXGI_ERROR_NOT_FOUND; ++i)
@@ -69,7 +70,7 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 		//Adapter가 DX11을 지원하는지 확인
 		if (SUCCEEDED(D3D11CreateDevice(
-			Adapter.Get(),
+			Adapter,
 			D3D_DRIVER_TYPE_UNKNOWN,
 			nullptr,
 			0,
@@ -88,7 +89,7 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 			}
 		}
 	}
-	assert(SelectedAdapter == nullptr && "No Compatible DX11 Adapter Found");
+	assert(SelectedAdapter != nullptr && "No Compatible DX11 Adapter Found");
 	
 	//색상 Format 설정
 	UINT DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
@@ -98,8 +99,8 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 	//D3D Device 생성
 	hr = D3D11CreateDevice(
-		NULL,						//비디오 어댑터 포인터 (기본장치는 NULL)
-		D3D_DRIVER_TYPE_HARDWARE,	//HW 가속
+		SelectedAdapter,						//비디오 어댑터 포인터 (기본장치는 NULL)
+		D3D_DRIVER_TYPE_UNKNOWN,	//어댑터를 작접 고른 경우 UNKNOWN
 		nullptr,					//SW Resterizer DLL 핸들, HW 가속시에는 NULL
 		DeviceFlags,				//디바이스 생성 플래그. (기본값)
 		FeatureLevels,				//(생성할) 디바이스 기능 레벨(Feature Level) 배열
@@ -141,12 +142,12 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 	assert(SUCCEEDED(hr) && "스왑체인 생성 실패\n");
 
 	//렌더 타겟(백버퍼) 획득
-	ComPtr<ID3D11Texture2D> BackBuffer;
-	hr = SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)BackBuffer.GetAddressOf());
+	ID3D11Texture2D* BackBuffer = nullptr;
+	hr = SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&BackBuffer);
 	assert(SUCCEEDED(hr) && "백버퍼 가져오기 실패\n");
 
 	//획득한 백버퍼에 렌더타겟 뷰 생성(렌더타겟 "형"으로 설정함)
-	hr = Device->CreateRenderTargetView(BackBuffer.Get(), NULL, RenderTargetView.GetAddressOf());
+	hr = Device->CreateRenderTargetView(BackBuffer, NULL, RenderTargetView.GetAddressOf());
 	assert(SUCCEEDED(hr) && "백버퍼 - 렌더타겟뷰 생성 실패\n");
 
 	BackBuffer->Release();
@@ -195,7 +196,7 @@ HRESULT Renderer::FontCreate()
 
 	//DirectX Toolkit : Sprite Font 객체 생성
 	//ASCII 0 ~ 255 + 특수문자'■' + Unicode 한글 완성형 총 11,440 글자, 크기:9	
-	const TCHAR* Filename = L"../Assets/Font/굴림9k.sfont";
+	const TCHAR* Filename = L"../../Engine/ForestPearlEngine/Assets/Font/굴림9k.sfont";
 	try
 	{
 		Font = new SpriteFont(Device.Get(), Filename);
@@ -205,8 +206,18 @@ HRESULT Renderer::FontCreate()
 	catch (std::exception& e)
 	{
 		TCHAR msg[1024] = L"";
-		::mbstowcs(msg, e.what(), strlen(e.what()));
-		std::cout << "폰트 생성 실패 : " << msg << Filename << "\n";
+		size_t converted = 0;
+
+		errno_t result = mbstowcs_s(
+			&converted,
+			msg,
+			_countof(msg),
+			e.what(),
+			_TRUNCATE
+		);
+
+		std::wcout << L"폰트 생성 실패 : " << msg << Filename << "\n";
+		assert(FALSE && "폰트 생성 실패");
 	}
 
 	//사용 후, 장치 목록 해제
@@ -217,8 +228,8 @@ HRESULT Renderer::FontCreate()
 
 void Renderer::FontRelease()
 {
-	SafeRelease(FontBatch);
-	SafeRelease(Font);
+	SafeDelete(FontBatch);
+	SafeDelete(Font);
 }
 
 void Renderer::GetDeviceInfo()
@@ -263,7 +274,6 @@ void Renderer::ObjectRendering()
 
 void Renderer::UIRendering()
 {
-	//int x, int y, XMFLOAT4 col, TCHAR* msg, ...;
 
 	std::vector<UIContextItem> RenderList = TextRenderList::Get().GetRenderList();
 
@@ -271,17 +281,17 @@ void Renderer::UIRendering()
 
 	for (UIContextItem UI : RenderList)
 	{
-		const DWORD Size = 2048;
+		/*const DWORD Size = 2048;
 
 		TCHAR Buff[Size] = _T("");
 		va_list Vl;
 		va_start(Vl, *(UI.msg));
-		_vstprintf(Buff, UI.msg->c_str(), Vl);
-		va_end(Vl);
+		_vstprintf_s(Buff, Size, UI.msg->c_str(), Vl);
+		va_end(Vl);*/
 
 		XMFLOAT4 Color = { (UI.color->x), (UI.color->y), (UI.color->z), (UI.color->w) };
-
-		Font->DrawString(FontBatch, Buff, XMFLOAT2((float)*(UI.x), (float)*(UI.y)), XMLoadFloat4(&Color));
+		XMFLOAT2 Position = { (float)(*(UI.x)), (float)(*(UI.y)) };
+		Font->DrawString(FontBatch, UI.msg->c_str(), Position, XMLoadFloat4(&Color));
 	}
 
 	FontBatch->End();
@@ -306,4 +316,5 @@ HRESULT Renderer::Finalize()
 	DeviceContext->Release();
 	Device->Release();
 
+	return S_OK;
 }

@@ -1,11 +1,9 @@
 #include "GameLevel.h"
-#include "Triangle.h"
-#include "UI.h"
 
 void GameLevel::Initialize()
 {
-	ActorlList.push_back("Triangle");
-	ActorlList.push_back("UI");
+	//{Class name, Instance Name}
+	ActorlList.push_back({ "UI", "System UI" });
 	__super::Initialize();
 }
 

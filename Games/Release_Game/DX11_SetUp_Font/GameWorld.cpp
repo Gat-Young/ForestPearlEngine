@@ -1,12 +1,10 @@
 #include "GameWorld.h"
-#include "../../Engine/ForestPearlEngine/ForestPearlEngine.h"
-#include "UI.h"
-#include "Triangle.h"
 
 void GameWorld::Initialize()
 {
 	//World에서 사용되는 GameMode class 등록
 	WorldSetting.GameMode = "GameMode";
+
 	//World에서 사용되는 레벨 class 등록
 	WorldSetting.LevelList.push_back("GameLevel");
 	__super::Initialize();

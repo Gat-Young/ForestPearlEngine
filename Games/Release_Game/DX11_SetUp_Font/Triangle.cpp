@@ -1,30 +1,16 @@
 #include "Triangle.h"
-#include "../../Engine/ForestPearlEngine/MeshComponent.h"
-#include "../../Engine/ForestPearlEngine/Define/FPMath.h"
-#include "../../Engine/ForestPearlEngine/FPAController.h"
-#include "../../Engine/ForestPearlEngine/FPWorld.h"
-#include "../../Engine/ForestPearlEngine/Object/Components/InputComponent.h"
-#include "../../Engine/ForestPearlEngine/InputValue.h"
-#include "../../Engine/ForestPearlEngine/TransformComponent.h"
-#include "../../Engine/ForestPearlEngine/GameTimer.h"
+#include "ForestPearlEngine/MeshComponent.h"
+#include "ForestPearlEngine/FPAController.h"
+#include "ForestPearlEngine/FPWorld.h"
+#include "ForestPearlEngine/Object/Components/InputComponent.h"
+#include "ForestPearlEngine/InputValue.h"
+#include "ForestPearlEngine/GameTimer.h"
 #include <iostream>
 
 void Triangle::Initialize()
 {
-	Transform = new TransformCompoenent();
-	Transform->transfrom.position.x = 0.0f;
-	Transform->transfrom.position.y = 0.0f;
-	Transform->transfrom.position.z = 0.0f;
-
-	Transform->transfrom.rotation.x = 0.0f;
-	Transform->transfrom.rotation.y = 0.0f;
-	Transform->transfrom.rotation.z = 0.0f;
-
-	Transform->transfrom.scale.x = 1.0f;
-	Transform->transfrom.scale.y = 1.0f;
-	Transform->transfrom.scale.z = 1.0f;
-
-	Mesh = new MeshComponent("Triangle2", &(Transform->transfrom));
+	Mesh = new MeshComponent(this, "Triangle3");
+	SetRootComponent((FPSceneComponent*)Mesh);
 
 	FPAController* Controller = GetWorld()->GetController(0);
 
@@ -36,17 +22,6 @@ void Triangle::Initialize()
 	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &Triangle::SetFillTriangel);
 	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &Triangle::SetCullTriangle);
 
-
-
-
-	//FMappingInfo MappingInfoSpace = { IA,0b00000100 };
-	//IMC->AddMappingKey(VK_SPACE, MappingInfoSpace);
-
-	//IMC2 = new FPInputMappingContext();
-	//FPInputSystem::GetInputSystem().AddActivatedIMC(IMC2);
-
-	//FMappingInfo MappingInfoSpace2 = { IA2,0b00000100 };
-	//IMC2->AddMappingKey(VK_F5, MappingInfoSpace2);
 }
 
 void Triangle::BeginPlay()
@@ -55,9 +30,10 @@ void Triangle::BeginPlay()
 
 void Triangle::Tick()
 {
-	angle += 10.0f;//3.141592f;//  *1 / GetWorld()->GetGameTimer()->DeltaTimeMS();
-	Transform->transfrom.rotation.z = angle;
-	//std::cout << "angle : " << angle << "\n";
+	angle += AngleSpeed * (GetWorld()->GetGameTimer()->DeltaTimeMS());
+	RootComponent->SetRelativeRotation(FPVector3{ 0.0f, angle, 0.0f });
+
+	__super::Tick();
 }
 
 void Triangle::Move(FInputValue Value)

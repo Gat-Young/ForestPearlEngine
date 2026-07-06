@@ -1,9 +1,8 @@
 #pragma once
-#include "../../Engine/ForestPearlEngine/Object/Actor.h"
-#include "../../Engine/ForestPearlEngine/MeshComponent.h"
-#include "../../Engine/ForestPearlEngine/Systems/KeyStateEnum.h"
-#include "../../Engine/ForestPearlEngine/Define/FPMath.h"
-#include "../../Engine/ForestPearlEngine/TransformComponent.h"
+#include "ForestPearlEngine/Object/Actor.h"
+#include "ForestPearlEngine/MeshComponent.h"
+#include "ForestPearlEngine/Systems/KeyStateEnum.h"
+#include "ForestPearlEngine/Define/FPMath.h"
 
 class FPInputMappingContext;
 class FPInputAction;
@@ -12,13 +11,14 @@ struct FInputValue;
 class Triangle : public FPActor
 {
 	private:
-		TransformCompoenent* Transform;
 		MeshComponent* Mesh;
 
 		bool isFill = true;
 		bool isCull = true;
 
 		float angle = 0;
+
+		float AngleSpeed = 0.25f;
 
 	public:
 		Triangle() = default;

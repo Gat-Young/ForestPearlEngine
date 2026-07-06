@@ -1,7 +1,10 @@
 #include "AssetManager.h"
 #include "Renderers/Renderer.h"
 
-
+struct COLVTX
+{
+	float x, y, z;
+};
 AssetManager::AssetManager()
 {
 	DummyMesh["Orb"].push_back({ -0.5f, -0.5f, 0.0f, 0xff00f0ff });
@@ -92,14 +95,15 @@ std::pair<int, int> AssetManager::LordVertexVuffer(std::string MeshPath)
 	//추후 메시 파일 로드로 변경
 	std::vector<FPMesh> LoadMesh = DummyMesh[MeshPath];
 
-	MeshMap[MeshPath] = FPRenderer->MakeVB(ChangeCOLVTX(LoadMesh));
+	//MeshMap[MeshPath] = FPRenderer->MakeVB(ChangeCOLVTX(LoadMesh));
 
 	return {MeshMap[MeshPath], LoadMesh.size()/3};
 }
 
 int AssetManager::MakeVertexVuffer(std::vector<FPMesh> Mesh)
 {
-	return FPRenderer->MakeVB(ChangeCOLVTX(Mesh));
+	//return FPRenderer->MakeVB(ChangeCOLVTX(Mesh));
+	return 1;
 }
 
 std::vector<COLVTX> AssetManager::ChangeCOLVTX(std::vector<FPMesh> Mesh)
@@ -108,7 +112,7 @@ std::vector<COLVTX> AssetManager::ChangeCOLVTX(std::vector<FPMesh> Mesh)
 
 	for (int i = 0; i < Mesh.size(); ++i)
 	{
-		Vertex.push_back(MakeCOLVTX(Mesh[i].vPos.x, Mesh[i].vPos.y, Mesh[i].vPos.z, Mesh[i].color));
+		//Vertex.push_back(MakeCOLVTX(Mesh[i].vPos.x, Mesh[i].vPos.y, Mesh[i].vPos.z, Mesh[i].color));
 	}
 
 	return Vertex;

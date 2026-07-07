@@ -198,3 +198,35 @@ void ForestPearlEngine::RegisterFPRawInputDevices()
     RegisterRawInputDevices(rid, 2, sizeof(RAWINPUTDEVICE));
 }
 
+
+
+//렌더러 정보 반환 함수
+const TCHAR* ForestPearlEngine::GetAdapterDescription(int index) { return Render->GetAdapterDescription(index); }
+UINT ForestPearlEngine::GetAdapterVendorID(int index) { return Render->GetAdapterVendorID(index); }
+UINT ForestPearlEngine::GetAdapterDeviceID(int index) { return Render->GetAdapterDeviceID(index); }
+UINT ForestPearlEngine::GetAdapterSubSysID(int index) { return Render->GetAdapterSubSysID(index); }
+UINT ForestPearlEngine::GetAdapterRevision(int index) { return Render->GetAdapterRevision(index); }
+SIZE_T ForestPearlEngine::GetAdapterVideoMem(int index) { return Render->GetAdapterVideoMem(index); }
+SIZE_T ForestPearlEngine::GetAdapterSystemMem(int index) { return Render->GetAdapterSystemMem(index); }
+SIZE_T ForestPearlEngine::GetAdapterSharedSysMem(int index) { return Render->GetAdapterSharedSysMem(index); }
+LONG ForestPearlEngine::GetAdapterLuidHighPart(int index) { return Render->GetAdapterLuidHighPart(index); }
+DWORD ForestPearlEngine::GetAdapterLuidLowPart(int index) { return Render->GetAdapterLuidLowPart(index); }
+
+//모니터 정보 반환
+const TCHAR* ForestPearlEngine::GetMonitorName(int AdapterIndex, int MonitorIndex) { return Render->GetMonitorName(AdapterIndex, MonitorIndex); };
+RECT ForestPearlEngine::GetDesktopCoordinates(int AdapterIndex, int MonitorIndex) { return Render->GetDesktopCoordinates(AdapterIndex, MonitorIndex); };
+
+//VRAM 정보 반환
+double ForestPearlEngine::GetVRAMBudget(int AdapterIndex) { return Render->GetVRAMBudget(AdapterIndex); }
+double ForestPearlEngine::GetVRAMCurrUsage(int AdapterIndex) { return Render->GetVRAMCurrUsage(AdapterIndex); }
+double ForestPearlEngine::GetVRAMAvailableForReservation(int AdapterIndex) { return Render->GetVRAMAvailableForReservation(AdapterIndex); }
+double ForestPearlEngine::GetVRAMCurrReservation(int AdapterIndex) { return Render->GetVRAMCurrReservation(AdapterIndex); }
+
+//장치 개수 반환
+int ForestPearlEngine::GetAdapterSize() { return Render->GetAdapterSize(); };
+//장치의 모니터 개수 반환
+int ForestPearlEngine::GetAdapterMonitorSize(int index) { return Render->GetAdapterMonitorSize(index); };
+
+const TCHAR* ForestPearlEngine::GetSrtFeatureLevel() { return Render->GetSrtFeatureLevel(); };
+UINT ForestPearlEngine::GetWidth() { return Render->GetWidth(); };
+UINT ForestPearlEngine::GetHeight() { return Render->GetHeight(); };

@@ -131,11 +131,20 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 	SwapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;				//알파 처리 방식
 	SwapChainDesc.Flags = 0;										//동작 옵션 플랙그
 	
+	//전체화면 모드 정보
+	DXGI_SWAP_CHAIN_FULLSCREEN_DESC FsDesc = {};
+	ZeroMemory(&FsDesc, sizeof(FsDesc));
+	FsDesc.RefreshRate.Numerator = IsVSync ? 60 : 0;				//버퍼 갱신율. (수직동기화 VSync 활성화시 표준갱신율 적용 : 60hz)
+	FsDesc.RefreshRate.Denominator = IsVSync ? 1 : 0;
+	FsDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	FsDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+	FsDesc.Windowed = IsFullScreen ? FALSE : TRUE;
+
 	hr = Factory->CreateSwapChainForHwnd(
 		Device.Get(),
 		hwnd,
 		&SwapChainDesc,
-		nullptr,
+		&FsDesc,
 		nullptr,
 		SwapChain.GetAddressOf());
 
@@ -196,6 +205,7 @@ HRESULT Renderer::FontCreate()
 
 	//DirectX Toolkit : Sprite Font 객체 생성
 	//ASCII 0 ~ 255 + 특수문자'■' + Unicode 한글 완성형 총 11,440 글자, 크기:9	
+	//exe 실행파일 기준의 경로
 	const TCHAR* Filename = L"../../Engine/ForestPearlEngine/Assets/Font/굴림9k.sfont";
 	try
 	{
@@ -236,6 +246,9 @@ void Renderer::GetDeviceInfo()
 {
 	//장치 기능레벨 확인
 	GetFeatureLevel();
+
+	//GPU 정보 얻기
+	GetAdapterInfo();
 }
 
 //DX 기능 레벨 구하기
@@ -262,6 +275,65 @@ void Renderer::GetFeatureLevel()
 	StrFeatureLevel = StrFeature[Ver][Sub];
 }
 
+HRESULT Renderer::GetAdapterInfo()
+{
+	IDXGIAdapter1* Adapter;
+
+	UINT i = 0;
+
+	for (UINT i = 0; Factory->EnumAdapters1(i, &Adapter) != DXGI_ERROR_NOT_FOUND; ++i)
+	{
+		DEVICEINFO Di;
+		ZeroMemory(&Di, sizeof(Di));
+		Di.Index = i;
+ 		Adapter->GetDesc1(&Di.AdapterDescription);				//어뎁터 정보 획득.
+		GetDXMonitorInfo(Adapter, Di);
+		GetDXVRAMInfo(Adapter, Di);
+		DevInfo.push_back(Di);
+
+		SafeRelease(Adapter);
+	}
+
+	//정보 취득후, 접근한 인터페이스를 해제 (메모리 누수 방지
+	SafeRelease(Adapter);
+
+	return S_OK;
+}
+
+HRESULT Renderer::GetDXMonitorInfo(IDXGIAdapter1* Adapter, DEVICEINFO& Di)
+{
+	IDXGIOutput* Output;
+	DXGI_OUTPUT_DESC od;
+	HRESULT hr = S_OK;
+
+	for (UINT i = 0; Adapter->EnumOutputs(i, &Output) != DXGI_ERROR_NOT_FOUND; ++i)
+	{
+		Output->GetDesc(&od); //정보 획득
+		Di.OuputDesc.push_back(od);
+
+		SafeRelease(Output);
+	}
+
+	return hr;
+}
+
+HRESULT Renderer::GetDXVRAMInfo(IDXGIAdapter1* Adapter, DEVICEINFO& Di)
+{
+	IDXGIAdapter4* Adapter4 = nullptr;
+
+	HRESULT hr = Adapter->QueryInterface( __uuidof(IDXGIAdapter4), reinterpret_cast<void**>(&Adapter4));
+
+	ZeroMemory(&Di.VRAMInfo, sizeof(Di.VRAMInfo));
+
+	hr = Adapter4->QueryVideoMemoryInfo(
+		0,
+		DXGI_MEMORY_SEGMENT_GROUP_LOCAL,
+		&Di.VRAMInfo
+	);
+
+	return hr;
+}
+
 void Renderer::ClearBackBuffer()
 {
 	DeviceContext->ClearRenderTargetView(RenderTargetView.Get(), (float*)&BackGroundColor);
@@ -281,14 +353,10 @@ void Renderer::UIRendering()
 
 	for (UIContextItem UI : RenderList)
 	{
-		/*const DWORD Size = 2048;
-
-		TCHAR Buff[Size] = _T("");
-		va_list Vl;
-		va_start(Vl, *(UI.msg));
-		_vstprintf_s(Buff, Size, UI.msg->c_str(), Vl);
-		va_end(Vl);*/
-
+		if (!(*(*(UI.active))))
+		{
+			continue;
+		}
 		XMFLOAT4 Color = { (UI.color->x), (UI.color->y), (UI.color->z), (UI.color->w) };
 		XMFLOAT2 Position = { (float)(*(UI.x)), (float)(*(UI.y)) };
 		Font->DrawString(FontBatch, UI.msg->c_str(), Position, XMLoadFloat4(&Color));
@@ -299,7 +367,8 @@ void Renderer::UIRendering()
 
 void Renderer::RenderTargetPresent()
 {
-	SwapChain->Present(0, 0);
+	//Present시 첫번째 인자 SyncInterval이 VSync 여부 ( 0 : 끔 , 1 : 켬(모니터 주사율에 맞춤) , 2 : 수직동기마다 출력)
+	SwapChain->Present(IsVSync ? 1 : 0, 0);
 }
 
 

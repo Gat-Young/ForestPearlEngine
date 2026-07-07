@@ -22,6 +22,41 @@ class ForestPearlEngine
 	public:
 		void StopEngine();
 
+	//렌더러 정보 제공
+	public:
+		//장치 정보 반환 함수
+		const TCHAR* GetAdapterDescription(int index);
+		UINT GetAdapterVendorID(int index);
+		UINT GetAdapterDeviceID(int index);
+		UINT GetAdapterSubSysID(int index);
+		UINT GetAdapterRevision(int index);
+		SIZE_T GetAdapterVideoMem(int index);
+		SIZE_T GetAdapterSystemMem(int index);
+		SIZE_T GetAdapterSharedSysMem(int index);
+		LONG GetAdapterLuidHighPart(int index);
+		DWORD GetAdapterLuidLowPart(int index);
+
+		//모니터 정보 반환
+		const TCHAR* GetMonitorName(int AdapterIndex, int MonitorIndex);
+		RECT GetDesktopCoordinates(int AdapterIndex, int MonitorIndex);
+
+		//VRAM 정보 반환
+		double GetVRAMBudget(int AdapterIndex);
+		double GetVRAMCurrUsage(int AdapterIndex);
+		double GetVRAMAvailableForReservation(int AdapterIndex);
+		double GetVRAMCurrReservation(int AdapterIndex);
+
+		//장치 개수 반환
+		int GetAdapterSize();
+
+		//장치의 모니터 개수 반환
+		int GetAdapterMonitorSize(int index);
+
+
+		const TCHAR* GetSrtFeatureLevel();
+		UINT GetWidth();
+		UINT GetHeight();
+
 	private:
 		ForestPearlEngine() = default;
 
@@ -47,7 +82,7 @@ class ForestPearlEngine
 		// Window Property
 		const wchar_t* WinClassName = L"MyFirstWndGame";
 		const wchar_t* WinName = L"MyFirstWndGame";
-		const int WinWidth = 800;
+		const int WinWidth = 960;
 		const int WinHeight = 600;
 
 		////////////////////////////////

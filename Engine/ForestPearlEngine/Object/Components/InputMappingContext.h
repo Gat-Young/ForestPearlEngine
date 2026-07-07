@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <string>
+#include <set>
 #include "../../Systems/KeyStateEnum.h"
 
 class FPInputAction;
@@ -29,8 +30,9 @@ typedef unsigned short USHORT;
 class FPInputMappingContext
 {
 public:
-	void AddMappingKey(std::string IANAme, USHORT VKey, FModifyInfo MappingInfo);
-	bool SearchMappingInfo(USHORT VKey, std::string& IANAme, FModifyInfo& OutMappingInfo);
+	void AddMappingKey(std::string IAName, USHORT VKey, FModifyInfo MappingInfo);
+	bool SearchMappingInfo(USHORT VKey, std::string& IAName, FModifyInfo& OutMappingInfo);
+	bool GetMappedKeys(const std::string& IAName, std::set<USHORT>& MappedKeys);
 	//void RemoveMappingKey(USHORT VKey);
 
 private:

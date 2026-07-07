@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <functional>
+#include <set>
 #include "InputMappingContext.h"
 #include "InputAction.h"
 #include "../../Systems/KeyStateEnum.h"
@@ -22,12 +23,25 @@ public:
 	//void RemoveMappingKey(USHORT VKey);
 
 	template<typename TObj>
-	void BindMethod(std::string IANAme, TObj* BindActor, EKeyState BindKeyState, void(TObj::* FuncPtr)(FInputValue))
+	void BindMethod(std::string IAName, TObj* BindActor, EKeyState BindKeyState, void(TObj::* FuncPtr)(FInputValue))
 	{
-		if (ActivatedIA.find(IANAme) == ActivatedIA.end())
+		if (ActivatedIA.find(IAName) == ActivatedIA.end())
 		{
 			FPInputAction* IA = new FPInputAction();
-			ActivatedIA[IANAme] = IA;
+			ActivatedIA[IAName] = IA;
+
+			if (BindKeyState == EKeyState::Pressed)
+			{
+				if (IMC == nullptr)
+				{
+					std::cout << "[FPInputComponent::BindMethod] IMC == nullptr\n";
+				}
+				else
+				{
+					IMC->GetMappedKeys(IAName, PressedKeys);
+					std::cout << "[FPInputComponent::BindMethod] Bind Completed!\n";
+				}
+			}
 		}
 
 		FBindInfo BindInfo;
@@ -41,7 +55,7 @@ public:
 				(BindActor->*FuncPtr)(val);
 			};
 
-		ActivatedIA[IANAme]->BindFunc(BindInfo);
+		ActivatedIA[IAName]->BindFunc(BindInfo);
 	}
 
 	void ProcessInputTick();
@@ -53,5 +67,7 @@ private:
 	FPInputMappingContext* IMC = nullptr;
 
 	std::map<std::string, FPInputAction*> ActivatedIA;
+
+	std::set<USHORT> PressedKeys;
 };
 

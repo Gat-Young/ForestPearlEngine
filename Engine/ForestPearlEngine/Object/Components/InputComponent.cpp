@@ -40,16 +40,15 @@ void FPInputComponent::ProcessInputTick()
 		InputQueue.pop();
 	}
 
-	//int size = InputQueue.size();
-	//while (size>0)
-	//{
-	//	std::pair<USHORT, EKeyState> KeyEvent = InputQueue.front();
-	//	InputQueue.pop();
-	//	//std::cout << KeyEvent.first << " : " << KeyEvent.second << "\n";
-	//	if (!ProcessKeyEvent(KeyEvent.first, KeyEvent.second))
-	//		InputQueue.push(KeyEvent);
-	//	size--;
-	//}
+	for (USHORT Key : PressedKeys)
+	{
+		if (GetAsyncKeyState(Key) & 0x8000)
+		{
+			FInputValue InputValue = { 1.0f, 0.0f, 0.0f, true, 1.0f };
+			FKeyInputInfo PressedKeyEvent = { Key, EKeyState::Pressed, InputValue };
+			ProcessKeyEvent(PressedKeyEvent);
+		}
+	}
 }
 
 bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)
@@ -82,11 +81,6 @@ bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)
 	{
 		EKeyState CallKeyState = BindInfo.CallState;
 		std::function<void(FInputValue)> BindFuncPtr = BindInfo.BindFuncPtr;
-
-		if ((KeyInputInfo.KeyState != CallKeyState) && (CallKeyState != EKeyState::Pressed || KeyInputInfo.KeyState != EKeyState::Down))
-		{
-			continue;
-		}
 
 		FInputValue InputData = KeyInputInfo.InputValue;
 

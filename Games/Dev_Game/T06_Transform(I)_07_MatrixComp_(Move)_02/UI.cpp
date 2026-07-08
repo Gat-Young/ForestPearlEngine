@@ -15,7 +15,7 @@ void UI::Initialize()
 	if (Controller == nullptr)
 		return;
 
-	Controller->GetInputComponent().BindMethod("IA_SetUITriangel", this, EKeyState::Pressed, &UI::SetActiveViewHelp);
+	Controller->GetInputComponent().BindMethod("IA_SetUITriangel", this, EKeyState::Down, &UI::SetActiveViewHelp);
 	SetUIContext(&AlwaysOn, 1, 1, RGB(255, 255, 255), _T(""));
 }
 

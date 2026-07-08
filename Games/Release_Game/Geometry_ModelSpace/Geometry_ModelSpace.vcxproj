@@ -18,22 +18,39 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GameController.h" />
+    <ClInclude Include="GameLevel.h" />
+    <ClInclude Include="GameMode.h" />
+    <ClInclude Include="GameWorld.h" />
+    <ClInclude Include="Triangle.h" />
+    <ClInclude Include="UI.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GameController.cpp" />
+    <ClCompile Include="GameLevel.cpp" />
+    <ClCompile Include="GameMode.cpp" />
+    <ClCompile Include="GameWorld.cpp" />
+    <ClCompile Include="GameProjectLoader.cpp" />
+    <ClCompile Include="Triangle.cpp" />
+    <ClCompile Include="UI.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{205fa360-9649-4928-92d6-1e9b3f0a0b9e}</ProjectGuid>
-    <RootNamespace>ForestPearlEngine</RootNamespace>
+    <ProjectGuid>{74fab9c7-f7b9-4eb8-b191-fe3130f2af68}</ProjectGuid>
+    <RootNamespace>Geometry_ModelSpace</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -74,13 +91,16 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine/ForestPearlEngine/Libraries/DirectXTK/Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>
+      </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -90,13 +110,16 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine/ForestPearlEngine/Libraries/DirectXTK/Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>
+      </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -104,13 +127,16 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine/ForestPearlEngine/Libraries/DirectXTK/Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>
+      </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -120,100 +146,19 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine/ForestPearlEngine/Libraries/DirectXTK/Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>
+      </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="AssetManager.h" />
-    <ClInclude Include="CameraComponent.h" />
-    <ClInclude Include="CameraList.h" />
-    <ClInclude Include="Define\FPMath.h" />
-    <ClInclude Include="ForestPearlEngine.h" />
-    <ClInclude Include="FPAController.h" />
-    <ClInclude Include="FPActorComponent.h" />
-    <ClInclude Include="FPAGameMode.h" />
-    <ClInclude Include="FPGameInstance.h" />
-    <ClInclude Include="FPLevel.h" />
-    <ClInclude Include="FPMovementComponent.h" />
-    <ClInclude Include="FPPrimitiveComponent.h" />
-    <ClInclude Include="FPSceneComponent.h" />
-    <ClInclude Include="FPWorld.h" />
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="GameProjectClassRegistry.h" />
-    <ClInclude Include="GameProjectLoader.h" />
-    <ClInclude Include="GameTimer.h" />
-    <ClInclude Include="GizmoComponent.h" />
-    <ClInclude Include="GizmoRenderList.h" />
-    <ClInclude Include="MeshComponent.h" />
-    <ClInclude Include="MeshRenderList.h" />
-    <ClInclude Include="Object\Actor.h" />
-    <ClInclude Include="Object\Components\InputAction.h" />
-    <ClInclude Include="Object\Components\InputComponent.h" />
-    <ClInclude Include="Object\Components\InputMappingContext.h" />
-    <ClInclude Include="Object\Object.h" />
-    <ClInclude Include="Renderers\Legacy_Renderer.h" />
-    <ClInclude Include="Renderers\Renderer.h" />
-    <ClInclude Include="Systems\InputSystem.h" />
-    <ClInclude Include="Systems\KeyStateEnum.h" />
-    <ClInclude Include="TextComponent.h" />
-    <ClInclude Include="TextRenderList.h" />
-    <ClInclude Include="FTransform.h" />
-    <ClInclude Include="Utility\FPGameplayStatics.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="AssetManager.cpp" />
-    <ClCompile Include="CameraComponent.cpp" />
-    <ClCompile Include="CameraList.cpp" />
-    <ClCompile Include="Define\FPMath.cpp" />
-    <ClCompile Include="ForestPearlEngine.cpp" />
-    <ClCompile Include="FPAController.cpp" />
-    <ClCompile Include="FPAGameMode.cpp" />
-    <ClCompile Include="FPGameInstance.cpp" />
-    <ClCompile Include="FPLevel.cpp" />
-    <ClCompile Include="FPMovementCompoent.cpp" />
-    <ClCompile Include="FPMovementComponent.cpp" />
-    <ClCompile Include="FPSceneComponent.cpp" />
-    <ClCompile Include="FPWorld.cpp" />
-    <ClCompile Include="GameProjectClassRegistry.cpp" />
-    <ClCompile Include="GameTimer.cpp" />
-    <ClCompile Include="GizmoComponent.cpp" />
-    <ClCompile Include="GizmoRenderList.cpp" />
-    <ClCompile Include="MeshComponent.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="MeshRenderList.cpp" />
-    <ClCompile Include="Object\Actor.cpp" />
-    <ClCompile Include="Object\Components\InputAction.cpp" />
-    <ClCompile Include="Object\Components\InputComponent.cpp" />
-    <ClCompile Include="Object\Components\InputMappingContext.cpp" />
-    <ClCompile Include="Renderers\Legacy_Renderer.cpp" />
-    <ClCompile Include="Renderers\Renderer.cpp" />
-    <ClCompile Include="Systems\InputSystem.cpp" />
-    <ClCompile Include="TextComponent.cpp" />
-    <ClCompile Include="TextRenderList.cpp" />
-    <ClCompile Include="Utility\FPGameplayStatics.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Games\Release_Game\Geometry_ModelSpace\Geometry_ModelSpace.vcxproj">
-      <Project>{74fab9c7-f7b9-4eb8-b191-fe3130f2af68}</Project>
-    </ProjectReference>
-    <ProjectReference Include="Renderers\DirectX\DirectX.vcxproj">
-      <Project>{f4ffd354-4744-4564-a189-9a7313a23754}</Project>
-    </ProjectReference>
-    <ProjectReference Include="Renderers\FPRHI\FPRHI.vcxproj">
-      <Project>{a95d12e7-e8be-48f1-8cc1-ceba3c37a5fe}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

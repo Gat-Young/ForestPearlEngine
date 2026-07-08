@@ -39,7 +39,7 @@ public:
 				else
 				{
 					IMC->GetMappedKeys(IAName, PressedKeys);
-					std::cout << "[FPInputComponent::BindMethod] Bind Completed!\n";
+					//std::cout << "[FPInputComponent::BindMethod] Bind Completed!\n";
 				}
 			}
 		}

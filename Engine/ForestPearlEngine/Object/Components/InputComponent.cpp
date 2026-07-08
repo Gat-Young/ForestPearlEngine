@@ -63,6 +63,9 @@ bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)
 	FModifyInfo ModifyInfo;
 	bool SearchResult = IMC->SearchMappingInfo(KeyInputInfo.VKey, IAName, ModifyInfo);
 
+	//std::cout << "VKey : " << KeyInputInfo.VKey << " KeyState : " << KeyInputInfo.KeyState << "\n";
+	//std::cout << "SearchResult IAName : " << IAName << " KeyState : " << KeyInputInfo.KeyState << "\n";
+
 	if (SearchResult == false)
 	{
 		//std::cout << "SearchResult false\n";
@@ -81,6 +84,12 @@ bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)
 	{
 		EKeyState CallKeyState = BindInfo.CallState;
 		std::function<void(FInputValue)> BindFuncPtr = BindInfo.BindFuncPtr;
+
+		if (KeyInputInfo.KeyState != CallKeyState)
+		{
+			//std::cout << "Wrong State! : "<< CallKeyState << "\n";
+			continue;
+		}
 
 		FInputValue InputData = KeyInputInfo.InputValue;
 

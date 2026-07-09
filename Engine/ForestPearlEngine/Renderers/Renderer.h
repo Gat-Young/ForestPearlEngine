@@ -1,10 +1,5 @@
 #pragma once
 
-#include <d3d11.h>
-#include <dxgi1_6.h>
-#pragma comment(lib, "D3D11")
-#pragma comment(lib, "dxgi.lib")
-
 #include <Windows.h>
 #include <wrl/client.h>
 #include <tchar.h>

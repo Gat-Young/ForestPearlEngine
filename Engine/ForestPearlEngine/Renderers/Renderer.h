@@ -13,7 +13,15 @@
 #include "SpriteFont.h"
 #include "SpriteBatch.h"
 #include <vector>
+
+#include "../Shader/Shader.h"
 using namespace DirectX;
+
+//정점 구조체
+struct VERTEX
+{
+	float x, y, z;
+};
 
 class Renderer
 {

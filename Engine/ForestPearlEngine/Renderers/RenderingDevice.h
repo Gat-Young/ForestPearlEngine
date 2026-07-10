@@ -14,7 +14,7 @@ using namespace DirectX;
 #pragma comment(lib, "DirectXTK.lib")
 #include "SpriteFont.h"
 #include "SpriteBatch.h"
-
+using namespace DirectX;
 
 class RenderingDevice
 {
@@ -55,6 +55,10 @@ class RenderingDevice
 		};
 		std::vector<DEVICEINFO> DevInfo;				//다중 GPU를 위한 배열 처리
 
+		//VertexBufferList
+		std::vector<ID3D11Buffer*> VertexBufferList;
+		int VertexBufferSize = -1;
+
 		//VSync 여부
 		bool IsVSync = true;
 
@@ -88,6 +92,15 @@ class RenderingDevice
 
 		HRESULT DeviceFinalize();
 
+		//VB 만들기
+		int CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride);
+
+		//입력 레이아웃 생성
+		int CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, void* VSCode, void* ReturnLayout);
+
+		//GetDXDevice
+		ID3D11Device* GetDXDevice() { return Device.Get(); };
+
 		//폰트 생성
 		SpriteFont* CreateSpriteFont();
 
@@ -107,6 +120,7 @@ class RenderingDevice
 
 		//VRAM 정보 획득
 		HRESULT GetDXVRAMInfo(IDXGIAdapter1* Adapter, DEVICEINFO& Di);
+
 
 
 		//장치 정보 반환 함수

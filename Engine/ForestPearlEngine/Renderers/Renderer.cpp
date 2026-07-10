@@ -8,7 +8,7 @@
 #ifndef SafeRelease
 template<typename T> void _SafeRelease(T*& ptr)
 {
-	if (ptr) { ptr->Release(); ptr = nullptr; }
+	if (ptr) { ptr.Release(); ptr = nullptr; }
 }
 template<typename T> void _SafeDelete(T*& ptr)
 {
@@ -26,7 +26,7 @@ template<typename T> void _SafeDelArray(T*& ptr)
 #endif
 
 
-Renderer::Renderer() : Device(std::make_unique<RenderingDevice>())
+Renderer::Renderer(RenderingDevice& Device) : Device(Device)
 {
 }
 
@@ -34,31 +34,34 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 {
 	HRESULT hr = S_OK;
 
-	hr = Device->SetDisplayMode(hwnd);
+	hr = Device.SetDisplayMode(hwnd);
 	assert(SUCCEEDED(hr) && "Failed To SetDisplayMode\n");
 
-	hr = Device->CreateFactory();
+	hr = Device.CreateFactory();
 	assert(SUCCEEDED(hr) && "Failed To Create DXGI Factory\n");
 
-	hr = Device->CreateHighSpecDevice();
+	hr = Device.CreateHighSpecDevice();
 	assert(SUCCEEDED(hr) && "Failed To Create DXDevice\n");
 
 
-	hr = Device->CreateSwapChain(hwnd);
+	hr = Device.CreateSwapChain(hwnd);
 	assert(SUCCEEDED(hr) && "스왑체인 생성 실패\n");
 
-	hr = Device->SetBackBufferToRenderTargetView();
+	hr = Device.SetBackBufferToRenderTargetView();
 	assert(SUCCEEDED(hr) && "백버퍼 - 렌더타겟 설정 실패\n");
 
-	Device->OMSetRenderTargets();
+	Device.OMSetRenderTargets();
 
 	//뷰포트 설정
-	Device->SetViewPort(0.0f, 0.0f, (FLOAT)Device->GetWidth(), (FLOAT)Device->GetHeight(), 0.0f, 1.0f);
+	Device.SetViewPort(0.0f, 0.0f, (FLOAT)Device.GetWidth(), (FLOAT)Device.GetHeight(), 0.0f, 1.0f);
 
-	Device->GetDeviceInfo();
+	Device.GetDeviceInfo();
 	
-	FontBatch = Device->CreateSpriteBatch();
-	Font = Device->CreateSpriteFont();
+	FontBatch = Device.CreateSpriteBatch();
+	Font = Device.CreateSpriteFont();
+
+	DefaultShader = new Shader(*(Device.GetDXDevice()));
+	DefaultShader->ShaderCreate();
 
 	return hr;
 }
@@ -92,25 +95,26 @@ void Renderer::UIRendering()
 
 HRESULT Renderer::Finalize()
 {
+	DefaultShader->ShaderRelease();
 	FontRelease();
-	HRESULT hr = Device->DeviceFinalize();
+	HRESULT hr = Device.DeviceFinalize();
 
 	return hr;
 }
 
-RenderingDevice* Renderer::GetRenderingDevice()
+RenderingDevice& Renderer::GetRenderingDevice()
 {
-	return Device.get();
+	return Device;
 }
 
 void Renderer::ClearBackBuffer()
 {
-	Device->ClearBackBuffer();
+	Device.ClearBackBuffer();
 }
 
 void Renderer::RenderTargetPresent()
 {
-	Device->RenderTargetPresent();
+	Device.RenderTargetPresent();
 }
 
 void Renderer::FontRelease()

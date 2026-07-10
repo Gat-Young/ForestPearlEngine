@@ -1,8 +1,6 @@
 #pragma once
-
 #include "RenderingDevice.h"
 #include "../Shader/Shader.h"
-using namespace DirectX;
 
 //정점 구조체
 struct VERTEX
@@ -14,16 +12,20 @@ class Renderer
 {
 
 	private:
-		std::unique_ptr<RenderingDevice> Device;
+		RenderingDevice& Device;
 
+		//Font
 		SpriteBatch* FontBatch = nullptr;
 		SpriteFont* Font = nullptr;
+
+		//기본 셰이더
+		Shader* DefaultShader = nullptr;
 
 		//폰트 해제
 		void FontRelease();
 
 	public:
-		Renderer();
+		Renderer(RenderingDevice& Device);
 
 		void ClearBackBuffer();
 
@@ -37,5 +39,5 @@ class Renderer
 
 		HRESULT Finalize();
 
-		RenderingDevice* GetRenderingDevice();
+		RenderingDevice& GetRenderingDevice();
 };

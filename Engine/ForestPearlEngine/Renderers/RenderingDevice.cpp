@@ -238,6 +238,42 @@ void RenderingDevice::RenderTargetPresent()
 	SwapChain->Present(IsVSync ? 1 : 0, 0);
 }
 
+//VertexBuffer 생성
+//
+// DX10 부터 버퍼 자원의 규격이 통합
+// 버퍼 생성시 그 용도(VB, IB..)를 결정
+// 
+// param		VertexData		정점 데이터포인터
+// param		Size			정점 데이터크기
+// param		Stride			정점 데이터 하나의 크기
+//
+int RenderingDevice::CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride)
+{
+
+	// 정점 버퍼 정보 구성
+	D3D11_BUFFER_DESC Bd = {};
+	ZeroMemory(&Bd, sizeof(Bd));
+	Bd.Usage			= D3D11_USAGE_DEFAULT;		//버퍼 사용방식
+	Bd.ByteWidth		= Size;						//버퍼 크기 sizeof(VTX_MESH) * 3
+	Bd.BindFlags		= D3D11_BIND_VERTEX_BUFFER;	//버퍼 용도 : 정점 버퍼
+	Bd.CPUAccessFlags	= 0;
+
+	D3D11_SUBRESOURCE_DATA Rd;
+	ZeroMemory(&Rd, sizeof(Rd));
+	Rd.pSysMem = VertexData;						//버퍼에 저장될 데이터 : "정점들"
+
+	//정점 버퍼 생성
+	VertexBufferList.push_back(nullptr);
+	VertexBufferSize++;
+
+	HRESULT hr = Device->CreateBuffer(&Bd, &Rd, &VertexBufferList[VertexBufferSize]);
+	assert(SUCCEEDED(hr) && "정점 버퍼 생성 실패");
+
+	return VertexBufferSize;
+}
+
+
+
 //Font Create
 SpriteFont* RenderingDevice::CreateSpriteFont()
 {

@@ -7,6 +7,7 @@
 class FPObject;
 class FPActor;
 class Renderer;
+class RenderingDevice;
 
 class ForestPearlEngine
 {
@@ -76,6 +77,10 @@ class ForestPearlEngine
 		////////////////////////////////
 		// Renderer
 		Renderer* Render;
+
+		////////////////////////////////
+		// RenderingDevice
+		RenderingDevice* RenderDevice;
 
 		// 나중에 설정파일 로더로 변경할 것
 		////////////////////////////////

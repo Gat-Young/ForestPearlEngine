@@ -46,6 +46,6 @@ class Shader
 		//VertexShader Set
 		void VertexShaderSet(ID3D11DeviceContext& DXDC) { DXDC.VSSetShader(VertexShader, nullptr, 0); };
 		//PixelShader Set
-		void PixelShaderSet(ID3D11DeviceContext& DXDC) { DXDC.PSSetShader(PixelShader, nullptr, 0) };
+		void PixelShaderSet(ID3D11DeviceContext& DXDC) { DXDC.PSSetShader(PixelShader, nullptr, 0); };
 
 };

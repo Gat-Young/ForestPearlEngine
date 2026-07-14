@@ -1,6 +1,6 @@
 #pragma once
 #include "RenderingDevice.h"
-#include "../Shader/Shader.h"
+#include "../Shader/ShaderFactory.h"
 
 //정점 구조체
 struct VERTEX
@@ -18,8 +18,8 @@ class Renderer
 		SpriteBatch* FontBatch = nullptr;
 		SpriteFont* Font = nullptr;
 
-		//기본 셰이더
-		Shader* DefaultShader = nullptr;
+		//셰이더 팩토리
+		ShaderFactory* shaderFactory = nullptr;
 
 		//폰트 해제
 		void FontRelease();

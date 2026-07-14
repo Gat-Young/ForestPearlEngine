@@ -11,6 +11,8 @@ struct MeshRenderItem
 	FPVector3* Location = nullptr;
 	FPQuaternion* Rotation = nullptr;
 	FPVector3* Scale = nullptr;
+	void* VertexShader = nullptr;
+	void* PixelShader = nullptr;
 };
 
 class MeshRenderList

@@ -60,8 +60,7 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 	FontBatch = Device.CreateSpriteBatch();
 	Font = Device.CreateSpriteFont();
 
-	DefaultShader = new Shader(*(Device.GetDXDevice()));
-	DefaultShader->ShaderCreate();
+	shaderFactory = &ShaderFactory::GetShaderFactory();
 
 	return hr;
 }
@@ -95,7 +94,6 @@ void Renderer::UIRendering()
 
 HRESULT Renderer::Finalize()
 {
-	DefaultShader->ShaderRelease();
 	FontRelease();
 	HRESULT hr = Device.DeviceFinalize();
 

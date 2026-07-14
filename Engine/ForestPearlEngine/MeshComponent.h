@@ -1,6 +1,7 @@
 #pragma once
 #include "MeshRenderList.h"
 #include "FPPrimitiveComponent.h"
+#include "FPMaterial.h"
 #include <string>
 
 class MeshComponent : FPPrimitiveComponent
@@ -12,6 +13,8 @@ class MeshComponent : FPPrimitiveComponent
 		int FaceSize;
 		bool isFill = true;
 		bool isCull = true;
+
+		FPMaterial* Material = nullptr;
 
 		MeshRenderItem* RenderItem = nullptr;
 
@@ -25,4 +28,6 @@ class MeshComponent : FPPrimitiveComponent
 
 		void SetMeshFill(bool State) { isFill = State; };
 		void SetMeshCull(bool State) { isCull = State; };
+
+		void SetMaterial(FPMaterial* Material) { Material = Material; };
 };

@@ -31,6 +31,12 @@
     <Filter Include="Renderers\Legacy_Renderer">
       <UniqueIdentifier>{60d0598d-1cb6-4381-8250-61314a79b035}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Renderers\Shader">
+      <UniqueIdentifier>{c5323eed-f528-466b-bd17-032f5bfda515}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderers\Shader\fx">
+      <UniqueIdentifier>{f6e08996-a72b-46af-9c0e-cfc702c62ccc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -141,6 +147,12 @@
     <ClInclude Include="Renderers\RenderingDevice.h">
       <Filter>Renderers</Filter>
     </ClInclude>
+    <ClInclude Include="FPMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader\ShaderFactory.h">
+      <Filter>Renderers\Shader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
@@ -233,5 +245,16 @@
     <ClCompile Include="Renderers\RenderingDevice.cpp">
       <Filter>Renderers</Filter>
     </ClCompile>
+    <ClCompile Include="FPMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader\ShaderFactory.cpp">
+      <Filter>Renderers\Shader</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shader\fx\Demo.fx">
+      <Filter>Renderers\Shader\fx</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

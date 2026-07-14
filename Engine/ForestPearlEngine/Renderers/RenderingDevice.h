@@ -70,6 +70,7 @@ class RenderingDevice
 		XMFLOAT4 BackGroundColor = { 0, 0.125f, 0.3f, 1 };
 
 	public:
+		static RenderingDevice& GetRenderingDevice();
 
 		HRESULT SetDisplayMode(HWND hwnd);
 

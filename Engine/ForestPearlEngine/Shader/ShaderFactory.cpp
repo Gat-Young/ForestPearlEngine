@@ -1,52 +1,20 @@
 #include "d3dcompiler.h"				//DX 셰이더 컴파일러 헤더.
 #pragma comment(lib, "d3dcompiler")		//DX 셰이더 컴파일러 라이브러리.  D3DCompiler.dll 필요.
-#include "Shader.h"
+#include "ShaderFactory.h"
+#include "../Renderers/RenderingDevice.h"
 
-Shader::Shader(ID3D11Device& Device) : Device(Device)
+//싱글톤 셰이더 Factory 가져오기
+ShaderFactory& ShaderFactory::GetShaderFactory()
 {
+	static ShaderFactory ShaderFactorySingleton;
 
-}
-
-// 기본 셰이더 시스템 구성
-void Shader::ShaderCreate()
-{
-	//기본 셰이더 로드 & 설정
-	ShaderLoad();
+	return ShaderFactorySingleton;
 }
 
 //기본 셰이더 시스템 갱신
-void Shader::ShaderUpdate()
+void ShaderFactory::ShaderUpdate()
 {
 }
-
-// 셰이더 시스템 제거
-void Shader::ShaderRelease()
-{
-	VertexShader->Release();
-	PixelShader->Release();
-	VSCode->Release();
-	PSCode->Release();
-
-	VertexShader = nullptr;
-	PixelShader = nullptr;
-	VSCode = nullptr;
-	PSCode = nullptr;
-}
-
-//셰이더 로드
-HRESULT Shader::ShaderLoad()
-{
-	HRESULT hr = S_OK;
-
-	//정점 셰이더 생성
-	VertexShaderLoad(Filename, "VS_Main", "vs_5_0", &VertexShader, &VSCode);
-
-	//픽셀 셰이더 생성
-	PixelShaderLoad(Filename, "PS_Main", "ps_5_0", &PixelShader, &PSCode);
-
-	return hr;
-}
-
 
 // 정점 셰이더 로드
 // 지정 셰이더 파일(FX)을 컴파일 하고 셰이더 객체에 담아리턴
@@ -58,18 +26,18 @@ HRESULT Shader::ShaderLoad()
 // param[out]	ppCode		셰이더 코드 (컴파일된, 바이너리)
 // return	성공시 S_OK, 실패시 DX 에러코드
 //
-HRESULT Shader::VertexShaderLoad(const TCHAR* fxname, const CHAR* entry, const CHAR* target, ID3D11VertexShader** ppVS, ID3DBlob** ppCode)
+HRESULT ShaderFactory::VertexShaderLoad(const TCHAR* fxname, const CHAR* entry, const CHAR* target, void** ppVS, void** ppCode)
 {
 	HRESULT hr = S_OK;
 
 	//셰이더 컴파일
 	ID3DBlob* pCode = nullptr;
-	hr = ShaderCompile(fxname, entry, sm, &pCode);
+	hr = ShaderCompile(fxname, entry, target, &pCode);
 	assert(SUCCEEDED(hr) && "정점 셰이더 컴파일 실패");
 
 	//정점 셰이더 객체 생성
 	ID3D11VertexShader* pVS = nullptr;
-	hr = Device.CreateVertexShader(pCode->GetBufferPointer(), pCode->GetBufferSize(), nullptr, &pVS);
+	hr = RenderingDevice::GetRenderingDevice().GetDXDevice()->CreateVertexShader(pCode->GetBufferPointer(), pCode->GetBufferSize(), nullptr, &pVS);
 	assert(SUCCEEDED(hr) && "정점 셰이더 객체 생성 실패");
 
 	//완료후 외부 리턴
@@ -90,20 +58,22 @@ HRESULT Shader::VertexShaderLoad(const TCHAR* fxname, const CHAR* entry, const C
 // return	성공시 S_OK, 실패시 DX 에러코드
 //
 
-HRESULT Shader::PixelShaderLoad(const TCHAR* fxname, const CHAR* entry, const CHAR* target, ID3D11PixelShader** ppPS, ID3DBlob** ppCode)
+HRESULT ShaderFactory::PixelShaderLoad(const TCHAR* fxname, const CHAR* entry, const CHAR* target, void** ppPS, void** ppCode)
 {
+	HRESULT hr = S_OK;
+
 	//셰이더 컴파일
 	ID3DBlob* pCode = nullptr;
-	hr = ShaderCompile(fxname, entry, sm, &pCode);
+	hr = ShaderCompile(fxname, entry, target, &pCode);
 	assert(SUCCEEDED(hr) && "픽셀 셰이더 컴파일 실패");
 
 	//정점 셰이더 객체 생성
 	ID3D11PixelShader* pPS = nullptr;
-	hr = Device.CreatePixelShader(pCode->GetBufferPointer(), pCode->GetBufferSize(), nullptr, &pPS);
+	hr = RenderingDevice::GetRenderingDevice().GetDXDevice()->CreatePixelShader(pCode->GetBufferPointer(), pCode->GetBufferSize(), nullptr, &pPS);
 	assert(SUCCEEDED(hr) && "픽셀 셰이더 객체 생성 실패");
 
 	//완료후 외부 리턴
-	*ppVS = pPS;
+	*ppPS = pPS;
 	*ppCode = pCode;
 
 	return hr;
@@ -117,7 +87,7 @@ HRESULT Shader::PixelShaderLoad(const TCHAR* fxname, const CHAR* entry, const CH
 // param[out]	ppCode		셰이더 코드 (컴파일된, 바이너리)
 // return	성공시 S_OK, 실패시 DX 에러코드
 //
-HRESULT Shader::ShaderCompile(const TCHAR* FileName, const CHAR* EntryPoint, const CHAR* ShaderModel, ID3DBlob** ppCode)
+HRESULT ShaderFactory::ShaderCompile(const TCHAR* FileName, const CHAR* EntryPoint, const CHAR* ShaderModel, ID3DBlob** ppCode)
 {
 	HRESULT hr = S_OK;
 	ID3DBlob* pError = nullptr;

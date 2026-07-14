@@ -23,6 +23,14 @@ template<typename T> void _SafeDelArray(T*& ptr)
 #define SafeDelArray	_SafeDelArray
 #endif
 
+//½Ì±ÛÅæ ·»´õ¸µ µð¹ÙÀÌ½º °´Ã¼ °¡Á®¿À±â
+RenderingDevice& RenderingDevice::GetRenderingDevice()
+{
+	static RenderingDevice RenderingDeviceSingleton;
+
+	return RenderingDeviceSingleton;
+}
+
 // DisplayMode ¼³Á¤
 HRESULT RenderingDevice::SetDisplayMode(HWND hwnd)
 {

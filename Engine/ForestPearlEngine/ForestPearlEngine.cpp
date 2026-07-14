@@ -13,9 +13,9 @@
 //싱글톤 엔진 객체 가져오기
 ForestPearlEngine& ForestPearlEngine::GetGameEngine()
 {
-    static ForestPearlEngine Singleton;
+    static ForestPearlEngine GameEngineSingleton;
 
-    return Singleton;
+    return GameEngineSingleton;
 }
 
 //엔진 부팅 및 기본 설정 모듈 불러오기
@@ -36,7 +36,7 @@ bool ForestPearlEngine::PreInitialize()
     FPInputSystem::GetInputSystem();
 
     // RenderDevice 생성
-    RenderDevice = new RenderingDevice();
+    RenderDevice = &RenderingDevice::GetRenderingDevice();
 
     //Render 등록
     Render = new Renderer(*RenderDevice);

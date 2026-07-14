@@ -6,6 +6,7 @@ MeshComponent::MeshComponent(FPActor* Owner, std::string MeshPath) : FPPrimitive
 	std::pair<int, int> MeshData = LoadVertexBuffer();
 	VBIndex = MeshData.first;
 	FaceSize = MeshData.second;
+	if (Material == nullptr) { Material = new FPMaterial(); }
 	RegistMeshRenderList();
 }
 
@@ -25,6 +26,8 @@ void MeshComponent::RegistMeshRenderList()
 	RenderItem->Location = &(this->WorldTransform.Location);
 	RenderItem->Rotation = &(this->WorldTransform.QuaternionRotation);
 	RenderItem->Scale = &(this->WorldTransform.Scale);
+	RenderItem->VertexShader = (this->Material->GetVertexShaderPointer());
+	RenderItem->PixelShader = (this->Material->GetPixelShaderPointer());
 }
 
 MeshComponent::~MeshComponent()

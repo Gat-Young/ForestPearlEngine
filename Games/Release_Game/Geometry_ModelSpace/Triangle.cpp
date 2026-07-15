@@ -9,9 +9,9 @@
 
 void Triangle::Initialize()
 {
-	Mesh = new MeshComponent(this, "Triangle3");
+	Mesh = new MeshComponent(this, "Triangle4");
 	SetRootComponent((FPSceneComponent*)Mesh);
-
+	std::cout << "Triangel Create" << "\n";
 	FPAController* Controller = GetWorld()->GetController(0);
 
 	if (Controller == nullptr)

@@ -13,7 +13,6 @@ class MeshComponent : FPPrimitiveComponent
 		int FaceSize;
 		bool isFill = true;
 		bool isCull = true;
-
 		FPMaterial* Material = nullptr;
 
 		MeshRenderItem* RenderItem = nullptr;

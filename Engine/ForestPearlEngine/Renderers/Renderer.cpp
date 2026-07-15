@@ -3,6 +3,8 @@
 #include <iostream>
 
 #include "../TextRenderList.h"
+#include "../MeshRenderList.h"
+#include "../GizmoRenderList.h"
 
 //객체 해제/제거 매크로()
 #ifndef SafeRelease
@@ -50,6 +52,9 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 	hr = Device.SetBackBufferToRenderTargetView();
 	assert(SUCCEEDED(hr) && "백버퍼 - 렌더타겟 설정 실패\n");
 
+	hr = Device.CreateDepthStencil();
+	assert(SUCCEEDED(hr) && "깊이-스텐실 버퍼 생성 실패\n");
+
 	Device.OMSetRenderTargets();
 
 	//뷰포트 설정
@@ -62,11 +67,37 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 	shaderFactory = &ShaderFactory::GetShaderFactory();
 
+	Device.RasterStateCreate();
+
 	return hr;
 }
 
 void Renderer::ObjectRendering()
 {
+	std::vector<MeshRenderItem> RenderList = MeshRenderList::Get().GetRenderList();
+
+	for (MeshRenderItem RenderItem : RenderList)
+	{
+		//렌더링 모드 전환
+		Device.UpdateRSSetState(*RenderItem.isFill, *RenderItem.isCull);
+
+		//Shader 설정
+		Device.VSSetShader(RenderItem.VertexShader);
+		Device.PSSetShader(RenderItem.PixelShader);
+
+		//입력 레이아웃 설정
+		Device.IASetInputLayout(RenderItem.VBLayout);
+
+		//기하 위상 구조 설정
+		Device.IASetPrimitiveTopology();
+
+		//정점 버퍼 설정
+		UINT stride = sizeof(VERTEX);
+		UINT offset = 0;
+		Device.IASetVertexBuffers(0, 1, *RenderItem.VBIndex ,&stride, &offset);
+
+		Device.Draw(*RenderItem.FaceSize*3, 0);
+	}
 
 }
 
@@ -94,8 +125,10 @@ void Renderer::UIRendering()
 
 HRESULT Renderer::Finalize()
 {
+	Device.RasterStateRelease();
 	FontRelease();
 	HRESULT hr = Device.DeviceFinalize();
+
 
 	return hr;
 }

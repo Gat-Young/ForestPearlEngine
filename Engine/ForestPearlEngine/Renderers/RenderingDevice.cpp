@@ -153,7 +153,7 @@ HRESULT RenderingDevice::CreateSwapChain(HWND hwnd)
 	SwapChainDesc.Height = DisplayMode.Height;
 	SwapChainDesc.Format = DisplayMode.Format;						//백버퍼 색상규격
 	SwapChainDesc.Stereo = FALSE;									//스테레오 3D렌더링 옵션
-	SwapChainDesc.SampleDesc = { 1, 0 };							//멀티 샘플링 설정 {Count, Quality}
+	SwapChainDesc.SampleDesc = { dwAA, 0 };							//멀티 샘플링 설정 {Count, Quality} AA 설정 "MSAA"
 	SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;	//용도 설정 : 렌더 타겟
 	SwapChainDesc.BufferCount = 1;									//백버퍼 개수
 	SwapChainDesc.Scaling = DXGI_SCALING_STRETCH;					//출력 화면 크기가 모니터의 실제 해상도와 다를 때 어떻게 스케일링 할지 여부
@@ -179,6 +179,45 @@ HRESULT RenderingDevice::CreateSwapChain(HWND hwnd)
 		SwapChain.GetAddressOf());
 
 	assert(SUCCEEDED(hr) && "스왑체인 생성 실패\n");
+
+	return hr;
+}
+
+//
+// 깊이-스텐실 버퍼 생성
+//
+HRESULT RenderingDevice::CreateDepthStencil()
+{
+	HRESULT hr = S_OK;
+
+	//깊이 - 스텐실 버퍼용 정보 구성
+	D3D11_TEXTURE2D_DESC TextureDesc;
+	TextureDesc.Width = DisplayMode.Width;
+	TextureDesc.Height = DisplayMode.Height;
+	TextureDesc.MipLevels = 1;
+	TextureDesc.ArraySize = 1;
+	TextureDesc.Format = DXGI_FORMAT_D32_FLOAT;			//32Bit 깊이 버퍼
+	TextureDesc.SampleDesc = { dwAA, 0 };				//AA 설정 "MSAA x4"
+	TextureDesc.Usage = D3D11_USAGE_DEFAULT;
+	TextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;	//깊이-스텐실 버퍼용으로 설정
+	TextureDesc.CPUAccessFlags = 0;
+	TextureDesc.MiscFlags = 0;
+
+	//깊이 버퍼 생성
+	hr = Device->CreateTexture2D(&TextureDesc, NULL, &DepthStencilBuffer);
+	assert(SUCCEEDED(hr) && "깊이-스텐실 버퍼 생성 실패");
+
+	//깊이-스텐실 버퍼용 리소스 뷰 정보 설정
+	D3D11_DEPTH_STENCIL_VIEW_DESC DepthStencilViewDesc;
+	ZeroMemory(&DepthStencilViewDesc, sizeof(DepthStencilViewDesc));
+	DepthStencilViewDesc.Format = TextureDesc.Format;
+	//DepthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;	//AA 없음
+	DepthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;	//+AA 설정 "MSAA"
+	DepthStencilViewDesc.Texture2D.MipSlice = 0;
+
+	//깊이 스텐실 버퍼 뷰 생성
+	Device->CreateDepthStencilView(DepthStencilBuffer.Get(), &DepthStencilViewDesc, &DepthStencilBufferView);
+	assert(SUCCEEDED(hr) && "깊이-스텐실 버퍼 뷰 생성 실패");
 
 	return hr;
 }
@@ -210,7 +249,7 @@ HRESULT RenderingDevice::OMSetRenderTargets()
 	DeviceContext->OMSetRenderTargets(
 		1,									//렌더타겟 개수. (max: D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT)
 		RenderTargetView.GetAddressOf(),	//렌더타겟("백버퍼") 등록.
-		nullptr
+		DepthStencilBufferView.Get() //깊이 스텐실 버퍼 등록
 	);
 	
 	return hr;
@@ -238,6 +277,7 @@ HRESULT RenderingDevice::SetViewPort(float TopLeftX, float TopLeftY, float Width
 void RenderingDevice::ClearBackBuffer()
 {
 	DeviceContext->ClearRenderTargetView(RenderTargetView.Get(), (float*)&BackGroundColor);
+	DeviceContext->ClearDepthStencilView(DepthStencilBufferView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
 void RenderingDevice::RenderTargetPresent()
@@ -245,6 +285,19 @@ void RenderingDevice::RenderTargetPresent()
 	//Present시 첫번째 인자 SyncInterval이 VSync 여부 ( 0 : 끔 , 1 : 켬(모니터 주사율에 맞춤) , 2 : 수직동기마다 출력)
 	SwapChain->Present(IsVSync ? 1 : 0, 0);
 }
+
+//
+// [DX 버퍼의 종류]
+// 
+// D3D11_BUFFER_DESC.Usage
+// 
+//	1. 기본 버퍼 : Default , GPU의 읽기/쓰기. 통상정인 버퍼 사용. 내용을 갱신할때는 UpdateSubResource 사용 (VRAM)
+//  2. 동적 버퍼 : Dynamic , CPU (쓰기) GPU (읽기), 빈번한 내용 변화시, 내용을 갱신할때는 Map / Unmap 사용 (RAM의 공유 메모리)
+//  3. 기타 :	Immutable	: GPU(읽기 전용), CPU 접근 불가, 내용 변경 불가 (VRAM)
+//				Staging		: GPU에서 CPU로 복사 가능.	 (RAM의 공유 메모리 중에서도 GPU Write에 최적화된 메모리)
+//
+
+
 
 //VertexBuffer 생성
 //
@@ -262,7 +315,7 @@ int RenderingDevice::CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride
 	D3D11_BUFFER_DESC Bd = {};
 	ZeroMemory(&Bd, sizeof(Bd));
 	Bd.Usage			= D3D11_USAGE_DEFAULT;		//버퍼 사용방식
-	Bd.ByteWidth		= Size;						//버퍼 크기 sizeof(VTX_MESH) * 3
+	Bd.ByteWidth		= Stride * Size;			//버퍼 크기 sizeof(VTX_MESH) * 3
 	Bd.BindFlags		= D3D11_BIND_VERTEX_BUFFER;	//버퍼 용도 : 정점 버퍼
 	Bd.CPUAccessFlags	= 0;
 
@@ -278,6 +331,47 @@ int RenderingDevice::CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride
 	assert(SUCCEEDED(hr) && "정점 버퍼 생성 실패");
 
 	return VertexBufferSize;
+}
+
+
+// 상수 버퍼 생성
+//
+// 14개 등록 가능. 다른 셰이더와 혼용 가능.
+// 셰이더 소스에 임의 지정 가능. register(b#)으로 지정, 약어 b = 상수버퍼
+//
+int RenderingDevice::CreateConstBuffer(UINT Size, void** ReturnConstBuffer)
+{
+	HRESULT hr = S_OK;
+
+	D3D11_BUFFER_DESC BufferDesc = {};
+	ZeroMemory(&BufferDesc, sizeof(BufferDesc));
+	BufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	BufferDesc.ByteWidth = Size;
+	BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	//상수 버퍼 생성
+	ID3D11Buffer* pConstBuffer = nullptr;
+	hr = Device->CreateBuffer(&BufferDesc, nullptr, &pConstBuffer);
+	assert(SUCCEEDED(hr) && "상수 버퍼 생성 실패\n");
+
+	*ReturnConstBuffer = pConstBuffer;
+
+
+
+	return 0;
+}
+
+HRESULT RenderingDevice::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, ID3DBlob* InVSCode, ID3D11InputLayout** ReturnLayout)
+{
+
+	HRESULT hr = S_OK;
+
+	//정점 입력구조 객체 생성
+	//함께 사용될 셰이더(컴파일된 바이너리 코드)가 필요
+
+	hr = Device->CreateInputLayout(Ed, Num, InVSCode->GetBufferPointer(), InVSCode->GetBufferSize(), ReturnLayout);
+	assert(SUCCEEDED(hr));
+	return hr;
 }
 
 
@@ -433,6 +527,111 @@ HRESULT RenderingDevice::GetDXVRAMInfo(IDXGIAdapter1* Adapter, DEVICEINFO& Di)
 	return hr;
 }
 
+void RenderingDevice::RasterStateCreate()
+{
+	//상태객체 1 : 기본 렌더링 상태 객체
+	D3D11_RASTERIZER_DESC rd;
+	rd.FillMode = D3D11_FILL_SOLID;		//삼각형 색상 채우기(기본값)
+	rd.CullMode = D3D11_CULL_NONE;		//컬링 없음. (기본값은 컬링 Back)
+	rd.FrontCounterClockwise = false;	//이하 기본값
+	rd.DepthBias = 0;
+	rd.DepthBiasClamp = 0;
+	rd.SlopeScaledDepthBias = 0;
+	rd.DepthClipEnable = true;
+	rd.ScissorEnable = false;
+	rd.MultisampleEnable = false;
+	rd.AntialiasedLineEnable = false;
+
+	//레스터라이저 객체 생성
+	Device->CreateRasterizerState(&rd, &RState[RS_SOLID]);
+
+	
+	//상태객체 2 : 와이어 프레임 그리기
+	rd.FillMode = D3D11_FILL_WIREFRAME;
+	rd.CullMode = D3D11_CULL_NONE;
+	Device->CreateRasterizerState(&rd, &RState[RS_WIREFRAME]);
+
+	//상태객체 3 : 컬링 ON CCW
+	rd.FillMode = D3D11_FILL_SOLID;
+	rd.CullMode = D3D11_CULL_BACK;
+	Device->CreateRasterizerState(&rd, &RState[RS_CULLBACK]);
+
+	//상태객체 4 : 와이어 프레임 + 컬링 ON CCW
+	rd.FillMode = D3D11_FILL_WIREFRAME;
+	rd.CullMode = D3D11_CULL_BACK;
+	Device->CreateRasterizerState(&rd, &RState[RS_WIRECULLBACK]);
+}
+
+void RenderingDevice::RasterStateRelease()
+{
+	for (int i = 0; i < RS_MAX_; i++)
+	{
+		SafeRelease(RState[i]);
+	}
+}
+
+#define CheckRMode(k, v) if((k)) RMode |= (v); else RMode &= ~(v);
+
+void RenderingDevice::UpdateRSSetState(bool isFill, bool isCull)
+{
+	//렌더링 모드 체크
+	CheckRMode(!isFill, RM_WIREFRAME);
+	CheckRMode(isCull, RM_CULLBACK);
+
+	ID3D11RasterizerState* SelectedState = nullptr;
+	//레스터 모드 전환
+	switch (RMode)
+	{
+	default:
+	case RM_SOLID:
+		SelectedState = RState[RS_SOLID];
+		break;
+
+	case RM_WIREFRAME:
+		SelectedState = RState[RS_WIREFRAME];
+		break;
+
+	case RM_CULLBACK:
+		SelectedState = RState[RS_CULLBACK];
+		break;
+
+	case RM_WIREFRAME | RM_CULLBACK:
+		SelectedState = RState[RS_WIRECULLBACK];
+		break;
+	}
+	DeviceContext->RSSetState(SelectedState);
+}
+
+void RenderingDevice::VSSetShader(void* VS)
+{
+	ID3D11VertexShader* pVS = static_cast<ID3D11VertexShader*>(VS);
+	DeviceContext->VSSetShader(pVS, nullptr, 0);
+}
+
+void RenderingDevice::PSSetShader(void* PS)
+{
+	ID3D11PixelShader* pPS = static_cast<ID3D11PixelShader*>(PS);
+	DeviceContext->PSSetShader(pPS, nullptr, 0);
+}
+
+
+void RenderingDevice::IASetVertexBuffers(UINT StartSlot, UINT NumBuffers, UINT VertexBufferIndex, UINT* Strides, UINT* Offsets)
+{
+	DeviceContext->IASetVertexBuffers(StartSlot, NumBuffers, &VertexBufferList[VertexBufferIndex], Strides, Offsets);
+}
+
+
+void RenderingDevice::IASetInputLayout(void* InputLayout)
+{
+	ID3D11InputLayout* pInputLayout = static_cast<ID3D11InputLayout*>(InputLayout);
+	DeviceContext->IASetInputLayout(pInputLayout);
+}
+
+void RenderingDevice::IASetPrimitiveTopology()
+{
+	DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
 //장치 제거
 HRESULT RenderingDevice::DeviceFinalize()
 {
@@ -444,5 +643,11 @@ HRESULT RenderingDevice::DeviceFinalize()
 	DeviceContext->Release();
 	Device->Release();
 
+	return S_OK;
+}
+
+HRESULT RenderingDevice::Draw(UINT VertexCount, UINT StartVertexLocation)
+{
+	DeviceContext->Draw(VertexCount, StartVertexLocation);
 	return S_OK;
 }

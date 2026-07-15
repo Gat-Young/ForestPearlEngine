@@ -42,8 +42,6 @@ bool ForestPearlEngine::PreInitialize()
     Render = new Renderer(*RenderDevice);
     Render->InitializeRenderer(Hwnd);
     
-    AssetManager::Get().SetRenderer(Render);
-
     GameProjectClassRegistry::Get();
 
     LoadClassRegist();

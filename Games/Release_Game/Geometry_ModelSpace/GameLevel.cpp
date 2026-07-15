@@ -4,6 +4,7 @@ void GameLevel::Initialize()
 {
 	//{Class name, Instance Name}
 	ActorlList.push_back({ "UI", "System UI" });
+	ActorlList.push_back({ "Triangle", "Triangle1" });
 	__super::Initialize();
 }
 

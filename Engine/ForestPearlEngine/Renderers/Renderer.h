@@ -5,7 +5,8 @@
 //정점 구조체
 struct VERTEX
 {
-	float x, y, z;
+	float x, y, z;		//좌표 Position
+	float r, g, b, a;	//색상 Diffuse Color
 };
 
 class Renderer
@@ -13,6 +14,9 @@ class Renderer
 
 	private:
 		RenderingDevice& Device;
+
+		//VertexBuffer List
+
 
 		//Font
 		SpriteBatch* FontBatch = nullptr;

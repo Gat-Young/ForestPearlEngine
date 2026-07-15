@@ -13,6 +13,7 @@ struct MeshRenderItem
 	FPVector3* Scale = nullptr;
 	void* VertexShader = nullptr;
 	void* PixelShader = nullptr;
+	void* VBLayout = nullptr;
 };
 
 class MeshRenderList

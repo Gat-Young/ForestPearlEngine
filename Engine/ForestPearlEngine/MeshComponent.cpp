@@ -28,6 +28,7 @@ void MeshComponent::RegistMeshRenderList()
 	RenderItem->Scale = &(this->WorldTransform.Scale);
 	RenderItem->VertexShader = (this->Material->GetVertexShaderPointer());
 	RenderItem->PixelShader = (this->Material->GetPixelShaderPointer());
+	RenderItem->VBLayout = (this->Material->GetVBLayoutPointer());
 }
 
 MeshComponent::~MeshComponent()

@@ -30,10 +30,42 @@ class RenderingDevice
 		ComPtr<ID3D11DeviceContext> DeviceContext = NULL;
 
 		//D3D 스왑체인 인터페이스
-		ComPtr<IDXGISwapChain1> SwapChain = NULL;
-		ComPtr<ID3D11RenderTargetView> RenderTargetView = NULL;
+		ComPtr<IDXGISwapChain1>			SwapChain = NULL;
+		ComPtr<ID3D11RenderTargetView>	RenderTargetView = NULL;
+		ComPtr<ID3D11Texture2D>			DepthStencilBuffer = NULL;
+		ComPtr<ID3D11DepthStencilView>	DepthStencilBufferView = NULL;
+
+		//Rasterizer 상태 객체
+		enum {
+			RS_SOLID,				//기본 렌더링 : 솔리드 Solid
+			RS_WIREFRAME,			//와이어프레임 렌더링
+			RS_CULLBACK,			//뒷면 컬링(ON) : BackFaceCulling - "CCW"
+			RS_WIRECULLBACK,		//와이어 프레임 + 뒷면 컬링 (ON)
+
+			RS_MAX_
+		};
+
+		//렌더링 모드 : 다수의 렌더링 모드 조합 및 운용을 위한 정의
+		enum
+		{
+			RM_SOLID = 0x0000,			//삼각형채우기 : ON, Solid
+			RM_WIREFRAME = 0x0001,		//삼각형채우기 : OFF, Wire-frame
+			RM_CULLBACK = 0x0002,		//뒷면 컬링 : On "CCW"
+
+			//렌더링 기본 모드 : Solid + Cull-On
+			RM_DEFAULT = RM_SOLID | RM_CULLBACK,
+		};
+		DWORD RMode = RM_DEFAULT; //"현재 렌더링 모드"
+
+		//Rasterizer 상태 객체 배열
+		ID3D11RasterizerState* RState[RS_MAX_] = { NULL, };
 
 		DXGI_MODE_DESC1 DisplayMode;
+
+		//AA & AF Option
+		DWORD dwAA = 4;				//AA off 는 1로, AA 적용시 배수 지정 (최대 8)
+		DWORD dwAF = 8;				//Anisotropic Filter 배수. ( 최대 16 )
+		BOOL IsMipMap = TRUE;
 
 		//D3D Feature Level 확인
 		D3D_FEATURE_LEVEL FeatureLevels[2] = {
@@ -81,6 +113,8 @@ class RenderingDevice
 
 		HRESULT CreateSwapChain(HWND hwnd);
 
+		HRESULT CreateDepthStencil();
+
 		HRESULT SetBackBufferToRenderTargetView();
 
 		HRESULT OMSetRenderTargets();
@@ -93,14 +127,22 @@ class RenderingDevice
 
 		HRESULT DeviceFinalize();
 
+		HRESULT Draw(UINT VertexCount, UINT StartVertexLocation);
+
 		//VB 만들기
 		int CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride);
 
+		//CB 만들기
+		int CreateConstBuffer(UINT Size, void** ReturnConstBuffer);
+
 		//입력 레이아웃 생성
-		int CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, void* VSCode, void* ReturnLayout);
+		HRESULT CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, ID3DBlob* InVSCode, ID3D11InputLayout** ReturnLayout);
 
 		//GetDXDevice
 		ID3D11Device* GetDXDevice() { return Device.Get(); };
+
+		//GetDXDeviceContext
+		ID3D11DeviceContext* GetDXDeviceContext() { return DeviceContext.Get(); };
 
 		//폰트 생성
 		SpriteFont* CreateSpriteFont();
@@ -122,7 +164,28 @@ class RenderingDevice
 		//VRAM 정보 획득
 		HRESULT GetDXVRAMInfo(IDXGIAdapter1* Adapter, DEVICEINFO& Di);
 
+		//레스터라이저 상태 객체 생성
+		void RasterStateCreate();
 
+		//레스터라이저 상태 객체 제거
+		void RasterStateRelease();
+
+
+		//렌더링스테이트 업데이트 함수
+		void UpdateRSSetState(bool isFill, bool isCull);
+
+		//셰이더 설정
+		void VSSetShader(void* VS);
+		void PSSetShader(void* PS);
+
+		//정점 버퍼 설정
+		void IASetVertexBuffers(UINT StartSlot, UINT NumBuffers, UINT VertexBufferIndex, UINT* Strides, UINT* Offsets);
+		
+		//입력 레이아웃 설정
+		void IASetInputLayout(void* InputLayout);
+
+		//기하 위상 구조 설정
+		void IASetPrimitiveTopology();
 
 		//장치 정보 반환 함수
 		const TCHAR* GetAdapterDescription(int index) { return DevInfo[index].AdapterDescription.Description; };

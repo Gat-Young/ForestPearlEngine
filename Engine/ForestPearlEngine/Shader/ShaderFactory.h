@@ -25,4 +25,5 @@ class ShaderFactory
 
 		HRESULT VertexShaderLoad(const TCHAR* fxname, const CHAR* entry, const CHAR* target, void** ppVS, void** ppCode = NULL);
 		HRESULT PixelShaderLoad(const TCHAR* fxname, const CHAR* entry, const CHAR* target, void** ppPS, void** ppCode = NULL);
+		HRESULT CreateInputLayout(void* InVSCode, void** ReturnLayout);
 };

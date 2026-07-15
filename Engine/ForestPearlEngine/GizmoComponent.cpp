@@ -7,7 +7,7 @@ int GizmoComponent::MakeVertexVuffer(std::vector<GIZMO_COLVTX> GizmoMesh)
 
 	for (int i = 0; i < GizmoMesh.size(); ++i)
 	{
-		Vertex.push_back(FPMesh{ GizmoMesh[i].vPos.x, GizmoMesh[i].vPos.y, GizmoMesh[i].vPos.z, GizmoMesh[i].Color });
+		//Vertex.push_back(FPMesh{ GizmoMesh[i].vPos.x, GizmoMesh[i].vPos.y, GizmoMesh[i].vPos.z, GizmoMesh[i].Color });
 	}
 
 	return AssetManager::Get().MakeVertexVuffer(Vertex);

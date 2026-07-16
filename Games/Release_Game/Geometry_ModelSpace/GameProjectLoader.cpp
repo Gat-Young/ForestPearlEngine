@@ -5,6 +5,7 @@
 #include "GameMode.h"
 #include "GameController.h"
 #include "Triangle.h"
+#include "GameCamera.h"
 
 void LoadClassRegist()
 {
@@ -14,6 +15,7 @@ void LoadClassRegist()
 	GameProjectClassRegistry::Get().Register<GameController>("GameController");
 	GameProjectClassRegistry::Get().Register<UI>("UI");
 	GameProjectClassRegistry::Get().Register<Triangle>("Triangle");
+	GameProjectClassRegistry::Get().Register<GameCamera>("GameCamera");
 
 }
 

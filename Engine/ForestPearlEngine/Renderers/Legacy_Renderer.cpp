@@ -105,9 +105,9 @@ void Legacy_Renderer::ObjectRendering()
 
 		FPRHITRANSFORMMATRIX g_mTM; //카메라 행렬
 
-		g_mTM.position_x = CamItem.Position->x;
-		g_mTM.position_y = CamItem.Position->y;
-		g_mTM.position_z = CamItem.Position->z;
+		g_mTM.position_x = CamItem.Location->x;
+		g_mTM.position_y = CamItem.Location->y;
+		g_mTM.position_z = CamItem.Location->z;
 		g_mTM.position_w = 1.0f;
 
 		g_mTM.rotation_x = CamItem.Rotation->x;

@@ -1,6 +1,15 @@
 //
 // Demo.fx : 기본 셰이더 소스.
 
+//상수 버퍼
+cbuffer ConstBuffer
+{
+    matrix mWorld;
+    matrix mView;
+    matrix mProj;
+    matrix mWVP;
+};
+
 //VS 출력 구조체
 struct VSOutput
 {
@@ -22,6 +31,11 @@ VSOutput VS_Main(
 {
     //입력된 정보 그대로 출력..
     VSOutput o = (VSOutput) 0;
+    pos.w = 1.0f;
+    
+    //변환
+    pos = mul(pos, mWVP);
+    
     o.pos = pos;
     o.col = col;
     

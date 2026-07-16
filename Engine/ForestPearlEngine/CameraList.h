@@ -5,8 +5,8 @@
 struct CameraItem
 {
 	//카메라의 위치
-	FPVector3* Position = nullptr;
-	FPVector3* Rotation = nullptr;
+	FPVector3* Location = nullptr;
+	FPQuaternion* Rotation = nullptr;
 	FPVector3* Scale = nullptr;
 
 	//카메라 속성

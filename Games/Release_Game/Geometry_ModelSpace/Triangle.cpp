@@ -30,8 +30,8 @@ void Triangle::BeginPlay()
 
 void Triangle::Tick()
 {
-	angle += AngleSpeed * (GetWorld()->GetGameTimer()->DeltaTimeMS());
-	RootComponent->SetRelativeRotation(FPVector3{ 0.0f, angle, 0.0f });
+	//angle += AngleSpeed * (GetWorld()->GetGameTimer()->DeltaTimeMS());
+	//RootComponent->SetRelativeRotation(FPVector3{ 0.0f, angle, 0.0f });
 
 	__super::Tick();
 }

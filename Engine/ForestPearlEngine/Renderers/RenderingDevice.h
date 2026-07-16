@@ -91,6 +91,9 @@ class RenderingDevice
 		std::vector<ID3D11Buffer*> VertexBufferList;
 		int VertexBufferSize = -1;
 
+		//ConstBuffer
+		ID3D11Buffer* ConstBuffer;
+
 		//VSync 여부
 		bool IsVSync = true;
 
@@ -133,7 +136,14 @@ class RenderingDevice
 		int CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride);
 
 		//CB 만들기
-		int CreateConstBuffer(UINT Size, void** ReturnConstBuffer);
+		int CreateConstBuffer(UINT Size);
+		int CreateConstBuffer(UINT Size, ID3D11Buffer** ReturnConstBuffer);
+
+		//CB 등록
+		HRESULT VSSetConstantBuffers(UINT StartSlot, UINT NumBuffers);
+
+		//CB 업데이트
+		HRESULT UpdateSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch);
 
 		//입력 레이아웃 생성
 		HRESULT CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, ID3DBlob* InVSCode, ID3D11InputLayout** ReturnLayout);

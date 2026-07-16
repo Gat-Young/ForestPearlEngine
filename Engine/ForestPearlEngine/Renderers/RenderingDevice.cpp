@@ -339,7 +339,14 @@ int RenderingDevice::CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride
 // 14개 등록 가능. 다른 셰이더와 혼용 가능.
 // 셰이더 소스에 임의 지정 가능. register(b#)으로 지정, 약어 b = 상수버퍼
 //
-int RenderingDevice::CreateConstBuffer(UINT Size, void** ReturnConstBuffer)
+int RenderingDevice::CreateConstBuffer(UINT Size)
+{
+	HRESULT hr = S_OK;
+	hr = CreateConstBuffer(Size, &ConstBuffer);
+	return hr;
+}
+
+int RenderingDevice::CreateConstBuffer(UINT Size, ID3D11Buffer** ReturnConstBuffer)
 {
 	HRESULT hr = S_OK;
 
@@ -359,6 +366,20 @@ int RenderingDevice::CreateConstBuffer(UINT Size, void** ReturnConstBuffer)
 
 
 	return 0;
+}
+
+HRESULT RenderingDevice::VSSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->VSSetConstantBuffers(StartSlot, NumBuffers, &ConstBuffer);
+	return hr;
+}
+
+HRESULT RenderingDevice::UpdateSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->UpdateSubresource(ConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
+	return hr;
 }
 
 HRESULT RenderingDevice::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, ID3DBlob* InVSCode, ID3D11InputLayout** ReturnLayout)

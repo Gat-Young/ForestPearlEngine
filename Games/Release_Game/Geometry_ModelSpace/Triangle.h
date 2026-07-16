@@ -1,12 +1,12 @@
 #pragma once
 #include "ForestPearlEngine/Object/Actor.h"
-#include "ForestPearlEngine/MeshComponent.h"
 #include "ForestPearlEngine/Systems/KeyStateEnum.h"
 #include "ForestPearlEngine/Define/FPMath.h"
 
 class FPInputMappingContext;
 class FPInputAction;
 struct FInputValue;
+class MeshComponent;
 
 class Triangle : public FPActor
 {

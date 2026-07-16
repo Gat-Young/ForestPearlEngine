@@ -7,6 +7,7 @@
 #include "AssetManager.h"
 #include "MeshRenderList.h"
 #include "TextRenderList.h"
+#include "CameraList.h"
 #include "Systems/InputSystem.h"
 #include <iostream>
 
@@ -48,7 +49,7 @@ bool ForestPearlEngine::PreInitialize()
 
     MeshRenderList::Get();
     TextRenderList::Get();
-
+    CameraList::Get();
     FPGameInstance::Get();
 
     return true;

@@ -9,7 +9,8 @@
 #include "TextRenderList.h"
 #include "CameraList.h"
 #include "Systems/InputSystem.h"
-#include <iostream>
+//#include <iostream>
+#include "MCLOG.h"
 
 //½Ì±ÛÅæ ¿£Áø °´Ã¼ °¡Á®¿À±â
 ForestPearlEngine& ForestPearlEngine::GetGameEngine()
@@ -73,6 +74,8 @@ void ForestPearlEngine::GameLoop()
         {
             break;
         }
+
+        FPInputSystem::GetInputSystem().TickInputSystem();
 
         FPGameInstance::Get().Tick();
 
@@ -138,14 +141,14 @@ LRESULT CALLBACK ForestPearlEngine::WndProc(HWND hWnd, UINT message, WPARAM wPar
     switch (message)
     {
     case WM_INPUT:
+        //MCLOG(LogMC, "");
         FPInputSystem::GetInputSystem().HandleRawInput(lParam);
         return DefWindowProc(hWnd, message, wParam, lParam);
         break;
 
-    case WM_KEYDOWN:
-    {
-
-    }break;
+    case WM_ACTIVATE:
+        FPInputSystem::GetInputSystem().ResetKeyStates();
+        break;
 
     case WM_QUIT:
     case WM_DESTROY:

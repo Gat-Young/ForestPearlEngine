@@ -1,7 +1,5 @@
 #include "InputComponent.h"
 #include "InputAction.h"
-#include "../../Systems/InputSystem.h"
-#include <iostream>
 
 FPInputComponent::FPInputComponent()
 {
@@ -40,15 +38,15 @@ void FPInputComponent::ProcessInputTick()
 		InputQueue.pop();
 	}
 
-	for (USHORT Key : PressedKeys)
-	{
-		if (GetAsyncKeyState(Key) & 0x8000)
-		{
-			FInputValue InputValue = { 1.0f, 0.0f, 0.0f, true, 1.0f };
-			FKeyInputInfo PressedKeyEvent = { Key, EKeyState::Pressed, InputValue };
-			ProcessKeyEvent(PressedKeyEvent);
-		}
-	}
+	//for (USHORT Key : FPInputSystem::GetInputSystem().GetPressedKeys())
+	//{
+	//	if (GetAsyncKeyState(Key) & 0x8000)
+	//	{
+	//		FInputValue InputValue = { 1.0f, 0.0f, 0.0f, true, 1.0f };
+	//		FKeyInputInfo PressedKeyEvent = { Key, EKeyState::Pressed, InputValue };
+	//		ProcessKeyEvent(PressedKeyEvent);
+	//	}
+	//}
 }
 
 bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)

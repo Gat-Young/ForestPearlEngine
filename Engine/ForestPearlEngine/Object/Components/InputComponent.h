@@ -1,13 +1,13 @@
 #pragma once
 #include <vector>
 #include <functional>
-#include <set>
+#include "../../MCLOG.h"
+#include "Windows.h"
 #include "InputMappingContext.h"
 #include "InputAction.h"
 #include "../../Systems/KeyStateEnum.h"
 #include "../../Define/FPMath.h"
-#include "Windows.h"
-#include <iostream>
+#include "../../Systems/InputSystem.h"
 #include "../../InputValue.h"
 
 class FPInputComponent
@@ -34,11 +34,11 @@ public:
 			{
 				if (IMC == nullptr)
 				{
-					std::cout << "[FPInputComponent::BindMethod] IMC == nullptr\n";
+					MCLOG(ErrorMC, "[FPInputComponent::BindMethod] IMC == nullptr");
 				}
 				else
 				{
-					IMC->GetMappedKeys(IAName, PressedKeys);
+					IMC->GetMappedKeys(IAName, FPInputSystem::GetInputSystem().GetCheckPressedKeys());
 					//std::cout << "[FPInputComponent::BindMethod] Bind Completed!\n";
 				}
 			}
@@ -68,6 +68,6 @@ private:
 
 	std::map<std::string, FPInputAction*> ActivatedIA;
 
-	std::set<USHORT> PressedKeys;
+	//std::set<USHORT> PressedKeys;
 };
 

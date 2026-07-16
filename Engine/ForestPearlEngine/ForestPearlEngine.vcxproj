@@ -152,6 +152,7 @@
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="GizmoComponent.h" />
     <ClInclude Include="GizmoRenderList.h" />
+    <ClInclude Include="MCLOG.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="MeshRenderList.h" />
     <ClInclude Include="Object\Actor.h" />

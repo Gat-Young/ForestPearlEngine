@@ -153,6 +153,9 @@
     <ClInclude Include="CameraComponent.h">
       <Filter>Component</Filter>
     </ClInclude>
+    <ClInclude Include="MCLOG.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">

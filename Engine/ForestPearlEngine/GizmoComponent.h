@@ -2,15 +2,9 @@
 #include "GizmoRenderList.h"
 #include <vector>
 
-#define COLOR_ARGB(a,r,g,b) \
-   ((unsigned long)((((unsigned long)((a) * 255.0f) & 0xff) << 24) | \
-                     (((unsigned long)((r) * 255.0f) & 0xff) << 16) | \
-                     (((unsigned long)((g) * 255.0f) & 0xff) << 8)  | \
-                     (((unsigned long)((b) * 255.0f) & 0xff))))
-
-struct GIZMO_COLVTX {
-	FPVector3		vPos;
-	unsigned long	Color;
+struct GIZMO_VERTEX {
+	float		x, y, z;
+	float		r, g, b, a;
 };
 
 struct GRIDINFO {

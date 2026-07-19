@@ -1,7 +1,7 @@
 #include "GizmoComponent.h"
 #include "AssetManager.h"
 
-int GizmoComponent::MakeVertexVuffer(std::vector<GIZMO_COLVTX> GizmoMesh)
+int GizmoComponent::MakeVertexVuffer(std::vector<GIZMO_VERTEX> GizmoMesh)
 {
 	std::vector<FPMesh> Vertex;
 
@@ -23,7 +23,7 @@ void GizmoComponent::MakeGrid(GRIDINFO* grid)
 	int ycnt = (grid->width / (int)grid->scale) + 1;
 	int vtxcnt = (xcnt + ycnt) * 2;									//정점개수.
 
-	GizmoDatas.resize(sizeof(GIZMO_COLVTX) * vtxcnt);
+	GizmoDatas.resize(sizeof(GIZMO_VERTEX) * vtxcnt);
 
 	//그리드 시작 위치. (기본. 원점(0,0,0))
 	float hx = (grid->width * 0.5f);
@@ -36,11 +36,23 @@ void GizmoComponent::MakeGrid(GRIDINFO* grid)
 		float sx = -hx;
 		float sz = hy - i * grid->scale;		//위에서 아래로 내려옵니다.(+Z --> -Z)
 
-		GizmoDatas[k].vPos = FPVector3{ sx, 0.0f, sz };
-		GizmoDatas[k + 1].vPos = FPVector3{ sx + grid->width, 0.0f, sz };
+		GizmoDatas[k].x = sx;
+		GizmoDatas[k].y = 0.0f;
+		GizmoDatas[k].z = sz;
 
-		GizmoDatas[k].Color = (unsigned long)(xcnt / 2 == i) ? COLOR_ARGB(1, 0, 0, 0) : grid->color;
-		GizmoDatas[k + 1].Color = (unsigned long)(xcnt / 2 == i) ? COLOR_ARGB(1, 0, 0, 0) : grid->color;
+		GizmoDatas[k + 1].x = sx + grid->width;
+		GizmoDatas[k + 1].y = 0.0f;
+		GizmoDatas[k + 1].z = sz;
+
+		GizmoDatas[k].r = (unsigned long)(xcnt / 2 == i) ? 0 : grid->r;
+		GizmoDatas[k].g = (unsigned long)(xcnt / 2 == i) ? 0 : grid->g;
+		GizmoDatas[k].b = (unsigned long)(xcnt / 2 == i) ? 0 : grid->b;
+		GizmoDatas[k].a = (unsigned long)(xcnt / 2 == i) ? 1 : grid->a;
+
+		GizmoDatas[k+1].r = (unsigned long)(xcnt / 2 == i) ? 0 : grid->r;
+		GizmoDatas[k+1].g = (unsigned long)(xcnt / 2 == i) ? 0 : grid->g;
+		GizmoDatas[k+1].b = (unsigned long)(xcnt / 2 == i) ? 0 : grid->b;
+		GizmoDatas[k+1].a = (unsigned long)(xcnt / 2 == i) ? 1 : grid->a;
 	}
 
 	//z 축 라인 생성
@@ -49,11 +61,23 @@ void GizmoComponent::MakeGrid(GRIDINFO* grid)
 		float sx = -hx + j * grid->scale;		//왼쪽에서 오른쪽으로..(-X --> +X)
 		float sz = hy;
 
-		GizmoDatas[k].vPos = FPVector3{ sx, 0.0f, sz };
-		GizmoDatas[k + 1].vPos = FPVector3{ sx, 0.0f, sz - grid->height };
+		GizmoDatas[k].x = sx;
+		GizmoDatas[k].y = 0.0f;
+		GizmoDatas[k].z = sz;
 
-		GizmoDatas[k].Color = (unsigned)(ycnt / 2 == j) ? COLOR_ARGB(1, 0, 0, 0) : grid->color;
-		GizmoDatas[k + 1].Color = (unsigned)(ycnt / 2 == j) ? COLOR_ARGB(1, 0, 0, 0) : grid->color;
+		GizmoDatas[k + 1].x = sx;
+		GizmoDatas[k + 1].y = 0.0f;
+		GizmoDatas[k + 1].z = sz - grid->height;
+
+		GizmoDatas[k].r = (unsigned long)(ycnt / 2 == j) ? 0 : grid->r;
+		GizmoDatas[k].g = (unsigned long)(ycnt / 2 == j) ? 0 : grid->g;
+		GizmoDatas[k].b = (unsigned long)(ycnt / 2 == j) ? 0 : grid->b;
+		GizmoDatas[k].a = (unsigned long)(ycnt / 2 == j) ? 1 : grid->a;
+
+		GizmoDatas[k + 1].r = (unsigned long)(ycnt / 2 == j) ? 0 : grid->r;
+		GizmoDatas[k + 1].g = (unsigned long)(ycnt / 2 == j) ? 0 : grid->g;
+		GizmoDatas[k + 1].b = (unsigned long)(ycnt / 2 == j) ? 0 : grid->b;
+		GizmoDatas[k + 1].a = (unsigned long)(ycnt / 2 == j) ? 1 : grid->a;
 	}
 
 	//전체 라인개수.

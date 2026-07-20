@@ -32,7 +32,7 @@ class AssetManager
 			return Instance;
 		}
 
-		std::pair<int, int> LordVertexVuffer(std::string MeshPath);
+		std::pair<int, int> LordVertexBuffer(std::string MeshPath);
 
-		int MakeVertexVuffer(std::vector<FPMesh> Mesh);
+		int MakeVertexBuffer(std::vector<FPMesh> Mesh);
 };

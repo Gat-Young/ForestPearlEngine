@@ -648,9 +648,10 @@ void RenderingDevice::IASetInputLayout(void* InputLayout)
 	DeviceContext->IASetInputLayout(pInputLayout);
 }
 
-void RenderingDevice::IASetPrimitiveTopology()
+void RenderingDevice::IASetPrimitiveTopology(Topology topo)
 {
-	DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	D3D_PRIMITIVE_TOPOLOGY D3DTopo = topo == TRIANGLE ? D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST : D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+	DeviceContext->IASetPrimitiveTopology(D3DTopo);
 }
 
 //장치 제거

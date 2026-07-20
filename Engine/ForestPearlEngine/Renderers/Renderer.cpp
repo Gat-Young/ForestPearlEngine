@@ -110,6 +110,7 @@ void Renderer::ObjectRendering()
 {
 	ConstBuffer cb;
 
+	//Camera Setting
 	std::vector<CameraItem> CamList = CameraList::Get().GetRenderList();
 	
 	XMMATRIX ViewMatrix = XMMatrixIdentity();
@@ -138,6 +139,11 @@ void Renderer::ObjectRendering()
 	cb.ViewMatrix = ViewMatrix;
 	cb.ProjMatrix = ProjectionMatrix;
 
+
+	//Gizmo Draw
+	GizmoRendering(cb);
+
+	//Object Draw
 	std::vector<MeshRenderItem> RenderList = MeshRenderList::Get().GetRenderList();
 
 	for (MeshRenderItem& RenderItem : RenderList)
@@ -182,14 +188,14 @@ void Renderer::ObjectRendering()
 		Device.IASetInputLayout(RenderItem.VBLayout);
 
 		//기하 위상 구조 설정
-		Device.IASetPrimitiveTopology();
+		Device.IASetPrimitiveTopology(TRIANGLE);
 
 		//정점 버퍼 설정
 		UINT stride = sizeof(VERTEX);
 		UINT offset = 0;
 		Device.IASetVertexBuffers(0, 1, *RenderItem.VBIndex ,&stride, &offset);
 
-		Device.Draw(*RenderItem.FaceSize*3, 0);
+		Device.Draw(*RenderItem.VertexSize, 0);
 	}
 
 }
@@ -245,4 +251,65 @@ void Renderer::FontRelease()
 {
 	SafeDelete(FontBatch);
 	SafeDelete(Font);
+}
+
+void Renderer::GizmoRendering(ConstBuffer& cb)
+{
+	std::vector<GizmoRenderItem> GizmoRenderList = GizmoRenderList::Get().GetRenderList();
+	
+	for (GizmoRenderItem& RenderItem : GizmoRenderList)
+	{
+		if (!(*(RenderItem.Active))) continue;
+		XMMATRIX TransformMatrix = XMMatrixIdentity();
+
+		//스케일 처리
+		XMFLOAT4X4 xmScale;
+		XMStoreFloat4x4(&xmScale, XMMatrixScaling(RenderItem.Scale->x, RenderItem.Scale->y, RenderItem.Scale->z));
+		XMMATRIX Scale = XMLoadFloat4x4(&xmScale);
+
+		//회전 처리
+		XMFLOAT4X4 xmQuaternionRotation;
+		XMVECTOR xmQuaternion = { RenderItem.Rotation->x, RenderItem.Rotation->y, RenderItem.Rotation->z };
+		XMStoreFloat4x4(&xmQuaternionRotation, XMMatrixRotationQuaternion(xmQuaternion));
+		XMMATRIX Rotation = XMLoadFloat4x4(&xmQuaternionRotation);
+
+		//이동 처리
+		XMFLOAT4X4 xmPosition;
+		XMStoreFloat4x4(&xmPosition, XMMatrixTranslation(RenderItem.Location->x, RenderItem.Location->y, RenderItem.Location->z));
+		XMMATRIX Position = XMLoadFloat4x4(&xmPosition);
+
+		//모델링 행렬 SRT
+		TransformMatrix = Scale * Rotation * Position;
+
+		cb.WorldMatrix = TransformMatrix;
+		cb.WVPMatrix = cb.WorldMatrix * cb.ViewMatrix * cb.ProjMatrix;
+
+		//상수 버퍼 갱신
+		Device.UpdateSubresource(0, &cb, 0, 0);
+
+		//렌더링 모드 전환
+		Device.UpdateRSSetState(false, false);
+
+		//Shader 설정
+		Device.VSSetShader(RenderItem.VertexShader);
+		Device.PSSetShader(RenderItem.PixelShader);
+
+		//상수 버퍼 설정
+		Device.VSSetConstantBuffers(0, 1);
+
+		//입력 레이아웃 설정
+		Device.IASetInputLayout(RenderItem.VBLayout);
+
+		//기하 위상 구조 설정
+		Device.IASetPrimitiveTopology(LINE);
+
+		//정점 버퍼 설정
+		UINT stride = sizeof(VERTEX);
+		UINT offset = 0;
+		Device.IASetVertexBuffers(0, 1, *RenderItem.VBIndex, &stride, &offset);
+
+		Device.Draw(*RenderItem.VertexSize, 0);
+	}
+
+
 }

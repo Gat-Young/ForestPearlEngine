@@ -6,6 +6,7 @@
 #include "GameController.h"
 #include "Triangle.h"
 #include "GameCamera.h"
+#include "Grid.h"
 
 void LoadClassRegist()
 {
@@ -16,7 +17,7 @@ void LoadClassRegist()
 	GameProjectClassRegistry::Get().Register<UI>("UI");
 	GameProjectClassRegistry::Get().Register<Triangle>("Triangle");
 	GameProjectClassRegistry::Get().Register<GameCamera>("GameCamera");
-
+	GameProjectClassRegistry::Get().Register<Grid>("Grid");
 }
 
 std::string ReturnStartWorld()

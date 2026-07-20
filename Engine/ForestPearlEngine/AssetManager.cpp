@@ -89,11 +89,11 @@ AssetManager::AssetManager()
 	DummyMesh["Triangle4"].push_back({ 10.0f, 0.0f, 0.0f,  0, 0, 1, 1 });		//v2, Blue ★
 }
 
-std::pair<int, int> AssetManager::LordVertexVuffer(std::string MeshPath)
+std::pair<int, int> AssetManager::LordVertexBuffer(std::string MeshPath)
 {
 	if (MeshMap.count(MeshPath) > 0)
 	{
-		return { MeshMap[MeshPath], DummyMesh[MeshPath].size()/3 };
+		return { MeshMap[MeshPath], DummyMesh[MeshPath].size() };
 	}
 
 	//추후 메시 파일 로드로 변경
@@ -101,10 +101,10 @@ std::pair<int, int> AssetManager::LordVertexVuffer(std::string MeshPath)
 
 	MeshMap[MeshPath] = RenderingDevice::GetRenderingDevice().CreateVertexBuffer(ChangeVERTEX(LoadMesh).data(), LoadMesh.size(), sizeof(VERTEX));
 
-	return {MeshMap[MeshPath], LoadMesh.size()/3};
+	return {MeshMap[MeshPath], LoadMesh.size()};
 }
 
-int AssetManager::MakeVertexVuffer(std::vector<FPMesh> Mesh)
+int AssetManager::MakeVertexBuffer(std::vector<FPMesh> Mesh)
 {
 	return RenderingDevice::GetRenderingDevice().CreateVertexBuffer(ChangeVERTEX(Mesh).data(), Mesh.size(), sizeof(VERTEX));
 }

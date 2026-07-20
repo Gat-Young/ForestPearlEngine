@@ -160,9 +160,9 @@ void Legacy_Renderer::ObjectRendering()
 
 		FPRHITRANSFORMMATRIX g_mTM; //변환 행렬
 
-		g_mTM.position_x = RenderItem.Position->x;
-		g_mTM.position_y = RenderItem.Position->y;
-		g_mTM.position_z = RenderItem.Position->z;
+		g_mTM.position_x = RenderItem.Location->x;
+		g_mTM.position_y = RenderItem.Location->y;
+		g_mTM.position_z = RenderItem.Location->z;
 
 		g_mTM.rotation_x = RenderItem.Rotation->x;
 		g_mTM.rotation_y = RenderItem.Rotation->y;
@@ -176,7 +176,7 @@ void Legacy_Renderer::ObjectRendering()
 		FPRenderDevice->SetTransform(FPRHITS_WORLD, &g_mTM);		//★ 
 
 		//기즈모 데이터 그리기
-		FPRenderDevice->DrawPrimitive(FPRHIPT_LINELIST, 0, *(RenderItem.LineCount));    //Face 그리기
+		FPRenderDevice->DrawPrimitive(FPRHIPT_LINELIST, 0, *(RenderItem.VertexSize));    //Face 그리기
 	}
 
 	std::vector<MeshRenderItem> RenderList = MeshRenderList::Get().GetRenderList();
@@ -224,7 +224,7 @@ void Legacy_Renderer::ObjectRendering()
 		FPRenderDevice->SetTransform(FPRHITS_WORLD, &g_mTM);		//★ 
 
 		//기하데이터 그리기
-		FPRenderDevice->DrawPrimitive(FPRHIPT_TRIANGLELIST, 0, *(RenderItem.FaceSize));    //Face 그리기
+		FPRenderDevice->DrawPrimitive(FPRHIPT_TRIANGLELIST, 0, *(RenderItem.VertexSize));    //Face 그리기
 	}
 
 	FPRenderDevice->EndScene();

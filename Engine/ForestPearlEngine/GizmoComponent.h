@@ -1,5 +1,7 @@
 #pragma once
 #include "GizmoRenderList.h"
+#include "FPPrimitiveComponent.h"
+#include "FPMaterial.h"
 #include <vector>
 
 struct GIZMO_VERTEX {
@@ -31,25 +33,26 @@ struct GIZMO_AXISINFO {
 	GIZMO_AXISINFO(float len = 1.0f, float s = 1.0f) :length(len), scale(s), scnX(0), scnY(0) {}
 };
 
-class GizmoComponent
+class GizmoComponent : FPPrimitiveComponent
 {
 	private:
 		std::vector<GIZMO_VERTEX> GizmoDatas;
 		int VBIndex;
-		int LineCount;
-		bool Active;
+		int VertexSize;
+		bool Active = true;
 		GizmoRenderItem* RenderItem = nullptr;
+		FPMaterial* Material = nullptr;
 
-		int MakeVertexVuffer(std::vector<GIZMO_VERTEX> GizmoMesh);
+		int MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh);
 
 	public:
-		GizmoComponent() = default;
+		GizmoComponent(FPActor* Owner);
 		~GizmoComponent();
 
 		void MakeGrid(GRIDINFO* grid);
 		void MakeAxis(GIZMO_AXISINFO* axis);
 
-		void RegistGizmoRenderList(FPVector3* Position, FPVector3* Rotation, FPVector3* Scale);
+		void RegistGizmoRenderList();
 
 		void SetActive(bool Active) { this->Active = Active; }
 };

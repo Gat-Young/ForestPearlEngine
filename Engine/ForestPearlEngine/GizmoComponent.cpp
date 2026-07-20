@@ -1,16 +1,16 @@
 #include "GizmoComponent.h"
 #include "AssetManager.h"
 
-int GizmoComponent::MakeVertexVuffer(std::vector<GIZMO_VERTEX> GizmoMesh)
+int GizmoComponent::MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh)
 {
 	std::vector<FPMesh> Vertex;
 
 	for (int i = 0; i < GizmoMesh.size(); ++i)
 	{
-		//Vertex.push_back(FPMesh{ GizmoMesh[i].vPos.x, GizmoMesh[i].vPos.y, GizmoMesh[i].vPos.z, GizmoMesh[i].Color });
+		Vertex.push_back(FPMesh{ GizmoMesh[i].x, GizmoMesh[i].y, GizmoMesh[i].z, GizmoMesh[i].r, GizmoMesh[i].g, GizmoMesh[i].b, GizmoMesh[i].a});
 	}
 
-	return AssetManager::Get().MakeVertexVuffer(Vertex);
+	return AssetManager::Get().MakeVertexBuffer(Vertex);
 }
 
 void GizmoComponent::MakeGrid(GRIDINFO* grid)
@@ -80,10 +80,10 @@ void GizmoComponent::MakeGrid(GRIDINFO* grid)
 		GizmoDatas[k + 1].a = (unsigned long)(ycnt / 2 == j) ? 1 : grid->a;
 	}
 
-	//전체 라인개수.
-	LineCount = vtxcnt / 2;
+	//정점 개수.
+	VertexSize = vtxcnt;
 
-	VBIndex = MakeVertexVuffer(GizmoDatas);
+	VBIndex = MakeVertexBuffer(GizmoDatas);
 
 	Active = true;
 }
@@ -95,19 +95,35 @@ void GizmoComponent::MakeAxis(GIZMO_AXISINFO* axis)
 
 	//방향 축 문자를 출력 <- DX9이라 GDI로 그려야함 하는 어려움이 있으므로 추후에 구현
 
-	VBIndex = MakeVertexVuffer(GizmoDatas);
+	VBIndex = MakeVertexBuffer(GizmoDatas);
 }
 
-void GizmoComponent::RegistGizmoRenderList(FPVector3* Position, FPVector3* Rotation, FPVector3* Scale)
+void GizmoComponent::RegistGizmoRenderList()
 {
 	RenderItem = GizmoRenderList::Get().RegistRenderList();
 
 	RenderItem->Active = &(this->Active);
 	RenderItem->VBIndex = &(this->VBIndex);
-	RenderItem->LineCount = &(this->LineCount);
-	RenderItem->Position = Position;
-	RenderItem->Rotation = Rotation;
-	RenderItem->Scale = Scale;
+	RenderItem->VertexSize = &(this->VertexSize);
+	RenderItem->Location = &(this->WorldTransform.Location);
+	RenderItem->Rotation = &(this->WorldTransform.QuaternionRotation);
+	RenderItem->Scale = &(this->WorldTransform.Scale);
+	RenderItem->VertexShader = (this->Material->GetVertexShaderPointer());
+	RenderItem->PixelShader = (this->Material->GetPixelShaderPointer());
+	RenderItem->VBLayout = (this->Material->GetVBLayoutPointer());
+}
+
+GizmoComponent::GizmoComponent(FPActor* Owner) : FPPrimitiveComponent(Owner)
+{
+	GRIDINFO grid;
+	grid.width = 100;
+	grid.height = 100;
+
+	MakeGrid(&grid);
+
+	if (Material == nullptr) { Material = new FPMaterial(); }
+
+	RegistGizmoRenderList();
 }
 
 GizmoComponent::~GizmoComponent()

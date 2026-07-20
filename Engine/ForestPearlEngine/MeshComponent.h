@@ -10,7 +10,7 @@ class MeshComponent : FPPrimitiveComponent
 		std::string MeshData;
 
 		int VBIndex;
-		int FaceSize;
+		int VertexSize;
 		bool isFill = true;
 		bool isCull = true;
 		FPMaterial* Material = nullptr;

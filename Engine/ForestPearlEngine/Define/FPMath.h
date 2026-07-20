@@ -1,5 +1,5 @@
 #pragma once
-
+#include <cmath>
 constexpr float PI = 3.14159265358979323846f;
 
 
@@ -69,6 +69,10 @@ struct FPVector3
 		return ret;
 	}
 
+	float LengthSq() const;
+
+	float Length() const;
+
 };
 
 struct FPVector4
@@ -129,6 +133,7 @@ struct FPQuaternion
 };
 
 FPVector3 Rotate(const FPQuaternion& quat, const FPVector3& vec);
+
 
 FPQuaternion Conjugate(const FPQuaternion& quat);
 

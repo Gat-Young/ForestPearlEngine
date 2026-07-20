@@ -119,6 +119,7 @@ void Renderer::ObjectRendering()
 	for (CameraItem& CamItem : CamList)
 	{
 		if (!(*(CamItem.Active))) continue;
+
 		//View За·Д
 		XMFLOAT4X4 xmView;
 		XMVECTOR eye, lookat, up;

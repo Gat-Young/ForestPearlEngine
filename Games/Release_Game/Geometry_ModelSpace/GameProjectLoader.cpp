@@ -7,6 +7,7 @@
 #include "Triangle.h"
 #include "GameCamera.h"
 #include "Grid.h"
+#include "Axis.h"
 
 void LoadClassRegist()
 {
@@ -18,6 +19,7 @@ void LoadClassRegist()
 	GameProjectClassRegistry::Get().Register<Triangle>("Triangle");
 	GameProjectClassRegistry::Get().Register<GameCamera>("GameCamera");
 	GameProjectClassRegistry::Get().Register<Grid>("Grid");
+	GameProjectClassRegistry::Get().Register<Axis>("Axis");
 }
 
 std::string ReturnStartWorld()

@@ -4,7 +4,7 @@
 
 void FPLevel::Initialize()
 {
-	for (std::pair<std::string, std::string> Actor : ActorlList)
+	for (std::pair<std::string, std::string> Actor : ActorList)
 	{
 		//게임에 사용할 엑터를 만든다.
 		GameActorList.push_back(GetWorld()->CreateClassInstnce<FPActor>(Actor.first));

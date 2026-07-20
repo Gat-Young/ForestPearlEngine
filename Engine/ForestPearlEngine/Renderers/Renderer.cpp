@@ -139,7 +139,6 @@ void Renderer::ObjectRendering()
 	cb.ViewMatrix = ViewMatrix;
 	cb.ProjMatrix = ProjectionMatrix;
 
-
 	//Gizmo Draw
 	GizmoRendering(cb);
 

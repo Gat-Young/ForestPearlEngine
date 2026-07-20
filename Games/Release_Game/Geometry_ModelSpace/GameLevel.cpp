@@ -3,10 +3,11 @@
 void GameLevel::Initialize()
 {
 	//{Class name, Instance Name}
-	ActorlList.push_back({ "GameCamera", "MainCamera"});
-	ActorlList.push_back({ "UI", "System UI" });
-	ActorlList.push_back({ "Triangle", "Triangle1" });
-	ActorlList.push_back({ "Grid", "Grid" });
+	ActorList.push_back({ "GameCamera", "MainCamera"});
+	ActorList.push_back({ "UI", "System UI" });
+	ActorList.push_back({ "Triangle", "Triangle1" });
+	ActorList.push_back({ "Grid", "Grid" });
+	ActorList.push_back({ "Axis", "Axis" });
 	__super::Initialize();
 }
 

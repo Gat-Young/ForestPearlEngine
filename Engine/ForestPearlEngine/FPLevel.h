@@ -8,7 +8,7 @@
 class FPLevel : public FPObject
 {
 	protected:
-		std::vector<std::pair<std::string, std::string> > ActorlList;
+		std::vector<std::pair<std::string, std::string> > ActorList;
 		std::vector<FPActor*> GameActorList;
 
 	public:

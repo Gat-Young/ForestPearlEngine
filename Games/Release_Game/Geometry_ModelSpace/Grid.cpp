@@ -12,9 +12,16 @@ void Grid::Initialize()
 	if (Controller == nullptr)
 		return;
 
-	Controller->GetInputComponent().BindMethod("IA_SetGrid", this, EKeyState::Pressed, &Grid::SetActiveViewHelp);
+	Controller->GetInputComponent().BindMethod("IA_SetGrid", this, EKeyState::Down, &Grid::SetActiveViewHelp);
 
 	GridComponets = new GizmoComponent(this);
+
+	//Grid ¸¸µé±â
+	GRIDINFO grid;
+	grid.width = 100;
+	grid.height = 100;
+
+	GridComponets->MakeGrid(&grid);
 
 	SetRootComponent((FPSceneComponent*)GridComponets);
 }

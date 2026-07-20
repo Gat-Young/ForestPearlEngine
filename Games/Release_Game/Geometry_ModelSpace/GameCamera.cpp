@@ -39,10 +39,16 @@ void GameCamera::Tick()
 
 void GameCamera::Move(FInputValue value)
 {
-	std::cout << "CameraMove [ " << GetActorLocation().x << " : " << GetActorLocation().y << " : " << GetActorLocation().z << " ]\n";
+	std::cout << "CameraMove [ " << GetActorRotation().x << " : " << GetActorRotation().y << " : " << GetActorRotation().z << " ]\n";
 	float mov = 10.0f;
 	float move_x = value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
 	float move_y = value.Y * mov * (GetWorld()->GetGameTimer()->DeltaTime());
 
-	RootComponent->SetRelativeRotation(Rotate(FromEuler(RootComponent->GetRelativeRotation()), FPVector3{ move_y, move_x, 0.0f }));
+	FPVector3 currentRotation =
+		RootComponent->GetComponentRotation();
+
+	currentRotation.x += move_y;
+	currentRotation.y += move_x;
+
+	RootComponent->SetWorldRotation(currentRotation);
 }

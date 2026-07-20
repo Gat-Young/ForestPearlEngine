@@ -5,12 +5,15 @@
 struct MeshRenderItem
 {
 	int* VBIndex = nullptr;
-	int* FaceSize = nullptr;
+	int* VertexSize = nullptr;
 	bool* isFill = nullptr;
 	bool* isCull = nullptr;
 	FPVector3* Location = nullptr;
 	FPQuaternion* Rotation = nullptr;
 	FPVector3* Scale = nullptr;
+	void* VertexShader = nullptr;
+	void* PixelShader = nullptr;
+	void* VBLayout = nullptr;
 };
 
 class MeshRenderList

@@ -1,16 +1,16 @@
 #include "GizmoComponent.h"
 #include "AssetManager.h"
 
-int GizmoComponent::MakeVertexVuffer(std::vector<GIZMO_COLVTX> GizmoMesh)
+int GizmoComponent::MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh)
 {
 	std::vector<FPMesh> Vertex;
 
 	for (int i = 0; i < GizmoMesh.size(); ++i)
 	{
-		Vertex.push_back(FPMesh{ GizmoMesh[i].vPos.x, GizmoMesh[i].vPos.y, GizmoMesh[i].vPos.z, GizmoMesh[i].Color });
+		Vertex.push_back(FPMesh{ GizmoMesh[i].x, GizmoMesh[i].y, GizmoMesh[i].z, GizmoMesh[i].r, GizmoMesh[i].g, GizmoMesh[i].b, GizmoMesh[i].a});
 	}
 
-	return AssetManager::Get().MakeVertexVuffer(Vertex);
+	return AssetManager::Get().MakeVertexBuffer(Vertex);
 }
 
 void GizmoComponent::MakeGrid(GRIDINFO* grid)
@@ -23,7 +23,7 @@ void GizmoComponent::MakeGrid(GRIDINFO* grid)
 	int ycnt = (grid->width / (int)grid->scale) + 1;
 	int vtxcnt = (xcnt + ycnt) * 2;									//정점개수.
 
-	GizmoDatas.resize(sizeof(GIZMO_COLVTX) * vtxcnt);
+	GizmoDatas.resize(sizeof(GIZMO_VERTEX) * vtxcnt);
 
 	//그리드 시작 위치. (기본. 원점(0,0,0))
 	float hx = (grid->width * 0.5f);
@@ -36,11 +36,23 @@ void GizmoComponent::MakeGrid(GRIDINFO* grid)
 		float sx = -hx;
 		float sz = hy - i * grid->scale;		//위에서 아래로 내려옵니다.(+Z --> -Z)
 
-		GizmoDatas[k].vPos = FPVector3{ sx, 0.0f, sz };
-		GizmoDatas[k + 1].vPos = FPVector3{ sx + grid->width, 0.0f, sz };
+		GizmoDatas[k].x = sx;
+		GizmoDatas[k].y = 0.0f;
+		GizmoDatas[k].z = sz;
 
-		GizmoDatas[k].Color = (unsigned long)(xcnt / 2 == i) ? COLOR_ARGB(1, 0, 0, 0) : grid->color;
-		GizmoDatas[k + 1].Color = (unsigned long)(xcnt / 2 == i) ? COLOR_ARGB(1, 0, 0, 0) : grid->color;
+		GizmoDatas[k + 1].x = sx + grid->width;
+		GizmoDatas[k + 1].y = 0.0f;
+		GizmoDatas[k + 1].z = sz;
+
+		GizmoDatas[k].r = (unsigned long)(xcnt / 2 == i) ? 0 : grid->r;
+		GizmoDatas[k].g = (unsigned long)(xcnt / 2 == i) ? 0 : grid->g;
+		GizmoDatas[k].b = (unsigned long)(xcnt / 2 == i) ? 0 : grid->b;
+		GizmoDatas[k].a = (unsigned long)(xcnt / 2 == i) ? 1 : grid->a;
+
+		GizmoDatas[k+1].r = (unsigned long)(xcnt / 2 == i) ? 0 : grid->r;
+		GizmoDatas[k+1].g = (unsigned long)(xcnt / 2 == i) ? 0 : grid->g;
+		GizmoDatas[k+1].b = (unsigned long)(xcnt / 2 == i) ? 0 : grid->b;
+		GizmoDatas[k+1].a = (unsigned long)(xcnt / 2 == i) ? 1 : grid->a;
 	}
 
 	//z 축 라인 생성
@@ -49,17 +61,29 @@ void GizmoComponent::MakeGrid(GRIDINFO* grid)
 		float sx = -hx + j * grid->scale;		//왼쪽에서 오른쪽으로..(-X --> +X)
 		float sz = hy;
 
-		GizmoDatas[k].vPos = FPVector3{ sx, 0.0f, sz };
-		GizmoDatas[k + 1].vPos = FPVector3{ sx, 0.0f, sz - grid->height };
+		GizmoDatas[k].x = sx;
+		GizmoDatas[k].y = 0.0f;
+		GizmoDatas[k].z = sz;
 
-		GizmoDatas[k].Color = (unsigned)(ycnt / 2 == j) ? COLOR_ARGB(1, 0, 0, 0) : grid->color;
-		GizmoDatas[k + 1].Color = (unsigned)(ycnt / 2 == j) ? COLOR_ARGB(1, 0, 0, 0) : grid->color;
+		GizmoDatas[k + 1].x = sx;
+		GizmoDatas[k + 1].y = 0.0f;
+		GizmoDatas[k + 1].z = sz - grid->height;
+
+		GizmoDatas[k].r = (unsigned long)(ycnt / 2 == j) ? 0 : grid->r;
+		GizmoDatas[k].g = (unsigned long)(ycnt / 2 == j) ? 0 : grid->g;
+		GizmoDatas[k].b = (unsigned long)(ycnt / 2 == j) ? 0 : grid->b;
+		GizmoDatas[k].a = (unsigned long)(ycnt / 2 == j) ? 1 : grid->a;
+
+		GizmoDatas[k + 1].r = (unsigned long)(ycnt / 2 == j) ? 0 : grid->r;
+		GizmoDatas[k + 1].g = (unsigned long)(ycnt / 2 == j) ? 0 : grid->g;
+		GizmoDatas[k + 1].b = (unsigned long)(ycnt / 2 == j) ? 0 : grid->b;
+		GizmoDatas[k + 1].a = (unsigned long)(ycnt / 2 == j) ? 1 : grid->a;
 	}
 
-	//전체 라인개수.
-	LineCount = vtxcnt / 2;
+	//정점 개수.
+	VertexSize = vtxcnt;
 
-	VBIndex = MakeVertexVuffer(GizmoDatas);
+	VBIndex = MakeVertexBuffer(GizmoDatas);
 
 	Active = true;
 }
@@ -69,21 +93,93 @@ void GizmoComponent::MakeAxis(GIZMO_AXISINFO* axis)
 	//이미 GizmoData가 있는 컴포넌트라면 생성하지 않음
 	if (!GizmoDatas.empty()) return;
 
-	//방향 축 문자를 출력 <- DX9이라 GDI로 그려야함 하는 어려움이 있으므로 추후에 구현
+	//정적 버퍼 생성.
+	int vtxcnt = 6;								//정점개수.
 
-	VBIndex = MakeVertexVuffer(GizmoDatas);
+	GizmoDatas.resize(sizeof(GIZMO_VERTEX) * vtxcnt);
+
+	//x 축 라인 생성.
+	GizmoDatas[0].x = 0.0f;
+	GizmoDatas[0].y = 0.0f;
+	GizmoDatas[0].z = 0.0f;
+	GizmoDatas[0].r = 1.0f;
+	GizmoDatas[0].g = 0.0f;
+	GizmoDatas[0].b = 0.0f;
+	GizmoDatas[0].a = 1.0f;
+
+
+	GizmoDatas[1].x = axis->length * axis->scale;
+	GizmoDatas[1].y = 0.0f;
+	GizmoDatas[1].z = 0.0f;
+	GizmoDatas[1].r = 1.0f;
+	GizmoDatas[1].g = 0.0f;
+	GizmoDatas[1].b = 0.0f;
+	GizmoDatas[1].a = 1.0f;
+
+	//y축 생성
+	GizmoDatas[2].x = 0.0f;
+	GizmoDatas[2].y = 0.0f;
+	GizmoDatas[2].z = 0.0f;
+	GizmoDatas[2].r = 0.0f;
+	GizmoDatas[2].g = 1.0f;
+	GizmoDatas[2].b = 0.0f;
+	GizmoDatas[2].a = 1.0f;
+
+	GizmoDatas[3].x = 0.0f;
+	GizmoDatas[3].y = axis->length * axis->scale;
+	GizmoDatas[3].z = 0.0f;
+	GizmoDatas[3].r = 0.0f;
+	GizmoDatas[3].g = 1.0f;
+	GizmoDatas[3].b = 0.0f;
+	GizmoDatas[3].a = 1.0f;
+
+	//z축 생성
+	GizmoDatas[4].x = 0.0f;
+	GizmoDatas[4].y = 0.0f;
+	GizmoDatas[4].z = 0.0f;
+	GizmoDatas[4].r = 0.0f;
+	GizmoDatas[4].g = 0.0f;
+	GizmoDatas[4].b = 1.0f;
+	GizmoDatas[4].a = 1.0f;
+
+	GizmoDatas[5].x = 0.0f;
+	GizmoDatas[5].y = 0.0f;
+	GizmoDatas[5].z = axis->length * axis->scale;
+	GizmoDatas[5].r = 0.0f;
+	GizmoDatas[5].g = 0.0f;
+	GizmoDatas[5].b = 1.0f;
+	GizmoDatas[5].a = 1.0f;
+
+
+	//정점 개수.
+	VertexSize = vtxcnt;
+
+	Active = true;
+
+	VBIndex = MakeVertexBuffer(GizmoDatas);
 }
 
-void GizmoComponent::RegistGizmoRenderList(FPVector3* Position, FPVector3* Rotation, FPVector3* Scale)
+void GizmoComponent::RegistGizmoRenderList()
 {
 	RenderItem = GizmoRenderList::Get().RegistRenderList();
 
 	RenderItem->Active = &(this->Active);
 	RenderItem->VBIndex = &(this->VBIndex);
-	RenderItem->LineCount = &(this->LineCount);
-	RenderItem->Position = Position;
-	RenderItem->Rotation = Rotation;
-	RenderItem->Scale = Scale;
+	RenderItem->VertexSize = &(this->VertexSize);
+	RenderItem->Location = &(this->WorldTransform.Location);
+	RenderItem->Rotation = &(this->WorldTransform.QuaternionRotation);
+	RenderItem->Scale = &(this->WorldTransform.Scale);
+	RenderItem->VertexShader = (this->Material->GetVertexShaderPointer());
+	RenderItem->PixelShader = (this->Material->GetPixelShaderPointer());
+	RenderItem->VBLayout = (this->Material->GetVBLayoutPointer());
+}
+
+GizmoComponent::GizmoComponent(FPActor* Owner) : FPPrimitiveComponent(Owner)
+{
+	if (Material == nullptr) { Material = new FPMaterial(); }
+
+
+	RegistGizmoRenderList();
 }
 
 GizmoComponent::~GizmoComponent()

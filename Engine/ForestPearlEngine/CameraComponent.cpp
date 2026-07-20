@@ -1,6 +1,11 @@
 #include "CameraComponent.h"
 #include "CameraList.h"
 
+CameraComponent::CameraComponent(FPActor* Owner) : FPPrimitiveComponent(Owner)
+{
+	RegistCamera();
+}
+
 CameraComponent::~CameraComponent()
 {
 	CameraList::Get().UnregistRenderList(CamItem);
@@ -10,9 +15,9 @@ void CameraComponent::RegistCamera()
 {
 	CamItem = CameraList::Get().RegistRenderList();
 
-	CamItem->Position = &(this->Position);
-	CamItem->Rotation = &(this->Rotation);
-	CamItem->Scale = &(this->Scale);
+	CamItem->Location = &(this->WorldTransform.Location);
+	CamItem->Rotation = &(this->WorldTransform.QuaternionRotation);
+	CamItem->Scale = &(this->WorldTransform.Scale);
 
 	CamItem->LookAt = &(this->LookAt);
 	CamItem->Up = &(this->Up);
@@ -23,5 +28,4 @@ void CameraComponent::RegistCamera()
 	CamItem->Zf = &(this->Zf);
 
 	CamItem->Active = &(this->Active);
-
 }

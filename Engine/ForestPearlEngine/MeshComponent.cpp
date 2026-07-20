@@ -5,13 +5,14 @@ MeshComponent::MeshComponent(FPActor* Owner, std::string MeshPath) : FPPrimitive
 {
 	std::pair<int, int> MeshData = LoadVertexBuffer();
 	VBIndex = MeshData.first;
-	FaceSize = MeshData.second;
+	VertexSize = MeshData.second;
+	if (Material == nullptr) { Material = new FPMaterial(); }
 	RegistMeshRenderList();
 }
 
 std::pair<int, int> MeshComponent::LoadVertexBuffer()
 {
-	return AssetManager::Get().LordVertexVuffer(MeshData);
+	return AssetManager::Get().LordVertexBuffer(MeshData);
 }
 
 void MeshComponent::RegistMeshRenderList()
@@ -21,10 +22,13 @@ void MeshComponent::RegistMeshRenderList()
 	RenderItem->VBIndex = &(this->VBIndex);
 	RenderItem->isFill = &(this->isFill);
 	RenderItem->isCull = &(this->isCull);
-	RenderItem->FaceSize = &(this->FaceSize);
+	RenderItem->VertexSize = &(this->VertexSize);
 	RenderItem->Location = &(this->WorldTransform.Location);
 	RenderItem->Rotation = &(this->WorldTransform.QuaternionRotation);
 	RenderItem->Scale = &(this->WorldTransform.Scale);
+	RenderItem->VertexShader = (this->Material->GetVertexShaderPointer());
+	RenderItem->PixelShader = (this->Material->GetPixelShaderPointer());
+	RenderItem->VBLayout = (this->Material->GetVBLayoutPointer());
 }
 
 MeshComponent::~MeshComponent()

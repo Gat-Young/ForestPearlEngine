@@ -1,20 +1,24 @@
 #include "ForestPearlEngine.h"
 #include "../ForestPearlEngine/Object/Object.h"
 #include "../ForestPearlEngine/Object/Actor.h"
+#include "Renderers/RenderingDevice.h"
 #include "Renderers/Renderer.h"
 #include "GameProjectLoader.h"
 #include "AssetManager.h"
 #include "MeshRenderList.h"
 #include "TextRenderList.h"
+#include "GizmoRenderList.h"
+#include "CameraList.h"
 #include "Systems/InputSystem.h"
-#include <iostream>
+//#include <iostream>
+#include "MCLOG.h"
 
 //싱글톤 엔진 객체 가져오기
 ForestPearlEngine& ForestPearlEngine::GetGameEngine()
 {
-    static ForestPearlEngine Singleton;
+    static ForestPearlEngine GameEngineSingleton;
 
-    return Singleton;
+    return GameEngineSingleton;
 }
 
 //엔진 부팅 및 기본 설정 모듈 불러오기
@@ -34,19 +38,21 @@ bool ForestPearlEngine::PreInitialize()
     RegisterFPRawInputDevices();
     FPInputSystem::GetInputSystem();
 
-    //Render 등록
-    Render = new Renderer();
-    Render->InitializeRenderer(32, Hwnd);
-    
-    AssetManager::Get().SetRenderer(Render);
+    // RenderDevice 생성
+    RenderDevice = &RenderingDevice::GetRenderingDevice();
 
+    //Render 등록
+    Render = new Renderer(*RenderDevice);
+    Render->InitializeRenderer(Hwnd);
+    
     GameProjectClassRegistry::Get();
 
     LoadClassRegist();
 
+    GizmoRenderList::Get();
     MeshRenderList::Get();
     TextRenderList::Get();
-
+    CameraList::Get();
     FPGameInstance::Get();
 
     return true;
@@ -71,9 +77,12 @@ void ForestPearlEngine::GameLoop()
             break;
         }
 
+        FPInputSystem::GetInputSystem().TickInputSystem();
+
         FPGameInstance::Get().Tick();
 
         //Rendering
+        Render->ClearBackBuffer();
         Render->ObjectRendering();
         Render->UIRendering();
         Render->RenderTargetPresent();
@@ -91,6 +100,7 @@ void ForestPearlEngine::StopEngine()
 void ForestPearlEngine::Finalize()
 {
     FPGameInstance::Get().Finalize();
+    Render->Finalize();
 }
 
 //윈도우 생성 함수
@@ -133,14 +143,14 @@ LRESULT CALLBACK ForestPearlEngine::WndProc(HWND hWnd, UINT message, WPARAM wPar
     switch (message)
     {
     case WM_INPUT:
+        //MCLOG(LogMC, "");
         FPInputSystem::GetInputSystem().HandleRawInput(lParam);
         return DefWindowProc(hWnd, message, wParam, lParam);
         break;
 
-    case WM_KEYDOWN:
-    {
-
-    }break;
+    case WM_ACTIVATE:
+        FPInputSystem::GetInputSystem().ResetKeyStates();
+        break;
 
     case WM_QUIT:
     case WM_DESTROY:
@@ -196,3 +206,35 @@ void ForestPearlEngine::RegisterFPRawInputDevices()
     RegisterRawInputDevices(rid, 2, sizeof(RAWINPUTDEVICE));
 }
 
+
+
+//렌더러 정보 반환 함수
+const TCHAR* ForestPearlEngine::GetAdapterDescription(int index) { return Render->GetRenderingDevice().GetAdapterDescription(index); }
+UINT ForestPearlEngine::GetAdapterVendorID(int index) { return Render->GetRenderingDevice().GetAdapterVendorID(index); }
+UINT ForestPearlEngine::GetAdapterDeviceID(int index) { return Render->GetRenderingDevice().GetAdapterDeviceID(index); }
+UINT ForestPearlEngine::GetAdapterSubSysID(int index) { return Render->GetRenderingDevice().GetAdapterSubSysID(index); }
+UINT ForestPearlEngine::GetAdapterRevision(int index) { return Render->GetRenderingDevice().GetAdapterRevision(index); }
+SIZE_T ForestPearlEngine::GetAdapterVideoMem(int index) { return Render->GetRenderingDevice().GetAdapterVideoMem(index); }
+SIZE_T ForestPearlEngine::GetAdapterSystemMem(int index) { return Render->GetRenderingDevice().GetAdapterSystemMem(index); }
+SIZE_T ForestPearlEngine::GetAdapterSharedSysMem(int index) { return Render->GetRenderingDevice().GetAdapterSharedSysMem(index); }
+LONG ForestPearlEngine::GetAdapterLuidHighPart(int index) { return Render->GetRenderingDevice().GetAdapterLuidHighPart(index); }
+DWORD ForestPearlEngine::GetAdapterLuidLowPart(int index) { return Render->GetRenderingDevice().GetAdapterLuidLowPart(index); }
+
+//모니터 정보 반환
+const TCHAR* ForestPearlEngine::GetMonitorName(int AdapterIndex, int MonitorIndex) { return Render->GetRenderingDevice().GetMonitorName(AdapterIndex, MonitorIndex); };
+RECT ForestPearlEngine::GetDesktopCoordinates(int AdapterIndex, int MonitorIndex) { return Render->GetRenderingDevice().GetDesktopCoordinates(AdapterIndex, MonitorIndex); };
+
+//VRAM 정보 반환
+double ForestPearlEngine::GetVRAMBudget(int AdapterIndex) { return Render->GetRenderingDevice().GetVRAMBudget(AdapterIndex); }
+double ForestPearlEngine::GetVRAMCurrUsage(int AdapterIndex) { return Render->GetRenderingDevice().GetVRAMCurrUsage(AdapterIndex); }
+double ForestPearlEngine::GetVRAMAvailableForReservation(int AdapterIndex) { return Render->GetRenderingDevice().GetVRAMAvailableForReservation(AdapterIndex); }
+double ForestPearlEngine::GetVRAMCurrReservation(int AdapterIndex) { return Render->GetRenderingDevice().GetVRAMCurrReservation(AdapterIndex); }
+
+//장치 개수 반환
+int ForestPearlEngine::GetAdapterSize() { return Render->GetRenderingDevice().GetAdapterSize(); };
+//장치의 모니터 개수 반환
+int ForestPearlEngine::GetAdapterMonitorSize(int index) { return Render->GetRenderingDevice().GetAdapterMonitorSize(index); };
+
+const TCHAR* ForestPearlEngine::GetSrtFeatureLevel() { return Render->GetRenderingDevice().GetSrtFeatureLevel(); };
+UINT ForestPearlEngine::GetWidth() { return Render->GetRenderingDevice().GetWidth(); };
+UINT ForestPearlEngine::GetHeight() { return Render->GetRenderingDevice().GetHeight(); };

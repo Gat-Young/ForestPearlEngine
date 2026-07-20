@@ -1,7 +1,5 @@
 #include "InputComponent.h"
 #include "InputAction.h"
-#include "../../Systems/InputSystem.h"
-#include <iostream>
 
 FPInputComponent::FPInputComponent()
 {
@@ -40,15 +38,14 @@ void FPInputComponent::ProcessInputTick()
 		InputQueue.pop();
 	}
 
-	//int size = InputQueue.size();
-	//while (size>0)
+	//for (USHORT Key : FPInputSystem::GetInputSystem().GetPressedKeys())
 	//{
-	//	std::pair<USHORT, EKeyState> KeyEvent = InputQueue.front();
-	//	InputQueue.pop();
-	//	//std::cout << KeyEvent.first << " : " << KeyEvent.second << "\n";
-	//	if (!ProcessKeyEvent(KeyEvent.first, KeyEvent.second))
-	//		InputQueue.push(KeyEvent);
-	//	size--;
+	//	if (GetAsyncKeyState(Key) & 0x8000)
+	//	{
+	//		FInputValue InputValue = { 1.0f, 0.0f, 0.0f, true, 1.0f };
+	//		FKeyInputInfo PressedKeyEvent = { Key, EKeyState::Pressed, InputValue };
+	//		ProcessKeyEvent(PressedKeyEvent);
+	//	}
 	//}
 }
 
@@ -63,6 +60,9 @@ bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)
 	std::string IAName;
 	FModifyInfo ModifyInfo;
 	bool SearchResult = IMC->SearchMappingInfo(KeyInputInfo.VKey, IAName, ModifyInfo);
+
+	//std::cout << "VKey : " << KeyInputInfo.VKey << " KeyState : " << KeyInputInfo.KeyState << "\n";
+	//std::cout << "SearchResult IAName : " << IAName << " KeyState : " << KeyInputInfo.KeyState << "\n";
 
 	if (SearchResult == false)
 	{
@@ -83,8 +83,9 @@ bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)
 		EKeyState CallKeyState = BindInfo.CallState;
 		std::function<void(FInputValue)> BindFuncPtr = BindInfo.BindFuncPtr;
 
-		if ((KeyInputInfo.KeyState != CallKeyState) && (CallKeyState != EKeyState::Pressed || KeyInputInfo.KeyState != EKeyState::Down))
+		if (KeyInputInfo.KeyState != CallKeyState)
 		{
+			//std::cout << "Wrong State! : "<< CallKeyState << "\n";
 			continue;
 		}
 

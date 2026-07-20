@@ -1,43 +1,40 @@
 #pragma once
-#include <vector>
-#include "../Object/Actor.h"
-#include "FPRHI/FPRHI.h"
-
-// 정점 포멧(VERTEX FORMAT) 
-struct COLVTX
-{
-	float x, y, z;        //x(pos), y(pos), z(Depth)★
-	DWORD color;
-};
-
-COLVTX MakeCOLVTX(float x, float y, float z, DWORD color);
+#include "RenderingDevice.h"
+#include "../Shader/ShaderFactory.h"
 
 class Renderer
 {
+
 	private:
-		FPRHI* FPRender = nullptr;
-		FPRHIDevice* FPRenderDevice = nullptr;
-		FPRHIDISPLAYMODE FPDisplayMode;
-		std::vector<FPRHIVertexBuffer*> FPVertexBufferList;
-		int VertexBufferSize = -1;
+		RenderingDevice& Device;
 
-		HFONT		g_hSysFont = NULL;
+		//Font
+		SpriteBatch* FontBatch = nullptr;
+		SpriteFont* Font = nullptr;
 
-		// 정점 포멧의 플래그 조합.. 
-		DWORD FVF_COLVTX = (FPRHIFVF_XYZ | FPRHIFVF_DIFFUSE);
+		//셰이더 팩토리
+		ShaderFactory* shaderFactory = nullptr;
 
-		void DrawText(int x, int y, COLORREF color, const TCHAR* msg, ...);
+		//폰트 해제
+		void FontRelease();
+
+		//Gizmo Rendering
+		void GizmoRendering(struct ConstBuffer& cb);
 
 	public:
-		Renderer();
+		Renderer(RenderingDevice& Device);
 
-		HRESULT InitializeRenderer(UINT DeviceVersion, HWND hwnd);
+		void ClearBackBuffer();
 
-		int MakeVB(std::vector<COLVTX> Vertex);
-
-		void ObjectRendering();
-		void UIRendering();
 		void RenderTargetPresent();
 
-};
+		HRESULT InitializeRenderer(HWND hwnd);
 
+		void ObjectRendering();
+
+		void UIRendering();
+
+		HRESULT Finalize();
+
+		RenderingDevice& GetRenderingDevice();
+};

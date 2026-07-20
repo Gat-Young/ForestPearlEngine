@@ -4,12 +4,15 @@
 
 struct  GizmoRenderItem
 {
-	bool* Active;
-	int* VBIndex;
-	int* LineCount;
-	FPVector3* Position;
-	FPVector3* Rotation;
-	FPVector3* Scale;
+	bool* Active = nullptr;
+	int* VBIndex = nullptr;
+	int* VertexSize = nullptr;
+	FPVector3* Location = nullptr;
+	FPQuaternion* Rotation = nullptr;
+	FPVector3* Scale = nullptr;
+	void* VertexShader = nullptr;
+	void* PixelShader = nullptr;
+	void* VBLayout = nullptr;
 };
 
 class GizmoRenderList

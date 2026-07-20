@@ -2,13 +2,14 @@
 #include <string>
 #include "tchar.h"
 #include <vector>
+#include "../../Engine/ForestPearlEngine/Define/FPMath.h"
 
 struct UIContextItem
 {
 	bool** active;
 	int* x;
 	int* y;
-	unsigned long* color;
+	FPVector4* color;
 	std::basic_string<TCHAR>* msg;
 };
 

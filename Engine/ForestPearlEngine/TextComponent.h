@@ -1,22 +1,13 @@
 #pragma once
 #include "TextRenderList.h"
 
-struct UIContext
-{
-	bool active;
-	int x;
-	int y;
-	unsigned long color;
-	std::basic_string<TCHAR> msg;
-};
-
 class TextComponent
 {
 	private:
 		bool* active;
 		int x;
 		int y;
-		unsigned long color;
+		FPVector4 color;
 		std::basic_string<TCHAR> msg;
 		UIContextItem* RenderItem = nullptr;
 
@@ -25,6 +16,6 @@ class TextComponent
 	public:
 		TextComponent();
 
-		void SetTextData(bool* active, int x, int y, unsigned long color, std::basic_string<TCHAR> msg);
+		void SetTextData(bool* active, int x, int y, FPVector4 color, std::basic_string<TCHAR> msg);
 		~TextComponent();
 };

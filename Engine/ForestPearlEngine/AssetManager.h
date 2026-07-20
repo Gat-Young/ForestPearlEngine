@@ -6,17 +6,14 @@
 struct FPMesh
 {
 	FPVector3 vPos;
-	unsigned long color;
+	float r, g, b, a;
 };
 
-
-class Renderer;
-struct COLVTX;
+struct VERTEX;
 
 class AssetManager
 {
 	private:
-		Renderer* FPRenderer;
 		std::unordered_map<std::string, int> MeshMap;
 
 		//Dummy Mesh <- 추후에 로드된 Mesh Data 사용
@@ -25,7 +22,7 @@ class AssetManager
 		AssetManager();
 		~AssetManager() = default;
 
-		std::vector<COLVTX> ChangeCOLVTX(std::vector<FPMesh> Mesh);
+		std::vector<VERTEX> ChangeVERTEX(std::vector<FPMesh> Mesh);
 
 	public:
 		//Single Tone
@@ -35,8 +32,7 @@ class AssetManager
 			return Instance;
 		}
 
-		std::pair<int, int> LordVertexVuffer(std::string MeshPath);
-		void SetRenderer(Renderer* Renderer);
+		std::pair<int, int> LordVertexBuffer(std::string MeshPath);
 
-		int MakeVertexVuffer(std::vector<FPMesh> Mesh);
+		int MakeVertexBuffer(std::vector<FPMesh> Mesh);
 };

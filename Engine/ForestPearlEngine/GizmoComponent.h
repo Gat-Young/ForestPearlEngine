@@ -1,28 +1,23 @@
 #pragma once
 #include "GizmoRenderList.h"
+#include "FPPrimitiveComponent.h"
+#include "FPMaterial.h"
 #include <vector>
 
-#define COLOR_ARGB(a,r,g,b) \
-   ((unsigned long)((((unsigned long)((a) * 255.0f) & 0xff) << 24) | \
-                     (((unsigned long)((r) * 255.0f) & 0xff) << 16) | \
-                     (((unsigned long)((g) * 255.0f) & 0xff) << 8)  | \
-                     (((unsigned long)((b) * 255.0f) & 0xff))))
-
-struct GIZMO_COLVTX {
-	FPVector3		vPos;
-	unsigned long	Color;
+struct GIZMO_VERTEX {
+	float		x, y, z;
+	float		r, g, b, a;
 };
 
 struct GRIDINFO {
 	int width;
 	int height;
 	float scale;
-	unsigned long color;
+	float r, g, b, a;
 	unsigned long res[20];
 
-	GRIDINFO(int w = 100, int h = 100, float s = 1.0f,
-		unsigned long c = COLOR_ARGB(1.0f, 0.3f, 0.3f, 0.3f) )
-		:width(w), height(h), scale(s), color(c) {
+	GRIDINFO(int w = 100, int h = 100, float s = 10.0f, float r = 0.3f , float g = 0.3f, float b=0.3f, float a = 1.0f )
+		:width(w), height(h), scale(s), r(r), g(g), b(b), a(a) {
 	}
 };
 
@@ -31,32 +26,33 @@ struct GIZMO_AXISINFO {
 	//int height;
 	float length;		//각 방향축의 길이.
 	float scale;		//비례 스케일
-	//unsigned long color;
+	float r, g, b, a;
 	int scnX, scnY;		//화면 크기(Viewport 미사용시 적용)
 	unsigned long res[20];
 
-	GIZMO_AXISINFO(float len = 1.0f, float s = 1.0f) :length(len), scale(s), scnX(0), scnY(0) {}
+	GIZMO_AXISINFO(float len = 5.0f, float s = 1.0f) :length(len), scale(s), scnX(0), scnY(0) {}
 };
 
-class GizmoComponent
+class GizmoComponent : FPPrimitiveComponent
 {
 	private:
-		std::vector<GIZMO_COLVTX> GizmoDatas;
+		std::vector<GIZMO_VERTEX> GizmoDatas;
 		int VBIndex;
-		int LineCount;
-		bool Active;
+		int VertexSize;
+		bool Active = true;
 		GizmoRenderItem* RenderItem = nullptr;
+		FPMaterial* Material = nullptr;
 
-		int MakeVertexVuffer(std::vector<GIZMO_COLVTX> GizmoMesh);
+		int MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh);
 
 	public:
-		GizmoComponent() = default;
+		GizmoComponent(FPActor* Owner);
 		~GizmoComponent();
 
 		void MakeGrid(GRIDINFO* grid);
 		void MakeAxis(GIZMO_AXISINFO* axis);
 
-		void RegistGizmoRenderList(FPVector3* Position, FPVector3* Rotation, FPVector3* Scale);
+		void RegistGizmoRenderList();
 
 		void SetActive(bool Active) { this->Active = Active; }
 };

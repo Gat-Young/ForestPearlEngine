@@ -28,6 +28,15 @@
     <Filter Include="Utility">
       <UniqueIdentifier>{484c2692-9984-4b3a-8718-4fdd4e7cce48}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Renderers\Legacy_Renderer">
+      <UniqueIdentifier>{60d0598d-1cb6-4381-8250-61314a79b035}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderers\Shader">
+      <UniqueIdentifier>{c5323eed-f528-466b-bd17-032f5bfda515}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderers\Shader\fx">
+      <UniqueIdentifier>{f6e08996-a72b-46af-9c0e-cfc702c62ccc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -41,9 +50,6 @@
     </ClInclude>
     <ClInclude Include="Object\Object.h">
       <Filter>Object</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderers\Renderer.h">
-      <Filter>Renderers</Filter>
     </ClInclude>
     <ClInclude Include="GameProjectClassRegistry.h">
       <Filter>Header Files</Filter>
@@ -96,9 +102,6 @@
     <ClInclude Include="Object\Components\InputComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CameraComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CameraList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -132,13 +135,31 @@
     <ClInclude Include="Utility\FPGameplayStatics.h">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="Renderers\Legacy_Renderer.h">
+      <Filter>Renderers\Legacy_Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\Renderer.h">
+      <Filter>Renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\RenderingDevice.h">
+      <Filter>Renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="FPMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader\ShaderFactory.h">
+      <Filter>Renderers\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="MCLOG.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderers\Renderer.cpp">
-      <Filter>Renderers</Filter>
     </ClCompile>
     <ClCompile Include="GameProjectClassRegistry.cpp">
       <Filter>Source Files</Filter>
@@ -188,9 +209,6 @@
     <ClCompile Include="CameraList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CameraComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GizmoRenderList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -218,5 +236,28 @@
     <ClCompile Include="Utility\FPGameplayStatics.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="Renderers\Legacy_Renderer.cpp">
+      <Filter>Renderers\Legacy_Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\Renderer.cpp">
+      <Filter>Renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\RenderingDevice.cpp">
+      <Filter>Renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="FPMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader\ShaderFactory.cpp">
+      <Filter>Renderers\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraComponent.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shader\fx\Demo.fx">
+      <Filter>Renderers\Shader\fx</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

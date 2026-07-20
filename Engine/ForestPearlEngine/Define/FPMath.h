@@ -51,6 +51,15 @@ struct FPVector3
 		return ret;
 	}
 
+	FPVector3 operator *(const float& rhs) const
+	{
+		FPVector3 ret;
+		ret.x = x * rhs;
+		ret.y = y * rhs;
+		ret.z = z * rhs;
+		return ret;
+	}
+
 	FPVector3 operator *(const FPVector3& rhs) const
 	{
 		FPVector3 ret;
@@ -68,6 +77,16 @@ struct FPVector4
 	float y = 0;
 	float z = 0;
 	float w = 0;
+
+	FPVector4 operator *(const float& rhs) const
+	{
+		FPVector4 ret;
+		ret.x = x * rhs;
+		ret.y = y * rhs;
+		ret.z = z * rhs;
+		ret.w = w * rhs;
+		return ret;
+	}
 };
 
 struct FPQuaternion

@@ -1,6 +1,5 @@
 ﻿#include "InputSystem.h"
-
-#include <iostream>
+#include "../MCLOG.h"
 #include "../Object/Components/InputMappingContext.h"
 
 FPInputSystem& FPInputSystem::GetInputSystem()
@@ -12,7 +11,7 @@ FPInputSystem& FPInputSystem::GetInputSystem()
 
 void FPInputSystem::HandleRawInput(LPARAM LParam)
 {
-    //std::cout << "HandleRawInput Begin!\n";
+    //MCLOG(LogMC,"");
 
     // 1. 버퍼 크기 조회
     UINT size = 0;
@@ -25,7 +24,7 @@ void FPInputSystem::HandleRawInput(LPARAM LParam)
     );
     if (size == 0)
     {
-        std::cout << "LParam Size is 0!\n";
+        MCLOG(ErrorMC, "LParam Size is 0!");
         return;
     }
 
@@ -34,7 +33,7 @@ void FPInputSystem::HandleRawInput(LPARAM LParam)
     UINT result = GetRawInputData((HRAWINPUT)LParam, RID_INPUT, buffer.data(), &size, sizeof(RAWINPUTHEADER));
     if (result != size)
     {
-        std::cout << "GetRawInputData is diffrent size!\n";
+        MCLOG(ErrorMC, "GetRawInputData is diffrent size!");
         return; // 크기 불일치 — 오류
     }
 
@@ -48,12 +47,39 @@ void FPInputSystem::HandleRawInput(LPARAM LParam)
         break;
         //키보드
     case RIM_TYPEKEYBOARD:
+        //MCLOG(LogMC, "RIM_TYPEKEYBOARD Begin");
         HandleKeyboardInput(raw);
         break;
     default:
-        std::cout << "지원하지 않는 입력!\n";
+        MCLOG(ErrorMC, "지원하지 않는 입력!");
         break;
     }
+}
+
+void FPInputSystem::TickInputSystem()
+{
+    //HWND hwnd = GetActiveWindow();
+    //bool bIsActive = (hwnd == GetForegroundWindow());
+    //if (!bIsActive)
+    //{
+    //    for (bool& AllKeys : KeyStates)
+    //    {
+    //        AllKeys = false;
+    //    }
+    //    return;
+    //}
+
+    for (USHORT Key : CheckPressedKeys)
+    {
+        if (bIsKeyDown(Key))
+        {
+            FInputValue InputValue = { 1.0f, 0.0f, 0.0f, true, 1.0f };
+            FKeyInputInfo PressedKeyEvent = { Key, EKeyState::Pressed, InputValue };
+            InputQueue.push(PressedKeyEvent);
+        }
+    }
+
+    HandleGamepadInput();
 }
 
 bool FPInputSystem::bIsKeyDown(USHORT VKey)
@@ -68,9 +94,17 @@ bool FPInputSystem::bIsKeyDown(USHORT VKey)
     }
 }
 
+void FPInputSystem::ResetKeyStates()
+{
+    for (bool& AllKeys : KeyStates)
+    {
+        AllKeys = false;
+    }
+}
+
 void FPInputSystem::HandleMouseInput(RAWINPUT* RawInput)
 {
-    //std::cout << "HandleMouseInput Begin\n";
+    //MCLOG(LogMC, "");
 
     RAWMOUSE& m = RawInput->data.mouse;
 
@@ -142,7 +176,8 @@ void FPInputSystem::HandleKeyboardInput(RAWINPUT* RawInput)
 
         if (KeyStates[VKey] == true && bIsDown == true)
         {
-            ChangedKeyState = EKeyState::Pressed;
+            //ChangedKeyState = EKeyState::Pressed;
+            return;
         }
         else if (KeyStates[VKey] == false && bIsDown == true)
         {
@@ -159,4 +194,58 @@ void FPInputSystem::HandleKeyboardInput(RAWINPUT* RawInput)
         InputQueue.push(KeyInputInfo);
         KeyStates[VKey] = bIsDown;
     }
+}
+
+void FPInputSystem::HandleGamepadInput()
+{
+    XINPUT_STATE state = {};
+    if (XInputGetState(0, &state) != ERROR_SUCCESS)
+        return;
+
+    // 버튼 처리 (8개 버튼만 우선 예시: A, B, X, Y, LB, RB, Start, Back)
+    struct { WORD Mask; USHORT VKey; } Buttons[] = {
+        { XINPUT_GAMEPAD_A, 0 },
+        { XINPUT_GAMEPAD_B, 1 },
+        { XINPUT_GAMEPAD_X, 2 },
+        { XINPUT_GAMEPAD_Y, 3 },
+        { XINPUT_GAMEPAD_LEFT_SHOULDER, 4 },
+        { XINPUT_GAMEPAD_RIGHT_SHOULDER, 5 },
+        { XINPUT_GAMEPAD_START, 6 },
+        { XINPUT_GAMEPAD_BACK, 7 },
+    };
+
+    for (auto& btn : Buttons)
+    {
+        bool bIsDown = (state.Gamepad.wButtons & btn.Mask) != 0;
+        bool bWasDown = (PrevGamepadState.Gamepad.wButtons & btn.Mask) != 0;
+
+        EKeyState ChangedKeyState = EKeyState::None;
+        if (!bWasDown && bIsDown)
+            ChangedKeyState = EKeyState::Down;
+        else if (bWasDown && !bIsDown)
+            ChangedKeyState = EKeyState::Up;
+        else if (bWasDown && bIsDown)
+            ChangedKeyState = EKeyState::Pressed;
+        else
+            continue;
+
+        FInputValue InputValue = { 1.0f, 0.0f, 0.0f, true, 1.0f };
+        FKeyInputInfo KeyInputInfo = { btn.VKey, ChangedKeyState, InputValue };
+        //MCLOG(LogMC, "VKey : %d", btn.VKey);
+        InputQueue.push(KeyInputInfo);
+    }
+
+    // 왼쪽 스틱 처리
+    float LX = state.Gamepad.sThumbLX / 32767.0f;
+    float LY = state.Gamepad.sThumbLY / 32767.0f;
+
+    if (fabsf(LX) > 0.1f || fabsf(LY) > 0.1f) // 데드존
+    {
+        FInputValue InputValue = { LX, LY, 0.0f, true, 1.0f };
+        FKeyInputInfo KeyInputInfo = { 100, EKeyState::Pressed, InputValue }; // 스틱용 VKey 임시값
+        MCLOG(LogMC, "");
+        InputQueue.push(KeyInputInfo);
+    }
+
+    PrevGamepadState = state;
 }

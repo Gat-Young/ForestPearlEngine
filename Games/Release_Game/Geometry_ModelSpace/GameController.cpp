@@ -14,6 +14,11 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_SetMoveTriangel", 'S', ModifyInfoS);
 	GetInputComponent().AddMappingKey("IA_SetMoveTriangel", 'D', ModifyInfoD);
 
+	GetInputComponent().AddMappingKey("IA_SetMoveCamera", 'I', ModifyInfoW);
+	GetInputComponent().AddMappingKey("IA_SetMoveCamera", 'J', ModifyInfoA);
+	GetInputComponent().AddMappingKey("IA_SetMoveCamera", 'K', ModifyInfoS);
+	GetInputComponent().AddMappingKey("IA_SetMoveCamera", 'L', ModifyInfoD);
+
 	//Game Pad
 	GetInputComponent().AddMappingKey("IA_SetMoveTriangel", 100 , ModifyInfoD);
 

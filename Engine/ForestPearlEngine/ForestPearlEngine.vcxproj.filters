@@ -37,6 +37,12 @@
     <Filter Include="Renderers\Shader\fx">
       <UniqueIdentifier>{f6e08996-a72b-46af-9c0e-cfc702c62ccc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Libraries">
+      <UniqueIdentifier>{1de93f64-28a7-4a2f-949b-f8e1e5af581e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\Ufbx">
+      <UniqueIdentifier>{0044f5b3-411a-4bc8-babb-930125b798a4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -156,6 +162,9 @@
     <ClInclude Include="MCLOG.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Libraries\Ufbx\ufbx.h">
+      <Filter>Libraries\Ufbx</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
@@ -253,6 +262,9 @@
     </ClCompile>
     <ClCompile Include="CameraComponent.cpp">
       <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Libraries\Ufbx\ufbx.c">
+      <Filter>Libraries\Ufbx</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

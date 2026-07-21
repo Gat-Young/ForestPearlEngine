@@ -1,6 +1,7 @@
 #include "AssetManager.h"
 #include "Renderers/RenderingDevice.h"
-
+#include "Libraries/Ufbx/ufbx.h"
+#include <iostream>
 //정점 구조체
 struct VERTEX
 {
@@ -11,6 +12,12 @@ struct VERTEX
 
 AssetManager::AssetManager()
 {
+	ufbx_scene* Scene = ufbx_load_file("../../Engine/ForestPearlengine/Assets/Model/ToonLink/ToonLinkTriangle.fbx", nullptr, nullptr);
+	for (ufbx_node* node : Scene->nodes)
+	{
+		std::cout << node->name.data << "\n";
+	}
+	ufbx_free_scene(Scene);
 	//DummyMesh["Orb"].push_back({ -0.5f, -0.5f, 0.0f, 0xff00f0ff });
 	//DummyMesh["Orb"].push_back({ 0.0f, 0.5f, 0.0f,  0xff44ffae });
 	//DummyMesh["Orb"].push_back({ 0.5f, -0.5f, 0.0f,  0xfffffd71 });

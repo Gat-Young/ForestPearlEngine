@@ -152,6 +152,7 @@
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="GizmoComponent.h" />
     <ClInclude Include="GizmoRenderList.h" />
+    <ClInclude Include="Libraries\Ufbx\ufbx.h" />
     <ClInclude Include="MCLOG.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="MeshRenderList.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="GizmoComponent.cpp" />
     <ClCompile Include="GizmoRenderList.cpp" />
+    <ClCompile Include="Libraries\Ufbx\ufbx.c" />
     <ClCompile Include="MeshComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>

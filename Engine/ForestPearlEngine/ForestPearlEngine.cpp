@@ -49,6 +49,10 @@ bool ForestPearlEngine::PreInitialize()
 
     LoadClassRegist();
 
+    //AssetManager »ý¼º
+    AssetManager::Get();
+    LoadAssets();
+
     GizmoRenderList::Get();
     MeshRenderList::Get();
     TextRenderList::Get();

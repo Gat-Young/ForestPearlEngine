@@ -12,12 +12,6 @@ struct VERTEX
 
 AssetManager::AssetManager()
 {
-	ufbx_scene* Scene = ufbx_load_file("../../Engine/ForestPearlengine/Assets/Model/ToonLink/ToonLinkTriangle.fbx", nullptr, nullptr);
-	for (ufbx_node* node : Scene->nodes)
-	{
-		std::cout << node->name.data << "\n";
-	}
-	ufbx_free_scene(Scene);
 	//DummyMesh["Orb"].push_back({ -0.5f, -0.5f, 0.0f, 0xff00f0ff });
 	//DummyMesh["Orb"].push_back({ 0.0f, 0.5f, 0.0f,  0xff44ffae });
 	//DummyMesh["Orb"].push_back({ 0.5f, -0.5f, 0.0f,  0xfffffd71 });
@@ -114,6 +108,28 @@ std::pair<int, int> AssetManager::LordVertexBuffer(std::string MeshPath)
 int AssetManager::MakeVertexBuffer(std::vector<FPMesh> Mesh)
 {
 	return RenderingDevice::GetRenderingDevice().CreateVertexBuffer(ChangeVERTEX(Mesh).data(), Mesh.size(), sizeof(VERTEX));
+}
+
+void AssetManager::LoadFbxData(std::string FbxPath, std::string FileName)
+{
+	//fbx Load 옵션 설정
+	ufbx_load_opts Opts = {};
+	Opts.target_axes = ufbx_axes_left_handed_y_up;
+	Opts.target_unit_meters = 1.0f;
+
+	ufbx_error Error;
+
+	ufbx_scene* Scene = ufbx_load_file((AssetsPath+FbxPath).c_str(), &Opts, &Error);
+	if (!Scene)
+	{
+		fprintf(stderr, "Failed to load Scene : %s\n", Error.description.data);
+	}
+
+	for (ufbx_node* node : Scene->nodes)
+	{
+		std::cout << node->name.data << "\n";
+	}
+	ufbx_free_scene(Scene);
 }
 
 std::vector<VERTEX> AssetManager::ChangeVERTEX(std::vector<FPMesh> Mesh)

@@ -1,0 +1,34 @@
+#include "ForestPearlEngine/GameProjectLoader.h"
+#include "ForestPearlEngine/AssetManager.h"
+#include "GameWorld.h"
+#include "GameLevel.h"
+#include "UI.h"
+#include "GameMode.h"
+#include "GameController.h"
+#include "Player.h"
+#include "GameCamera.h"
+#include "Grid.h"
+#include "Axis.h"
+
+void LoadClassRegist()
+{
+	GameProjectClassRegistry::Get().Register<GameWorld>("GameWorld");
+	GameProjectClassRegistry::Get().Register<GameLevel>("GameLevel");
+	GameProjectClassRegistry::Get().Register<GameMode>("GameMode");
+	GameProjectClassRegistry::Get().Register<GameController>("GameController");
+	GameProjectClassRegistry::Get().Register<UI>("UI");
+	GameProjectClassRegistry::Get().Register<Player>("Player");
+	GameProjectClassRegistry::Get().Register<GameCamera>("GameCamera");
+	GameProjectClassRegistry::Get().Register<Grid>("Grid");
+	GameProjectClassRegistry::Get().Register<Axis>("Axis");
+}
+
+void LoadAssets()
+{
+	AssetManager::Get().LoadFbxData("Model/ToonLink/ToonLinkTriangle.fbx", "ToonLinkTriangle");
+}
+
+std::string ReturnStartWorld()
+{
+	return "GameWorld";
+}

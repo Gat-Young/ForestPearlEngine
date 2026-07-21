@@ -3,4 +3,6 @@
 
 void LoadClassRegist();
 
+void LoadAssets();
+
 std::string ReturnStartWorld();

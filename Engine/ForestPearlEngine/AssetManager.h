@@ -16,6 +16,8 @@ class AssetManager
 	private:
 		std::unordered_map<std::string, int> MeshMap;
 
+		std::string AssetsPath = "../../Engine/ForestPearlengine/Assets/";
+
 		//Dummy Mesh <- 추후에 로드된 Mesh Data 사용
 		std::unordered_map<std::string, std::vector<FPMesh> > DummyMesh;
 
@@ -35,4 +37,6 @@ class AssetManager
 		std::pair<int, int> LordVertexBuffer(std::string MeshPath);
 
 		int MakeVertexBuffer(std::vector<FPMesh> Mesh);
+
+		void LoadFbxData(std::string FbxPath, std::string FileName);
 };

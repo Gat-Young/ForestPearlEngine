@@ -3,7 +3,7 @@
 #include "../ForestPearlEngine/Define/FPMath.h"
 #include "CameraList.h"
 
-class CameraComponent : FPPrimitiveComponent
+class CameraComponent : public FPPrimitiveComponent
 {
 	public:
 		//카메라 속성

@@ -1,5 +1,4 @@
 #include "FPMath.h"
-#include <cmath>
 
 float DegToRad(float degree)
 {
@@ -17,6 +16,22 @@ float Clamp(float value, float minValue, float maxValue)
 	if (value > maxValue) return maxValue;
 	return value;
 }
+
+///////////////////////////////////////////////////////////////////////
+//
+// FPVector3 수학 함수
+//
+
+float FPVector3::LengthSq() const
+{
+	return x * x + y * y + z * z;
+}
+
+float FPVector3::Length() const
+{
+	return std::sqrt(this->LengthSq());
+}
+
 
 ///////////////////////////////////////////////////////////////////////
 //

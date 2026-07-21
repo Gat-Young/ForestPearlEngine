@@ -16,7 +16,7 @@ FPActor* FPGameplayStatics::GetActorOfClass(FPWorld* World, std::string ClassNam
 
 	for (FPActor* LevelActor : Acotrs)
 	{
-		if (typeid(LevelActor) == typeid(TargetActor))
+		if (typeid(*LevelActor) == typeid(*TargetActor))
 		{
 			return LevelActor;
 		}
@@ -36,7 +36,7 @@ void FPGameplayStatics::GetAllActorsOfClass(FPWorld* World, std::string ClassNam
 
 	for (FPActor* LevelActor : Acotrs)
 	{
-		if (typeid(LevelActor) == typeid(TargetActor))
+		if (typeid(*LevelActor) == typeid(*TargetActor))
 		{
 			OutActors.push_back(LevelActor);
 		}

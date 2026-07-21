@@ -1,6 +1,6 @@
 #pragma once
 #include "ForestPearlEngine/Object/Actor.h"
-
+#include "ForestPearlEngine/Define/FPMath.h"
 class FPInputMappingContext;
 class FPInputAction;
 struct FInputValue;
@@ -11,6 +11,8 @@ class GameCamera : public FPActor
 private:
 	CameraComponent* Camera;
 	FPSceneComponent* Target;
+	//카메라 회전 누적값
+	FPQuaternion CameraRotation;
 
 public:
 	GameCamera() = default;

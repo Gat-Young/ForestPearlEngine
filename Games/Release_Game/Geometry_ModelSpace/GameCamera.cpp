@@ -5,6 +5,7 @@
 #include "ForestPearlEngine/GameTimer.h"
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
 #include "ForestPearlEngine/InputValue.h"
+#include "ForestPearlEngine/Utility/FPGameplayStatics.h"
 #include <iostream>
 
 void GameCamera::Initialize()
@@ -25,6 +26,8 @@ void GameCamera::Initialize()
 
 	Controller->GetInputComponent().BindMethod("IA_SetMoveCamera", this, EKeyState::Pressed, &GameCamera::Move);
 
+	CameraRotation = FPQuaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
+
 
 }
 
@@ -34,21 +37,34 @@ void GameCamera::BeginPlay()
 
 void GameCamera::Tick()
 {
+	FPActor* player = FPGameplayStatics::GetActorOfClass(GetWorld(), "Triangle");
+
+	if (player != nullptr)
+	{
+		SetActorLocation(player->GetActorLocation());
+		Camera->LookAt = Target->GetComponentLocation();
+	}
 	__super::Tick();
 }
 
 void GameCamera::Move(FInputValue value)
 {
+	//std::cout << "CameraMove [ " << Camera->GetComponentRotation().x << " : " << Camera->GetComponentRotation().y << " : " << Camera->GetComponentRotation().z << " ]\n";
 	std::cout << "CameraMove [ " << GetActorRotation().x << " : " << GetActorRotation().y << " : " << GetActorRotation().z << " ]\n";
-	float mov = 10.0f;
+	float mov = 30.0f;
 	float move_x = value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
 	float move_y = value.Y * mov * (GetWorld()->GetGameTimer()->DeltaTime());
 
-	FPVector3 currentRotation =
-		RootComponent->GetComponentRotation();
+	FPQuaternion PitchRotation = AngleAxis(DegToRad(move_y), FPVector3{ 1.0f, 0.0f, 0.0f });
+	FPQuaternion YawRotation = AngleAxis(DegToRad(-move_x), FPVector3{ 0.0f, 1.0f, 0.0f });
 
-	currentRotation.x += move_y;
-	currentRotation.y += move_x;
+	//로컬 x축 회전
+	CameraRotation = (CameraRotation * PitchRotation).Normalize();
 
-	RootComponent->SetWorldRotation(currentRotation);
+	//월드 y축 회전
+	CameraRotation = (YawRotation * CameraRotation).Normalize();
+	Camera->Up = Rotate(CameraRotation, FPVector3{ 0, 1, 0 });
+
+
+	RootComponent->SetWorldRotation(CameraRotation.ToEuler());
 }

@@ -554,7 +554,7 @@ void RenderingDevice::RasterStateCreate()
 	D3D11_RASTERIZER_DESC rd;
 	rd.FillMode = D3D11_FILL_SOLID;		//삼각형 색상 채우기(기본값)
 	rd.CullMode = D3D11_CULL_NONE;		//컬링 없음. (기본값은 컬링 Back)
-	rd.FrontCounterClockwise = false;	//이하 기본값
+	rd.FrontCounterClockwise = true;	//이하 기본값
 	rd.DepthBias = 0;
 	rd.DepthBiasClamp = 0;
 	rd.SlopeScaledDepthBias = 0;

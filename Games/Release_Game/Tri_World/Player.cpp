@@ -9,8 +9,12 @@
 
 void Player::Initialize()
 {
-	Mesh = new MeshComponent(this, "Triangle4");
+	Mesh = new MeshComponent(this, "Model/ToonLink/ToonLinkTriangle.fbx");
+
+	//real Model
+	//Mesh = new MeshComponent(this, "Model/ToonLink/ToonLink.fbx");
 	SetRootComponent((FPSceneComponent*)Mesh);
+	Mesh->SetMeshCull(false);
 	FPAController* Controller = GetWorld()->GetController(0);
 
 	if (Controller == nullptr)

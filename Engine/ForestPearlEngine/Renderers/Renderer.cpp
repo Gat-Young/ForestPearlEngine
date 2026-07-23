@@ -193,9 +193,16 @@ void Renderer::ObjectRendering()
 		//정점 버퍼 설정
 		UINT stride = sizeof(VERTEX);
 		UINT offset = 0;
-		Device.IASetVertexBuffers(0, 1, *RenderItem.VBIndex ,&stride, &offset);
 
-		Device.Draw(*RenderItem.VertexSize, 0);
+		int MeshSize = (RenderItem.VBIndex)->size();
+		std::cout << MeshSize << "\n";
+		for (int i = 0; i < MeshSize; ++i)
+		{
+			Device.IASetVertexBuffers(0, 1, (RenderItem.VBIndex)->at(i), &stride, &offset);
+
+			Device.Draw((RenderItem.VertexSize)->at(i), 0);
+		}
+
 	}
 
 }

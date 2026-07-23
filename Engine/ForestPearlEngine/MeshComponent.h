@@ -9,15 +9,15 @@ class MeshComponent : FPPrimitiveComponent
 	private:
 		std::string MeshData;
 
-		int VBIndex;
-		int VertexSize;
+		std::vector<int> VBIndex;
+		std::vector<int> VertexSize;
 		bool isFill = true;
 		bool isCull = true;
 		FPMaterial* Material = nullptr;
 
 		MeshRenderItem* RenderItem = nullptr;
 
-		std::pair<int, int> LoadVertexBuffer();
+		std::vector<std::pair<int, int> > LoadVertexBuffer(std::string MeshPath);
 		void RegistMeshRenderList();
 
 	public:

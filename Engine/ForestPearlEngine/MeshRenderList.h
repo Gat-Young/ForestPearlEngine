@@ -4,8 +4,8 @@
 
 struct MeshRenderItem
 {
-	int* VBIndex = nullptr;
-	int* VertexSize = nullptr;
+	std::vector<int>* VBIndex = nullptr;
+	std::vector<int>* VertexSize = nullptr;
 	bool* isFill = nullptr;
 	bool* isCull = nullptr;
 	FPVector3* Location = nullptr;

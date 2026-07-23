@@ -3,11 +3,11 @@
 
 int GizmoComponent::MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh)
 {
-	std::vector<FPMesh> Vertex;
+	std::vector<VERTEX> Vertex;
 
 	for (int i = 0; i < GizmoMesh.size(); ++i)
 	{
-		Vertex.push_back(FPMesh{ GizmoMesh[i].x, GizmoMesh[i].y, GizmoMesh[i].z, GizmoMesh[i].r, GizmoMesh[i].g, GizmoMesh[i].b, GizmoMesh[i].a});
+		Vertex.push_back(VERTEX{ GizmoMesh[i].x, GizmoMesh[i].y, GizmoMesh[i].z, GizmoMesh[i].r, GizmoMesh[i].g, GizmoMesh[i].b, GizmoMesh[i].a});
 	}
 
 	return AssetManager::Get().MakeVertexBuffer(Vertex);

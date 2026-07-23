@@ -25,7 +25,8 @@ void LoadClassRegist()
 
 void LoadAssets()
 {
-	AssetManager::Get().LoadFbxData("Model/ToonLink/ToonLinkTriangle.fbx", "ToonLinkTriangle");
+	AssetManager::Get().LoadFbxData("Model/ToonLink/ToonLinkTriangle.fbx");
+	AssetManager::Get().LoadFbxData("Model/ToonLink/ToonLink.fbx");
 }
 
 std::string ReturnStartWorld()

@@ -1,30 +1,37 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include "Libraries/Ufbx/ufbx.h"
 #include "../ForestPearlEngine/Define/FPMath.h"
 
-struct FPMesh
+//정점 구조체
+struct VERTEX
 {
-	FPVector3 vPos;
-	float r, g, b, a;
+	float x, y, z;		//좌표 Position
+	float r, g, b, a;	//색상 Diffuse Color
 };
 
-struct VERTEX;
+//메시 데이터 구조체
+struct FPMeshData
+{
+	std::string Name;
+	std::vector<VERTEX> Vertices;
+};
 
 class AssetManager
 {
 	private:
-		std::unordered_map<std::string, int> MeshMap;
+		std::unordered_map<std::string, std::vector<std::pair<int, int> > > MeshMap;
 
-		std::string AssetsPath = "../../Engine/ForestPearlengine/Assets/";
+		std::string AssetsPath = "../../Engine/ForestPearlEngine/Assets/";
 
-		//Dummy Mesh <- 추후에 로드된 Mesh Data 사용
-		std::unordered_map<std::string, std::vector<FPMesh> > DummyMesh;
+		std::unordered_map<std::string, std::vector<FPMeshData> > LoadedMeshData;
 
 		AssetManager();
 		~AssetManager() = default;
 
-		std::vector<VERTEX> ChangeVERTEX(std::vector<FPMesh> Mesh);
+		std::string ConvertUfbxString(ufbx_string String);
+		FPMeshData ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node* Node);
 
 	public:
 		//Single Tone
@@ -34,9 +41,9 @@ class AssetManager
 			return Instance;
 		}
 
-		std::pair<int, int> LordVertexBuffer(std::string MeshPath);
+		std::vector<std::pair<int, int> > LoadVertexBuffer(std::string MeshPath);
 
-		int MakeVertexBuffer(std::vector<FPMesh> Mesh);
+		int MakeVertexBuffer(std::vector<VERTEX> Mesh);
 
-		void LoadFbxData(std::string FbxPath, std::string FileName);
+		void LoadFbxData(std::string FbxPath);
 };

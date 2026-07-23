@@ -3,16 +3,21 @@
 
 MeshComponent::MeshComponent(FPActor* Owner, std::string MeshPath) : FPPrimitiveComponent(Owner), MeshData(MeshPath)
 {
-	std::pair<int, int> MeshData = LoadVertexBuffer();
-	VBIndex = MeshData.first;
-	VertexSize = MeshData.second;
+	std::vector<std::pair<int, int> > MeshData = LoadVertexBuffer(MeshPath);
+	
+	for (std::pair<int, int> Mesh : MeshData)
+	{
+		VBIndex.push_back(Mesh.first);
+		VertexSize.push_back(Mesh.second);
+	}
+
 	if (Material == nullptr) { Material = new FPMaterial(); }
 	RegistMeshRenderList();
 }
 
-std::pair<int, int> MeshComponent::LoadVertexBuffer()
+std::vector<std::pair<int, int> > MeshComponent::LoadVertexBuffer(std::string MeshPath)
 {
-	return AssetManager::Get().LordVertexBuffer(MeshData);
+	return AssetManager::Get().LoadVertexBuffer(MeshPath);
 }
 
 void MeshComponent::RegistMeshRenderList()

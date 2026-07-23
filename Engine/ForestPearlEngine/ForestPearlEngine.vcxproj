@@ -162,7 +162,6 @@
     <ClInclude Include="Object\Components\InputMappingContext.h" />
     <ClInclude Include="Object\Object.h" />
     <ClInclude Include="Renderers\RenderingDevice.h" />
-    <ClInclude Include="Renderers\Legacy_Renderer.h" />
     <ClInclude Include="Renderers\Renderer.h" />
     <ClInclude Include="Shader\ShaderFactory.h" />
     <ClInclude Include="Systems\InputSystem.h" />
@@ -204,7 +203,6 @@
     <ClCompile Include="Object\Components\InputComponent.cpp" />
     <ClCompile Include="Object\Components\InputMappingContext.cpp" />
     <ClCompile Include="Renderers\RenderingDevice.cpp" />
-    <ClCompile Include="Renderers\Legacy_Renderer.cpp" />
     <ClCompile Include="Renderers\Renderer.cpp" />
     <ClCompile Include="Shader\ShaderFactory.cpp" />
     <ClCompile Include="Systems\InputSystem.cpp" />

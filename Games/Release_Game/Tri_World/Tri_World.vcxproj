@@ -27,6 +27,7 @@
     <ClInclude Include="GameWorld.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Terrain.h" />
     <ClInclude Include="UI.h" />
   </ItemGroup>
   <ItemGroup>
@@ -39,6 +40,7 @@
     <ClCompile Include="GameProjectLoader.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="UI.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -18,8 +18,6 @@ class Renderer
 		//폰트 해제
 		void FontRelease();
 
-		//Gizmo Rendering
-		void GizmoRendering(struct ConstBuffer& cb);
 
 	public:
 		Renderer(RenderingDevice& Device);

@@ -13,7 +13,9 @@ void Player::Initialize()
 
 	//real Model
 	//Mesh = new MeshComponent(this, "Model/ToonLink/ToonLink.fbx");
+
 	SetRootComponent((FPSceneComponent*)Mesh);
+
 	Mesh->SetMeshCull(false);
 	FPAController* Controller = GetWorld()->GetController(0);
 

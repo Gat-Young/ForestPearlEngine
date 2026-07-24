@@ -151,7 +151,6 @@
     <ClInclude Include="GameProjectLoader.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="GizmoComponent.h" />
-    <ClInclude Include="GizmoRenderList.h" />
     <ClInclude Include="Libraries\Ufbx\ufbx.h" />
     <ClInclude Include="MCLOG.h" />
     <ClInclude Include="MeshComponent.h" />
@@ -161,6 +160,7 @@
     <ClInclude Include="Object\Components\InputComponent.h" />
     <ClInclude Include="Object\Components\InputMappingContext.h" />
     <ClInclude Include="Object\Object.h" />
+    <ClInclude Include="Renderers\FPRenderingCommon.h" />
     <ClInclude Include="Renderers\RenderingDevice.h" />
     <ClInclude Include="Renderers\Renderer.h" />
     <ClInclude Include="Shader\ShaderFactory.h" />
@@ -189,7 +189,6 @@
     <ClCompile Include="GameProjectClassRegistry.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="GizmoComponent.cpp" />
-    <ClCompile Include="GizmoRenderList.cpp" />
     <ClCompile Include="Libraries\Ufbx\ufbx.c" />
     <ClCompile Include="MeshComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>

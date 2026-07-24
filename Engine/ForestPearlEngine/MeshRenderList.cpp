@@ -1,18 +1,18 @@
 #include "MeshRenderList.h"
 
-MeshRenderItem* MeshRenderList::RegistRenderList()
+RenderItem* MeshRenderList::RegistRenderList()
 {
-	RenderList.push_back(MeshRenderItem{});
+	RenderList.push_back(RenderItem{});
 
 	return &(RenderList.back());
 }
 
-void MeshRenderList::UnregistRenderList(MeshRenderItem* RenderItem)
+void MeshRenderList::UnregistRenderList(RenderItem* Renderitem)
 {
 	auto it = std::find_if(RenderList.begin(), RenderList.end(), 
-		[RenderItem](MeshRenderItem& item)
+		[Renderitem](RenderItem& item)
 		{
-			return &item == RenderItem;
+			return &item == Renderitem;
 		});
 
 	if (it != RenderList.end())

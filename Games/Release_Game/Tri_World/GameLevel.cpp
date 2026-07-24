@@ -8,6 +8,7 @@ void GameLevel::Initialize()
 	ActorList.push_back({ "Player", "Link" });
 	ActorList.push_back({ "Grid", "Grid" });
 	ActorList.push_back({ "Axis", "Axis" });
+	ActorList.push_back({ "Terrain", "Ground" });
 	__super::Initialize();
 }
 

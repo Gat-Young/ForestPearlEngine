@@ -1,5 +1,5 @@
 #pragma once
-#include "GizmoRenderList.h"
+#include "MeshRenderList.h"
 #include "FPPrimitiveComponent.h"
 #include "FPMaterial.h"
 #include <vector>
@@ -37,12 +37,19 @@ class GizmoComponent : FPPrimitiveComponent
 {
 	private:
 		std::vector<GIZMO_VERTEX> GizmoDatas;
-		int VBIndex;
-		int VertexSize;
-		bool Active = true;
-		GizmoRenderItem* RenderItem = nullptr;
+
+		//값이 클수록 먼저 그려짐(작을 수록 앞으로 그려짐)
+		int Priority = -1;
+		std::vector<int> VBIndex;
+		std::vector<int> VertexSize;
+		bool isFill = false;
+		bool isCull = false;
+		bool isActive = true;
+		Topology Topo = LINELIST;
 		FPMaterial* Material = nullptr;
 
+		RenderItem* RenderItem = nullptr;
+		
 		int MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh);
 
 	public:
@@ -54,5 +61,9 @@ class GizmoComponent : FPPrimitiveComponent
 
 		void RegistGizmoRenderList();
 
-		void SetActive(bool Active) { this->Active = Active; }
+		void SetMeshFill(bool State) { isFill = State; };
+		void SetMeshCull(bool State) { isCull = State; };
+		void SetActive(bool Active) { this->isActive = Active; }
+		void SetTopology(Topology State) { Topo = State; };
+		void SetPriority(int Prio) { Priority = Prio; };
 };

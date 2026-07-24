@@ -16,12 +16,6 @@ using namespace DirectX;
 #include "SpriteBatch.h"
 using namespace DirectX;
 
-enum Topology
-{
-	TRIANGLE,
-	LINE
-};
-
 class RenderingDevice
 {
 	template<typename T>
@@ -201,7 +195,7 @@ class RenderingDevice
 		void IASetInputLayout(void* InputLayout);
 
 		//기하 위상 구조 설정
-		void IASetPrimitiveTopology(Topology topo);
+		void IASetPrimitiveTopology(enum Topology topo);
 
 		//장치 정보 반환 함수
 		const TCHAR* GetAdapterDescription(int index) { return DevInfo[index].AdapterDescription.Description; };

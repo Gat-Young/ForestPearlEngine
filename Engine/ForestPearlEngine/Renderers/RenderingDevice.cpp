@@ -1,4 +1,5 @@
 #include "RenderingDevice.h"
+#include "FPRenderingCommon.h"
 #include <assert.h>
 #include <iostream>
 
@@ -650,7 +651,22 @@ void RenderingDevice::IASetInputLayout(void* InputLayout)
 
 void RenderingDevice::IASetPrimitiveTopology(Topology topo)
 {
-	D3D_PRIMITIVE_TOPOLOGY D3DTopo = topo == TRIANGLE ? D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST : D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+	D3D_PRIMITIVE_TOPOLOGY D3DTopo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	
+	switch (topo)
+	{
+		case TRIANGLELIST:
+			D3DTopo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+			break;
+
+		case TRIANGLESTRIP:
+			D3DTopo = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+			break;
+
+		case LINELIST:
+			D3DTopo = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+			break;
+	}
 	DeviceContext->IASetPrimitiveTopology(D3DTopo);
 }
 

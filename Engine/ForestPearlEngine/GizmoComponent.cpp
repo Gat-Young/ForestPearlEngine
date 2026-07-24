@@ -81,11 +81,11 @@ void GizmoComponent::MakeGrid(GRIDINFO* grid)
 	}
 
 	//정점 개수.
-	VertexSize = vtxcnt;
+	VertexSize.push_back(vtxcnt);
 
-	VBIndex = MakeVertexBuffer(GizmoDatas);
+	VBIndex.push_back(MakeVertexBuffer(GizmoDatas));
 
-	Active = true;
+	isActive = true;
 }
 
 void GizmoComponent::MakeAxis(GIZMO_AXISINFO* axis)
@@ -152,23 +152,27 @@ void GizmoComponent::MakeAxis(GIZMO_AXISINFO* axis)
 
 
 	//정점 개수.
-	VertexSize = vtxcnt;
+	VertexSize.push_back(vtxcnt);
 
-	Active = true;
+	isActive = true;
 
-	VBIndex = MakeVertexBuffer(GizmoDatas);
+	VBIndex.push_back(MakeVertexBuffer(GizmoDatas));
 }
 
 void GizmoComponent::RegistGizmoRenderList()
 {
-	RenderItem = GizmoRenderList::Get().RegistRenderList();
+	RenderItem = MeshRenderList::Get().RegistRenderList();
 
-	RenderItem->Active = &(this->Active);
+	RenderItem->Priority = &(this->Priority);
+	RenderItem->Active = &(this->isActive);
 	RenderItem->VBIndex = &(this->VBIndex);
+	RenderItem->isFill = &(this->isFill);
+	RenderItem->isCull = &(this->isCull);
 	RenderItem->VertexSize = &(this->VertexSize);
 	RenderItem->Location = &(this->WorldTransform.Location);
 	RenderItem->Rotation = &(this->WorldTransform.QuaternionRotation);
 	RenderItem->Scale = &(this->WorldTransform.Scale);
+	RenderItem->Topo = &(this->Topo);
 	RenderItem->VertexShader = (this->Material->GetVertexShaderPointer());
 	RenderItem->PixelShader = (this->Material->GetPixelShaderPointer());
 	RenderItem->VBLayout = (this->Material->GetVBLayoutPointer());
@@ -184,5 +188,5 @@ GizmoComponent::GizmoComponent(FPActor* Owner) : FPPrimitiveComponent(Owner)
 
 GizmoComponent::~GizmoComponent()
 {
-	GizmoRenderList::Get().UnregistRenderList(RenderItem);
+	MeshRenderList::Get().UnregistRenderList(RenderItem);
 }

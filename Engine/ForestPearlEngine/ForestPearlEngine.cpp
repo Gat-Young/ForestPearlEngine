@@ -7,7 +7,6 @@
 #include "AssetManager.h"
 #include "MeshRenderList.h"
 #include "TextRenderList.h"
-#include "GizmoRenderList.h"
 #include "CameraList.h"
 #include "Systems/InputSystem.h"
 //#include <iostream>
@@ -53,7 +52,6 @@ bool ForestPearlEngine::PreInitialize()
     AssetManager::Get();
     LoadAssets();
 
-    GizmoRenderList::Get();
     MeshRenderList::Get();
     TextRenderList::Get();
     CameraList::Get();

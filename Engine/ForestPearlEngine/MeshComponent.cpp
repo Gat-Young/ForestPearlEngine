@@ -24,6 +24,8 @@ void MeshComponent::RegistMeshRenderList()
 {
 	RenderItem = MeshRenderList::Get().RegistRenderList();
 
+	RenderItem->Priority = &(this->Priority);
+	RenderItem->Active = &(this->isActive);
 	RenderItem->VBIndex = &(this->VBIndex);
 	RenderItem->isFill = &(this->isFill);
 	RenderItem->isCull = &(this->isCull);
@@ -31,6 +33,7 @@ void MeshComponent::RegistMeshRenderList()
 	RenderItem->Location = &(this->WorldTransform.Location);
 	RenderItem->Rotation = &(this->WorldTransform.QuaternionRotation);
 	RenderItem->Scale = &(this->WorldTransform.Scale);
+	RenderItem->Topo = &(this->Topo);
 	RenderItem->VertexShader = (this->Material->GetVertexShaderPointer());
 	RenderItem->PixelShader = (this->Material->GetPixelShaderPointer());
 	RenderItem->VBLayout = (this->Material->GetVBLayoutPointer());

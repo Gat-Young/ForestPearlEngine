@@ -1,25 +1,11 @@
 #pragma once
-#include <vector>
-#include "Define/FPMath.h"
+#include "Renderers/FPRenderingCommon.h"
 
-struct MeshRenderItem
-{
-	std::vector<int>* VBIndex = nullptr;
-	std::vector<int>* VertexSize = nullptr;
-	bool* isFill = nullptr;
-	bool* isCull = nullptr;
-	FPVector3* Location = nullptr;
-	FPQuaternion* Rotation = nullptr;
-	FPVector3* Scale = nullptr;
-	void* VertexShader = nullptr;
-	void* PixelShader = nullptr;
-	void* VBLayout = nullptr;
-};
 
 class MeshRenderList
 {
 	private:
-		std::vector<MeshRenderItem> RenderList;
+		std::vector<RenderItem> RenderList;
 
 		MeshRenderList() = default;
 		~MeshRenderList() = default;
@@ -32,10 +18,10 @@ class MeshRenderList
 			return Instance;
 		}
 
-		MeshRenderItem* RegistRenderList();
-		void UnregistRenderList(MeshRenderItem* RenderItem);
+		RenderItem* RegistRenderList();
+		void UnregistRenderList(RenderItem* RenderItem);
 
-		std::vector<MeshRenderItem>& GetRenderList()
+		std::vector<RenderItem>& GetRenderList()
 		{
 			return RenderList;
 		}

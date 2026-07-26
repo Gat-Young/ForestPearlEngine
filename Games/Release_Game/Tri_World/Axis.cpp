@@ -16,11 +16,12 @@ void Axis::Initialize()
 
 	AxisComponets = new GizmoComponent(this);
 
-	//Grid 만들기
+	//Axis 만들기
 	GIZMO_AXISINFO axis;
 
 	AxisComponets->MakeAxis(&axis);
 
+	AxisComponets->SetPriority(0);
 	SetRootComponent((FPSceneComponent*)AxisComponets);
 }
 

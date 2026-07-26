@@ -15,6 +15,9 @@ class Renderer
 		//셰이더 팩토리
 		ShaderFactory* shaderFactory = nullptr;
 
+		//깊이 연산 모드 전환 값
+		bool ZEnable = true;
+
 		//폰트 해제
 		void FontRelease();
 
@@ -35,4 +38,7 @@ class Renderer
 		HRESULT Finalize();
 
 		RenderingDevice& GetRenderingDevice();
+
+		//렌더링 속성 변경
+		void SetZEnable(bool State) { ZEnable = State; };
 };

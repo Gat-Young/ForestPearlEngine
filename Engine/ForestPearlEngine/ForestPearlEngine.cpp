@@ -240,3 +240,5 @@ int ForestPearlEngine::GetAdapterMonitorSize(int index) { return Render->GetRend
 const TCHAR* ForestPearlEngine::GetSrtFeatureLevel() { return Render->GetRenderingDevice().GetSrtFeatureLevel(); };
 UINT ForestPearlEngine::GetWidth() { return Render->GetRenderingDevice().GetWidth(); };
 UINT ForestPearlEngine::GetHeight() { return Render->GetRenderingDevice().GetHeight(); };
+
+void ForestPearlEngine::SetZEnable(bool State) { Render->GetRenderingDevice().OMSetDepthStencilState(State); };

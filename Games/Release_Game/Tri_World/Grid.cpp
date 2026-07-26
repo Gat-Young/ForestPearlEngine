@@ -24,6 +24,8 @@ void Grid::Initialize()
 	GridComponets->MakeGrid(&grid);
 
 	SetRootComponent((FPSceneComponent*)GridComponets);
+
+	GridComponets->SetPriority(0);
 }
 
 void Grid::BeginPlay()

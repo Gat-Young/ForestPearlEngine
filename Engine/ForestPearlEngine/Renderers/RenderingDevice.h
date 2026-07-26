@@ -35,6 +35,7 @@ class RenderingDevice
 		ComPtr<ID3D11Texture2D>			DepthStencilBuffer = NULL;
 		ComPtr<ID3D11DepthStencilView>	DepthStencilBufferView = NULL;
 
+
 		//Rasterizer 상태 객체
 		enum {
 			RS_SOLID,				//기본 렌더링 : 솔리드 Solid
@@ -59,6 +60,17 @@ class RenderingDevice
 
 		//Rasterizer 상태 객체 배열
 		ID3D11RasterizerState* RState[RS_MAX_] = { NULL, };
+
+		//깊이/스텐실 테스트 상태들
+		enum {
+			DS_DEPTH_ON,			//깊이버퍼 ON! (기본값), 스텐실버퍼 off
+			DS_DEPTH_OFF,			//깊이버퍼 OFF
+			DS_DEPTH_WRITE_OFF,		//깊이버퍼 쓰기 끄기
+
+			DS_MAX_,
+		};
+		//깊이/스텐실 버퍼 상태 객체
+		ID3D11DepthStencilState* DSState[DS_MAX_];
 
 		DXGI_MODE_DESC1 DisplayMode;
 
@@ -147,6 +159,12 @@ class RenderingDevice
 
 		//입력 레이아웃 생성
 		HRESULT CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, ID3DBlob* InVSCode, ID3D11InputLayout** ReturnLayout);
+
+		//깊이 스텐실 버퍼 상태객체 생성
+		HRESULT CreateDepthStencilStateCreate();
+
+		//깊이 스텐실 버퍼 상태 설정
+		void OMSetDepthStencilState(bool State);
 
 		//GetDXDevice
 		ID3D11Device* GetDXDevice() { return Device.Get(); };

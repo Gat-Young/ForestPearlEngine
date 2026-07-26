@@ -58,6 +58,9 @@ class ForestPearlEngine
 		UINT GetWidth();
 		UINT GetHeight();
 
+		//깊이 스텐실 버퍼 설정
+		void SetZEnable(bool State);
+
 	private:
 		ForestPearlEngine() = default;
 

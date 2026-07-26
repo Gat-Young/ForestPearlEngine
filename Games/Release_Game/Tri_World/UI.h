@@ -30,41 +30,12 @@ class UI : public FPActor
 		TextComponent* Text8;
 
 		//장치 / GPU 및 시스템 정보 출력
-		TextComponent* SystemText1;
-		TextComponent* SystemText2;
-		TextComponent* SystemText3;
+		TextComponent* SystemTitle;
+		TextComponent* GPUDescriptionText;
+		TextComponent* FeatText;
+		TextComponent* ResText;
 
-		struct MonitorStateText
-		{
-			TextComponent* MonitorNameText;
-			TextComponent* MonitorRectText;
-		};
-
-		struct GPUStateText
-		{
-			TextComponent* GPUNumText;
-			TextComponent* AdapterText;
-			TextComponent* DescriptionText;
-			TextComponent* VendorIDText;
-			TextComponent* DeviceIdText;
-			TextComponent* SubsysIdText;
-			TextComponent* RevisionText;
-			TextComponent* TotalVideoMemText;
-			TextComponent* VideoMemText;
-			TextComponent* SystemMemText;
-			TextComponent* SharedSysMemText;
-			TextComponent* AdapterLuidText;
-
-			TextComponent* VRAMText;
-			TextComponent* VRAMBudgetText;
-			TextComponent* VRAMCurrUsageText;
-			TextComponent* VRAMAvailReservationText;
-			TextComponent* VRAMCurrReservedText;
-
-			std::vector<MonitorStateText> MonitorState;
-		};
-		std::vector<GPUStateText> GPUState;
-
+		bool ZEnable = true;
 
 	public:
 		virtual void Initialize() override;
@@ -77,4 +48,5 @@ class UI : public FPActor
 		void ShowInfo();
 		void SetUIContext(bool* actieve, int x, int y, FPVector4 color, std::basic_string<TCHAR> text);
 		void SetActiveViewHelp(struct FInputValue Value);
+		void SetActiveDepthStencilBuffer(struct FInputValue Value);
 };

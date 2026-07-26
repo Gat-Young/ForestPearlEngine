@@ -396,6 +396,54 @@ HRESULT RenderingDevice::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD N
 	return hr;
 }
 
+HRESULT RenderingDevice::CreateDepthStencilStateCreate()
+{
+
+	HRESULT hr = S_OK;
+
+	//깊이/스텐실 상태 객체 생성 : 출력병합기 Output Merger 상태 조절
+
+	D3D11_DEPTH_STENCIL_DESC Ds;
+	//깊이 버퍼 설정 (기본값)
+	Ds.DepthEnable = TRUE;
+	Ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	Ds.DepthFunc = D3D11_COMPARISON_LESS;
+
+	//스텐실 버퍼 설정 (기본값)
+	Ds.StencilEnable = FALSE;
+
+	//깊이 버퍼 연산 객체들
+
+	//DS 상태 객체 0 : Z-Test On! (기본값)
+	Ds.DepthEnable = TRUE;
+	Ds.StencilEnable = FALSE;
+	Device->CreateDepthStencilState(&Ds, &DSState[DS_DEPTH_ON]);
+
+	//DS 상태 객체 1 : Z-Test Off!
+	Ds.DepthEnable = FALSE;
+	Device->CreateDepthStencilState(&Ds, &DSState[DS_DEPTH_OFF]);
+
+	//DS 상태 객체 2 : Z-Test On + Z-Write OFF
+	//Z-Test가 꺼지면, Z-Write 역시 비활성화
+	Ds.DepthEnable = TRUE;
+	Ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	Device->CreateDepthStencilState(&Ds, &DSState[DS_DEPTH_WRITE_OFF]);
+
+	return hr;
+}
+
+void RenderingDevice::OMSetDepthStencilState(bool State)
+{
+	if (State)
+	{
+		DeviceContext->OMSetDepthStencilState(DSState[DS_DEPTH_ON], 0);
+	}
+	else
+	{
+		DeviceContext->OMSetDepthStencilState(DSState[DS_DEPTH_OFF], 0);
+	}
+}
+
 
 
 //Font Create

@@ -100,6 +100,8 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 	shaderFactory = &ShaderFactory::GetShaderFactory();
 
+	Device.CreateDepthStencilStateCreate();
+
 	Device.RasterStateCreate();
 
 	Device.CreateConstBuffer(sizeof(ConstBuffer));
@@ -109,6 +111,9 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 void Renderer::ObjectRendering()
 {
+	
+	Device.OMSetDepthStencilState(ZEnable);
+
 	ConstBuffer cb;
 
 	//Camera Setting
@@ -150,7 +155,7 @@ void Renderer::ObjectRendering()
 	//Priority 값이 큰 걸 우선해서 그림
 	auto Compare = [](const RenderItem& Left, const RenderItem& Right)
 		{
-			return Left.Priority < Right.Priority;
+			return *(Left.Priority) < *(Right.Priority);
 		};
 
 	std::priority_queue<RenderItem, std::vector<RenderItem>, decltype(Compare)> RenderQueue(Compare);

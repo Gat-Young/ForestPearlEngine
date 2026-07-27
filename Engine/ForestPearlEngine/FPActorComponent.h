@@ -14,9 +14,4 @@ class FPActorComponent : public FPObject
 	public:
 		FPActorComponent(FPActor* Owner) : Owner(Owner) {};
 		FPActor* GetOwner() { return Owner; };
-
-		//추후에 final을 풀고 컴포넌트에 맞게 구현 해줄 것
-		virtual void Initialize() override final {};
-		virtual void BeginPlay() override final {};
-		virtual void Tick() override {} ;
 };

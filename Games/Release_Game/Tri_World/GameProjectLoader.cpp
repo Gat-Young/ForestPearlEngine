@@ -10,6 +10,7 @@
 #include "Grid.h"
 #include "Axis.h"
 #include "Terrain.h"
+#include "Tree.h"
 
 void LoadClassRegist()
 {
@@ -19,6 +20,7 @@ void LoadClassRegist()
 	GameProjectClassRegistry::Get().Register<GameController>("GameController");
 	GameProjectClassRegistry::Get().Register<UI>("UI");
 	GameProjectClassRegistry::Get().Register<Player>("Player");
+	GameProjectClassRegistry::Get().Register<Tree>("Tree");
 	GameProjectClassRegistry::Get().Register<GameCamera>("GameCamera");
 	GameProjectClassRegistry::Get().Register<Grid>("Grid");
 	GameProjectClassRegistry::Get().Register<Axis>("Axis");
@@ -30,6 +32,7 @@ void LoadAssets()
 	AssetManager::Get().LoadFbxData("Model/ToonLink/ToonLinkTriangle.fbx");
 	AssetManager::Get().LoadFbxData("Model/ToonLink/ToonLink.fbx");
 	AssetManager::Get().LoadFbxData("Model/Terrain/Terrain.fbx");
+	AssetManager::Get().LoadFbxData("Model/Tree/Tree.fbx");
 }
 
 std::string ReturnStartWorld()

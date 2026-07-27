@@ -1,26 +1,53 @@
 #pragma once
-#include "GameProjectClassRegistry.h"
-#include "GameTimer.h"
-#include "FPWorld.h"
+#include "Object/Object.h"
+#include <string>
+#include <memory>
 
-class FPGameInstance
+class GameTimer;
+class FPWorld;
+
+class FPGameInstanceSubSystem;
+
+class FPGameInstance : public FPObject
 {
 	private:
-		FPGameInstance() { Gametimer = new GameTimer; };
+		FPGameInstance();
 		~FPGameInstance() = default;
 
 		FPGameInstance(const FPGameInstance&) = delete;
 		FPGameInstance& operator=(const FPGameInstance&) = delete;
 
+		// GamePlay시 하나만 존재해야하는 객체들
+
+		//World
 		struct WorldContext
 		{
 			std::string WorldName = "";
 			std::unique_ptr<FPWorld> World = nullptr;
 		};
-
 		WorldContext GameWorld;
 
-		GameTimer* Gametimer;
+		//GameTimer
+		FPGameInstanceSubSystem* Gametimer;
+
+		//등록된 클래스 모음
+		FPGameInstanceSubSystem* ClassRegister;
+
+		//InputSystem
+		FPGameInstanceSubSystem* InputSystem;
+
+		//AssetManager
+		FPGameInstanceSubSystem* AssetManager;
+
+		//MeshRenderList
+		FPGameInstanceSubSystem* MeshRenderList;
+
+		//TextRenderList
+		FPGameInstanceSubSystem* TextRenderList;
+
+		//CameraList
+		FPGameInstanceSubSystem* CameraList;
+
 
 	public:
 		//Single Tone
@@ -34,9 +61,9 @@ class FPGameInstance
 		void OpenLevel(std::string WorldName);
 
 		//월드 반환
-		FPWorld* GetWorld();
+		FPWorld* GetWorld() override;
 
-		GameTimer* GetGameTimer() { return Gametimer; }
+		GameTimer* GetGameTimer();
 
 		void Initialize();
 		void BeginPlay();

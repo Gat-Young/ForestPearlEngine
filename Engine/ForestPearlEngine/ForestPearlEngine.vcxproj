@@ -140,6 +140,7 @@
     <ClInclude Include="FPActorComponent.h" />
     <ClInclude Include="FPAGameMode.h" />
     <ClInclude Include="FPGameInstance.h" />
+    <ClInclude Include="FPGameInstanceSubSystem.h" />
     <ClInclude Include="FPLevel.h" />
     <ClInclude Include="FPMaterial.h" />
     <ClInclude Include="FPMovementComponent.h" />

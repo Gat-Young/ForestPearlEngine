@@ -9,11 +9,11 @@ class FPActor : public FPObject
 		class FPSceneComponent* RootComponent = nullptr;
 
 	public :
-		virtual void Initialize() override = 0;
-		virtual void BeginPlay() override = 0;
+		virtual void Initialize() = 0;
+		virtual void BeginPlay() = 0;
 
 		//임시로 Component Tick 수행 반드시 __super로 실행 시킬 것
-		virtual void Tick() override;
+		virtual void Tick();
 
 		virtual ~FPActor() = default;
 

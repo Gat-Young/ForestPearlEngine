@@ -28,6 +28,7 @@
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Terrain.h" />
+    <ClInclude Include="Tree.h" />
     <ClInclude Include="UI.h" />
   </ItemGroup>
   <ItemGroup>
@@ -41,7 +42,11 @@
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Terrain.cpp" />
+    <ClCompile Include="Tree.cpp" />
     <ClCompile Include="UI.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Triworld.json" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

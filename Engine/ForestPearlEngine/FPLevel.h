@@ -16,10 +16,10 @@ class FPLevel : public FPObject
 		~FPLevel() = default;
 
 		//상속해서 게임에 사용할 게임 오브젝트들을 만든다.
-		virtual void Initialize() override;
+		virtual void Initialize();
 		//상속 후 반드시 Super 할 것
-		virtual void BeginPlay() override;
-		virtual void Tick() override;
+		virtual void BeginPlay();
+		virtual void Tick();
 
 		//필요한 경우 상속해서 수행
 		virtual void UnLoadData();

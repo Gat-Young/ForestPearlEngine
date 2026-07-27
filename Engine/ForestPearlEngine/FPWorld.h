@@ -32,9 +32,9 @@ class FPWorld : public FPObject
 		~FPWorld() = default;
 
 		//상속 후 Super를 반드시 할 것
-		virtual void Initialize() override;
-		virtual void BeginPlay() override;
-		virtual void Tick() override;
+		virtual void Initialize();
+		virtual void BeginPlay();
+		virtual void Tick();
 
 		//월드 반환
 		virtual FPWorld* GetWorld() override final { return this; };

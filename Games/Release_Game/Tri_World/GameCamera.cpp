@@ -12,7 +12,7 @@ void GameCamera::Initialize()
 {
 	Target = new FPSceneComponent(this);
 	SetRootComponent(Target);
-	SetActorLocation({ 0.0f, 0.0f, -0.0f });
+	SetActorLocation({ 0.0f, 0.0f, 0.0f });
 
 	Camera = new CameraComponent(this);
 

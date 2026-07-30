@@ -35,7 +35,17 @@ class UI : public FPActor
 		FPTextComponent* FeatText;
 		FPTextComponent* ResText;
 
+		FPTextComponent* GridText;
+		FPTextComponent* AxisText;
+		FPTextComponent* CullText;
+		FPTextComponent* DepthText;
+		FPTextComponent* FillText;
+
+		bool GridOn = true;
+		bool AxisOn = true;
 		bool ZEnable = true;
+		bool isCull = true;
+		bool isFill = true;
 
 	public:
 		virtual void Initialize() override;
@@ -49,4 +59,8 @@ class UI : public FPActor
 		void SetUIContext(bool* actieve, int x, int y, FPVector4 color, std::basic_string<TCHAR> text);
 		void SetActiveViewHelp(struct FInputValue Value);
 		void SetActiveDepthStencilBuffer(struct FInputValue Value);
+		void SetGridOn(struct FInputValue Value);
+		void SetAxisOn(struct FInputValue Value);
+		void SetCull(struct FInputValue Value);
+		void SetFill(struct FInputValue Value);
 };

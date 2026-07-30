@@ -17,6 +17,10 @@ void UI::Initialize()
 
 	Controller->GetInputComponent().BindMethod("IA_SetUITriangel", this, EKeyState::Down, &UI::SetActiveViewHelp);
 	Controller->GetInputComponent().BindMethod("IA_SetDepthStencilBuffer", this, EKeyState::Down, &UI::SetActiveDepthStencilBuffer);
+	Controller->GetInputComponent().BindMethod("IA_SetGrid", this, EKeyState::Down, &UI::SetGridOn);
+	Controller->GetInputComponent().BindMethod("IA_SetAxis", this, EKeyState::Down, &UI::SetAxisOn);
+	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &UI::SetFill);
+	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &UI::SetCull);
 
 	SetUIContext(&AlwaysOn, 1, 1, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
 	FPSText = TextComponets.back();
@@ -56,6 +60,21 @@ void UI::Initialize()
 
 	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
 	ResText = TextComponets.back();
+
+	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
+	GridText = TextComponets.back();
+
+	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
+	AxisText = TextComponets.back();
+
+	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
+	CullText = TextComponets.back();
+
+	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
+	DepthText = TextComponets.back();
+
+	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
+	FillText = TextComponets.back();
 }
 
 
@@ -108,8 +127,22 @@ void UI::SystemInfo(int x, int y, FPVector4 col)
 	_stprintf_s(text, _T("Res: %dx%d"), ForestPearlEngine::GetGameEngine().GetWidth(), ForestPearlEngine::GetGameEngine().GetHeight());
 	ResText->SetTextData(&bShow, x, y += 14, col, text);
 
+	y += 14;
+
+	_stprintf_s(text, _T("Grid:F2"));
+	GridText->SetTextData(&bShow, x, y += 14, (GridOn == true) ? col : Col2, text);
+
+	_stprintf_s(text, _T("Axis:F3"));
+	AxisText->SetTextData(&bShow, x, y += 14, (AxisOn == true) ? col : Col2, text);
+
+	_stprintf_s(text, _T("뒷면 제거:F4 (%s)"), ((isCull == true) ? _T("ON") : _T("OFF")));
+	CullText->SetTextData(&bShow, x, y += 14, col, text);
+
 	_stprintf_s(text, _T("깊이테스트:F5 (%s)"), ((ZEnable == true)? _T("ON") : _T("OFF")));
-	ResText->SetTextData(&bShow, x, y += 14, col, text);
+	DepthText->SetTextData(&bShow, x, y += 14, col, text);
+
+	_stprintf_s(text, _T("채우기:SPACE (%s)"), ((isFill == true) ? _T("SOLID") : _T("WIRE")));
+	FillText->SetTextData(&bShow, x, y += 14, col, text);
 
 }
 
@@ -120,21 +153,21 @@ void UI::AdapterInfo(int index, int x, int& y, FPVector4 col)
 
 void UI::ShowInfo()
 {	
-	int x = 300, y = 50;
+	int x = 300, y = 5;
 
 	FPVector4 col = { 1.0f, 1.0f, 1.0f, 1.0f };
 	TCHAR text[1024];
-	_stprintf_s(text, _T("■ %s"), _T("GPU Info"));
+	_stprintf_s(text, _T("■ %s"), _T("Tri World"));
 	Text1->SetTextData(&bShow, x, y, col, text);
 	y += 15;
-	Text2->SetTextData(&bShow, x, y += 15, col, _T("1.기본프레임워크 구축"));
-	Text3->SetTextData(&bShow, x, y += 15, col, _T("2.HW 렌더링 디바이스(DX11 Device)를 생성"));
-	Text4->SetTextData(&bShow, x, y += 15, col, _T("3.Idle 시간 렌더링"));
-	Text5->SetTextData(&bShow, x, y += 15, col, _T("4.스왑체인 Swap(Flipping) chain의 이해"));
-	Text6->SetTextData(&bShow, x, y += 15, col, _T("5.전체화면 또는 창모드 전환 (Alt-Enter)"));
-	Text7->SetTextData(&bShow, x, y += 15, col, _T("6.수직동기화(VSync): 티어링(Tearing), 셔터링(Shuttering) 방지"));
+	Text2->SetTextData(&bShow, x, y += 15, col, _T("1. FBX 파일로 모델링 데이터를 불러와서 사용합니다."));
+	Text3->SetTextData(&bShow, x, y += 15, col, _T("2. 초기 Level(Scene)의 배치 정보를 json 파일로 불러와서 사용합니다."));
+	Text4->SetTextData(&bShow, x, y += 15, col, _T("3. 캐릭터 이동 : WASD, 카메라 이동 : IJKL"));
+	Text5->SetTextData(&bShow, x, y += 15, col, _T("4. 캐릭터 이동과 카메라 이동은 XBox 게임패드 L-Stick과 R-Stick으로도 할 수 있습니다."));
+	Text6->SetTextData(&bShow, x, y += 15, col, _T(""));
+	Text7->SetTextData(&bShow, x, y += 15, col, _T("게임인재원 8기 프로그래밍학과 임백규"));
 
-	Text8->SetTextData(&bShow, x, y += 15, { 1.0f, 0.0f, 0.0f, 1.0f }, _T("7.장치 및 GPU 정보 획득 (DXGI 1.0)"));
+	Text8->SetTextData(&bShow, x, y += 15, { 1.0f, 0.0f, 0.0f, 1.0f }, _T("Havw Fun~"));
 
 	SystemInfo(1, 20, {1.0f, 1.0f, 0.0f, 1.0f});
 }
@@ -159,4 +192,21 @@ void UI::SetActiveDepthStencilBuffer(FInputValue Value)
 	ZEnable = !(ZEnable);
 	ForestPearlEngine::GetGameEngine().SetZEnable(ZEnable);
 	std::cout << ZEnable << "\n";
+}
+
+void UI::SetGridOn(struct FInputValue Value)
+{
+	GridOn = !(GridOn);
+}
+void UI::SetAxisOn(struct FInputValue Value)
+{
+	AxisOn = !(AxisOn);
+}
+void UI::SetCull(struct FInputValue Value)
+{
+	isCull = !(isCull);
+}
+void UI::SetFill(struct FInputValue Value)
+{
+	isFill = !(isFill);
 }

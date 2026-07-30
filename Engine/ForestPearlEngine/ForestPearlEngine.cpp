@@ -20,8 +20,13 @@ ForestPearlEngine& ForestPearlEngine::GetGameEngine()
 //엔진 부팅 및 기본 설정 모듈 불러오기
 bool ForestPearlEngine::PreInitialize()
 {
+    RegistProjectName();
+
+    WinClassName = FPPathManager::Get().StringToWString(FPPathManager::Get().GetProjectName());
+    WinName = FPPathManager::Get().StringToWString(FPPathManager::Get().GetProjectName());
+
     //윈도우 생성
-    Hwnd = CreateFPEWindow(WinClassName, WinName, WinWidth, WinHeight);
+    Hwnd = CreateFPEWindow(WinClassName.c_str(), WinName.c_str(), WinWidth, WinHeight);
 
     if (Hwnd == nullptr)
     {
@@ -29,8 +34,6 @@ bool ForestPearlEngine::PreInitialize()
         system("pause");
         return false;
     }
-
-    RegistProjectName();
 
     // InputSystem 만들기
     RegisterFPRawInputDevices();

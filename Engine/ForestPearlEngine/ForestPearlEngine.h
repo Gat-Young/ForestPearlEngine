@@ -1,6 +1,7 @@
 #pragma once
 #include "framework.h"
 #include <vector>
+#include <string>
 
 class FPObject;
 class FPActor;
@@ -87,8 +88,9 @@ class ForestPearlEngine
 		// 나중에 설정파일 로더로 변경할 것
 		////////////////////////////////
 		// Window Property
-		const wchar_t* WinClassName = L"MyFirstWndGame";
-		const wchar_t* WinName = L"MyFirstWndGame";
+
+		std::wstring WinClassName;
+		std::wstring WinName;
 		const int WinWidth = 960;
 		const int WinHeight = 600;
 

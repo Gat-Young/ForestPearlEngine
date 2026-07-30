@@ -18,9 +18,14 @@ public:
 
     std::string GetAssetRoot() const;
 
+    std::string GetProjectName();
+
+    std::wstring StringToWString(const std::string& String);
+
 private:
     FPPathManager() = default;
 
 private:
     std::filesystem::path AssetRoot;
+    std::string ProjectName;
 };

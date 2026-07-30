@@ -14,7 +14,7 @@ class FPMaterial
 		void* PSCode = nullptr;
 
 		//셰이더 파일 이름
-		const TCHAR* Filename = _T("../../Engine/ForestPearlEngine/Shader/fx/Demo.fx");
+		const TCHAR* Filename;
 
 		//정점 입력구조 Input Layout
 		void* VBLayout = nullptr;

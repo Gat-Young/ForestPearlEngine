@@ -33,8 +33,6 @@ class FPAssetManager : public FPGameInstanceSubSystem
 	private:
 		std::unordered_map<std::string, std::vector<std::pair<int, int> > > MeshMap;
 
-		std::string AssetsPath = "../../Engine/ForestPearlEngine/Assets/";
-
 		std::unordered_map<std::string, std::vector<FPMeshData> > LoadedMeshData;
 
 		std::unordered_map<std::string, std::vector<FPActorData> > LevelData;

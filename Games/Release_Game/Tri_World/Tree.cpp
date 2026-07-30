@@ -7,7 +7,7 @@
 
 void Tree::Initialize()
 {
-	Mesh = new FPMeshComponent(this, "Model/Tree/Tree.fbx");
+	Mesh = new FPMeshComponent(this, "Tree/Tree.fbx");
 
 	SetRootComponent((FPSceneComponent*)Mesh);
 	Mesh->SetMeshCull(false);

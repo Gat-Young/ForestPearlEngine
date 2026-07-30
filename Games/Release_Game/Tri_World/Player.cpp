@@ -9,10 +9,10 @@
 
 void Player::Initialize()
 {
-	Mesh = new FPMeshComponent(this, "Model/ToonLink/ToonLinkTriangle.fbx");
+	Mesh = new FPMeshComponent(this, "ToonLink/ToonLinkTriangle.fbx");
 
 	//real Model
-	//Mesh = new MeshComponent(this, "Model/ToonLink/ToonLink.fbx");
+	//Mesh = new MeshComponent(this, "ToonLink/ToonLink.fbx");
 
 	SetRootComponent((FPSceneComponent*)Mesh);
 

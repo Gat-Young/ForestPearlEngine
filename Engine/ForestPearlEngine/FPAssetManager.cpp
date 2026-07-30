@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include "Libraries/nlohmann/json.hpp"
+#include "Utility/FPPathManager.h"
+
 using json = nlohmann::json;
 
 std::vector<std::pair<int, int> > FPAssetManager::LoadVertexBuffer(std::string MeshPath)
@@ -34,7 +36,9 @@ void FPAssetManager::LoadFbxData(std::string FbxPath)
 	ufbx_error Error;
 
 
-	ufbx_scene* Scene = ufbx_load_file((AssetsPath+FbxPath).c_str(), &Opts, &Error);
+	std::string FilePath = (FPPathManager::Get().GetAssetPath("Model/" + FbxPath));
+
+	ufbx_scene* Scene = ufbx_load_file(FilePath.c_str(), &Opts, &Error);
 	if (!Scene)
 	{
 		fprintf(stderr, "Failed to load Scene : %s\n", Error.description.data);
@@ -77,7 +81,7 @@ void FPAssetManager::LoadLevelData(std::string LevelName, std::string LevelPath)
 		return;
 	}
 
-	std::ifstream File(LevelPath);
+	std::ifstream File(FPPathManager::Get().GetAssetPath("Level/" + LevelPath));
 
 	if (!File.is_open())
 	{

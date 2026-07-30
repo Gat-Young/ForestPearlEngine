@@ -79,7 +79,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Triworld.json">
+    <None Include="Assets\Level\Triworld.json">
       <Filter>Level</Filter>
     </None>
   </ItemGroup>

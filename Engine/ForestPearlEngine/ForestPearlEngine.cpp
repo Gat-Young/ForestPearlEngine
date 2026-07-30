@@ -30,6 +30,8 @@ bool ForestPearlEngine::PreInitialize()
         return false;
     }
 
+    RegistProjectName();
+
     // InputSystem ¸¸µé±â
     RegisterFPRawInputDevices();
 

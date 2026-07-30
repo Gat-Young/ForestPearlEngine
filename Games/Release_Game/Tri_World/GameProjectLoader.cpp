@@ -9,10 +9,15 @@
 #include "Terrain.h"
 #include "Tree.h"
 
+void RegistProjectName()
+{
+	FPPathManager::Get().Initialize("Tri_World");
+}
+
 void LoadLevel()
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-	AssetManager->LoadLevelData("TriWorld", "../../Games/Release_Game/Tri_World/TriWorld.json");
+	AssetManager->LoadLevelData("TriWorld", "TriWorld.json");
 
 }
 
@@ -33,10 +38,10 @@ void LoadClassRegist()
 void LoadAssets()
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-	AssetManager->LoadFbxData("Model/ToonLink/ToonLinkTriangle.fbx");
-	AssetManager->LoadFbxData("Model/ToonLink/ToonLink.fbx");
-	AssetManager->LoadFbxData("Model/Terrain/Terrain.fbx");
-	AssetManager->LoadFbxData("Model/Tree/Tree.fbx");
+	AssetManager->LoadFbxData("ToonLink/ToonLinkTriangle.fbx");
+	AssetManager->LoadFbxData("ToonLink/ToonLink.fbx");
+	AssetManager->LoadFbxData("Terrain/Terrain.fbx");
+	AssetManager->LoadFbxData("Tree/Tree.fbx");
 }
 
 std::string ReturnStartLevel()

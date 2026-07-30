@@ -165,6 +165,9 @@
     <ClInclude Include="FPTextComponent.h">
       <Filter>Component</Filter>
     </ClInclude>
+    <ClInclude Include="Utility\FPPathManager.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
@@ -257,9 +260,12 @@
     <ClCompile Include="FPWorld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Utility\FPPathManager.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shader\fx\Demo.fx">
+    <FxCompile Include="Assets\Shader\Demo.fx">
       <Filter>Renderers\Shader\fx</Filter>
     </FxCompile>
   </ItemGroup>

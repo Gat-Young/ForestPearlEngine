@@ -149,9 +149,6 @@ void Renderer::ObjectRendering()
 	cb.ViewMatrix = ViewMatrix;
 	cb.ProjMatrix = ProjectionMatrix;
 
-	//Gizmo Draw
-	//GizmoRendering(cb);
-
 	//Object Draw
 	FPMeshRenderList* MeshRenderList = static_cast<FPMeshRenderList*>(FPGameInstance::Get().GetMeshRenderList());
 	std::vector<RenderItem> RenderList = MeshRenderList->GetRenderList();
@@ -172,6 +169,12 @@ void Renderer::ObjectRendering()
 	while(!RenderQueue.empty())
 	{
 		const RenderItem& RenderItem = RenderQueue.top();
+
+		if (!(*(RenderItem.Active)))
+		{
+			RenderQueue.pop();
+			continue;
+		}
 		XMMATRIX TransformMatrix = XMMatrixIdentity();
 
 		//胶纳老 贸府
@@ -181,7 +184,7 @@ void Renderer::ObjectRendering()
 
 		//雀傈 贸府
 		XMFLOAT4X4 xmQuaternionRotation;
-		XMVECTOR xmQuaternion = { RenderItem.Rotation->x, RenderItem.Rotation->y, RenderItem.Rotation->z };
+		XMVECTOR xmQuaternion = { RenderItem.Rotation->x, RenderItem.Rotation->y, RenderItem.Rotation->z, RenderItem.Rotation->w };
 		XMStoreFloat4x4(&xmQuaternionRotation, XMMatrixRotationQuaternion(xmQuaternion));
 		XMMATRIX Rotation = XMLoadFloat4x4(&xmQuaternionRotation);
 
@@ -227,7 +230,6 @@ void Renderer::ObjectRendering()
 		}
 
 		RenderQueue.pop();
-
 	}
 
 }

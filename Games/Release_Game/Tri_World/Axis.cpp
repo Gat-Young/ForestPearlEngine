@@ -21,7 +21,7 @@ void Axis::Initialize()
 
 	AxisComponets->MakeAxis(&axis);
 
-	AxisComponets->SetPriority(0);
+
 	SetRootComponent((FPSceneComponent*)AxisComponets);
 }
 
@@ -32,12 +32,12 @@ void Axis::BeginPlay()
 
 void Axis::Tick()
 {
-
+	__super::Tick();
 }
 
 void Axis::SetActiveViewHelp(struct FInputValue Value)
 {
-	std::cout << "F1 : ";
+	std::cout << "F3 : ";
 	bShow = !(bShow);
 	std::cout << bShow << "\n";
 	AxisComponets->SetActive(bShow);

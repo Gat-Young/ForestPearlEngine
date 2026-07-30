@@ -16,7 +16,7 @@ struct GRIDINFO {
 	float r, g, b, a;
 	unsigned long res[20];
 
-	GRIDINFO(int w = 100, int h = 100, float s = 1.0f, float r = 0.3f , float g = 0.3f, float b=0.3f, float a = 1.0f )
+	GRIDINFO(int w = 256, int h = 256, float s = 1.0f, float r = 0.3f , float g = 0.3f, float b=0.3f, float a = 1.0f )
 		:width(w), height(h), scale(s), r(r), g(g), b(b), a(a) {
 	}
 };
@@ -39,7 +39,7 @@ class GizmoComponent : FPPrimitiveComponent
 		std::vector<GIZMO_VERTEX> GizmoDatas;
 
 		//값이 클수록 먼저 그려짐(작을 수록 앞으로 그려짐)
-		int Priority = -1;
+		int Priority = 0;
 		std::vector<int> VBIndex;
 		std::vector<int> VertexSize;
 		bool isFill = false;

@@ -27,12 +27,12 @@
     },
 
     {
-      "class": "Grid",
-      "name": "SystemGrid",
+      "class": "Terrain",
+      "name": "Ground",
       "transform": {
         "location": {
           "x": 0.0,
-          "y": 0.0,
+          "y": -0.5,
           "z": 0.0
         },
 
@@ -43,9 +43,9 @@
         },
 
         "scale": {
-          "x": 1.0,
+          "x": 128.0,
           "y": 1.0,
-          "z": 1.0
+          "z": 128.0
         }
       }
     },
@@ -75,8 +75,8 @@
     },
 
     {
-      "class": "UI",
-      "name": "SystemUI",
+      "class": "Grid",
+      "name": "SystemGrid",
       "transform": {
         "location": {
           "x": 0.0,
@@ -98,13 +98,14 @@
       }
     },
 
+
     {
-      "class": "Terrain",
-      "name": "Ground",
+      "class": "UI",
+      "name": "SystemUI",
       "transform": {
         "location": {
           "x": 0.0,
-          "y": -0.5,
+          "y": 0.0,
           "z": 0.0
         },
 
@@ -115,9 +116,9 @@
         },
 
         "scale": {
-          "x": 128.0,
+          "x": 1.0,
           "y": 1.0,
-          "z": 128.0
+          "z": 1.0
         }
       }
     },

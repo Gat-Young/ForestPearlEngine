@@ -23,7 +23,6 @@ void Player::Initialize()
 		return;
 
 	Controller->GetInputComponent().BindMethod("IA_SetMoveTriangel", this, EKeyState::Pressed, &Player::Move);
-
 	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &Player::SetFillTriangel);
 	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &Player::SetCullTriangle);
 
@@ -52,14 +51,12 @@ void Player::Move(FInputValue Value)
 
 void Player::SetFillTriangel(FInputValue Value)
 {
-	std::cout << "FillMode : " << isFill << "\n";
 	isFill = !isFill;
 	Mesh->SetMeshFill(isFill);
 }
 
 void Player::SetCullTriangle(FInputValue Value)
 {
-	std::cout << "CullMode : " << isCull << "\n";
 	isCull = !isCull;
 	Mesh->SetMeshCull(isCull);
 }

@@ -37,6 +37,8 @@ bool FPActor::SetRootComponent(FPSceneComponent* Component)
 {
     //Default SceneComponent 지우고 설정, 아니라면 교체
     Component->SetWorldLocation(RootComponent->GetComponentLocation());
+    Component->SetWorldRotation(RootComponent->GetComponentRotation());
+    Component->SetWorldScale3D(RootComponent->GetComponentScale());
 
     if (typeid(*RootComponent) == typeid(FPSceneComponent))
     {

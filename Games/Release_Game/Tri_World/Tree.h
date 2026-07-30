@@ -3,6 +3,9 @@
 #include "ForestPearlEngine/Systems/KeyStateEnum.h"
 #include "ForestPearlEngine/Define/FPMath.h"
 
+class FPInputMappingContext;
+class FPInputAction;
+struct FInputValue;
 class FPMeshComponent;
 
 class Tree : public FPActor
@@ -11,9 +14,17 @@ private:
 	FPMeshComponent* Mesh;
 
 
+	bool isFill = true;
+	bool isCull = true;
+
+
+
 public:
 	Tree() = default;
 	virtual void Initialize() override;
 	virtual void BeginPlay() override;
 	virtual void Tick() override;
+
+	void SetFillTriangel(FInputValue Value);
+	void SetCullTriangle(FInputValue Value);
 };

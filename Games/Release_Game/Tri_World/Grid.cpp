@@ -18,14 +18,12 @@ void Grid::Initialize()
 
 	//Grid ¸¸µé±â
 	GRIDINFO grid;
-	grid.width = 100;
-	grid.height = 100;
+	grid.width = 128;
+	grid.height = 128;
 
 	GridComponets->MakeGrid(&grid);
 
 	SetRootComponent((FPSceneComponent*)GridComponets);
-
-	GridComponets->SetPriority(0);
 }
 
 void Grid::BeginPlay()
@@ -35,12 +33,12 @@ void Grid::BeginPlay()
 
 void Grid::Tick()
 {
-
+	__super::Tick();
 }
 
 void Grid::SetActiveViewHelp(struct FInputValue Value)
 {
-	std::cout << "F1 : ";
+	std::cout << "F2 : ";
 	bShow = !(bShow);
 	std::cout << bShow << "\n";
 	GridComponets->SetActive(bShow);

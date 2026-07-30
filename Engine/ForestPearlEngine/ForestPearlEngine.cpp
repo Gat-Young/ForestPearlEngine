@@ -229,4 +229,4 @@ const TCHAR* ForestPearlEngine::GetSrtFeatureLevel() { return Render->GetRenderi
 UINT ForestPearlEngine::GetWidth() { return Render->GetRenderingDevice().GetWidth(); };
 UINT ForestPearlEngine::GetHeight() { return Render->GetRenderingDevice().GetHeight(); };
 
-void ForestPearlEngine::SetZEnable(bool State) { Render->GetRenderingDevice().OMSetDepthStencilState(State); };
+void ForestPearlEngine::SetZEnable(bool State) { Render->SetZEnable(State); };

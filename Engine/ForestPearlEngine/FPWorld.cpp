@@ -79,7 +79,6 @@ void FPWorld::OpenLevel(std::string LevelName)
 		SpawnActor->SetActorLocation({ Data.Location_x,Data.Location_y, Data.Location_z });
 		SpawnActor->SetActorRotation({ Data.Rotation_x, Data.Rotation_y, Data.Rotation_z });
 		SpawnActor->SetActorScale3D({ Data.Scale_x, Data.Scale_y, Data.Scale_Z });
-
 		GameActorList.push_back(SpawnActor);
 	}
 	

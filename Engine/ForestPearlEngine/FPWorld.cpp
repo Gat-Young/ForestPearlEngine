@@ -1,97 +1,107 @@
-#include "GameProjectClassRegistry.h"
-#include "FPGameInstance.h"
-#include "FPLevel.h"
-#include "FPAGameMode.h"
 #include "FPWorld.h"
+#include "FPAssetManager.h"
+#include "FPAGameMode.h"
+#include "Object/Actor.h"
+#include "FPGameTimer.h"
+#include <iostream>
+
+FPWorld::FPWorld() = default;
+
+FPWorld::~FPWorld() = default;
 
 void FPWorld::Initialize()
 {
-
-	if (!GameProjectClassRegistry::Get().HasFactory(WorldSetting.GameMode)) { return; }
-	GameMode.reset(CreateClassInstnce<FPAGameMode>(WorldSetting.GameMode));
-	GameMode->SetOuter(this);
 	GameMode->Initialize();
-
-	if (!GameProjectClassRegistry::Get().HasFactory(WorldSetting.LevelList[0])) { return; }
-
-	PersistentLevel.reset(CreateClassInstnce<FPLevel>(WorldSetting.LevelList[0]));
-	PersistentLevel->SetOuter(this);
-	PersistentLevel->Initialize();
-
+	for (FPActor* actor : GameActorList)
+	{
+		actor->Initialize();
+	}
 }
 
 void FPWorld::BeginPlay()
 {
 	GameMode->BeginPlay();
-	PersistentLevel->BeginPlay();
+	for (FPActor* actor : GameActorList)
+	{
+		actor->BeginPlay();
+	}
 }
 
 void FPWorld::Tick()
 {
 	GameMode->Tick();
 
-	PersistentLevel->Tick();
-
-	for (auto& Level : StreamingLevel)
+	for (FPActor* actor : GameActorList)
 	{
-		Level.second->Tick();
+		actor->Tick();
 	}
 }
 
-void FPWorld::UnLoadData(std::string LevelName)
+void FPWorld::UnLoadData()
 {
-	auto it = StreamingLevel.find(LevelName);
-
-	if (it == StreamingLevel.end())
+	for (FPActor* actor : GameActorList)
 	{
-		return;
+		delete(actor);
 	}
-
-	it->second->UnLoadData();
-	it->second.release();
-
-	StreamingLevel.erase(LevelName);
 }
 
 void FPWorld::Finalize()
 {
-	for (auto& Levels : StreamingLevel)
-	{
-		UnLoadData(Levels.first);
-	}
-
-	PersistentLevel->UnLoadData();
-	PersistentLevel.release();
+	UnLoadData();
 }
 
 
+//json Level Data를 읽어와 Actor List를 초기화
+//GameMode를 생성
 void FPWorld::OpenLevel(std::string LevelName)
 {
-	if (std::find(WorldSetting.LevelList.begin(), WorldSetting.LevelList.end(), LevelName) == WorldSetting.LevelList.end()) { return; }
-	FPLevel* Level = CreateClassInstnce<FPLevel>(LevelName);
+	FPGameInstance* GameInstance = static_cast<FPGameInstance*>(GetOuter());
 
-	StreamingLevel[LevelName] = std::make_unique<FPLevel>(*Level);
-	StreamingLevel[LevelName]->SetOuter(this);
-	StreamingLevel[LevelName]->Initialize();
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(GameInstance->GetAssetManager());
 
-	StreamingLevel[LevelName]->BeginPlay();
+	FPGameProjectClassRegistry* ClassRegistry = static_cast<FPGameProjectClassRegistry*>(GameInstance->GetClassRegister());
+
+	//GameMode 생성
+	std::string GameModeName = AssetManager->GetGameModeData(LevelName);
+	if (!ClassRegistry->HasFactory(GameModeName)) { std::cout << GameModeName << "의 Class가 존재하지 않음" << "\n"; return; }
+	FPAGameMode* CreateGameMode = CreateClassInstnce<FPAGameMode>(GameModeName);
+	CreateGameMode->SetOuter(this);
+	GameMode.reset(CreateGameMode);
+
+	//Level Data를 바탕으로 ActorList 초기화
+	std::vector<FPActorData>& ActorData = AssetManager->GetLevelData(LevelName);
+
+	for (FPActorData& Data : ActorData)
+	{
+		FPActor* SpawnActor = CreateClassInstnce<FPActor>(Data.ClassName);
+		SpawnActor->SetOuter(this);
+		SpawnActor->SetActorName(Data.ActorName);
+		SpawnActor->SetActorLocation({ Data.Location_x,Data.Location_y, Data.Location_z });
+		SpawnActor->SetActorRotation({ Data.Rotation_x, Data.Rotation_y, Data.Rotation_z });
+		SpawnActor->SetActorScale3D({ Data.Scale_x, Data.Scale_y, Data.Scale_Z });
+		GameActorList.push_back(SpawnActor);
+	}
+	
+
 }
 
-GameTimer* FPWorld::GetGameTimer()
+FPGameTimer* FPWorld::GetGameTimer()
 {
-	return FPGameInstance::Get().GetGameTimer();
+	FPGameInstance* GameInstance = static_cast<FPGameInstance*>(GetOuter());
+	
+	return static_cast<FPGameTimer*>(GameInstance->GetGameTimer());
 }
 
 
 FPActor* FPWorld::SpawnActor(std::string ActorClassName, std::string ActorName)
 {
 	FPActor* SpawnActor = CreateClassInstnce<FPActor>(ActorClassName);
-	SpawnActor->SetOuter(PersistentLevel.get());
+	SpawnActor->SetOuter(this);
 	SpawnActor->Initialize();
 	SpawnActor->BeginPlay();
 	SpawnActor->SetActorName(ActorName);
 
-	PersistentLevel.get()->TryAddActorToList(SpawnActor);
+	GameActorList.push_back(SpawnActor);
 
 	return SpawnActor;
 }
@@ -101,7 +111,12 @@ FPAController* FPWorld::GetController(int index)
 	return GameMode->GetController(index);
 }
 
+FPAGameMode* FPWorld::GetAuthGameMode()
+{
+	return GameMode.get();
+}
+
 std::vector<FPActor*>& FPWorld::GetGameActorList()
 {
-	return PersistentLevel.get()->GetGameActorList();
+	return GameActorList;
 }

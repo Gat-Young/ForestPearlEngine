@@ -5,9 +5,6 @@ class FPObject
 		FPObject* Outer = nullptr;
 
 	public:
-		virtual void Initialize() = 0;
-		virtual void BeginPlay() = 0;
-		virtual void Tick() = 0;
 
 		virtual ~FPObject() = default;
 

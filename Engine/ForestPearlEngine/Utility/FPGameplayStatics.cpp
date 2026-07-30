@@ -1,7 +1,8 @@
 #include "FPGameplayStatics.h"
 #include "../Object/Actor.h"
 #include "../FPWorld.h"
-#include "../GameProjectClassRegistry.h"
+#include "../FPGameInstance.h"
+#include "../FPGameProjectClassRegistry.h"
 #include <typeinfo>
 #include <utility>
 #include <vector>
@@ -11,7 +12,8 @@ FPActor* FPGameplayStatics::GetActorOfClass(FPWorld* World, std::string ClassNam
 {
 	std::vector<FPActor*> Acotrs = World->GetGameActorList();
 
-	std::unique_ptr<FPObject> Object = GameProjectClassRegistry::Get().Create(ClassName);
+	FPGameProjectClassRegistry* ClassRegister = static_cast<FPGameProjectClassRegistry*>(FPGameInstance::Get().GetClassRegister());
+	std::unique_ptr<FPObject> Object = ClassRegister->Create(ClassName);
 	FPActor* TargetActor = dynamic_cast<FPActor*>(Object.get());
 
 	for (FPActor* LevelActor : Acotrs)
@@ -31,7 +33,8 @@ void FPGameplayStatics::GetAllActorsOfClass(FPWorld* World, std::string ClassNam
 
 	std::vector<FPActor*> Acotrs = World->GetGameActorList();
 
-	std::unique_ptr<FPObject> Object = GameProjectClassRegistry::Get().Create(ClassName);
+	FPGameProjectClassRegistry* ClassRegister = static_cast<FPGameProjectClassRegistry*>(FPGameInstance::Get().GetClassRegister());
+	std::unique_ptr<FPObject> Object = ClassRegister->Create(ClassName);
 	FPActor* TargetActor = dynamic_cast<FPActor*>(Object.get());
 
 	for (FPActor* LevelActor : Acotrs)

@@ -1,5 +1,6 @@
 #include "InputComponent.h"
 #include "InputAction.h"
+#include "../../FPGameInstance.h"
 
 FPInputComponent::FPInputComponent()
 {
@@ -29,7 +30,8 @@ void FPInputComponent::AddMappingKey(std::string IANAme, USHORT VKey, FModifyInf
 
 void FPInputComponent::ProcessInputTick()
 {
-	std::queue<FKeyInputInfo>& InputQueue = FPInputSystem::GetInputSystem().GetInputQueue();
+	FPInputSystem* InputSystem = static_cast<FPInputSystem*>(FPGameInstance::Get().GetInputSystem());
+	std::queue<FKeyInputInfo>& InputQueue = InputSystem->GetInputQueue();
 
 	while (InputQueue.size() != 0)
 	{

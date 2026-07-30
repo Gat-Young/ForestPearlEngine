@@ -3,12 +3,8 @@
 #include "../ForestPearlEngine/Object/Actor.h"
 #include "Renderers/RenderingDevice.h"
 #include "Renderers/Renderer.h"
+#include "FPGameInstance.h"
 #include "GameProjectLoader.h"
-#include "AssetManager.h"
-#include "MeshRenderList.h"
-#include "TextRenderList.h"
-#include "GizmoRenderList.h"
-#include "CameraList.h"
 #include "Systems/InputSystem.h"
 //#include <iostream>
 #include "MCLOG.h"
@@ -24,8 +20,13 @@ ForestPearlEngine& ForestPearlEngine::GetGameEngine()
 //엔진 부팅 및 기본 설정 모듈 불러오기
 bool ForestPearlEngine::PreInitialize()
 {
+    RegistProjectName();
+
+    WinClassName = FPPathManager::Get().StringToWString(FPPathManager::Get().GetProjectName());
+    WinName = FPPathManager::Get().StringToWString(FPPathManager::Get().GetProjectName());
+
     //윈도우 생성
-    Hwnd = CreateFPEWindow(WinClassName, WinName, WinWidth, WinHeight);
+    Hwnd = CreateFPEWindow(WinClassName.c_str(), WinName.c_str(), WinWidth, WinHeight);
 
     if (Hwnd == nullptr)
     {
@@ -36,7 +37,6 @@ bool ForestPearlEngine::PreInitialize()
 
     // InputSystem 만들기
     RegisterFPRawInputDevices();
-    FPInputSystem::GetInputSystem();
 
     // RenderDevice 생성
     RenderDevice = &RenderingDevice::GetRenderingDevice();
@@ -45,15 +45,11 @@ bool ForestPearlEngine::PreInitialize()
     Render = new Renderer(*RenderDevice);
     Render->InitializeRenderer(Hwnd);
     
-    GameProjectClassRegistry::Get();
-
-    LoadClassRegist();
-
-    GizmoRenderList::Get();
-    MeshRenderList::Get();
-    TextRenderList::Get();
-    CameraList::Get();
     FPGameInstance::Get();
+
+    LoadLevel();
+    LoadClassRegist();
+    LoadAssets();
 
     return true;
 }
@@ -61,7 +57,7 @@ bool ForestPearlEngine::PreInitialize()
 //BaseWorld 생성 및 Begin Play 수행
 bool ForestPearlEngine::Initialize()
 {
-    FPGameInstance::Get().OpenLevel(ReturnStartWorld());
+    FPGameInstance::Get().OpenLevel(ReturnStartLevel());
     FPGameInstance::Get().Initialize();
     FPGameInstance::Get().BeginPlay();
     return true;
@@ -76,8 +72,6 @@ void ForestPearlEngine::GameLoop()
         {
             break;
         }
-
-        FPInputSystem::GetInputSystem().TickInputSystem();
 
         FPGameInstance::Get().Tick();
 
@@ -144,12 +138,13 @@ LRESULT CALLBACK ForestPearlEngine::WndProc(HWND hWnd, UINT message, WPARAM wPar
     {
     case WM_INPUT:
         //MCLOG(LogMC, "");
-        FPInputSystem::GetInputSystem().HandleRawInput(lParam);
+        
+        static_cast<FPInputSystem*>(FPGameInstance::Get().GetInputSystem())->HandleRawInput(lParam);
         return DefWindowProc(hWnd, message, wParam, lParam);
         break;
 
     case WM_ACTIVATE:
-        FPInputSystem::GetInputSystem().ResetKeyStates();
+        static_cast<FPInputSystem*>(FPGameInstance::Get().GetInputSystem())->ResetKeyStates();
         break;
 
     case WM_QUIT:
@@ -238,3 +233,5 @@ int ForestPearlEngine::GetAdapterMonitorSize(int index) { return Render->GetRend
 const TCHAR* ForestPearlEngine::GetSrtFeatureLevel() { return Render->GetRenderingDevice().GetSrtFeatureLevel(); };
 UINT ForestPearlEngine::GetWidth() { return Render->GetRenderingDevice().GetWidth(); };
 UINT ForestPearlEngine::GetHeight() { return Render->GetRenderingDevice().GetHeight(); };
+
+void ForestPearlEngine::SetZEnable(bool State) { Render->SetZEnable(State); };

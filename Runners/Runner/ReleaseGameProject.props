@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <GameProjectName>Tri_World</GameProjectName>
+    <GameAssetDir>$(SolutionDir)Games\Release_Game\$(GameProjectName)\Assets</GameAssetDir>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="GameProjectName">
+      <Value>$(GameProjectName)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GameAssetDir">
+      <Value>$(GameAssetDir)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

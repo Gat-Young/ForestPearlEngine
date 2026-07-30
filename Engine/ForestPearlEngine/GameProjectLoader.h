@@ -1,6 +1,15 @@
 #pragma once
-#include "GameProjectClassRegistry.h"
+#include "FPGameInstance.h"
+#include "FPGameProjectClassRegistry.h"
+#include "FPAssetManager.h"
+#include "Utility/FPPathManager.h"
+
+void RegistProjectName();
+
+void LoadLevel();
 
 void LoadClassRegist();
 
-std::string ReturnStartWorld();
+void LoadAssets();
+
+std::string ReturnStartLevel();

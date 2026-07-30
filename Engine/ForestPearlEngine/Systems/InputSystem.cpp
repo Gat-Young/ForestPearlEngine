@@ -2,13 +2,6 @@
 #include "../MCLOG.h"
 #include "../Object/Components/InputMappingContext.h"
 
-FPInputSystem& FPInputSystem::GetInputSystem()
-{
-    static FPInputSystem Singleton;
-
-    return Singleton;
-}
-
 void FPInputSystem::HandleRawInput(LPARAM LParam)
 {
     //MCLOG(LogMC,"");

@@ -1,13 +1,13 @@
 #pragma once
 #include "framework.h"
 #include <vector>
-#include "FPGameInstance.h"
-
+#include <string>
 
 class FPObject;
 class FPActor;
 class Renderer;
 class RenderingDevice;
+class FPGameInstance;
 
 class ForestPearlEngine
 {
@@ -58,6 +58,9 @@ class ForestPearlEngine
 		UINT GetWidth();
 		UINT GetHeight();
 
+		//깊이 스텐실 버퍼 설정
+		void SetZEnable(bool State);
+
 	private:
 		ForestPearlEngine() = default;
 
@@ -85,8 +88,9 @@ class ForestPearlEngine
 		// 나중에 설정파일 로더로 변경할 것
 		////////////////////////////////
 		// Window Property
-		const wchar_t* WinClassName = L"MyFirstWndGame";
-		const wchar_t* WinName = L"MyFirstWndGame";
+
+		std::wstring WinClassName;
+		std::wstring WinName;
 		const int WinWidth = 960;
 		const int WinHeight = 600;
 

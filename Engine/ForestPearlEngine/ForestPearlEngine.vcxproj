@@ -131,96 +131,93 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="AssetManager.h" />
-    <ClInclude Include="CameraComponent.h" />
-    <ClInclude Include="CameraList.h" />
+    <ClInclude Include="FPAssetManager.h" />
+    <ClInclude Include="FPCameraComponent.h" />
+    <ClInclude Include="FPCameraList.h" />
     <ClInclude Include="Define\FPMath.h" />
     <ClInclude Include="ForestPearlEngine.h" />
     <ClInclude Include="FPAController.h" />
     <ClInclude Include="FPActorComponent.h" />
     <ClInclude Include="FPAGameMode.h" />
     <ClInclude Include="FPGameInstance.h" />
-    <ClInclude Include="FPLevel.h" />
+    <ClInclude Include="FPGameInstanceSubSystem.h" />
     <ClInclude Include="FPMaterial.h" />
     <ClInclude Include="FPMovementComponent.h" />
     <ClInclude Include="FPPrimitiveComponent.h" />
     <ClInclude Include="FPSceneComponent.h" />
     <ClInclude Include="FPWorld.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="GameProjectClassRegistry.h" />
+    <ClInclude Include="FPGameProjectClassRegistry.h" />
     <ClInclude Include="GameProjectLoader.h" />
-    <ClInclude Include="GameTimer.h" />
+    <ClInclude Include="FPGameTimer.h" />
     <ClInclude Include="GizmoComponent.h" />
-    <ClInclude Include="GizmoRenderList.h" />
+    <ClInclude Include="Libraries\nlohmann\json.hpp" />
+    <ClInclude Include="Libraries\Ufbx\ufbx.h" />
     <ClInclude Include="MCLOG.h" />
-    <ClInclude Include="MeshComponent.h" />
-    <ClInclude Include="MeshRenderList.h" />
+    <ClInclude Include="FPMeshComponent.h" />
+    <ClInclude Include="FPMeshRenderList.h" />
     <ClInclude Include="Object\Actor.h" />
     <ClInclude Include="Object\Components\InputAction.h" />
     <ClInclude Include="Object\Components\InputComponent.h" />
     <ClInclude Include="Object\Components\InputMappingContext.h" />
     <ClInclude Include="Object\Object.h" />
+    <ClInclude Include="Renderers\FPRenderingCommon.h" />
     <ClInclude Include="Renderers\RenderingDevice.h" />
-    <ClInclude Include="Renderers\Legacy_Renderer.h" />
     <ClInclude Include="Renderers\Renderer.h" />
     <ClInclude Include="Shader\ShaderFactory.h" />
     <ClInclude Include="Systems\InputSystem.h" />
     <ClInclude Include="Systems\KeyStateEnum.h" />
-    <ClInclude Include="TextComponent.h" />
-    <ClInclude Include="TextRenderList.h" />
+    <ClInclude Include="FPTextComponent.h" />
+    <ClInclude Include="FPTextRenderList.h" />
     <ClInclude Include="FTransform.h" />
     <ClInclude Include="Utility\FPGameplayStatics.h" />
+    <ClInclude Include="Utility\FPPathManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AssetManager.cpp" />
-    <ClCompile Include="CameraComponent.cpp" />
-    <ClCompile Include="CameraList.cpp" />
+    <ClCompile Include="FPAssetManager.cpp" />
+    <ClCompile Include="FPCameraComponent.cpp" />
+    <ClCompile Include="FPCameraList.cpp" />
     <ClCompile Include="Define\FPMath.cpp" />
     <ClCompile Include="ForestPearlEngine.cpp" />
     <ClCompile Include="FPAController.cpp" />
     <ClCompile Include="FPAGameMode.cpp" />
     <ClCompile Include="FPGameInstance.cpp" />
-    <ClCompile Include="FPLevel.cpp" />
     <ClCompile Include="FPMaterial.cpp" />
     <ClCompile Include="FPMovementCompoent.cpp" />
     <ClCompile Include="FPMovementComponent.cpp" />
     <ClCompile Include="FPSceneComponent.cpp" />
+    <ClCompile Include="FPGameProjectClassRegistry.cpp" />
+    <ClCompile Include="FPGameTimer.cpp" />
     <ClCompile Include="FPWorld.cpp" />
-    <ClCompile Include="GameProjectClassRegistry.cpp" />
-    <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="GizmoComponent.cpp" />
-    <ClCompile Include="GizmoRenderList.cpp" />
-    <ClCompile Include="MeshComponent.cpp">
+    <ClCompile Include="Libraries\Ufbx\ufbx.c" />
+    <ClCompile Include="FPMeshComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="MeshRenderList.cpp" />
+    <ClCompile Include="FPMeshRenderList.cpp" />
     <ClCompile Include="Object\Actor.cpp" />
     <ClCompile Include="Object\Components\InputAction.cpp" />
     <ClCompile Include="Object\Components\InputComponent.cpp" />
     <ClCompile Include="Object\Components\InputMappingContext.cpp" />
     <ClCompile Include="Renderers\RenderingDevice.cpp" />
-    <ClCompile Include="Renderers\Legacy_Renderer.cpp" />
     <ClCompile Include="Renderers\Renderer.cpp" />
     <ClCompile Include="Shader\ShaderFactory.cpp" />
     <ClCompile Include="Systems\InputSystem.cpp" />
-    <ClCompile Include="TextComponent.cpp" />
-    <ClCompile Include="TextRenderList.cpp" />
+    <ClCompile Include="FPTextComponent.cpp" />
+    <ClCompile Include="FPTextRenderList.cpp" />
     <ClCompile Include="Utility\FPGameplayStatics.cpp" />
+    <ClCompile Include="Utility\FPPathManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Games\Release_Game\Geometry_ModelSpace\Geometry_ModelSpace.vcxproj">
-      <Project>{74fab9c7-f7b9-4eb8-b191-fe3130f2af68}</Project>
+    <ProjectReference Include="..\..\Games\Release_Game\Tri_World\Tri_World.vcxproj">
+      <Project>{874c49a3-fd56-4137-9cfa-a3bd1b70917e}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shader\fx\Demo.fx">
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VS_Main</EntryPointName>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VS_Main</EntryPointName>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS_Main</EntryPointName>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VS_Main</EntryPointName>
+    <FxCompile Include="Assets\Shader\Demo.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

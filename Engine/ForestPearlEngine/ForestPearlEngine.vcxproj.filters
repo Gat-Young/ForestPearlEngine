@@ -28,14 +28,20 @@
     <Filter Include="Utility">
       <UniqueIdentifier>{484c2692-9984-4b3a-8718-4fdd4e7cce48}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Renderers\Legacy_Renderer">
-      <UniqueIdentifier>{60d0598d-1cb6-4381-8250-61314a79b035}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Renderers\Shader">
       <UniqueIdentifier>{c5323eed-f528-466b-bd17-032f5bfda515}</UniqueIdentifier>
     </Filter>
     <Filter Include="Renderers\Shader\fx">
       <UniqueIdentifier>{f6e08996-a72b-46af-9c0e-cfc702c62ccc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries">
+      <UniqueIdentifier>{1de93f64-28a7-4a2f-949b-f8e1e5af581e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\Ufbx">
+      <UniqueIdentifier>{0044f5b3-411a-4bc8-babb-930125b798a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\nlohmann">
+      <UniqueIdentifier>{8b145660-84a1-4213-8b98-cb8cfe2658c6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -51,7 +57,7 @@
     <ClInclude Include="Object\Object.h">
       <Filter>Object</Filter>
     </ClInclude>
-    <ClInclude Include="GameProjectClassRegistry.h">
+    <ClInclude Include="FPGameProjectClassRegistry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameProjectLoader.h">
@@ -63,19 +69,13 @@
     <ClInclude Include="FPWorld.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FPLevel.h">
+    <ClInclude Include="FPAssetManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AssetManager.h">
+    <ClInclude Include="FPMeshRenderList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MeshRenderList.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextRenderList.h">
+    <ClInclude Include="FPTextRenderList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Systems\InputSystem.h">
@@ -96,16 +96,13 @@
     <ClInclude Include="FPAGameMode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameTimer.h">
+    <ClInclude Include="FPGameTimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Object\Components\InputComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CameraList.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GizmoRenderList.h">
+    <ClInclude Include="FPCameraList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FPActorComponent.h">
@@ -123,10 +120,7 @@
     <ClInclude Include="Define\FPMath.h">
       <Filter>Define</Filter>
     </ClInclude>
-    <ClInclude Include="MeshComponent.h">
-      <Filter>Component</Filter>
-    </ClInclude>
-    <ClInclude Include="GizmoComponent.h">
+    <ClInclude Include="FPMeshComponent.h">
       <Filter>Component</Filter>
     </ClInclude>
     <ClInclude Include="FPMovementComponent.h">
@@ -134,9 +128,6 @@
     </ClInclude>
     <ClInclude Include="Utility\FPGameplayStatics.h">
       <Filter>Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderers\Legacy_Renderer.h">
-      <Filter>Renderers\Legacy_Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\Renderer.h">
       <Filter>Renderers</Filter>
@@ -150,39 +141,54 @@
     <ClInclude Include="Shader\ShaderFactory.h">
       <Filter>Renderers\Shader</Filter>
     </ClInclude>
-    <ClInclude Include="CameraComponent.h">
+    <ClInclude Include="FPCameraComponent.h">
       <Filter>Component</Filter>
     </ClInclude>
     <ClInclude Include="MCLOG.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\Ufbx\ufbx.h">
+      <Filter>Libraries\Ufbx</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\FPRenderingCommon.h">
+      <Filter>Renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="GizmoComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="FPGameInstanceSubSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\nlohmann\json.hpp">
+      <Filter>Libraries\nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="FPTextComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\FPPathManager.h">
+      <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameProjectClassRegistry.cpp">
+    <ClCompile Include="FPGameProjectClassRegistry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FPGameInstance.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FPWorld.cpp">
+    <ClCompile Include="FPAssetManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FPLevel.cpp">
+    <ClCompile Include="FPMeshRenderList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AssetManager.cpp">
+    <ClCompile Include="FPTextRenderList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MeshRenderList.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextRenderList.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextComponent.cpp">
+    <ClCompile Include="FPTextComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Object\Components\InputAction.cpp">
@@ -200,16 +206,13 @@
     <ClCompile Include="FPAController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameTimer.cpp">
+    <ClCompile Include="FPGameTimer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Object\Components\InputComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CameraList.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GizmoRenderList.cpp">
+    <ClCompile Include="FPCameraList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FPSceneComponent.cpp">
@@ -218,10 +221,7 @@
     <ClCompile Include="Define\FPMath.cpp">
       <Filter>Define</Filter>
     </ClCompile>
-    <ClCompile Include="MeshComponent.cpp">
-      <Filter>Component</Filter>
-    </ClCompile>
-    <ClCompile Include="GizmoComponent.cpp">
+    <ClCompile Include="FPMeshComponent.cpp">
       <Filter>Component</Filter>
     </ClCompile>
     <ClCompile Include="FPMovementCompoent.cpp">
@@ -236,9 +236,6 @@
     <ClCompile Include="Utility\FPGameplayStatics.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Renderers\Legacy_Renderer.cpp">
-      <Filter>Renderers\Legacy_Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="Renderers\Renderer.cpp">
       <Filter>Renderers</Filter>
     </ClCompile>
@@ -251,12 +248,24 @@
     <ClCompile Include="Shader\ShaderFactory.cpp">
       <Filter>Renderers\Shader</Filter>
     </ClCompile>
-    <ClCompile Include="CameraComponent.cpp">
+    <ClCompile Include="FPCameraComponent.cpp">
       <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Libraries\Ufbx\ufbx.c">
+      <Filter>Libraries\Ufbx</Filter>
+    </ClCompile>
+    <ClCompile Include="GizmoComponent.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="FPWorld.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\FPPathManager.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shader\fx\Demo.fx">
+    <FxCompile Include="Assets\Shader\Demo.fx">
       <Filter>Renderers\Shader\fx</Filter>
     </FxCompile>
   </ItemGroup>

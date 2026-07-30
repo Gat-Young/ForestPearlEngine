@@ -198,7 +198,7 @@ void Legacy_Renderer::ObjectRendering()
 
 
 		//출력 스트림 설정
-		FPRenderDevice->SetStreamSource(0, FPVertexBufferList[*(RenderItem.VBIndex)], 0, sizeof(COLVTX));
+		FPRenderDevice->SetStreamSource(0, FPVertexBufferList[(RenderItem.VBIndex)->back()], 0, sizeof(COLVTX));
 
 		//정점 형식 설정
 		FPRenderDevice->SetFVF(FVF_COLVTX);

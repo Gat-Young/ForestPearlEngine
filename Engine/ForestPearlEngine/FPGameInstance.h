@@ -1,42 +1,65 @@
 #pragma once
-#include "GameProjectClassRegistry.h"
-#include "GameTimer.h"
-#include "FPWorld.h"
+#include "Object/Object.h"
+#include <string>
+#include <memory>
 
-class FPGameInstance
+class GameTimer;
+class FPGameInstanceSubSystem;
+
+enum class GameInstanceSubSystemName : size_t
+{
+	GameTimer,
+	ClassRegister,
+	InputSystem,
+	AssetManager,
+	MeshRenderList,
+	TextRenderList,
+	CameraList,
+
+	GameInstanceSubSystemList_MAX
+};
+
+class FPGameInstance : public FPObject
 {
 	private:
-		FPGameInstance() { Gametimer = new GameTimer; };
-		~FPGameInstance() = default;
-
+		FPGameInstance();
+		virtual ~FPGameInstance() override;
 		FPGameInstance(const FPGameInstance&) = delete;
 		FPGameInstance& operator=(const FPGameInstance&) = delete;
 
+		//////////////////////////////////////////
+		// GamePlay시 하나만 존재해야하는 객체들
+
+		//World
 		struct WorldContext
 		{
 			std::string WorldName = "";
 			std::unique_ptr<FPWorld> World = nullptr;
 		};
-
 		WorldContext GameWorld;
 
-		GameTimer* Gametimer;
+		//GameInstanceSubSystem이 들어있는 배열
+		FPGameInstanceSubSystem* GameInstanceSubSystem[static_cast<size_t>(GameInstanceSubSystemName::GameInstanceSubSystemList_MAX)];
 
 	public:
-		//Single Tone
-		static FPGameInstance& Get()
-		{
-			static FPGameInstance Instance;
-			return Instance;
-		}
+		static FPGameInstance& Get() { static FPGameInstance Instance; return Instance; };
 
 		//레벨 전환
-		void OpenLevel(std::string WorldName);
+		void OpenLevel(std::string LevelName);
 
 		//월드 반환
-		FPWorld* GetWorld();
+		FPWorld* GetWorld() override;
 
-		GameTimer* GetGameTimer() { return Gametimer; }
+		//GameInstanceSubSystem 반환
+		FPGameInstanceSubSystem* GetInstanceSubSystem(GameInstanceSubSystemName SubSystemName);
+		FPGameInstanceSubSystem* GetClassRegister();
+		FPGameInstanceSubSystem* GetGameTimer();
+		FPGameInstanceSubSystem* GetAssetManager();
+		FPGameInstanceSubSystem* GetInputSystem();
+		FPGameInstanceSubSystem* GetTextRenderList();
+		FPGameInstanceSubSystem* GetCameraList();
+		FPGameInstanceSubSystem* GetMeshRenderList();
+	
 
 		void Initialize();
 		void BeginPlay();

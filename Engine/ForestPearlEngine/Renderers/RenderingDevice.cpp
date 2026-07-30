@@ -1,4 +1,6 @@
 #include "RenderingDevice.h"
+#include "FPRenderingCommon.h"
+#include "../Utility/FPPathManager.h"
 #include <assert.h>
 #include <iostream>
 
@@ -395,6 +397,54 @@ HRESULT RenderingDevice::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD N
 	return hr;
 }
 
+HRESULT RenderingDevice::CreateDepthStencilStateCreate()
+{
+
+	HRESULT hr = S_OK;
+
+	//깊이/스텐실 상태 객체 생성 : 출력병합기 Output Merger 상태 조절
+
+	D3D11_DEPTH_STENCIL_DESC Ds;
+	//깊이 버퍼 설정 (기본값)
+	Ds.DepthEnable = TRUE;
+	Ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	Ds.DepthFunc = D3D11_COMPARISON_LESS;
+
+	//스텐실 버퍼 설정 (기본값)
+	Ds.StencilEnable = FALSE;
+
+	//깊이 버퍼 연산 객체들
+
+	//DS 상태 객체 0 : Z-Test On! (기본값)
+	Ds.DepthEnable = TRUE;
+	Ds.StencilEnable = FALSE;
+	Device->CreateDepthStencilState(&Ds, &DSState[DS_DEPTH_ON]);
+
+	//DS 상태 객체 1 : Z-Test Off!
+	Ds.DepthEnable = FALSE;
+	Device->CreateDepthStencilState(&Ds, &DSState[DS_DEPTH_OFF]);
+
+	//DS 상태 객체 2 : Z-Test On + Z-Write OFF
+	//Z-Test가 꺼지면, Z-Write 역시 비활성화
+	Ds.DepthEnable = TRUE;
+	Ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	Device->CreateDepthStencilState(&Ds, &DSState[DS_DEPTH_WRITE_OFF]);
+
+	return hr;
+}
+
+void RenderingDevice::OMSetDepthStencilState(bool State)
+{
+	if (State)
+	{
+		DeviceContext->OMSetDepthStencilState(DSState[DS_DEPTH_ON], 0);
+	}
+	else
+	{
+		DeviceContext->OMSetDepthStencilState(DSState[DS_DEPTH_OFF], 0);
+	}
+}
+
 
 
 //Font Create
@@ -409,7 +459,8 @@ SpriteFont* RenderingDevice::CreateSpriteFont()
 	//DirectX Toolkit : Sprite Font 객체 생성
 	//ASCII 0 ~ 255 + 특수문자'■' + Unicode 한글 완성형 총 11,440 글자, 크기:9	
 	//exe 실행파일 기준의 경로
-	const TCHAR* Filename = L"../../Engine/ForestPearlEngine/Assets/Font/굴림9k.sfont";
+	std::wstring WidePath = std::filesystem::path(FPPathManager::Get().GetAssetPath("Font/굴림9k.sfont").c_str()).wstring();
+	const TCHAR* Filename = WidePath.c_str();
 
 	SpriteFont* Font = nullptr;
 	try
@@ -554,7 +605,7 @@ void RenderingDevice::RasterStateCreate()
 	D3D11_RASTERIZER_DESC rd;
 	rd.FillMode = D3D11_FILL_SOLID;		//삼각형 색상 채우기(기본값)
 	rd.CullMode = D3D11_CULL_NONE;		//컬링 없음. (기본값은 컬링 Back)
-	rd.FrontCounterClockwise = false;	//이하 기본값
+	rd.FrontCounterClockwise = true;	//이하 기본값
 	rd.DepthBias = 0;
 	rd.DepthBiasClamp = 0;
 	rd.SlopeScaledDepthBias = 0;
@@ -650,7 +701,22 @@ void RenderingDevice::IASetInputLayout(void* InputLayout)
 
 void RenderingDevice::IASetPrimitiveTopology(Topology topo)
 {
-	D3D_PRIMITIVE_TOPOLOGY D3DTopo = topo == TRIANGLE ? D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST : D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+	D3D_PRIMITIVE_TOPOLOGY D3DTopo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	
+	switch (topo)
+	{
+		case TRIANGLELIST:
+			D3DTopo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+			break;
+
+		case TRIANGLESTRIP:
+			D3DTopo = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+			break;
+
+		case LINELIST:
+			D3DTopo = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+			break;
+	}
 	DeviceContext->IASetPrimitiveTopology(D3DTopo);
 }
 

@@ -22,7 +22,7 @@ void LoadClassRegist()
 	GameProjectClassRegistry::Get().Register<Axis>("Axis");
 }
 
-std::string ReturnStartWorld()
+std::string ReturnStartLevel()
 {
 	return "GameWorld";
 }

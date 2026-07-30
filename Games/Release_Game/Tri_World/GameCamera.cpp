@@ -1,8 +1,8 @@
 #include "GameCamera.h"
-#include "ForestPearlEngine/CameraComponent.h"
+#include "ForestPearlEngine/FPCameraComponent.h"
 #include "ForestPearlEngine/FPAController.h"
 #include "ForestPearlEngine/FPWorld.h"
-#include "ForestPearlEngine/GameTimer.h"
+#include "ForestPearlEngine/FPGameTimer.h"
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
 #include "ForestPearlEngine/InputValue.h"
 #include "ForestPearlEngine/Utility/FPGameplayStatics.h"
@@ -14,7 +14,7 @@ void GameCamera::Initialize()
 	SetRootComponent(Target);
 	SetActorLocation({ 0.0f, 0.0f, 0.0f });
 
-	Camera = new CameraComponent(this);
+	Camera = new FPCameraComponent(this);
 
 	Camera->SetupAttachment(Target);
 	Camera->SetRelativeLocation({ 0.0f, 20.0f, -45.0f });

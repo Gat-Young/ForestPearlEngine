@@ -1,5 +1,5 @@
 #pragma once
-#include "MeshRenderList.h"
+#include "FPMeshRenderList.h"
 #include "FPPrimitiveComponent.h"
 #include "FPMaterial.h"
 #include <vector>
@@ -16,7 +16,7 @@ struct GRIDINFO {
 	float r, g, b, a;
 	unsigned long res[20];
 
-	GRIDINFO(int w = 100, int h = 100, float s = 10.0f, float r = 0.3f , float g = 0.3f, float b=0.3f, float a = 1.0f )
+	GRIDINFO(int w = 100, int h = 100, float s = 1.0f, float r = 0.3f , float g = 0.3f, float b=0.3f, float a = 1.0f )
 		:width(w), height(h), scale(s), r(r), g(g), b(b), a(a) {
 	}
 };

@@ -1,10 +1,10 @@
 #pragma once
-#include "MeshRenderList.h"
+#include "FPMeshRenderList.h"
 #include "FPPrimitiveComponent.h"
 #include "FPMaterial.h"
 #include <string>
 
-class MeshComponent : FPPrimitiveComponent
+class FPMeshComponent : FPPrimitiveComponent
 {
 	private:
 		std::string MeshData;
@@ -24,9 +24,9 @@ class MeshComponent : FPPrimitiveComponent
 		void RegistMeshRenderList();
 
 	public:
-		MeshComponent(FPActor* Owner, std::string MeshPath);
+		FPMeshComponent(FPActor* Owner, std::string MeshPath);
 
-		~MeshComponent();
+		~FPMeshComponent();
 
 		void SetMeshFill(bool State) { isFill = State; };
 		void SetMeshCull(bool State) { isCull = State; };

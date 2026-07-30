@@ -6,12 +6,12 @@
 class FPInputMappingContext;
 class FPInputAction;
 struct FInputValue;
-class MeshComponent;
+class FPMeshComponent;
 
 class Player : public FPActor
 {
 	private:
-		MeshComponent* Mesh;
+		FPMeshComponent* Mesh;
 
 		bool isFill = true;
 		bool isCull = true;

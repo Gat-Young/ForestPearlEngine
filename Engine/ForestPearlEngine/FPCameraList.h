@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "../ForestPearlEngine/Define/FPMath.h"
+#include "FPGameInstanceSubSystem.h"
 
 struct CameraItem
 {
@@ -22,21 +23,15 @@ struct CameraItem
 	bool* Active = nullptr;			//카메라 사용 여부
 };
 
-class CameraList
+class FPCameraList : public FPGameInstanceSubSystem
 {
 	private:
 		std::vector<CameraItem> CamList;
 
-		CameraList() = default;
-		~CameraList() = default;
-
 	public:
-		//Single Tone
-		static CameraList& Get()
-		{
-			static CameraList Instance;
-			return Instance;
-		}
+
+		FPCameraList() = default;
+		~FPCameraList() = default;
 
 		CameraItem* RegistRenderList();
 		void UnregistRenderList(CameraItem* RenderItem);

@@ -1,6 +1,6 @@
 #pragma once
 #include "ForestPearlEngine/Object/Actor.h"
-#include "ForestPearlEngine/TextComponent.h"
+#include "ForestPearlEngine/FPTextComponent.h"
 #include "ForestPearlEngine/Systems/KeyStateEnum.h"
 #include "ForestPearlEngine/Define/FPMath.h"
 
@@ -10,7 +10,7 @@ class FPInputAction;
 class UI : public FPActor
 {
 	private:
-		std::vector<TextComponent*> TextComponets;
+		std::vector<FPTextComponent*> TextComponets;
 		FPInputMappingContext*	IMC;
 		FPInputAction* IA = nullptr;
 		bool bShow = true;
@@ -18,22 +18,22 @@ class UI : public FPActor
 		unsigned int time = 0;
 
 		//UI 요소들
-		TextComponent* FPSText;
+		FPTextComponent* FPSText;
 
-		TextComponent* Text1;
-		TextComponent* Text2;
-		TextComponent* Text3;
-		TextComponent* Text4;
-		TextComponent* Text5;
-		TextComponent* Text6;
-		TextComponent* Text7;
-		TextComponent* Text8;
+		FPTextComponent* Text1;
+		FPTextComponent* Text2;
+		FPTextComponent* Text3;
+		FPTextComponent* Text4;
+		FPTextComponent* Text5;
+		FPTextComponent* Text6;
+		FPTextComponent* Text7;
+		FPTextComponent* Text8;
 
 		//장치 / GPU 및 시스템 정보 출력
-		TextComponent* SystemTitle;
-		TextComponent* GPUDescriptionText;
-		TextComponent* FeatText;
-		TextComponent* ResText;
+		FPTextComponent* SystemTitle;
+		FPTextComponent* GPUDescriptionText;
+		FPTextComponent* FeatText;
+		FPTextComponent* ResText;
 
 		bool ZEnable = true;
 

@@ -1,9 +1,9 @@
 #include "Terrain.h"
-#include "ForestPearlEngine/MeshComponent.h"
+#include "ForestPearlEngine/FPMeshComponent.h"
 
 void Terrain::Initialize()
 {
-	Mesh = new MeshComponent(this, "Model/Terrain/Terrain.fbx");
+	Mesh = new FPMeshComponent(this, "Model/Terrain/Terrain.fbx");
 	Mesh->SetTopology(TRIANGLELIST); // <- Topology를 변경할 수 있음
 
 	SetRootComponent((FPSceneComponent*)Mesh);

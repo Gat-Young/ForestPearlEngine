@@ -1,7 +1,8 @@
-#include "MeshComponent.h"
-#include "AssetManager.h"
+#include "FPMeshComponent.h"
+#include "FPAssetManager.h"
+#include "FPGameInstance.h"
 
-MeshComponent::MeshComponent(FPActor* Owner, std::string MeshPath) : FPPrimitiveComponent(Owner), MeshData(MeshPath)
+FPMeshComponent::FPMeshComponent(FPActor* Owner, std::string MeshPath) : FPPrimitiveComponent(Owner), MeshData(MeshPath)
 {
 	std::vector<std::pair<int, int> > MeshData = LoadVertexBuffer(MeshPath);
 	
@@ -15,14 +16,16 @@ MeshComponent::MeshComponent(FPActor* Owner, std::string MeshPath) : FPPrimitive
 	RegistMeshRenderList();
 }
 
-std::vector<std::pair<int, int> > MeshComponent::LoadVertexBuffer(std::string MeshPath)
+std::vector<std::pair<int, int> > FPMeshComponent::LoadVertexBuffer(std::string MeshPath)
 {
-	return AssetManager::Get().LoadVertexBuffer(MeshPath);
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	return AssetManager->LoadVertexBuffer(MeshPath);
 }
 
-void MeshComponent::RegistMeshRenderList()
+void FPMeshComponent::RegistMeshRenderList()
 {
-	RenderItem = MeshRenderList::Get().RegistRenderList();
+	FPMeshRenderList* MeshRenderList = static_cast<FPMeshRenderList*>(FPGameInstance::Get().GetMeshRenderList());
+	RenderItem = MeshRenderList->RegistRenderList();
 
 	RenderItem->Priority = &(this->Priority);
 	RenderItem->Active = &(this->isActive);
@@ -39,7 +42,8 @@ void MeshComponent::RegistMeshRenderList()
 	RenderItem->VBLayout = (this->Material->GetVBLayoutPointer());
 }
 
-MeshComponent::~MeshComponent()
+FPMeshComponent::~FPMeshComponent()
 {
-	MeshRenderList::Get().UnregistRenderList(RenderItem);
+	FPMeshRenderList* MeshRenderList = static_cast<FPMeshRenderList*>(FPGameInstance::Get().GetMeshRenderList());
+	MeshRenderList->UnregistRenderList(RenderItem);
 }

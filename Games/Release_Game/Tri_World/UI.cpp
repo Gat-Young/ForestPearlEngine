@@ -2,7 +2,7 @@
 #include "ForestPearlEngine/FPAController.h"
 #include "ForestPearlEngine/InputValue.h"
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
-#include "ForestPearlEngine/GameTimer.h"
+#include "ForestPearlEngine/FPGameTimer.h"
 #include "ForestPearlEngine/FPWorld.h"
 #include "ForestPearlEngine/ForestPearlEngine.h"
 #include <iostream>
@@ -141,7 +141,7 @@ void UI::ShowInfo()
 
 void UI::SetUIContext( bool* actieve, int x, int y, FPVector4 color, std::basic_string<TCHAR> text)
 {
-	TextComponent* TextComponet = new TextComponent();
+	FPTextComponent* TextComponet = new FPTextComponent();
 	TextComponet->SetTextData(actieve, x, y, color, text);
 	TextComponets.push_back(TextComponet);
 }

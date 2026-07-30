@@ -3,11 +3,8 @@
 #include "../ForestPearlEngine/Object/Actor.h"
 #include "Renderers/RenderingDevice.h"
 #include "Renderers/Renderer.h"
+#include "FPGameInstance.h"
 #include "GameProjectLoader.h"
-#include "AssetManager.h"
-#include "MeshRenderList.h"
-#include "TextRenderList.h"
-#include "CameraList.h"
 #include "Systems/InputSystem.h"
 //#include <iostream>
 #include "MCLOG.h"
@@ -35,7 +32,6 @@ bool ForestPearlEngine::PreInitialize()
 
     // InputSystem 父甸扁
     RegisterFPRawInputDevices();
-    FPInputSystem::GetInputSystem();
 
     // RenderDevice 积己
     RenderDevice = &RenderingDevice::GetRenderingDevice();
@@ -44,18 +40,11 @@ bool ForestPearlEngine::PreInitialize()
     Render = new Renderer(*RenderDevice);
     Render->InitializeRenderer(Hwnd);
     
-    GameProjectClassRegistry::Get();
-
-    LoadClassRegist();
-
-    //AssetManager 积己
-    AssetManager::Get();
-    LoadAssets();
-
-    MeshRenderList::Get();
-    TextRenderList::Get();
-    CameraList::Get();
     FPGameInstance::Get();
+
+    LoadLevel();
+    LoadClassRegist();
+    LoadAssets();
 
     return true;
 }
@@ -63,7 +52,7 @@ bool ForestPearlEngine::PreInitialize()
 //BaseWorld 积己 棺 Begin Play 荐青
 bool ForestPearlEngine::Initialize()
 {
-    FPGameInstance::Get().OpenLevel(ReturnStartWorld());
+    FPGameInstance::Get().OpenLevel(ReturnStartLevel());
     FPGameInstance::Get().Initialize();
     FPGameInstance::Get().BeginPlay();
     return true;
@@ -78,8 +67,6 @@ void ForestPearlEngine::GameLoop()
         {
             break;
         }
-
-        FPInputSystem::GetInputSystem().TickInputSystem();
 
         FPGameInstance::Get().Tick();
 
@@ -146,12 +133,13 @@ LRESULT CALLBACK ForestPearlEngine::WndProc(HWND hWnd, UINT message, WPARAM wPar
     {
     case WM_INPUT:
         //MCLOG(LogMC, "");
-        FPInputSystem::GetInputSystem().HandleRawInput(lParam);
+        
+        static_cast<FPInputSystem*>(FPGameInstance::Get().GetInputSystem())->HandleRawInput(lParam);
         return DefWindowProc(hWnd, message, wParam, lParam);
         break;
 
     case WM_ACTIVATE:
-        FPInputSystem::GetInputSystem().ResetKeyStates();
+        static_cast<FPInputSystem*>(FPGameInstance::Get().GetInputSystem())->ResetKeyStates();
         break;
 
     case WM_QUIT:

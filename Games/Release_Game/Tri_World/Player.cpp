@@ -1,15 +1,15 @@
 #include "Player.h"
-#include "ForestPearlEngine/MeshComponent.h"
+#include "ForestPearlEngine/FPMeshComponent.h"
 #include "ForestPearlEngine/FPAController.h"
 #include "ForestPearlEngine/FPWorld.h"
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
 #include "ForestPearlEngine/InputValue.h"
-#include "ForestPearlEngine/GameTimer.h"
+#include "ForestPearlEngine/FPGameTimer.h"
 #include <iostream>
 
 void Player::Initialize()
 {
-	Mesh = new MeshComponent(this, "Model/ToonLink/ToonLinkTriangle.fbx");
+	Mesh = new FPMeshComponent(this, "Model/ToonLink/ToonLinkTriangle.fbx");
 
 	//real Model
 	//Mesh = new MeshComponent(this, "Model/ToonLink/ToonLink.fbx");

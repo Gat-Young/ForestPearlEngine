@@ -9,6 +9,7 @@ class FPActor : public FPObject
 		class FPSceneComponent* RootComponent = nullptr;
 
 	public :
+		FPActor();
 		virtual void Initialize() = 0;
 		virtual void BeginPlay() = 0;
 

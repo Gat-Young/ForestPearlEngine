@@ -4,9 +4,11 @@
 #include <assert.h>
 #include <iostream>
 
-#include "../TextRenderList.h"
-#include "../MeshRenderList.h"
-#include "../CameraList.h"
+#include "../FPGameInstance.h"
+
+#include "../FPTextRenderList.h"
+#include "../FPMeshRenderList.h"
+#include "../FPCameraList.h"
 #include "FPRenderingCommon.h"
 
 //객체 해제/제거 매크로()
@@ -117,7 +119,8 @@ void Renderer::ObjectRendering()
 	ConstBuffer cb;
 
 	//Camera Setting
-	std::vector<CameraItem> CamList = CameraList::Get().GetRenderList();
+	FPCameraList* CameraList = static_cast<FPCameraList*>(FPGameInstance::Get().GetCameraList());
+	std::vector<CameraItem> CamList = CameraList->GetRenderList();
 	
 	XMMATRIX ViewMatrix = XMMatrixIdentity();
 	XMMATRIX ProjectionMatrix = XMMatrixIdentity();
@@ -150,7 +153,8 @@ void Renderer::ObjectRendering()
 	//GizmoRendering(cb);
 
 	//Object Draw
-	std::vector<RenderItem> RenderList = MeshRenderList::Get().GetRenderList();
+	FPMeshRenderList* MeshRenderList = static_cast<FPMeshRenderList*>(FPGameInstance::Get().GetMeshRenderList());
+	std::vector<RenderItem> RenderList = MeshRenderList->GetRenderList();
 	
 	//Priority 값이 큰 걸 우선해서 그림
 	auto Compare = [](const RenderItem& Left, const RenderItem& Right)
@@ -230,8 +234,8 @@ void Renderer::ObjectRendering()
 
 void Renderer::UIRendering()
 {
-
-	std::vector<UIContextItem> RenderList = TextRenderList::Get().GetRenderList();
+	FPTextRenderList* TextRenderList = static_cast<FPTextRenderList*>(FPGameInstance::Get().GetTextRenderList());
+	std::vector<UIContextItem> RenderList = TextRenderList->GetRenderList();
 
 	FontBatch->Begin();
 

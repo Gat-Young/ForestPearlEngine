@@ -2,7 +2,7 @@
 #include "ForestPearlEngine/FPAController.h"
 #include "ForestPearlEngine/InputValue.h"
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
-#include "ForestPearlEngine/GameTimer.h"
+#include "ForestPearlEngine/FPGameTimer.h"
 #include "ForestPearlEngine/FPWorld.h"
 
 void Grid::Initialize()

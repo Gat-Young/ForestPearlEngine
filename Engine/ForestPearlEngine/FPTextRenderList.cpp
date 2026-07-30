@@ -1,13 +1,13 @@
-#include "TextRenderList.h"
+#include "FPTextRenderList.h"
 
-UIContextItem* TextRenderList::RegistRenderList()
+UIContextItem* FPTextRenderList::RegistRenderList()
 {
 	RenderList.push_back(UIContextItem{});
 
 	return &(RenderList.back());
 }
 
-void TextRenderList::UnregistRenderList(UIContextItem* RenderItem)
+void FPTextRenderList::UnregistRenderList(UIContextItem* RenderItem)
 {
 	auto it = std::find_if(RenderList.begin(), RenderList.end(),
 		[RenderItem](UIContextItem& item)

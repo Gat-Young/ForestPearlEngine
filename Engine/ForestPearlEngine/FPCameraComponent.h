@@ -1,9 +1,9 @@
 #pragma once
 #include "FPPrimitiveComponent.h"
 #include "../ForestPearlEngine/Define/FPMath.h"
-#include "CameraList.h"
+#include "FPCameraList.h"
 
-class CameraComponent : public FPPrimitiveComponent
+class FPCameraComponent : public FPPrimitiveComponent
 {
 	public:
 		//카메라 속성
@@ -21,7 +21,7 @@ class CameraComponent : public FPPrimitiveComponent
 		CameraItem* CamItem = nullptr;
 
 	public:
-		CameraComponent(FPActor* Owner);
-		~CameraComponent();
+		FPCameraComponent(FPActor* Owner);
+		~FPCameraComponent();
 		void RegistCamera();
 };

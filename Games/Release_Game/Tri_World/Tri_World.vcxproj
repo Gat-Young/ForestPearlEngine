@@ -22,9 +22,7 @@
     <ClInclude Include="Axis.h" />
     <ClInclude Include="GameCamera.h" />
     <ClInclude Include="GameController.h" />
-    <ClInclude Include="GameLevel.h" />
     <ClInclude Include="GameMode.h" />
-    <ClInclude Include="GameWorld.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Terrain.h" />
@@ -35,9 +33,7 @@
     <ClCompile Include="Axis.cpp" />
     <ClCompile Include="GameCamera.cpp" />
     <ClCompile Include="GameController.cpp" />
-    <ClCompile Include="GameLevel.cpp" />
     <ClCompile Include="GameMode.cpp" />
-    <ClCompile Include="GameWorld.cpp" />
     <ClCompile Include="GameProjectLoader.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Player.cpp" />

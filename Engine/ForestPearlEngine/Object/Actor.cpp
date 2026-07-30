@@ -1,5 +1,11 @@
 #include "Actor.h"
 #include "../FPSceneComponent.h"
+#include <typeinfo>
+
+FPActor::FPActor()
+{
+    RootComponent = new FPSceneComponent(this);
+}
 
 //임시로 컴포넌트 Tick 수행
 void FPActor::Tick()
@@ -29,8 +35,16 @@ bool FPActor::DetachFromActor()
 
 bool FPActor::SetRootComponent(FPSceneComponent* Component)
 {
-    if (RootComponent != nullptr)
+    //Default SceneComponent 지우고 설정, 아니라면 교체
+    Component->SetWorldLocation(RootComponent->GetComponentLocation());
+
+    if (typeid(*RootComponent) == typeid(FPSceneComponent))
     {
+        delete(RootComponent);
+    }
+    else
+    {
+        Component->DetachFromComponent();
         RootComponent->SetupAttachment(Component);
     }
     RootComponent = Component;

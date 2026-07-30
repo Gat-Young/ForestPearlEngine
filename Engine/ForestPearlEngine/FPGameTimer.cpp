@@ -3,9 +3,9 @@
 //***************************************************************************************
 
 #include <windows.h>
-#include "GameTimer.h"
+#include "FPGameTimer.h"
 
-GameTimer::GameTimer()
+FPGameTimer::FPGameTimer()
 : mSecondsPerCount(0.0), mDeltaTime(-1.0), mBaseTime(0), 
   mPausedTime(0), mPrevTime(0), mCurrTime(0), mStopped(false)
 {
@@ -16,7 +16,7 @@ GameTimer::GameTimer()
 
 // Returns the total time elapsed since Reset() was called, NOT counting any
 // time when the clock is stopped.
-float GameTimer::TotalTime()const
+float FPGameTimer::TotalTime()const
 {
 	// If we are stopped, do not count the time that has passed since we stopped.
 	// Moreover, if we previously already had a pause, the distance 
@@ -48,17 +48,17 @@ float GameTimer::TotalTime()const
 	}
 }
 
-float GameTimer::DeltaTime()const
+float FPGameTimer::DeltaTime()const
 {
 	return (float)mDeltaTime;
 }
 
-float GameTimer::DeltaTimeMS() const
+float FPGameTimer::DeltaTimeMS() const
 {
 	return (float)(mDeltaTime * 1000.0);
 }
 
-void GameTimer::Reset()
+void FPGameTimer::Reset()
 {
 	__int64 currTime;
 	QueryPerformanceCounter((LARGE_INTEGER*)&currTime);
@@ -69,7 +69,7 @@ void GameTimer::Reset()
 	mStopped  = false;
 }
 
-void GameTimer::Start()
+void FPGameTimer::Start()
 {
 	__int64 startTime;
 	QueryPerformanceCounter((LARGE_INTEGER*)&startTime);
@@ -91,7 +91,7 @@ void GameTimer::Start()
 	}
 }
 
-void GameTimer::Stop()
+void FPGameTimer::Stop()
 {
 	if( !mStopped )
 	{
@@ -103,7 +103,7 @@ void GameTimer::Stop()
 	}
 }
 
-void GameTimer::Tick()
+void FPGameTimer::Tick()
 {
 	if( mStopped )
 	{

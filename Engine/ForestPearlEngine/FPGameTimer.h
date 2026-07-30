@@ -4,11 +4,12 @@
 
 #ifndef GAMETIMER_H
 #define GAMETIMER_H
+#include "FPGameInstanceSubSystem.h"
 
-class GameTimer
+class FPGameTimer : public FPGameInstanceSubSystem
 {
 public:
-	GameTimer();
+	FPGameTimer();
 
 	float TotalTime()const; // in seconds
 	float DeltaTime()const; // in seconds

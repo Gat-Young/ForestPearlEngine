@@ -1,9 +1,9 @@
 #include "Tree.h"
-#include "ForestPearlEngine/MeshComponent.h"
+#include "ForestPearlEngine/FPMeshComponent.h"
 
 void Tree::Initialize()
 {
-	Mesh = new MeshComponent(this, "Model/Tree/Tree.fbx");
+	Mesh = new FPMeshComponent(this, "Model/Tree/Tree.fbx");
 
 	SetRootComponent((FPSceneComponent*)Mesh);
 	Mesh->SetMeshCull(false);

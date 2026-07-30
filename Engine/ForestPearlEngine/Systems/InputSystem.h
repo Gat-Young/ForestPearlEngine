@@ -8,6 +8,7 @@
 #include <Xinput.h>
 #pragma comment(lib, "Xinput.lib")
 #include "../InputValue.h"
+#include "../FPGameInstanceSubSystem.h"
 
 struct FKeyInputInfo
 {
@@ -18,13 +19,13 @@ struct FKeyInputInfo
 
 class FPInputMappingContext;
 
-class FPInputSystem
+class FPInputSystem : public FPGameInstanceSubSystem
 {
 private:
-	FPInputSystem() = default;
+	
 
 public:
-	static FPInputSystem& GetInputSystem();
+	FPInputSystem() = default;
 
 	void HandleRawInput(LPARAM LParam);
 

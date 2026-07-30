@@ -4,8 +4,9 @@
 #include <string>
 #include <unordered_map>
 #include "./Object/Object.h"
+#include "FPGameInstanceSubSystem.h"
 
-class GameProjectClassRegistry
+class FPGameProjectClassRegistry : public FPGameInstanceSubSystem
 {
 public:
 	using CreateFunc = std::function<std::unique_ptr<FPObject>()>;
@@ -25,19 +26,12 @@ public:
 
 	bool HasFactory(std::string ClassName);
 
-	//Single Tone
-	static GameProjectClassRegistry& Get()
-	{
-		static GameProjectClassRegistry Instance;
-		return Instance;
-	}
+	FPGameProjectClassRegistry() = default;
+	~FPGameProjectClassRegistry() = default;
 
 private:
 	std::unordered_map<std::string, CreateFunc> factories;
 
-	GameProjectClassRegistry() = default;
-	~GameProjectClassRegistry() = default;
-
-	GameProjectClassRegistry(const GameProjectClassRegistry&) = delete;
-	GameProjectClassRegistry& operator=(const GameProjectClassRegistry&) = delete;
+	FPGameProjectClassRegistry(const FPGameProjectClassRegistry&) = delete;
+	FPGameProjectClassRegistry& operator=(const FPGameProjectClassRegistry&) = delete;
 };

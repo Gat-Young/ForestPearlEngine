@@ -1,12 +1,12 @@
 #pragma once
 #include "ForestPearlEngine/Object/Actor.h"
 
-class MeshComponent;
+class FPMeshComponent;
 
 class Terrain : public FPActor
 {
 	private:
-		MeshComponent* Mesh;
+		FPMeshComponent* Mesh;
 
 	public:
 		Terrain() = default;

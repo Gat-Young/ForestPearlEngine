@@ -1,13 +1,11 @@
-#include "AssetManager.h"
+#include "FPAssetManager.h"
 #include "Renderers/RenderingDevice.h"
 #include <iostream>
+#include <fstream>
+#include "Libraries/nlohmann/json.hpp"
+using json = nlohmann::json;
 
-AssetManager::AssetManager()
-{
-
-}
-
-std::vector<std::pair<int, int> > AssetManager::LoadVertexBuffer(std::string MeshPath)
+std::vector<std::pair<int, int> > FPAssetManager::LoadVertexBuffer(std::string MeshPath)
 {
 	if (MeshMap.count(MeshPath) > 0)
 	{
@@ -21,12 +19,12 @@ std::vector<std::pair<int, int> > AssetManager::LoadVertexBuffer(std::string Mes
 	return MeshMap[MeshPath];
 }
 
-int AssetManager::MakeVertexBuffer(std::vector<VERTEX> Mesh)
+int FPAssetManager::MakeVertexBuffer(std::vector<VERTEX> Mesh)
 {
 	return RenderingDevice::GetRenderingDevice().CreateVertexBuffer(Mesh.data(), Mesh.size(), sizeof(VERTEX));
 }
 
-void AssetManager::LoadFbxData(std::string FbxPath)
+void FPAssetManager::LoadFbxData(std::string FbxPath)
 {
 	//fbx Load 옵션 설정
 	ufbx_load_opts Opts = {};
@@ -70,8 +68,97 @@ void AssetManager::LoadFbxData(std::string FbxPath)
 	ufbx_free_scene(Scene);
 }
 
+//Level 정보를 저장
+void FPAssetManager::LoadLevelData(std::string LevelName, std::string LevelPath)
+{
+	if (LevelData.count(LevelName) > 0)
+	{
+		std::cout << "같은 이름의 Level이 존재합니다." << "\n";
+		return;
+	}
+
+	std::ifstream File(LevelPath);
+
+	if (!File.is_open())
+	{
+		std::cerr << "Level.json 파일 열기 실패\n";
+		return;
+	}
+
+	json JsonLevelData;
+
+	try
+	{
+		File >> JsonLevelData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	std::string GameModeName = JsonLevelData["gamemode"];
+	GameModeData[LevelName] = GameModeName;
+
+
+	for (const json& ActorData : JsonLevelData["actors"])
+	{
+		std::string ClassName = ActorData["class"];
+		std::string ActorName = ActorData["name"];
+
+		const json& Transform = ActorData["transform"];
+		const json& Location = Transform["location"];
+		const json& Rotation = Transform["rotation"];
+		const json& Scale = Transform["scale"];
+
+		float LocationX = Location["x"];
+		float LocationY = Location["y"];
+		float LocationZ = Location["z"];
+
+		float RotationX = Rotation["x"];
+		float RotationY = Rotation["y"];
+		float RotationZ = Rotation["z"];
+
+		float ScaleX = Scale["x"];
+		float ScaleY = Scale["y"];
+		float ScaleZ = Scale["z"];
+
+		FPActorData Data;
+
+		Data.ClassName = ClassName;
+		Data.ActorName = ActorName;
+
+		Data.Location_x = LocationX;
+		Data.Location_y = LocationY;
+		Data.Location_z = LocationZ;
+
+		Data.Rotation_x = RotationX;
+		Data.Rotation_y = RotationY;
+		Data.Rotation_z = RotationZ;
+
+		Data.Scale_x = ScaleX;
+		Data.Scale_y = ScaleY;
+		Data.Scale_Z = ScaleZ;
+
+		LevelData[LevelName].push_back(Data);
+	}
+}
+
+std::vector<FPActorData>& FPAssetManager::GetLevelData(std::string LevelName)
+{
+	return LevelData[LevelName];
+}
+
+std::string FPAssetManager::GetGameModeData(std::string LevelName)
+{
+	return GameModeData[LevelName];
+}
+
 //ufbx_string -> std::string
-std::string AssetManager::ConvertUfbxString(ufbx_string String)
+std::string FPAssetManager::ConvertUfbxString(ufbx_string String)
 {
 	if (!String.data || String.length == 0)
 	{
@@ -84,7 +171,7 @@ std::string AssetManager::ConvertUfbxString(ufbx_string String)
 // ufbx_mesh -> FPMeshData
 // 인덱스 버퍼를 생성하지 않음
 // 삼각형 코너마다 정점을 하나씩 복사
-FPMeshData AssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node* Node)
+FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node* Node)
 {
 	FPMeshData Result;
 

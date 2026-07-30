@@ -5,6 +5,7 @@
 #include "Windows.h"
 #include "InputMappingContext.h"
 #include "InputAction.h"
+#include "../../FPGameInstance.h"
 #include "../../Systems/KeyStateEnum.h"
 #include "../../Define/FPMath.h"
 #include "../../Systems/InputSystem.h"
@@ -38,7 +39,8 @@ public:
 				}
 				else
 				{
-					IMC->GetMappedKeys(IAName, FPInputSystem::GetInputSystem().GetCheckPressedKeys());
+					FPInputSystem* InputSystem = static_cast<FPInputSystem*>(FPGameInstance::Get().GetInputSystem());
+					IMC->GetMappedKeys(IAName, InputSystem->GetCheckPressedKeys());
 					//std::cout << "[FPInputComponent::BindMethod] Bind Completed!\n";
 				}
 			}

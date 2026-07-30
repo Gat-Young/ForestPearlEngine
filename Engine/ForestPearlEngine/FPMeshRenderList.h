@@ -1,22 +1,16 @@
 #pragma once
 #include "Renderers/FPRenderingCommon.h"
+#include "FPGameInstanceSubSystem.h"
 
-
-class MeshRenderList
+class FPMeshRenderList : public FPGameInstanceSubSystem
 {
 	private:
 		std::vector<RenderItem> RenderList;
 
-		MeshRenderList() = default;
-		~MeshRenderList() = default;
-
 	public:
-		//Single Tone
-		static MeshRenderList& Get()
-		{
-			static MeshRenderList Instance;
-			return Instance;
-		}
+
+		FPMeshRenderList() = default;
+		~FPMeshRenderList() = default;
 
 		RenderItem* RegistRenderList();
 		void UnregistRenderList(RenderItem* RenderItem);

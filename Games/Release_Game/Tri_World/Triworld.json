@@ -1,4 +1,6 @@
 {
+  "gamemode": "GameMode",
+
   "actors": [
     {
       "class": "GameCamera",

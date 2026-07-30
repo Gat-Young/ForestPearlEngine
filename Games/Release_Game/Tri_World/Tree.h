@@ -3,12 +3,12 @@
 #include "ForestPearlEngine/Systems/KeyStateEnum.h"
 #include "ForestPearlEngine/Define/FPMath.h"
 
-class MeshComponent;
+class FPMeshComponent;
 
 class Tree : public FPActor
 {
 private:
-	MeshComponent* Mesh;
+	FPMeshComponent* Mesh;
 
 
 public:

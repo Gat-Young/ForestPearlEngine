@@ -1,13 +1,13 @@
-#include "MeshRenderList.h"
+#include "FPMeshRenderList.h"
 
-RenderItem* MeshRenderList::RegistRenderList()
+RenderItem* FPMeshRenderList::RegistRenderList()
 {
 	RenderList.push_back(RenderItem{});
 
 	return &(RenderList.back());
 }
 
-void MeshRenderList::UnregistRenderList(RenderItem* Renderitem)
+void FPMeshRenderList::UnregistRenderList(RenderItem* Renderitem)
 {
 	auto it = std::find_if(RenderList.begin(), RenderList.end(), 
 		[Renderitem](RenderItem& item)

@@ -3,6 +3,7 @@
 #include "tchar.h"
 #include <vector>
 #include "../../Engine/ForestPearlEngine/Define/FPMath.h"
+#include "FPGameInstanceSubSystem.h"
 
 struct UIContextItem
 {
@@ -13,21 +14,15 @@ struct UIContextItem
 	std::basic_string<TCHAR>* msg;
 };
 
-class TextRenderList
+class FPTextRenderList : public FPGameInstanceSubSystem
 {
 	private:
 		std::vector<UIContextItem> RenderList;
 
-		TextRenderList() = default;
-		~TextRenderList() = default;
-
 	public:
-		//Single Tone
-		static TextRenderList& Get()
-		{
-			static TextRenderList Instance;
-			return Instance;
-		}
+
+		FPTextRenderList() = default;
+		~FPTextRenderList() = default;
 
 		UIContextItem* RegistRenderList();
 		void UnregistRenderList(UIContextItem* RenderItem);

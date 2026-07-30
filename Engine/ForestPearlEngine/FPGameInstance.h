@@ -4,19 +4,30 @@
 #include <memory>
 
 class GameTimer;
-class FPWorld;
-
 class FPGameInstanceSubSystem;
+
+enum class GameInstanceSubSystemName : size_t
+{
+	GameTimer,
+	ClassRegister,
+	InputSystem,
+	AssetManager,
+	MeshRenderList,
+	TextRenderList,
+	CameraList,
+
+	GameInstanceSubSystemList_MAX
+};
 
 class FPGameInstance : public FPObject
 {
 	private:
 		FPGameInstance();
-		~FPGameInstance() = default;
-
+		virtual ~FPGameInstance() override;
 		FPGameInstance(const FPGameInstance&) = delete;
 		FPGameInstance& operator=(const FPGameInstance&) = delete;
 
+		//////////////////////////////////////////
 		// GamePlay시 하나만 존재해야하는 객체들
 
 		//World
@@ -27,43 +38,28 @@ class FPGameInstance : public FPObject
 		};
 		WorldContext GameWorld;
 
-		//GameTimer
-		FPGameInstanceSubSystem* Gametimer;
-
-		//등록된 클래스 모음
-		FPGameInstanceSubSystem* ClassRegister;
-
-		//InputSystem
-		FPGameInstanceSubSystem* InputSystem;
-
-		//AssetManager
-		FPGameInstanceSubSystem* AssetManager;
-
-		//MeshRenderList
-		FPGameInstanceSubSystem* MeshRenderList;
-
-		//TextRenderList
-		FPGameInstanceSubSystem* TextRenderList;
-
-		//CameraList
-		FPGameInstanceSubSystem* CameraList;
-
+		//GameInstanceSubSystem이 들어있는 배열
+		FPGameInstanceSubSystem* GameInstanceSubSystem[static_cast<size_t>(GameInstanceSubSystemName::GameInstanceSubSystemList_MAX)];
 
 	public:
-		//Single Tone
-		static FPGameInstance& Get()
-		{
-			static FPGameInstance Instance;
-			return Instance;
-		}
+		static FPGameInstance& Get() { static FPGameInstance Instance; return Instance; };
 
 		//레벨 전환
-		void OpenLevel(std::string WorldName);
+		void OpenLevel(std::string LevelName);
 
 		//월드 반환
 		FPWorld* GetWorld() override;
 
-		GameTimer* GetGameTimer();
+		//GameInstanceSubSystem 반환
+		FPGameInstanceSubSystem* GetInstanceSubSystem(GameInstanceSubSystemName SubSystemName);
+		FPGameInstanceSubSystem* GetClassRegister();
+		FPGameInstanceSubSystem* GetGameTimer();
+		FPGameInstanceSubSystem* GetAssetManager();
+		FPGameInstanceSubSystem* GetInputSystem();
+		FPGameInstanceSubSystem* GetTextRenderList();
+		FPGameInstanceSubSystem* GetCameraList();
+		FPGameInstanceSubSystem* GetMeshRenderList();
+	
 
 		void Initialize();
 		void BeginPlay();

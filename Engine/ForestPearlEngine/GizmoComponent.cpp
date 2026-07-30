@@ -1,5 +1,6 @@
 #include "GizmoComponent.h"
-#include "AssetManager.h"
+#include "FPAssetManager.h"
+#include "FPGameInstance.h"
 
 int GizmoComponent::MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh)
 {
@@ -10,7 +11,8 @@ int GizmoComponent::MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh)
 		Vertex.push_back(VERTEX{ GizmoMesh[i].x, GizmoMesh[i].y, GizmoMesh[i].z, GizmoMesh[i].r, GizmoMesh[i].g, GizmoMesh[i].b, GizmoMesh[i].a});
 	}
 
-	return AssetManager::Get().MakeVertexBuffer(Vertex);
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	return AssetManager->MakeVertexBuffer(Vertex);
 }
 
 void GizmoComponent::MakeGrid(GRIDINFO* grid)
@@ -161,7 +163,8 @@ void GizmoComponent::MakeAxis(GIZMO_AXISINFO* axis)
 
 void GizmoComponent::RegistGizmoRenderList()
 {
-	RenderItem = MeshRenderList::Get().RegistRenderList();
+	FPMeshRenderList* MeshRenderList = static_cast<FPMeshRenderList*>(FPGameInstance::Get().GetMeshRenderList());
+	RenderItem = MeshRenderList->RegistRenderList();
 
 	RenderItem->Priority = &(this->Priority);
 	RenderItem->Active = &(this->isActive);
@@ -188,5 +191,6 @@ GizmoComponent::GizmoComponent(FPActor* Owner) : FPPrimitiveComponent(Owner)
 
 GizmoComponent::~GizmoComponent()
 {
-	MeshRenderList::Get().UnregistRenderList(RenderItem);
+	FPMeshRenderList* MeshRenderList = static_cast<FPMeshRenderList*>(FPGameInstance::Get().GetMeshRenderList());
+	MeshRenderList->UnregistRenderList(RenderItem);
 }

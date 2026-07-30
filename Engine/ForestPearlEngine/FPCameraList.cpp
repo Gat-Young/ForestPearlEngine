@@ -1,13 +1,13 @@
-#include "CameraList.h"
+#include "FPCameraList.h"
 
-CameraItem* CameraList::RegistRenderList()
+CameraItem* FPCameraList::RegistRenderList()
 {
 	CamList.push_back(CameraItem{});
 
 	return &(CamList.back());
 }
 
-void CameraList::UnregistRenderList(CameraItem* RenderItem)
+void FPCameraList::UnregistRenderList(CameraItem* RenderItem)
 {
 	auto it = std::find_if(CamList.begin(), CamList.end(),
 		[RenderItem](CameraItem& item)

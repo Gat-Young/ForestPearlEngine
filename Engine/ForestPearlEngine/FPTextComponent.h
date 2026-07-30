@@ -1,7 +1,7 @@
 #pragma once
-#include "TextRenderList.h"
+#include "FPTextRenderList.h"
 
-class TextComponent
+class FPTextComponent
 {
 	private:
 		bool* active;
@@ -14,8 +14,8 @@ class TextComponent
 		void RegistTextRenderList();
 
 	public:
-		TextComponent();
+		FPTextComponent();
 
 		void SetTextData(bool* active, int x, int y, FPVector4 color, std::basic_string<TCHAR> msg);
-		~TextComponent();
+		~FPTextComponent();
 };

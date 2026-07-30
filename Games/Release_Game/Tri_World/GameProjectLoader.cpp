@@ -1,7 +1,4 @@
 #include "ForestPearlEngine/GameProjectLoader.h"
-#include "ForestPearlEngine/AssetManager.h"
-#include "GameWorld.h"
-#include "GameLevel.h"
 #include "UI.h"
 #include "GameMode.h"
 #include "GameController.h"
@@ -12,30 +9,37 @@
 #include "Terrain.h"
 #include "Tree.h"
 
+void LoadLevel()
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	AssetManager->LoadLevelData("TriWorld", "../../Games/Release_Game/Tri_World/TriWorld.json");
+
+}
+
 void LoadClassRegist()
 {
-	GameProjectClassRegistry::Get().Register<GameWorld>("GameWorld");
-	GameProjectClassRegistry::Get().Register<GameLevel>("GameLevel");
-	GameProjectClassRegistry::Get().Register<GameMode>("GameMode");
-	GameProjectClassRegistry::Get().Register<GameController>("GameController");
-	GameProjectClassRegistry::Get().Register<UI>("UI");
-	GameProjectClassRegistry::Get().Register<Player>("Player");
-	GameProjectClassRegistry::Get().Register<Tree>("Tree");
-	GameProjectClassRegistry::Get().Register<GameCamera>("GameCamera");
-	GameProjectClassRegistry::Get().Register<Grid>("Grid");
-	GameProjectClassRegistry::Get().Register<Axis>("Axis");
-	GameProjectClassRegistry::Get().Register<Terrain>("Terrain");
+	FPGameProjectClassRegistry* ClassRegistry = static_cast<FPGameProjectClassRegistry*>(FPGameInstance::Get().GetClassRegister());
+	ClassRegistry->Register<GameMode>("GameMode");
+	ClassRegistry->Register<GameController>("GameController");
+	ClassRegistry->Register<UI>("UI");
+	ClassRegistry->Register<Player>("Player");
+	ClassRegistry->Register<Tree>("Tree");
+	ClassRegistry->Register<GameCamera>("GameCamera");
+	ClassRegistry->Register<Grid>("Grid");
+	ClassRegistry->Register<Axis>("Axis");
+	ClassRegistry->Register<Terrain>("Terrain");
 }
 
 void LoadAssets()
 {
-	AssetManager::Get().LoadFbxData("Model/ToonLink/ToonLinkTriangle.fbx");
-	AssetManager::Get().LoadFbxData("Model/ToonLink/ToonLink.fbx");
-	AssetManager::Get().LoadFbxData("Model/Terrain/Terrain.fbx");
-	AssetManager::Get().LoadFbxData("Model/Tree/Tree.fbx");
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	AssetManager->LoadFbxData("Model/ToonLink/ToonLinkTriangle.fbx");
+	AssetManager->LoadFbxData("Model/ToonLink/ToonLink.fbx");
+	AssetManager->LoadFbxData("Model/Terrain/Terrain.fbx");
+	AssetManager->LoadFbxData("Model/Tree/Tree.fbx");
 }
 
-std::string ReturnStartWorld()
+std::string ReturnStartLevel()
 {
-	return "GameWorld";
+	return "TriWorld";
 }

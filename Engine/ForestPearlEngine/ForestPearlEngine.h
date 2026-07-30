@@ -1,13 +1,12 @@
 #pragma once
 #include "framework.h"
 #include <vector>
-#include "FPGameInstance.h"
-
 
 class FPObject;
 class FPActor;
 class Renderer;
 class RenderingDevice;
+class FPGameInstance;
 
 class ForestPearlEngine
 {

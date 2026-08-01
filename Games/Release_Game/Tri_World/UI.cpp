@@ -167,7 +167,7 @@ void UI::ShowInfo()
 	Text6->SetTextData(&bShow, x, y += 15, col, _T(""));
 	Text7->SetTextData(&bShow, x, y += 15, col, _T("게임인재원 8기 프로그래밍학과 임백규"));
 
-	Text8->SetTextData(&bShow, x, y += 15, { 1.0f, 0.0f, 0.0f, 1.0f }, _T("Havw Fun~"));
+	Text8->SetTextData(&bShow, x, y += 15, { 1.0f, 0.0f, 0.0f, 1.0f }, _T("Have Fun~"));
 
 	SystemInfo(1, 20, {1.0f, 1.0f, 0.0f, 1.0f});
 }

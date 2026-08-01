@@ -44,7 +44,7 @@ class UI : public FPActor
 		bool GridOn = true;
 		bool AxisOn = true;
 		bool ZEnable = true;
-		bool isCull = true;
+		bool isCull = false;
 		bool isFill = true;
 
 	public:

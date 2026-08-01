@@ -15,7 +15,7 @@ private:
 
 
 	bool isFill = true;
-	bool isCull = true;
+	bool isCull = false;
 
 
 

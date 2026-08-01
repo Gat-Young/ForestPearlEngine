@@ -6,19 +6,7 @@ FPSceneComponent::FPSceneComponent(FPActor* Owner) : FPActorComponent(Owner)
 {
 }
 
-void FPSceneComponent::SetupAttachment(FPSceneComponent* Parent)
-{
-	DetachFromComponent();
-	ParentComponent = Parent;
-	ParentComponent->AttachChildComponent(this);
-}
-
-void FPSceneComponent::DetachFromComponent()
-{
-	if (ParentComponent == nullptr) return;
-	ParentComponent->DetachChildComponent(this);
-}
-
+//Transform 직접 설정
 void FPSceneComponent::SetRelativeLocation(FPVector3 Location)
 {
 	RelativeTransform.Location = Location;
@@ -52,6 +40,37 @@ void FPSceneComponent::SetWorldScale3D(FPVector3 Scale)
 	WorldTransform.Scale = Scale;
 }
 
+//Transform 변화 값 추가
+void FPSceneComponent::AddRelativeLocation(FPVector3 Location)
+{
+}
+
+void FPSceneComponent::AddRelativeRotation(FPVector3 Rotation)
+{
+}
+
+void FPSceneComponent::AddLocalOffset(FPVector3 Offset)
+{
+}
+
+void FPSceneComponent::AddLocalRotation(FPVector3 Rotation)
+{
+}
+
+void FPSceneComponent::AddWorldOffset(FPVector3 Offset)
+{
+	FPVector3 NewLocation = WorldTransform.Location + Offset;
+	WorldTransform.Location = NewLocation;
+}
+
+void FPSceneComponent::AddWorldRotation(FPVector3 Rotation)
+{
+	FPQuaternion DeltaQuat = FromEuler(Rotation);
+	FPQuaternion NewQuaternionRotation = WorldTransform.QuaternionRotation * DeltaQuat;
+	WorldTransform.QuaternionRotation = NewQuaternionRotation;
+}
+
+//Transform 정보 반환
 FTransform FPSceneComponent::GetComponentTransform()
 {
 	return WorldTransform;
@@ -123,6 +142,20 @@ void FPSceneComponent::Tick()
 	{
 		child->Tick();
 	}
+}
+
+//컴포넌트 등록 및 해제
+void FPSceneComponent::SetupAttachment(FPSceneComponent* Parent)
+{
+	DetachFromComponent();
+	ParentComponent = Parent;
+	ParentComponent->AttachChildComponent(this);
+}
+
+void FPSceneComponent::DetachFromComponent()
+{
+	if (ParentComponent == nullptr) return;
+	ParentComponent->DetachChildComponent(this);
 }
 
 void FPSceneComponent::AttachChildComponent(FPSceneComponent* Child)

@@ -32,6 +32,18 @@ class FPSceneComponent : public FPActorComponent
 		void SetWorldRotation(FPVector3 Rotation);
 		void SetWorldScale3D(FPVector3 Scale);
 
+		//부모 기준 변화량 추가
+		void AddRelativeLocation(FPVector3 Location);
+		void AddRelativeRotation(FPVector3 Rotation);
+
+		//자신 기준 변화량 추가
+		void AddLocalOffset(FPVector3 Offset);
+		void AddLocalRotation(FPVector3 Rotation);
+
+		//월드 기준 변화량 추가
+		void AddWorldOffset(FPVector3 Offset);
+		void AddWorldRotation(FPVector3 Rotation);
+
 		//Transform 가져오기
 		FTransform GetComponentTransform();
 		FTransform GetRelativeTransform();

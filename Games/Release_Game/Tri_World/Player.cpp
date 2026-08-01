@@ -46,7 +46,7 @@ void Player::Move(FInputValue Value)
 	float mov = 10.0f;
 	float move_x = Value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
 	float move_y = Value.Y * mov * (GetWorld()->GetGameTimer()->DeltaTime());
-	SetActorLocation(RootComponent->GetRelativeLocation() + FPVector3{ move_x, 0.0f, move_y });
+	RootComponent->AddLocalOffset(FPVector3{ move_x, 0.0f, move_y });
 }
 
 void Player::SetFillTriangel(FInputValue Value)

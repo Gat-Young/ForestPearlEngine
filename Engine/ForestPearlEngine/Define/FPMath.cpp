@@ -65,7 +65,9 @@ FPVector3 Rotate(const FPQuaternion& quat, const FPVector3& vec)
 {
 	FPQuaternion Quatvec = { vec.x, vec.y, vec.z, 0.0f };
 
-	FPQuaternion result = ((quat * Quatvec) * Inverse(quat));
+	FPQuaternion BaseQuat = quat.Normalize();
+
+	FPQuaternion result = ((BaseQuat * Quatvec) * Inverse(BaseQuat));
 
 	return FPVector3{result.x, result.y, result.z};
 }

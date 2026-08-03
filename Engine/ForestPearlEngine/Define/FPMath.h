@@ -74,6 +74,8 @@ struct FPVector3
 
 	float Length() const;
 
+	FPVector3 Normalize() const;
+
 };
 
 struct FPVector4

@@ -134,7 +134,7 @@ void Renderer::ObjectRendering()
 		XMVECTOR eye, lookat, up;
 		eye = XMVectorSet(CamItem.Location->x, CamItem.Location->y, CamItem.Location->z, 1);
 		lookat = XMVectorSet(CamItem.LookAt->x, CamItem.LookAt->y, CamItem.LookAt->z, 1);
-		up = XMVectorSet(CamItem.Up->x, CamItem.Up->y, CamItem.Up->z, 1);
+		up = XMVectorSet(CamItem.Up->x, CamItem.Up->y, CamItem.Up->z, 0);
 		
 		//std::cout << "CameraItem : " << CamItem.Location->x << " : " << CamItem.Location->y << " : " << CamItem.Location->z << "\n";
 		XMStoreFloat4x4(&xmView, XMMatrixLookAtLH(eye, lookat, up));
@@ -147,6 +147,7 @@ void Renderer::ObjectRendering()
 		//XMFLOAT4X4 xmQuaternionRotation;
 		//XMVECTOR xmQuaternion = { CamItem.Rotation->x, CamItem.Rotation->y, CamItem.Rotation->z, CamItem.Rotation->w };
 		//XMStoreFloat4x4(&xmQuaternionRotation, XMMatrixRotationQuaternion(xmQuaternion));
+		//
 		//XMMATRIX Rotation = XMLoadFloat4x4(&xmQuaternionRotation);
 
 		////이동 처리
@@ -154,11 +155,12 @@ void Renderer::ObjectRendering()
 		//XMStoreFloat4x4(&xmPosition, XMMatrixTranslation(CamItem.Location->x, CamItem.Location->y, CamItem.Location->z));
 		//XMMATRIX Position = XMLoadFloat4x4(&xmPosition);
 
-		////모델링 행렬 SRT
-		//TransformMatrix = Rotation * Position;
+		////모델링 행렬 TR
+		//TransformMatrix = Position * Rotation;
 
+		//뷰행렬 TR의 역
 		//ViewMatrix = XMMatrixInverse(nullptr, TransformMatrix);
-		
+		//
 
 		//Projection 행렬
 		XMFLOAT4X4 xmProj;

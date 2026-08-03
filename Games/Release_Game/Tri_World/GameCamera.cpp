@@ -41,7 +41,7 @@ void GameCamera::Tick()
 	if (player != nullptr)
 	{
 		SetActorLocation(player->GetActorLocation());
-		Camera->LookAt = RootComponent->GetComponentLocation();
+		Camera->LookAt = player->GetActorLocation();
 	}
 	__super::Tick();
 }
@@ -66,6 +66,7 @@ void GameCamera::Move(FInputValue value)
 
 	std::cout << move_x << " : " << move_y << " : " << "0.0f" << "\n";
 
+	RootComponent->AddWorldRotation(FPVector3{ 0.0f, -move_x, 0.0f });
 	RootComponent->AddLocalRotation(FPVector3{move_y, 0.0f, 0.0f});
-	RootComponent->AddLocalRotation(FPVector3{0.0f, -move_x, 0.0f });
+
 }

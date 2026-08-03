@@ -32,6 +32,14 @@ float FPVector3::Length() const
 	return std::sqrt(this->LengthSq());
 }
 
+FPVector3 FPVector3::Normalize() const
+{
+	float len = this->Length();
+
+	if (len <= 0.000001f) return FPVector3{ 0, 0, 0};
+	return FPVector3{ x / len , y / len, z / len };
+}
+
 
 ///////////////////////////////////////////////////////////////////////
 //

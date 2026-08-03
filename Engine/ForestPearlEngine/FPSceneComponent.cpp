@@ -59,7 +59,7 @@ void FPSceneComponent::AddRelativeRotation(FPVector3 Rotation)
 {
 	//부모 축 기준으로 Rotation 회전
 	FPQuaternion DeltaQuat = FromEuler(Rotation);
-	RelativeTransform.QuaternionRotation = (DeltaQuat * ParentComponent->WorldTransform.QuaternionRotation).Normalize();
+	RelativeTransform.QuaternionRotation = (DeltaQuat * RelativeTransform.QuaternionRotation).Normalize();
 	RelativeTransform.Rotation = RelativeTransform.QuaternionRotation.ToEuler();
 
 	//월드를 재계산
@@ -104,7 +104,7 @@ void FPSceneComponent::AddWorldOffset(FPVector3 Offset)
 void FPSceneComponent::AddWorldRotation(FPVector3 Rotation)
 {
 	FPQuaternion DeltaQuat = FromEuler(Rotation);
-	FPQuaternion NewQuaternionRotation = WorldTransform.QuaternionRotation * DeltaQuat;
+	FPQuaternion NewQuaternionRotation = DeltaQuat * WorldTransform.QuaternionRotation;
 	WorldTransform.QuaternionRotation = NewQuaternionRotation.Normalize();
 	WorldTransform.Rotation = WorldTransform.QuaternionRotation.ToEuler();
 

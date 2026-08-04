@@ -15,8 +15,12 @@ void Player::Initialize()
 	//Mesh = new MeshComponent(this, "ToonLink/ToonLink.fbx");
 
 	SetRootComponent((FPSceneComponent*)Mesh);
-
 	Mesh->SetMeshCull(false);
+
+	ShieldPivot = new FPSceneComponent(this);
+	ShieldPivot->SetupAttachment(Mesh);
+	ShieldPivot->SetRelativeLocation({ 0.0f, 3.0f, 0.0f });
+
 	FPAController* Controller = GetWorld()->GetController(0);
 
 	if (Controller == nullptr)
@@ -34,10 +38,12 @@ void Player::BeginPlay()
 
 void Player::Tick()
 {
-	//angle += AngleSpeed * (GetWorld()->GetGameTimer()->DeltaTimeMS());
-	//RootComponent->SetRelativeRotation(FPVector3{ 0.0f, angle, 0.0f });
-
+	float mov = 180.0f * GetWorld()->GetGameTimer()->DeltaTime();
+	RootComponent->AddLocalRotation(FPVector3{ 0.0f, -mov, 0.0f });
 	__super::Tick();
+
+	float RotateSpeed = 360.0f;
+	ShieldPivot->AddLocalRotation(FPVector3{ 0.0f,  RotateSpeed * GetWorld()->GetGameTimer()->DeltaTime(),0.0f });
 }
 
 void Player::Move(FInputValue Value)
@@ -46,7 +52,7 @@ void Player::Move(FInputValue Value)
 	float mov = 10.0f;
 	float move_x = Value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
 	float move_y = Value.Y * mov * (GetWorld()->GetGameTimer()->DeltaTime());
-	RootComponent->AddLocalOffset(FPVector3{ move_x, 0.0f, move_y });
+	RootComponent->AddWorldOffset(FPVector3{ move_x, 0.0f, move_y });
 }
 
 void Player::SetFillTriangel(FInputValue Value)
@@ -59,5 +65,10 @@ void Player::SetCullTriangle(FInputValue Value)
 {
 	isCull = !isCull;
 	Mesh->SetMeshCull(isCull);
+}
+
+FPSceneComponent* Player::GetShieldPivot()
+{
+	return ShieldPivot;
 }
 

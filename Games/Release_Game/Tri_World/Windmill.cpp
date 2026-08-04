@@ -12,20 +12,11 @@ void Windmill::Initialize()
 	Body = new FPMeshComponent(this, "Windmill/Windmill_Body.fbx");
 	SetRootComponent((FPSceneComponent*)Body);
 	Body->SetMeshCull(false);
-
-	Wing = new FPMeshComponent(this, "Windmill/Windmill_Wing.fbx");
-	Wing->SetMeshCull(false);
-	Wing->SetupAttachment(Body);
-	Wing->SetRelativeLocation({0.0f, 3.0f, -1.0f});
-	Wing->SetRelativeRotation({-90.0f, 0.0f, 0.0f});
-
-	std::cout << "Body Rotation : " << Body->GetComponentRotation().x << " : " << Body->GetComponentRotation().y << " : " << Body->GetComponentRotation().z << "\n";
-	std::cout << "Body Rotation : " << Body->GetRelativeRotation().x << " : " << Body->GetRelativeRotation().y << " : " << Body->GetRelativeRotation().z << "\n";
-
-	std::cout << "Wing Rotation : " << Wing->GetComponentRotation().x << " : " << Wing->GetComponentRotation().y << " : " << Wing->GetComponentRotation().z << "\n";
-	std::cout << "Wing Rotation : " << Wing->GetRelativeRotation().x << " : " << Wing->GetRelativeRotation().y << " : " << Wing->GetRelativeRotation().z << "\n";
  
 	FPAController* Controller = GetWorld()->GetController(0);
+	Controller->GetInputComponent().BindMethod("IA_SetMoveWindmill", this, EKeyState::Pressed, &Windmill::Move);
+	Controller->GetInputComponent().BindMethod("IA_SetRotateWindmill", this, EKeyState::Pressed, &Windmill::Rotate);
+	Controller->GetInputComponent().BindMethod("IA_SetScaleWindmill", this, EKeyState::Pressed, &Windmill::Scaling);
 	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &Windmill::SetFillTriangel);
 	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &Windmill::SetCullTriangle);
 }
@@ -36,23 +27,40 @@ void Windmill::BeginPlay()
 
 void Windmill::Tick()
 {
-	FPGameTimer* GameTimer = static_cast<FPGameTimer*>(FPGameInstance::Get().GetGameTimer());
 
-	float RotateSpeed = 180.0f;
-	Wing->AddLocalRotation({ 0.0f,  RotateSpeed * GameTimer->DeltaTime(),0.0f});
-	__super::Tick();
+}
+
+void Windmill::Move(FInputValue Value)
+{
+	float mov = 10.0f;
+	float move_x = Value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
+	float move_y = Value.Y * mov * (GetWorld()->GetGameTimer()->DeltaTime());
+	RootComponent->AddLocalOffset(FPVector3{ move_x, 0.0f, move_y });
+}
+
+void Windmill::Rotate(FInputValue Value)
+{
+	float mov = 90.0f;
+	float move_x = Value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
+	RootComponent->AddLocalRotation(FPVector3{ 0.0f, move_x, 0.0f });
+}
+
+void Windmill::Scaling(FInputValue Value)
+{
+	float mov =1.0f;
+	float move_x = Value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
+
+	RootComponent->SetWorldScale3D(RootComponent->GetComponentScale() + FPVector3{move_x, move_x, move_x});
 }
 
 void Windmill::SetFillTriangel(FInputValue Value)
 {
 	isFill = !isFill;
 	Body->SetMeshFill(isFill);
-	Wing->SetMeshFill(isFill);
 }
 
 void Windmill::SetCullTriangle(FInputValue Value)
 {
 	isCull = !isCull;
 	Body->SetMeshCull(isCull);
-	Wing->SetMeshCull(isCull);
 }

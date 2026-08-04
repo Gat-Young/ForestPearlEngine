@@ -48,6 +48,9 @@
     <ClInclude Include="Windmill.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="WindmillWing.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="UI.cpp">
@@ -81,6 +84,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Windmill.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WindmillWing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

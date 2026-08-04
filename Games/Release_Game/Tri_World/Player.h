@@ -12,6 +12,7 @@ class Player : public FPActor
 {
 	private:
 		FPMeshComponent* Mesh;
+		FPSceneComponent* ShieldPivot;
 
 		bool isFill = true;
 		bool isCull = false;
@@ -29,4 +30,5 @@ class Player : public FPActor
 		void Move(FInputValue value);
 		void SetFillTriangel(FInputValue Value);
 		void SetCullTriangle(FInputValue Value);
+		FPSceneComponent* GetShieldPivot();
 };

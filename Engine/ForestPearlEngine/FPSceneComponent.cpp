@@ -49,7 +49,13 @@ void FPSceneComponent::SetWorldScale3D(FPVector3 Scale)
 
 void FPSceneComponent::AddRelativeLocation(FPVector3 Offset)
 {
-	RelativeTransform.Location = RelativeTransform.Location + Offset;
+	FPVector3 RotatedOffset =
+		Rotate(
+			RelativeTransform.QuaternionRotation,
+			Offset
+		);
+
+	RelativeTransform.Location = RelativeTransform.Location + RotatedOffset;
 
 	//월드를 재계산
 	CalculateWorldTransform();
@@ -68,14 +74,8 @@ void FPSceneComponent::AddRelativeRotation(FPVector3 Rotation)
 
 void FPSceneComponent::AddLocalOffset(FPVector3 Offset)
 {
-	FPVector3 RotatedOffset =
-		Rotate(
-			RelativeTransform.QuaternionRotation,
-			Offset
-		);
 
-	RelativeTransform.Location = RelativeTransform.Location + RotatedOffset;
-
+	RelativeTransform.Location = RelativeTransform.Location + Offset;
 	//월드를 재계산
 	CalculateWorldTransform();
 }
@@ -182,15 +182,15 @@ void FPSceneComponent::SetupAttachment(FPSceneComponent* Parent)
 	DetachFromComponent();
 	ParentComponent = Parent;
 	ParentComponent->AttachChildComponent(this);
-	CalculateLocalTransform();
+	CalculateWorldTransform();
 }
 
 void FPSceneComponent::DetachFromComponent()
 {
 	if (ParentComponent == nullptr) return;
 	ParentComponent->DetachChildComponent(this);
-	//현재 World 값이 Local 값이 됨
-	RelativeTransform = WorldTransform;
+	ParentComponent = nullptr;
+	CalculateLocalTransform();
 }
 
 //부모의 월드와 나의 로컬을 바탕으로 월드를 계산
@@ -236,9 +236,15 @@ void FPSceneComponent::CalculateLocalTransform()
 	RelativeTransform.QuaternionRotation = (ParentConjugateRotation * WorldTransform.QuaternionRotation).Normalize();
 	RelativeTransform.Rotation = RelativeTransform.QuaternionRotation.ToEuler();
 
-	//이동
-	RelativeTransform.Location = ParentInverseLocation +
-		Rotate(ParentConjugateRotation, (RelativeTransform.Location * ParentInverseScale));
+	// 이동
+	FPVector3 ParentToWorldLocation =
+		WorldTransform.Location - ParentComponent->WorldTransform.Location;
+
+	RelativeTransform.Location =
+		Rotate(
+			ParentConjugateRotation,
+			ParentToWorldLocation
+		) * ParentInverseScale;
 }
 
 void FPSceneComponent::AttachChildComponent(FPSceneComponent* Child)
@@ -252,7 +258,7 @@ void FPSceneComponent::DetachChildComponent(FPSceneComponent* Child)
 
 	if (It != ChildComponent.end())
 	{
-		std::cout << "erase" << "\n";
+		std::cout << "Component erase" << "\n";
 		ChildComponent.erase(It);
 	}
 	else

@@ -13,9 +13,8 @@ class Windmill : public FPActor
 {
 	private:
 		FPMeshComponent* Body;
-		FPMeshComponent* Wing;
 
-
+		float ScaleOffset = 1.0f;
 		bool isFill = true;
 		bool isCull = false;
 
@@ -25,6 +24,9 @@ class Windmill : public FPActor
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
 
+		void Move(FInputValue Value);
+		void Rotate(FInputValue Value);
+		void Scaling(FInputValue Value);
 		void SetFillTriangel(FInputValue Value);
 		void SetCullTriangle(FInputValue Value);
 };

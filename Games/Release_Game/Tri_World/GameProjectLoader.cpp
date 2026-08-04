@@ -9,6 +9,7 @@
 #include "Terrain.h"
 #include "Tree.h"
 #include "Windmill.h"
+#include "WindmillWing.h"
 
 void RegistProjectName()
 {
@@ -35,6 +36,7 @@ void LoadClassRegist()
 	ClassRegistry->Register<Axis>("Axis");
 	ClassRegistry->Register<Terrain>("Terrain");
 	ClassRegistry->Register<Windmill>("Windmill");
+	ClassRegistry->Register<WindmillWing>("WindmillWing");
 }
 
 void LoadAssets()

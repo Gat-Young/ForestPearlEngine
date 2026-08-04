@@ -29,6 +29,7 @@
     <ClInclude Include="Tree.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="Windmill.h" />
+    <ClInclude Include="WindmillWing.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Axis.cpp" />
@@ -42,6 +43,7 @@
     <ClCompile Include="Tree.cpp" />
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="Windmill.cpp" />
+    <ClCompile Include="WindmillWing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Level\Triworld.json" />

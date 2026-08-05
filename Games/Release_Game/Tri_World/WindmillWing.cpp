@@ -75,7 +75,7 @@ void WindmillWing::AttachShield(FInputValue Value)
 		AttachToComponent(ShieldPivot);
 		Wing->SetRelativeScale3D({ ScaleOffset, ScaleOffset, ScaleOffset });
 		Wing->SetRelativeRotation({ -90.0f, 0.0f, 0.0f });
-		Wing->SetRelativeLocation({ 0.0f, 0.0f, 5.0f });
+		Wing->SetRelativeLocation({ 0.0f, 0.0f, ScaleOffset * 5.0f });
 	}
 	else
 	{

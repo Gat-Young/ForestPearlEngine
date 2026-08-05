@@ -50,6 +50,9 @@ void UI::Initialize()
 	Text8 = TextComponets.back();
 
 	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
+	Text9 = TextComponets.back();
+
+	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
 	SystemTitle = TextComponets.back();
 
 	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
@@ -157,17 +160,18 @@ void UI::ShowInfo()
 
 	FPVector4 col = { 1.0f, 1.0f, 1.0f, 1.0f };
 	TCHAR text[1024];
-	_stprintf_s(text, _T("■ %s"), _T("Tri World"));
+	_stprintf_s(text, _T("■ %s"), _T("Tri World - 2"));
 	Text1->SetTextData(&bShow, x, y, col, text);
 	y += 15;
-	Text2->SetTextData(&bShow, x, y += 15, col, _T("1. FBX 파일로 모델링 데이터를 불러와서 사용합니다."));
-	Text3->SetTextData(&bShow, x, y += 15, col, _T("2. 초기 Level(Scene)의 배치 정보를 json 파일로 불러와서 사용합니다."));
-	Text4->SetTextData(&bShow, x, y += 15, col, _T("3. 캐릭터 이동 : WASD, 카메라 이동 : IJKL"));
-	Text5->SetTextData(&bShow, x, y += 15, col, _T("4. 캐릭터 이동과 카메라 이동은 XBox 게임패드 L-Stick과 R-Stick으로도 할 수 있습니다."));
-	Text6->SetTextData(&bShow, x, y += 15, col, _T(""));
-	Text7->SetTextData(&bShow, x, y += 15, col, _T("게임인재원 8기 프로그래밍학과 임백규"));
+	Text2->SetTextData(&bShow, x, y += 15, col, _T("1. 머리에 풍차 붙이기와 마나 실드"));
+	Text3->SetTextData(&bShow, x, y += 15, col, _T("2. Z : 머리에 풍차 붙이기 , X : 마나 실드, R, F : 풍차 크기 조절"));
+	Text4->SetTextData(&bShow, x, y += 15, col, _T("3. 마나 실드 상태에서 , 과 . 을 사용시 크기를 늘리거나 줄일 수 있습니다."));
+	Text5->SetTextData(&bShow, x, y += 15, col, _T("4. XBOX 게임 패드에 A 버튼과 B 버튼으로 풍차 붙이기와 마나 실드를 사용할 수 있습니다."));
+	Text6->SetTextData(&bShow, x, y += 15, col, _T("5. L,R Sholder Pad 버튼으로 마나 실드 후 풍차의 크기를 늘리거나 줄일 수 있습니다."));
+	Text7->SetTextData(&bShow, x, y += 15, col, _T(""));
+	Text8->SetTextData(&bShow, x, y += 15, col, _T("게임인재원 8기 프로그래밍학과 임백규"));
 
-	Text8->SetTextData(&bShow, x, y += 15, { 1.0f, 0.0f, 0.0f, 1.0f }, _T("Have Fun~"));
+	Text9->SetTextData(&bShow, x, y += 15, { 1.0f, 0.0f, 0.0f, 1.0f }, _T("Have Fun~"));
 
 	SystemInfo(1, 20, {1.0f, 1.0f, 0.0f, 1.0f});
 }

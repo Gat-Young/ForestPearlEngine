@@ -28,6 +28,7 @@ class UI : public FPActor
 		FPTextComponent* Text6;
 		FPTextComponent* Text7;
 		FPTextComponent* Text8;
+		FPTextComponent* Text9;
 
 		//장치 / GPU 및 시스템 정보 출력
 		FPTextComponent* SystemTitle;

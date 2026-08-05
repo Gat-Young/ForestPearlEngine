@@ -36,6 +36,13 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_SetMoveTriangel", 100 , ModifyInfoD);
 	GetInputComponent().AddMappingKey("IA_SetMoveCamera", 101, ModifyInfoD);
 
+	GetInputComponent().AddMappingKey("IA_SetScaleWing", 106, ModifyInfoA);
+	GetInputComponent().AddMappingKey("IA_SetScaleWing", 107, ModifyInfoD);
+
+	//Action Button : Game Pad
+	GetInputComponent().AddMappingKey("IA_AttachHead", 102, ModifyInfoTriger);
+	GetInputComponent().AddMappingKey("IA_AttachShield", 103, ModifyInfoTriger);
+
 	//Action Button : KeyBoard
 	GetInputComponent().AddMappingKey("IA_SetFillTriangel", VK_SPACE, ModifyInfoTriger);
 	GetInputComponent().AddMappingKey("IA_SetCullTriangel", VK_F4, ModifyInfoTriger);

@@ -16,7 +16,18 @@ struct VSOutput
     float4 pos : SV_POSITION;
     float4 col : COLOR0;
 };
- 
+
+//셰이더 사용자 정의 함수 선언
+
+//이동 변환
+float4 transform(float4 pos);
+
+//회전 변환 (z축 기준)
+float4 rotationZ(float4 pos, float degree);
+
+//스케일 변환
+float4 scaling(float4 pos, float s);
+
 
 ////////////////////////////////////////////////////////////////////////////// 
 //
@@ -33,6 +44,32 @@ VSOutput VS_Main(
     VSOutput o = (VSOutput) 0;
     pos.w = 1.0f;
     
+    //test1 이동 변환
+    //pos = transform(pos);
+    
+    //test2 회전 변환
+    //pos = rotationZ(pos, 45);
+    
+    //test3 회전 후 이동
+    //pos = rotationZ(pos, 45);
+    //pos = transform(pos);
+    
+    //test4 이동 후 회전
+    //pos = transform(pos);
+    //pos = rotationZ(pos, 45);
+    
+    //test5 크기 변환 50% 축소
+    //pos = scaling(pos, 0.5f);
+    
+    //test6 크기 변환 200% 확대
+    //pos = scaling(pos, 2.0f);
+    
+    //test7 정점색 지정
+    //col = float4(1, 1, 0, 1);
+    
+    //test8 정점 좌표를 색상으로 지정
+    //col = pos;
+    
     //변환
     pos = mul(pos, mWVP);
     
@@ -43,6 +80,38 @@ VSOutput VS_Main(
 }
 
 
+//셰이더 사용자 함수 정의
+
+//이동 변환
+float4 transform(float4 pos)
+{
+    pos.x += 0.5f;
+    
+    return pos;
+}
+
+//회전 변환 (z축 기준)
+float4 rotationZ(float4 pos, float degree)
+{
+    float r = radians(degree);
+    
+    float4 vp = pos;
+    vp.x = pos.x * cos(r) - pos.y * sin(r);
+    vp.y = pos.x * sin(r) + pos.y * cos(r);
+    
+    return vp;
+}
+
+//스케일 변환
+float4 scaling(float4 pos, float s)
+{
+    float4 vp = pos;
+    
+    vp *= s;
+    vp.w = pos.w;
+    
+    return vp;
+}
 
 
 
@@ -59,8 +128,34 @@ float4 PS_Main(
 {
 	//지정색 출력.
 	//float4 col = {1, 0, 1, 1};
+    
+    float4 color = 1;
+    
+    //test1 외부-렌더링 파이프라인에서 공급된 색상을 그대로 출력
+    color = col;
 
-    return col;
+    //test2  지정색 출력
+    //color = float4(1, 1, 0, 1);
+    
+    //test3 색상 혼합 테스트 : 아래의 코드를 하나씩 테스트
+    //color = col + float4(1, 0, 0, 1);
+    //color = col - float4(1, 0, 0, 1);
+    //color = col * 0.5f;
+    //color = col + 0.5f;
+    //color = col + float4(1, 1, 1, 1);
+    //color = col - 1;
+    
+    //test4 색상 반전
+    //color = 1 - col;
+    
+    //test5 좌표를 색상으로 출력
+    color = pos;
+    
+    //test6 픽셀 버리기
+    //if (color.r < 0.5f) clip(-1);
+    //if (pos.x > 600) clip(-1);
+    
+    return color;
 }
 
 

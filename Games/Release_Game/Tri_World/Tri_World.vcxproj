@@ -48,6 +48,11 @@
   <ItemGroup>
     <None Include="Assets\Level\Triworld.json" />
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Assets\Shader\Demo.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

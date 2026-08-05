@@ -16,6 +16,12 @@
     <Filter Include="Level">
       <UniqueIdentifier>{63bc1f88-7567-4d43-8e68-474467e18bff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{d49b3835-9ce3-4fd1-bec1-614104b04a4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Shader">
+      <UniqueIdentifier>{dd79e454-4509-4f95-a147-e32797327204}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UI.h">
@@ -94,5 +100,10 @@
     <None Include="Assets\Level\Triworld.json">
       <Filter>Level</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Assets\Shader\Demo.fx">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

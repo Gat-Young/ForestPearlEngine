@@ -12,7 +12,7 @@ struct FTransform
 	{
 		Location = { 0.0f, 0.0f, 0.0f };
 		Rotation = { 0.0f, 0.0f, 0.0f };
-		QuaternionRotation = { 0.0f, 0.0f, 0.0f, 0.0f };
+		QuaternionRotation = { 0.0f, 0.0f, 0.0f, 1.0f };
 		Scale	 = { 1.0f, 1.0f, 1.0f };
 	}
 };

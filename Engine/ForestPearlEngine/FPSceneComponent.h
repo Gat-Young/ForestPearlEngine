@@ -14,6 +14,11 @@ class FPSceneComponent : public FPActorComponent
 		FPSceneComponent* ParentComponent = nullptr;
 		std::vector<FPSceneComponent*> ChildComponent;
 
+		//월드 트랜스폼 계산
+		void CalculateWorldTransform();
+
+		//로컬 트랜스폼 계산
+		void CalculateLocalTransform();
 
 		void AttachChildComponent(FPSceneComponent* Child);
 		void DetachChildComponent(FPSceneComponent* Child);
@@ -31,6 +36,18 @@ class FPSceneComponent : public FPActorComponent
 		void SetWorldLocation(FPVector3 Location);
 		void SetWorldRotation(FPVector3 Rotation);
 		void SetWorldScale3D(FPVector3 Scale);
+
+		//부모 기준 변화량 추가
+		void AddRelativeLocation(FPVector3 Offset);
+		void AddRelativeRotation(FPVector3 Rotation);
+
+		//자신 기준 변화량 추가
+		void AddLocalOffset(FPVector3 Offset);
+		void AddLocalRotation(FPVector3 Rotation);
+
+		//월드 기준 변화량 추가
+		void AddWorldOffset(FPVector3 Offset);
+		void AddWorldRotation(FPVector3 Rotation);
 
 		//Transform 가져오기
 		FTransform GetComponentTransform();

@@ -31,9 +31,6 @@
     <Filter Include="Renderers\Shader">
       <UniqueIdentifier>{c5323eed-f528-466b-bd17-032f5bfda515}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Renderers\Shader\fx">
-      <UniqueIdentifier>{f6e08996-a72b-46af-9c0e-cfc702c62ccc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Libraries">
       <UniqueIdentifier>{1de93f64-28a7-4a2f-949b-f8e1e5af581e}</UniqueIdentifier>
     </Filter>
@@ -263,10 +260,5 @@
     <ClCompile Include="Utility\FPPathManager.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Assets\Shader\Demo.fx">
-      <Filter>Renderers\Shader\fx</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>

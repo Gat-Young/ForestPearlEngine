@@ -8,6 +8,8 @@
 #include "Axis.h"
 #include "Terrain.h"
 #include "Tree.h"
+#include "Windmill.h"
+#include "WindmillWing.h"
 
 void RegistProjectName()
 {
@@ -33,6 +35,8 @@ void LoadClassRegist()
 	ClassRegistry->Register<Grid>("Grid");
 	ClassRegistry->Register<Axis>("Axis");
 	ClassRegistry->Register<Terrain>("Terrain");
+	ClassRegistry->Register<Windmill>("Windmill");
+	ClassRegistry->Register<WindmillWing>("WindmillWing");
 }
 
 void LoadAssets()
@@ -42,6 +46,8 @@ void LoadAssets()
 	AssetManager->LoadFbxData("ToonLink/ToonLink.fbx");
 	AssetManager->LoadFbxData("Terrain/Terrain.fbx");
 	AssetManager->LoadFbxData("Tree/Tree.fbx");
+	AssetManager->LoadFbxData("Windmill/Windmill_Body.fbx");
+	AssetManager->LoadFbxData("Windmill/Windmill_Wing.fbx");
 }
 
 std::string ReturnStartLevel()

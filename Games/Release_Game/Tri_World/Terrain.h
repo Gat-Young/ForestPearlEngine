@@ -14,7 +14,7 @@ class Terrain : public FPActor
 		FPMeshComponent* Mesh;
 
 		bool isFill = true;
-		bool isCull = true;
+		bool isCull = false;
 
 
 	public:

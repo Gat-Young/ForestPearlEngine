@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include <DirectXMath.h>
 constexpr float PI = 3.14159265358979323846f;
 
 
@@ -72,6 +73,8 @@ struct FPVector3
 	float LengthSq() const;
 
 	float Length() const;
+
+	FPVector3 Normalize() const;
 
 };
 

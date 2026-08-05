@@ -32,6 +32,14 @@ float FPVector3::Length() const
 	return std::sqrt(this->LengthSq());
 }
 
+FPVector3 FPVector3::Normalize() const
+{
+	float len = this->Length();
+
+	if (len <= 0.000001f) return FPVector3{ 0, 0, 0};
+	return FPVector3{ x / len , y / len, z / len };
+}
+
 
 ///////////////////////////////////////////////////////////////////////
 //
@@ -65,7 +73,9 @@ FPVector3 Rotate(const FPQuaternion& quat, const FPVector3& vec)
 {
 	FPQuaternion Quatvec = { vec.x, vec.y, vec.z, 0.0f };
 
-	FPQuaternion result = ((quat * Quatvec) * Inverse(quat));
+	FPQuaternion BaseQuat = quat.Normalize();
+
+	FPQuaternion result = ((BaseQuat * Quatvec) * Inverse(BaseQuat));
 
 	return FPVector3{result.x, result.y, result.z};
 }

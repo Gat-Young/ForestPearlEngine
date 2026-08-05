@@ -4,7 +4,7 @@
 #include "FPMaterial.h"
 #include <string>
 
-class FPMeshComponent : FPPrimitiveComponent
+class FPMeshComponent : public FPPrimitiveComponent
 {
 	private:
 		std::string MeshData;

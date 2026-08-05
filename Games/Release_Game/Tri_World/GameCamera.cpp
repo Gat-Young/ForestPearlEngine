@@ -10,14 +10,13 @@
 
 void GameCamera::Initialize()
 {
-	Target = new FPSceneComponent(this);
-	SetRootComponent(Target);
-	SetActorLocation({ 0.0f, 0.0f, 0.0f });
-
 	Camera = new FPCameraComponent(this);
 
-	Camera->SetupAttachment(Target);
+	Camera->SetupAttachment(RootComponent);
 	Camera->SetRelativeLocation({ 0.0f, 20.0f, -45.0f });
+
+	//std::cout << "GameCamera : " << Camera->GetRelativeLocation().x << " : " << Camera->GetRelativeLocation().y << " : " << Camera->GetRelativeLocation().z << "\n";
+	//std::cout << "GameCamera : " << Camera->GetComponentLocation().x << " : " << Camera->GetComponentLocation().y << " : " << Camera->GetComponentLocation().z << "\n";
 
 	FPAController* Controller = GetWorld()->GetController(0);
 
@@ -42,7 +41,7 @@ void GameCamera::Tick()
 	if (player != nullptr)
 	{
 		SetActorLocation(player->GetActorLocation());
-		Camera->LookAt = Target->GetComponentLocation();
+		Camera->LookAt = player->GetActorLocation();
 	}
 	__super::Tick();
 }
@@ -50,7 +49,7 @@ void GameCamera::Tick()
 void GameCamera::Move(FInputValue value)
 {
 	//std::cout << "CameraMove [ " << Camera->GetComponentRotation().x << " : " << Camera->GetComponentRotation().y << " : " << Camera->GetComponentRotation().z << " ]\n";
-	std::cout << "CameraMove [ " << GetActorRotation().x << " : " << GetActorRotation().y << " : " << GetActorRotation().z << " ]\n";
+	//std::cout << "CameraMove [ " << GetActorRotation().x << " : " << GetActorRotation().y << " : " << GetActorRotation().z << " ]\n";
 	float mov = 30.0f;
 	float move_x = value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
 	float move_y = value.Y * mov * (GetWorld()->GetGameTimer()->DeltaTime());
@@ -65,6 +64,9 @@ void GameCamera::Move(FInputValue value)
 	CameraRotation = (YawRotation * CameraRotation).Normalize();
 	Camera->Up = Rotate(CameraRotation, FPVector3{ 0, 1, 0 });
 
+	std::cout << move_x << " : " << move_y << " : " << "0.0f" << "\n";
 
-	RootComponent->SetWorldRotation(CameraRotation.ToEuler());
+	RootComponent->AddWorldRotation(FPVector3{ 0.0f, -move_x, 0.0f });
+	RootComponent->AddLocalRotation(FPVector3{move_y, 0.0f, 0.0f});
+
 }

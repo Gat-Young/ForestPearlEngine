@@ -19,7 +19,7 @@ FPMeshComponent::FPMeshComponent(FPActor* Owner, std::string MeshPath) : FPPrimi
 std::vector<std::pair<int, int> > FPMeshComponent::LoadVertexBuffer(std::string MeshPath)
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-	return AssetManager->LoadVertexBuffer(MeshPath);
+	return AssetManager->GetVertexBuffer(MeshPath);
 }
 
 void FPMeshComponent::RegistMeshRenderList()

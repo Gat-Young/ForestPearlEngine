@@ -1,7 +1,7 @@
 #pragma once
 #include "FPGameInstance.h"
 #include "FPGameProjectClassRegistry.h"
-#include "FPAssetManager.h"
+#include "FPAssetLoader.h"
 #include "Utility/FPPathManager.h"
 
 void RegistProjectName();

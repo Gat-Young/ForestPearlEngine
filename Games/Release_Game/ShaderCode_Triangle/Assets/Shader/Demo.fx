@@ -2,12 +2,18 @@
 // Demo.fx : 기본 셰이더 소스.
 
 //상수 버퍼
-cbuffer ConstBuffer
+cbuffer ConstBuffer : register(b0)
 {
     matrix mWorld;
     matrix mView;
     matrix mProj;
     matrix mWVP;
+};
+
+cbuffer ConstBuffer : register(b1)
+{
+    float4 Color;
+    float fTrans;
 };
 
 //VS 출력 구조체
@@ -129,10 +135,8 @@ float4 PS_Main(
 	//지정색 출력.
 	//float4 col = {1, 0, 1, 1};
     
-    float4 color = 1;
-    
     //test1 외부-렌더링 파이프라인에서 공급된 색상을 그대로 출력
-    color = col;
+    float4 color = col;
 
     //test2  지정색 출력
     //color = float4(1, 1, 0, 1);
@@ -149,11 +153,44 @@ float4 PS_Main(
     //color = 1 - col;
     
     //test5 좌표를 색상으로 출력
-    color = pos;
+    //color = pos;
     
     //test6 픽셀 버리기
     //if (color.r < 0.5f) clip(-1);
     //if (pos.x > 600) clip(-1);
+    
+    //색상 필터
+    //test1
+    //float4 color = { col.r, 0, 0, 1};
+    
+    //test2
+    //float4 color = col * float4(1, 0, 0, 1);
+    
+    //test3
+    //float4 color = col + float4(0, -1, -1, -1);
+    //float4 color = col - float4(0, 1, 1, 1);
+    
+    //test4
+    //float4 color = col * float4(1, 0, 0, 1);
+    //float4 color = col * float4(0, 1, 0, 1);
+    //float4 color = col * float4(0, 0, 1, 1);
+    
+    //test5
+    //float4 color = col * float4(1, 0, 0, 1) + col * float4(0, 1, 0, 1);
+    
+    //test6
+    //float4 color = col * float4(0, 0, 0, 1);
+    
+    //test7
+    //float4 color = col.r;
+    //float4 color = float4(col.r, col.r, col.r, col.r);
+    //float4 color = col.g;
+    //float4 color = col.b;
+    
+    //test8
+    //float4 color = col.r * 0.2126 + col.g * 0.7152 + col.b * 0.0722;
+    
+    //color.a = 1;
     
     return color;
 }

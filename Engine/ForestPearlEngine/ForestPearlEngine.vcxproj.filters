@@ -40,6 +40,12 @@
     <Filter Include="Libraries\nlohmann">
       <UniqueIdentifier>{8b145660-84a1-4213-8b98-cb8cfe2658c6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{2ea53f86-e9ca-4467-a598-ff02afd67c22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Shader">
+      <UniqueIdentifier>{a1c83662-ba2a-4eba-a8ac-3979cdeefad8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -165,6 +171,12 @@
     <ClInclude Include="Utility\FPPathManager.h">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="FPAssetLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Define\FPDataDefine.h">
+      <Filter>Define</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
@@ -260,5 +272,13 @@
     <ClCompile Include="Utility\FPPathManager.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="AssetLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Assets\Shader\DefaultShader.fx">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

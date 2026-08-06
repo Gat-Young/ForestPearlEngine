@@ -1,6 +1,7 @@
 #include "GizmoComponent.h"
-#include "FPAssetManager.h"
+#include "FPAssetLoader.h"
 #include "FPGameInstance.h"
+#include "Define/FPDataDefine.h"
 
 int GizmoComponent::MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh)
 {
@@ -11,8 +12,8 @@ int GizmoComponent::MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh)
 		Vertex.push_back(VERTEX{ GizmoMesh[i].x, GizmoMesh[i].y, GizmoMesh[i].z, GizmoMesh[i].r, GizmoMesh[i].g, GizmoMesh[i].b, GizmoMesh[i].a});
 	}
 
-	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-	return AssetManager->MakeVertexBuffer(Vertex);
+	FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
+	return AssetLoader->MakeVertexBuffer(Vertex);
 }
 
 void GizmoComponent::MakeGrid(GRIDINFO* grid)

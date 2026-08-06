@@ -131,6 +131,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Define\FPDataDefine.h" />
+    <ClInclude Include="FPAssetLoader.h" />
     <ClInclude Include="FPAssetManager.h" />
     <ClInclude Include="FPCameraComponent.h" />
     <ClInclude Include="FPCameraList.h" />
@@ -174,6 +176,7 @@
     <ClInclude Include="Utility\FPPathManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AssetLoader.cpp" />
     <ClCompile Include="FPAssetManager.cpp" />
     <ClCompile Include="FPCameraComponent.cpp" />
     <ClCompile Include="FPCameraList.cpp" />
@@ -215,6 +218,11 @@
     <ProjectReference Include="..\..\Games\Release_Game\ShaderCode_Triangle\ShaderCode_Triangle.vcxproj">
       <Project>{f88fb2ca-f884-452a-a14d-4378117aa7fe}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Assets\Shader\DefaultShader.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

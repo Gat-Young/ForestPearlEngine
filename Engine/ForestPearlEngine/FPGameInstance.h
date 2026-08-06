@@ -12,6 +12,7 @@ enum class GameInstanceSubSystemName : size_t
 	ClassRegister,
 	InputSystem,
 	AssetManager,
+	AssetLoader,
 	MeshRenderList,
 	TextRenderList,
 	CameraList,
@@ -55,6 +56,7 @@ class FPGameInstance : public FPObject
 		FPGameInstanceSubSystem* GetClassRegister();
 		FPGameInstanceSubSystem* GetGameTimer();
 		FPGameInstanceSubSystem* GetAssetManager();
+		FPGameInstanceSubSystem* GetAssetLoader();
 		FPGameInstanceSubSystem* GetInputSystem();
 		FPGameInstanceSubSystem* GetTextRenderList();
 		FPGameInstanceSubSystem* GetCameraList();

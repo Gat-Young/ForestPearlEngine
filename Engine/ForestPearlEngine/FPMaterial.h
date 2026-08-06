@@ -19,6 +19,9 @@ class FPMaterial
 		//정점 입력구조 Input Layout
 		void* VBLayout = nullptr;
 
+		//Material 속성
+		
+
 	public:
 		FPMaterial();
 		void* GetVertexShaderPointer();

@@ -17,6 +17,10 @@ public:
     std::string GetAssetPath(const std::string& RelativePath) const;
 
     std::string GetAssetRoot() const;
+    
+    std::string GetEngineAssetPath(const std::string& RelativePath) const;
+
+    std::string GetEngineAssetRoot() const;
 
     std::string GetProjectName();
 
@@ -27,5 +31,6 @@ private:
 
 private:
     std::filesystem::path AssetRoot;
+    std::filesystem::path EngineAssetRoot;
     std::string ProjectName;
 };

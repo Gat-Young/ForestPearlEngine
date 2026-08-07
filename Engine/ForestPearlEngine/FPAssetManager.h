@@ -8,13 +8,16 @@
 class FPAssetManager : public FPGameInstanceSubSystem
 {
 	private:
-		std::unordered_map<std::string, std::vector<std::pair<int, int> > > MeshMap;
+		std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshVertexBuffer;
 
 		std::unordered_map<std::string, std::vector<FPMeshData> > LoadedMeshData;
 
 		std::unordered_map<std::string, std::vector<FPActorData> > LevelData;
 
 		std::unordered_map<std::string, std::string> GameModeData;
+
+		std::unordered_map<std::string, std::pair<void*, void*> > VertexShaderData;
+		std::unordered_map<std::string, std::pair<void*, void*> > PixelShaderData;
 
 	public:
 		FPAssetManager() = default;
@@ -23,9 +26,9 @@ class FPAssetManager : public FPGameInstanceSubSystem
 		//Mesh
 		void AddMeshData(std::string FbxPath, FPMeshData* MeshData);
 
-		void AddVertexBuffer(std::string FbxPath, int VBIndex, int VBSize);
+		void AddVertexBuffer(std::string FbxPath, void* VertexBuffer, int VBSize, int Stride, int Offset);
 
-		std::vector<std::pair<int, int> > GetVertexBuffer(std::string MeshPath);
+		std::vector<FPVertexBufferData> GetVertexBuffer(std::string MeshPath);
 
 		std::vector<FPMeshData> GetMeshData(std::string FbxPath);
 
@@ -39,4 +42,14 @@ class FPAssetManager : public FPGameInstanceSubSystem
 		//GameMode
 		void AddGameModeData(std::string LevelName, std::string GameModeName);
 		std::string GetGameModeData(std::string LevelName);
+
+		//Shader
+		bool HasVertexShader(std::string ShaderPath);
+		bool HasPixelShader(std::string ShaderPath);
+
+		void AddVertexShader(std::string ShaderPath, void* VertexShader, void* VSCode);
+		void AddPixelShader(std::string ShaderPath, void* PixelShader, void* PSCode);
+
+		std::pair<void*, void*> GetVertexShader(std::string ShaderPath);
+		std::pair<void*, void*> GetPixelShader(std::string ShaderPath);
 };

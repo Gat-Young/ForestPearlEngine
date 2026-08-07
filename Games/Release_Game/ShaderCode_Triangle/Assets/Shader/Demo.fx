@@ -51,7 +51,7 @@ VSOutput VS_Main(
     pos.w = 1.0f;
     
     //test1 이동 변환
-    //pos = transform(pos);
+    pos = transform(pos);
     
     //test2 회전 변환
     //pos = rotationZ(pos, 45);

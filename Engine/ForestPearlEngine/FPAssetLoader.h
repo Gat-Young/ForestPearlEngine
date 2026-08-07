@@ -5,6 +5,12 @@
 #include "../ForestPearlEngine/Define/FPMath.h"
 #include "FPGameInstanceSubSystem.h"
 
+enum AssetOwner
+{
+	Engine,
+	User
+};
+
 class FPAssetLoader : public FPGameInstanceSubSystem
 {
 	private:
@@ -15,11 +21,12 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 		FPAssetLoader() = default;
 		~FPAssetLoader() = default;
 
-		void LoadVertexBuffer(std::string MeshPath);
+		void* MakeVertexBuffer(std::vector<struct VERTEX> Mesh);
 
-		int MakeVertexBuffer(std::vector<struct VERTEX> Mesh);
+		void LoadFbxData(std::string FbxPath, AssetOwner EngineAsset);
 
-		void LoadFbxData(std::string FbxPath);
+		void LoadLevelData(std::string LevelName, std::string LevelPath, AssetOwner EngineAsset);
 
-		void LoadLevelData(std::string LevelName, std::string LevelPath);
+		void LoadVertexShader(std::string ShaderPath, std::string VS_Main, std::string ShaderModel, AssetOwner EngineAsset);
+		void LoadPixelShader(std::string ShaderPath, std::string PS_Main, std::string ShaderModel, AssetOwner EngineAsset);
 };

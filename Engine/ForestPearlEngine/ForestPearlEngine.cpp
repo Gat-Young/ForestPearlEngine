@@ -5,6 +5,7 @@
 #include "Renderers/Renderer.h"
 #include "FPGameInstance.h"
 #include "GameProjectLoader.h"
+#include "EngineLoader.h"
 #include "Systems/InputSystem.h"
 //#include <iostream>
 #include "MCLOG.h"
@@ -46,6 +47,8 @@ bool ForestPearlEngine::PreInitialize()
     Render->InitializeRenderer(Hwnd);
     
     FPGameInstance::Get();
+
+    LoadEngineAssets();
 
     LoadLevel();
     LoadClassRegist();

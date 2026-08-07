@@ -5,16 +5,17 @@
 #include <iostream>
 #include "Libraries/nlohmann/json.hpp"
 #include "Utility/FPPathManager.h"
+#include "Shader/ShaderFactory.h"
 #include "Renderers/RenderingDevice.h"
 
 using json = nlohmann::json;
 
-int FPAssetLoader::MakeVertexBuffer(std::vector<VERTEX> Mesh)
+void* FPAssetLoader::MakeVertexBuffer(std::vector<VERTEX> Mesh)
 {
 	return RenderingDevice::GetRenderingDevice().CreateVertexBuffer(Mesh.data(), Mesh.size(), sizeof(VERTEX));
 }
 
-void FPAssetLoader::LoadFbxData(std::string FbxPath)
+void FPAssetLoader::LoadFbxData(std::string FbxPath, AssetOwner EngineAsset)
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
@@ -25,8 +26,8 @@ void FPAssetLoader::LoadFbxData(std::string FbxPath)
 
 	ufbx_error Error;
 
-
 	std::string FilePath = (FPPathManager::Get().GetAssetPath("Model/" + FbxPath));
+	if (EngineAsset == AssetOwner::Engine) FilePath = (FPPathManager::Get().GetEngineAssetPath("Model/" + FbxPath));
 
 	ufbx_scene* Scene = ufbx_load_file(FilePath.c_str(), &Opts, &Error);
 	if (!Scene)
@@ -55,11 +56,11 @@ void FPAssetLoader::LoadFbxData(std::string FbxPath)
 
 		AssetManager->AddMeshData(FbxPath, &MeshData);
 
-		int VBIndex = MakeVertexBuffer(AssetManager->GetMeshData(FbxPath).back().Vertices);
+		void* VertexBuffer = MakeVertexBuffer(AssetManager->GetMeshData(FbxPath).back().Vertices);
 		int VBSize = AssetManager->GetMeshData(FbxPath).back().Vertices.size();
 
-		//정점버퍼 생성 후 Map에 정보 등록 {VertexBufferList의 Index, Vertex의 Size}
-		AssetManager->AddVertexBuffer(FbxPath, VBIndex, VBSize);
+		//정점버퍼 생성 후 Map에 정보 등록
+		AssetManager->AddVertexBuffer(FbxPath, VertexBuffer, VBSize, sizeof(VERTEX), 0);
 	}
 	ufbx_free_scene(Scene);
 }
@@ -166,7 +167,7 @@ FPMeshData FPAssetLoader::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node
 }
 
 //Level 정보를 저장
-void FPAssetLoader::LoadLevelData(std::string LevelName, std::string LevelPath)
+void FPAssetLoader::LoadLevelData(std::string LevelName, std::string LevelPath, AssetOwner EngineAsset)
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 	if (AssetManager->HasLevelData(LevelName))
@@ -176,6 +177,7 @@ void FPAssetLoader::LoadLevelData(std::string LevelName, std::string LevelPath)
 	}
 
 	std::ifstream File(FPPathManager::Get().GetAssetPath("Level/" + LevelPath));
+	if (EngineAsset == AssetOwner::Engine) File = std::ifstream(FPPathManager::Get().GetEngineAssetPath("Level/" + LevelPath));
 
 	if (!File.is_open())
 	{
@@ -242,4 +244,34 @@ void FPAssetLoader::LoadLevelData(std::string LevelName, std::string LevelPath)
 
 		AssetManager->AddLevelData(LevelName, &Data);
 	}
+}
+
+void FPAssetLoader::LoadVertexShader(std::string ShaderPath, std::string VS_Main, std::string ShaderModel, AssetOwner EngineAsset)
+{
+	std::wstring FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetAssetPath("Shader/" + ShaderPath)));
+	if (EngineAsset == AssetOwner::Engine) FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetEngineAssetPath("Shader/" + ShaderPath)));
+
+	void* VertexShader = nullptr;
+	void* VSCode = nullptr;
+
+	ShaderFactory::GetShaderFactory().VertexShaderLoad(FilePath.c_str(), VS_Main.c_str(), ShaderModel.c_str(), &VertexShader, &VSCode);
+
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	AssetManager->AddVertexShader(ShaderPath, VertexShader, VSCode);
+}
+
+void FPAssetLoader::LoadPixelShader(std::string ShaderPath, std::string PS_Main, std::string ShaderModel, AssetOwner EngineAsset)
+{
+	std::wstring FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetAssetPath("Shader/" + ShaderPath)));
+	if (EngineAsset == AssetOwner::Engine) FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetEngineAssetPath("Shader/" + ShaderPath)));
+
+	void* PixelShader = nullptr;
+	void* PSCode = nullptr;
+
+	ShaderFactory::GetShaderFactory().PixelShaderLoad(FilePath.c_str(), PS_Main.c_str(), ShaderModel.c_str(), &PixelShader, &PSCode);
+
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	AssetManager->AddPixelShader(ShaderPath, PixelShader, PSCode);
 }

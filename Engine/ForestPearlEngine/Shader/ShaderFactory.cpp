@@ -129,10 +129,10 @@ HRESULT ShaderFactory::CreateInputLayout(void* InVSCode, void** ReturnLayout)
 	HRESULT hr = S_OK;
 
 	//정점 입력구조 객체 생성
-	//함께 사용될 셰이더(컴파일된 바이너리 코드)가 필교
+	//함께 사용될 셰이더(컴파일된 바이너리 코드)가 필요
 	ID3D11InputLayout* Layout = nullptr;
 	ID3DBlob* VScode = static_cast<ID3DBlob*>(InVSCode);
-
+	
 	// 정점 입력 구조 
 	// GPU에 공급될 기하데이터 - 개별 정점의 데이터 구조와 용도등의 정보를 구성
 	//

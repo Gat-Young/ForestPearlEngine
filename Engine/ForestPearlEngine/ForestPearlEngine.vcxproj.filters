@@ -177,6 +177,9 @@
     <ClInclude Include="Define\FPDataDefine.h">
       <Filter>Define</Filter>
     </ClInclude>
+    <ClInclude Include="EngineLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
@@ -277,8 +280,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Assets\Shader\DefaultShader.fx">
+    <None Include="Assets\Shader\DefaultShader.fx">
       <Filter>Assets\Shader</Filter>
-    </FxCompile>
+    </None>
   </ItemGroup>
 </Project>

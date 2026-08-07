@@ -138,12 +138,11 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Engine\ForestPearlEngine\Libraries\DirectXTK\Bin\Desktop_2022\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>if /I not "$(Configuration)"=="Release" exit /b 0
+      <Command>if not exist "$(SolutionDir)x64\Release\Assets" mkdir "$(SolutionDir)x64\Release\Assets"
 
-robocopy "$(GameAssetDir)" "$(TargetDir)Assets" /E
+xcopy /E /I /Y "$(SolutionDir)Engine\ForestPearlEngine\Assets\*" "$(SolutionDir)x64\Release\Assets\"
 
-if %ERRORLEVEL% LEQ 7 exit /b 0
-exit /b %ERRORLEVEL%</Command>
+xcopy /E /I /Y "$(SolutionDir)Games\Release_Game\$(GameProjectName)\Assets\*" "$(SolutionDir)x64\Release\Assets\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -161,4 +160,14 @@ exit /b %ERRORLEVEL%</Command>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <Target Name="SetGameExecutableName" BeforeTargets="PrepareForBuild" Condition="'$(Configuration)' == 'Release'">
+    <MSBuild Projects="@(ProjectReference)" Targets="GetGameProjectReference" BuildInParallel="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_GameProjectReference" />
+    </MSBuild>
+    <PropertyGroup>
+      <TargetName>%(_GameProjectReference.Filename)</TargetName>
+    </PropertyGroup>
+    <Message Text="Game Project: %(_GameProjectReference.Filename)" Importance="High" />
+    <Message Text="Executable: $(TargetName).exe" Importance="High" />
+  </Target>
 </Project>

@@ -5,6 +5,7 @@
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
 #include "ForestPearlEngine/InputValue.h"
 #include "ForestPearlEngine/FPGameTimer.h"
+#include "ForestPearlEngine/FPMaterial.h"
 #include <iostream>
 
 void Triangle::Initialize()
@@ -13,6 +14,11 @@ void Triangle::Initialize()
 
 	SetRootComponent((FPSceneComponent*)Mesh);
 	Mesh->SetMeshCull(false);
+
+	FPMaterial* MyMaterial = new FPMaterial();
+	MyMaterial->SetVertexShader("Demo.fx");
+
+	Mesh->SetMaterial(MyMaterial);
 
 	FPAController* Controller = GetWorld()->GetController(0);
 

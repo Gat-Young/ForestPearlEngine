@@ -15,7 +15,7 @@ void RegistProjectName()
 void LoadLevel()
 {
 	FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
-	AssetLoader->LoadLevelData("ShaderCode_Triangle", "ShaderCode_Triangle.json");
+	AssetLoader->LoadLevelData("ShaderCode_Triangle", "ShaderCode_Triangle.json", AssetOwner::User);
 
 }
 
@@ -32,7 +32,9 @@ void LoadClassRegist()
 void LoadAssets()
 {
 	FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
-	AssetLoader->LoadFbxData("Triangle/Test_Triangle.fbx");
+	AssetLoader->LoadFbxData("Triangle/Test_Triangle.fbx", AssetOwner::User);
+
+	AssetLoader->LoadVertexShader("Demo.fx","VS_Main", "vs_5_0", AssetOwner::User);
 }
 
 std::string ReturnStartLevel()

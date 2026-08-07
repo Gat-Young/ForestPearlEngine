@@ -15,6 +15,15 @@ struct FPMeshData
 	std::vector<VERTEX> Vertices;
 };
 
+//VertexBuffer 데이터 구조체
+struct FPVertexBufferData
+{
+	void* VertexBuffer;
+	int Size;
+	int Stride;
+	int Offset;
+};
+
 struct FPActorData
 {
 	std::string ClassName;

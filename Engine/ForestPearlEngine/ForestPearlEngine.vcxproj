@@ -132,6 +132,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Define\FPDataDefine.h" />
+    <ClInclude Include="EngineLoader.h" />
     <ClInclude Include="FPAssetLoader.h" />
     <ClInclude Include="FPAssetManager.h" />
     <ClInclude Include="FPCameraComponent.h" />
@@ -220,11 +221,20 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Assets\Shader\DefaultShader.fx">
+    <None Include="Assets\Shader\DefaultShader.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </FxCompile>
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+<Target Name="GetGameProjectReference"
+        Returns="@(_GameProjectReference)">
+
+  <ItemGroup>
+    <_GameProjectReference Include="@(ProjectReference)" />
+  </ItemGroup>
+
+</Target>
 </Project>

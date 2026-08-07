@@ -3,7 +3,7 @@
 #include "FPGameInstance.h"
 #include "Define/FPDataDefine.h"
 
-int GizmoComponent::MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh)
+void* GizmoComponent::MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh)
 {
 	std::vector<VERTEX> Vertex;
 
@@ -13,6 +13,8 @@ int GizmoComponent::MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh)
 	}
 
 	FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
+	Stride = sizeof(VERTEX);
+	Offest = 0;
 	return AssetLoader->MakeVertexBuffer(Vertex);
 }
 
@@ -86,7 +88,7 @@ void GizmoComponent::MakeGrid(GRIDINFO* grid)
 	//정점 개수.
 	VertexSize.push_back(vtxcnt);
 
-	VBIndex.push_back(MakeVertexBuffer(GizmoDatas));
+	VB.push_back(MakeVertexBuffer(GizmoDatas));
 
 	isActive = true;
 }
@@ -159,7 +161,7 @@ void GizmoComponent::MakeAxis(GIZMO_AXISINFO* axis)
 
 	isActive = true;
 
-	VBIndex.push_back(MakeVertexBuffer(GizmoDatas));
+	VB.push_back(MakeVertexBuffer(GizmoDatas));
 }
 
 void GizmoComponent::RegistGizmoRenderList()
@@ -169,10 +171,12 @@ void GizmoComponent::RegistGizmoRenderList()
 
 	RenderItem->Priority = &(this->Priority);
 	RenderItem->Active = &(this->isActive);
-	RenderItem->VBIndex = &(this->VBIndex);
+	RenderItem->VB = &(this->VB);
 	RenderItem->isFill = &(this->isFill);
 	RenderItem->isCull = &(this->isCull);
 	RenderItem->VertexSize = &(this->VertexSize);
+	RenderItem->Stride = &(this->Stride);
+	RenderItem->Offset = &(this->Offest);
 	RenderItem->Location = &(this->WorldTransform.Location);
 	RenderItem->Rotation = &(this->WorldTransform.QuaternionRotation);
 	RenderItem->Scale = &(this->WorldTransform.Scale);

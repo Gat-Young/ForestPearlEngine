@@ -13,8 +13,10 @@ struct RenderItem
 {
 	int* Priority = nullptr;
 	bool* Active = nullptr;
-	std::vector<int>* VBIndex = nullptr;
+	std::vector<void*>* VB = nullptr;
 	std::vector<int>* VertexSize = nullptr;
+	int* Stride;
+	int* Offset;
 	bool* isFill = nullptr;
 	bool* isCull = nullptr;
 	FPVector3* Location = nullptr;

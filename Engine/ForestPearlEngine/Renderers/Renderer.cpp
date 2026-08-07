@@ -241,13 +241,13 @@ void Renderer::ObjectRendering()
 		Device.IASetPrimitiveTopology(*RenderItem.Topo);
 
 		//정점 버퍼 설정
-		UINT stride = sizeof(VERTEX);
-		UINT offset = 0;
+		UINT stride = *RenderItem.Stride;
+		UINT offset = *RenderItem.Offset;
 
-		int MeshSize = (RenderItem.VBIndex)->size();
+		int MeshSize = (RenderItem.VB)->size();
 		for (int i = 0; i < MeshSize; ++i)
 		{
-			Device.IASetVertexBuffers(0, 1, (RenderItem.VBIndex)->at(i), &stride, &offset);
+			Device.IASetVertexBuffers(0, 1, (RenderItem.VB)->at(i), &stride, &offset);
 
 			Device.Draw((RenderItem.VertexSize)->at(i), 0);
 		}

@@ -310,7 +310,7 @@ void RenderingDevice::RenderTargetPresent()
 // param		Size			정점 데이터크기
 // param		Stride			정점 데이터 하나의 크기
 //
-int RenderingDevice::CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride)
+void* RenderingDevice::CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride)
 {
 
 	// 정점 버퍼 정보 구성
@@ -326,13 +326,12 @@ int RenderingDevice::CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride
 	Rd.pSysMem = VertexData;						//버퍼에 저장될 데이터 : "정점들"
 
 	//정점 버퍼 생성
-	VertexBufferList.push_back(nullptr);
-	VertexBufferSize++;
+	ID3D11Buffer* VertexBuffer = nullptr;
 
-	HRESULT hr = Device->CreateBuffer(&Bd, &Rd, &VertexBufferList[VertexBufferSize]);
+	HRESULT hr = Device->CreateBuffer(&Bd, &Rd, &VertexBuffer);
 	assert(SUCCEEDED(hr) && "정점 버퍼 생성 실패");
 
-	return VertexBufferSize;
+	return VertexBuffer;
 }
 
 
@@ -687,9 +686,10 @@ void RenderingDevice::PSSetShader(void* PS)
 }
 
 
-void RenderingDevice::IASetVertexBuffers(UINT StartSlot, UINT NumBuffers, UINT VertexBufferIndex, UINT* Strides, UINT* Offsets)
+void RenderingDevice::IASetVertexBuffers(UINT StartSlot, UINT NumBuffers, void* VertexBuffer, UINT* Strides, UINT* Offsets)
 {
-	DeviceContext->IASetVertexBuffers(StartSlot, NumBuffers, &VertexBufferList[VertexBufferIndex], Strides, Offsets);
+	ID3D11Buffer* VB = static_cast<ID3D11Buffer*>(VertexBuffer);
+	DeviceContext->IASetVertexBuffers(StartSlot, NumBuffers, &VB, Strides, Offsets);
 }
 
 

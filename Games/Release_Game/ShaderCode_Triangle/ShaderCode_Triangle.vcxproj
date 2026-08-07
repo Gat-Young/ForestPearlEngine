@@ -37,9 +37,10 @@
     <None Include="Assets\Level\ShaderCode_Triangle.json" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Assets\Shader\Demo.fx">
+    <None Include="Assets\Shader\Demo.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </FxCompile>
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

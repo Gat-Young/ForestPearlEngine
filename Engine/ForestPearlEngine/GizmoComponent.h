@@ -40,8 +40,10 @@ class GizmoComponent : FPPrimitiveComponent
 
 		//값이 클수록 먼저 그려짐(작을 수록 앞으로 그려짐)
 		int Priority = 0;
-		std::vector<int> VBIndex;
+		std::vector<void*> VB;
 		std::vector<int> VertexSize;
+		int Stride;
+		int Offest;
 		bool isFill = false;
 		bool isCull = false;
 		bool isActive = true;
@@ -50,7 +52,7 @@ class GizmoComponent : FPPrimitiveComponent
 
 		RenderItem* RenderItem = nullptr;
 		
-		int MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh);
+		void* MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh);
 
 	public:
 		GizmoComponent(FPActor* Owner);

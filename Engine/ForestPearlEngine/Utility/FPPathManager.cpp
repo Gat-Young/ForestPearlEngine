@@ -9,11 +9,16 @@ void FPPathManager::Initialize(std::string_view ProjectName)
         std::filesystem::path("../../Games/Release_Game")
         / ProjectName
         / "Assets";
+
+    EngineAssetRoot =
+        std::filesystem::path("../../Engine/ForestPearlEngine") / "Assets";
 #else
     AssetRoot = std::filesystem::path("Assets");
+    EngineAssetRoot = std::filesystem::path("Assets");
 #endif
 
     AssetRoot = AssetRoot.lexically_normal();
+    EngineAssetRoot = EngineAssetRoot.lexically_normal();
 }
 
 std::string FPPathManager::GetAssetPath(const std::string& RelativePath) const
@@ -26,6 +31,18 @@ std::string FPPathManager::GetAssetPath(const std::string& RelativePath) const
 std::string FPPathManager::GetAssetRoot() const
 {
     return AssetRoot.string();
+}
+
+std::string FPPathManager::GetEngineAssetPath(const std::string& RelativePath) const
+{
+    return (EngineAssetRoot / RelativePath)
+        .lexically_normal()
+        .string();
+}
+
+std::string FPPathManager::GetEngineAssetRoot() const
+{
+    return EngineAssetRoot.string();
 }
 
 std::string FPPathManager::GetProjectName()

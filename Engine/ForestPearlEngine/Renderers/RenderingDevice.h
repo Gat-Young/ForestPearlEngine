@@ -99,10 +99,6 @@ class RenderingDevice
 		};
 		std::vector<DEVICEINFO> DevInfo;				//다중 GPU를 위한 배열 처리
 
-		//VertexBufferList
-		std::vector<ID3D11Buffer*> VertexBufferList;
-		int VertexBufferSize = -1;
-
 		//ConstBuffer
 		ID3D11Buffer* ConstBuffer;
 
@@ -145,7 +141,7 @@ class RenderingDevice
 		HRESULT Draw(UINT VertexCount, UINT StartVertexLocation);
 
 		//VB 만들기
-		int CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride);
+		void* CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride);
 
 		//CB 만들기
 		int CreateConstBuffer(UINT Size);
@@ -207,7 +203,7 @@ class RenderingDevice
 		void PSSetShader(void* PS);
 
 		//정점 버퍼 설정
-		void IASetVertexBuffers(UINT StartSlot, UINT NumBuffers, UINT VertexBufferIndex, UINT* Strides, UINT* Offsets);
+		void IASetVertexBuffers(UINT StartSlot, UINT NumBuffers, void* VertexBuffer, UINT* Strides, UINT* Offsets);
 		
 		//입력 레이아웃 설정
 		void IASetInputLayout(void* InputLayout);

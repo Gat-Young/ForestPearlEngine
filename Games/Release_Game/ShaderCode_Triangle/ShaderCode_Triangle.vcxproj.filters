@@ -64,10 +64,8 @@
     <None Include="Assets\Level\ShaderCode_Triangle.json">
       <Filter>Level</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Assets\Shader\Demo.fx">
+    <None Include="Assets\Shader\Demo.fx">
       <Filter>Assets\Shader</Filter>
-    </FxCompile>
+    </None>
   </ItemGroup>
 </Project>

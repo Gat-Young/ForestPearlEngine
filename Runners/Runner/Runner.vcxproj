@@ -68,12 +68,8 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="ReleaseGameProject.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>$(GameProjectName)</TargetName>
-  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -137,14 +133,7 @@
       <AdditionalDependencies>DirectXTK.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Engine\ForestPearlEngine\Libraries\DirectXTK\Bin\Desktop_2022\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>if not exist "$(SolutionDir)x64\Release\Assets" mkdir "$(SolutionDir)x64\Release\Assets"
-
-xcopy /E /I /Y "$(SolutionDir)Engine\ForestPearlEngine\Assets\*" "$(SolutionDir)x64\Release\Assets\"
-
-xcopy /E /I /Y "$(SolutionDir)Games\Release_Game\$(GameProjectName)\Assets\*" "$(SolutionDir)x64\Release\Assets\"</Command>
-    </PostBuildEvent>
-  </ItemDefinitionGroup>
+      </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Runner.cpp" />
@@ -154,20 +143,22 @@ xcopy /E /I /Y "$(SolutionDir)Games\Release_Game\$(GameProjectName)\Assets\*" "$
       <Project>{205fa360-9649-4928-92d6-1e9b3f0a0b9e}</Project>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Runner.h" />
-  </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
-  <Target Name="SetGameExecutableName" BeforeTargets="PrepareForBuild" Condition="'$(Configuration)' == 'Release'">
-    <MSBuild Projects="@(ProjectReference)" Targets="GetGameProjectReference" BuildInParallel="false">
-      <Output TaskParameter="TargetOutputs" ItemName="_GameProjectReference" />
-    </MSBuild>
-    <PropertyGroup>
-      <TargetName>%(_GameProjectReference.Filename)</TargetName>
-    </PropertyGroup>
-    <Message Text="Game Project: %(_GameProjectReference.Filename)" Importance="High" />
-    <Message Text="Executable: $(TargetName).exe" Importance="High" />
-  </Target>
+
+<Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+
+<ImportGroup Label="ExtensionTargets">
+</ImportGroup>
+
+<Target Name="PackageReleaseGame"
+        AfterTargets="Build"
+        Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+
+  <Message
+      Text="[ForestPearl] Packaging Release Game..."
+      Importance="High" />
+
+<Exec
+    Command='powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(SolutionDir)Build\PackageGame.ps1" -SolutionDir "$(SolutionDir)." -RunnerExe "$(TargetPath)"' />
+
+</Target>
 </Project>

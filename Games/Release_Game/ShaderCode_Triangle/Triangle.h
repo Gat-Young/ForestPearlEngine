@@ -7,11 +7,13 @@ class FPInputMappingContext;
 class FPInputAction;
 struct FInputValue;
 class FPMeshComponent;
+class FPMaterial;
 
 class Triangle : public FPActor
 {
 	private:
 		FPMeshComponent* Mesh;
+		FPMaterial* MyMaterial;
 
 		bool isFill = true;
 		bool isCull = false;

@@ -2,7 +2,7 @@
 // Demo.fx : 기본 셰이더 소스.
 
 //상수 버퍼
-cbuffer ConstBuffer : register(b0)
+cbuffer ObejctConstBuffer : register(b0)
 {
     matrix mWorld;
     matrix mView;
@@ -10,7 +10,7 @@ cbuffer ConstBuffer : register(b0)
     matrix mWVP;
 };
 
-cbuffer ConstBuffer : register(b1)
+cbuffer VertexConstBuffer : register(b1)
 {
     float4 Color;
     float fTrans;
@@ -26,7 +26,7 @@ struct VSOutput
 //셰이더 사용자 정의 함수 선언
 
 //이동 변환
-float4 transform(float4 pos);
+float4 transform(float4 pos, float fTrans);
 
 //회전 변환 (z축 기준)
 float4 rotationZ(float4 pos, float degree);
@@ -51,7 +51,7 @@ VSOutput VS_Main(
     pos.w = 1.0f;
     
     //test1 이동 변환
-    pos = transform(pos);
+    pos = transform(pos, fTrans);
     
     //test2 회전 변환
     //pos = rotationZ(pos, 45);
@@ -89,9 +89,9 @@ VSOutput VS_Main(
 //셰이더 사용자 함수 정의
 
 //이동 변환
-float4 transform(float4 pos)
+float4 transform(float4 pos, float fTrans)
 {
-    pos.x += 0.5f;
+    pos.x += fTrans;
     
     return pos;
 }

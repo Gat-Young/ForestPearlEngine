@@ -3,7 +3,7 @@
 
 class FPMaterial
 {
-	private:
+	protected:
 		void* VertexShader = nullptr;
 		void* PixelShader = nullptr;
 
@@ -16,7 +16,9 @@ class FPMaterial
 		//정점 입력구조 Input Layout
 		void* VBLayout = nullptr;
 
-		//Material 속성
+		//Material 상수 버퍼
+		void* VertextConst = nullptr;
+		void* PixelConst = nullptr;
 		
 
 	public:
@@ -28,5 +30,10 @@ class FPMaterial
 		void* GetPixelShaderPointer();
 
 		void* GetVBLayoutPointer();
+
+		void* GetVertexConstPointer();
+		void* GetPixelConstPointer();
+
+		virtual void UpdateMaterial(float DeltaTime);
 
 };

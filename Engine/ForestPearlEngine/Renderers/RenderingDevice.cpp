@@ -334,16 +334,29 @@ void* RenderingDevice::CreateVertexBuffer(void* VertexData, UINT Size, UINT Stri
 	return VertexBuffer;
 }
 
-
 // 상수 버퍼 생성
 //
 // 14개 등록 가능. 다른 셰이더와 혼용 가능.
 // 셰이더 소스에 임의 지정 가능. register(b#)으로 지정, 약어 b = 상수버퍼
 //
-int RenderingDevice::CreateConstBuffer(UINT Size)
+HRESULT RenderingDevice::CreateObjectConstBuffer(UINT Size)
 {
 	HRESULT hr = S_OK;
-	hr = CreateConstBuffer(Size, &ConstBuffer);
+	hr = CreateConstBuffer(Size, &ObjectConstBuffer);
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateVertexShaderConstBuffer(UINT Size)
+{
+	HRESULT hr = S_OK;
+	hr = CreateConstBuffer(Size, &VertexShaderConstBuffer);
+	return hr;
+}
+
+HRESULT RenderingDevice::CreatePixelShaderConstBuffer(UINT Size)
+{
+	HRESULT hr = S_OK;
+	hr = CreateConstBuffer(Size, &PixelShaderConstBuffer);
 	return hr;
 }
 
@@ -369,17 +382,45 @@ int RenderingDevice::CreateConstBuffer(UINT Size, ID3D11Buffer** ReturnConstBuff
 	return 0;
 }
 
-HRESULT RenderingDevice::VSSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
+HRESULT RenderingDevice::ObjectSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
 {
 	HRESULT hr = S_OK;
-	DeviceContext->VSSetConstantBuffers(StartSlot, NumBuffers, &ConstBuffer);
+	DeviceContext->VSSetConstantBuffers(StartSlot, NumBuffers, &ObjectConstBuffer);
 	return hr;
 }
 
-HRESULT RenderingDevice::UpdateSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
+HRESULT RenderingDevice::VSSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
 {
 	HRESULT hr = S_OK;
-	DeviceContext->UpdateSubresource(ConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
+	DeviceContext->VSSetConstantBuffers(StartSlot, NumBuffers, &VertexShaderConstBuffer);
+	return hr;
+}
+
+HRESULT RenderingDevice::PSSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->VSSetConstantBuffers(StartSlot, NumBuffers, &PixelShaderConstBuffer);
+	return hr;
+}
+
+HRESULT RenderingDevice::UpdateObjectSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->UpdateSubresource(ObjectConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
+	return hr;
+}
+
+HRESULT RenderingDevice::UpdateVertexShaderSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->UpdateSubresource(VertexShaderConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
+	return hr;
+}
+
+HRESULT RenderingDevice::UpdatePixelShaderSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->UpdateSubresource(PixelShaderConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
 	return hr;
 }
 

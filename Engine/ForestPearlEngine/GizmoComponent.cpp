@@ -184,6 +184,8 @@ void GizmoComponent::RegistGizmoRenderList()
 	RenderItem->VertexShader = (this->Material->GetVertexShaderPointer());
 	RenderItem->PixelShader = (this->Material->GetPixelShaderPointer());
 	RenderItem->VBLayout = (this->Material->GetVBLayoutPointer());
+	RenderItem->VertexConst = (this->Material->GetVertexConstPointer());
+	RenderItem->PixelConst = (this->Material->GetPixelConstPointer());
 }
 
 GizmoComponent::GizmoComponent(FPActor* Owner) : FPPrimitiveComponent(Owner)

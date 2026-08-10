@@ -100,7 +100,9 @@ class RenderingDevice
 		std::vector<DEVICEINFO> DevInfo;				//다중 GPU를 위한 배열 처리
 
 		//ConstBuffer
-		ID3D11Buffer* ConstBuffer;
+		ID3D11Buffer* ObjectConstBuffer;
+		ID3D11Buffer* VertexShaderConstBuffer;
+		ID3D11Buffer* PixelShaderConstBuffer;
 
 		//VSync 여부
 		bool IsVSync = true;
@@ -144,14 +146,20 @@ class RenderingDevice
 		void* CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride);
 
 		//CB 만들기
-		int CreateConstBuffer(UINT Size);
+		HRESULT CreateObjectConstBuffer(UINT Size);
+		HRESULT CreateVertexShaderConstBuffer(UINT Size);
+		HRESULT CreatePixelShaderConstBuffer(UINT Size);
 		int CreateConstBuffer(UINT Size, ID3D11Buffer** ReturnConstBuffer);
 
 		//CB 등록
+		HRESULT ObjectSetConstantBuffers(UINT StartSlot, UINT NumBuffers);
 		HRESULT VSSetConstantBuffers(UINT StartSlot, UINT NumBuffers);
+		HRESULT PSSetConstantBuffers(UINT StartSlot, UINT NumBuffers);
 
 		//CB 업데이트
-		HRESULT UpdateSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch);
+		HRESULT UpdateObjectSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch);
+		HRESULT UpdateVertexShaderSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch);
+		HRESULT UpdatePixelShaderSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch);
 
 		//입력 레이아웃 생성
 		HRESULT CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, ID3DBlob* InVSCode, ID3D11InputLayout** ReturnLayout);

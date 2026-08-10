@@ -22,6 +22,9 @@
     <Filter Include="Assets\Shader">
       <UniqueIdentifier>{dd79e454-4509-4f95-a147-e32797327204}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Material">
+      <UniqueIdentifier>{04e5a697-02a2-4567-a5ca-db450ca1e8a2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UI.h">
@@ -38,6 +41,9 @@
     </ClInclude>
     <ClInclude Include="GameCamera.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveVertexConstBufferMaterial.h">
+      <Filter>Material</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -58,6 +64,9 @@
     </ClCompile>
     <ClCompile Include="GameCamera.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveVertexConstBufferMaterial.cpp">
+      <Filter>Material</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

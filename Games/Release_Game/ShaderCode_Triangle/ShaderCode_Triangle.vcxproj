@@ -22,6 +22,7 @@
     <ClInclude Include="GameCamera.h" />
     <ClInclude Include="GameController.h" />
     <ClInclude Include="GameMode.h" />
+    <ClInclude Include="MoveVertexConstBufferMaterial.h" />
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="UI.h" />
   </ItemGroup>
@@ -30,6 +31,7 @@
     <ClCompile Include="GameController.cpp" />
     <ClCompile Include="GameMode.cpp" />
     <ClCompile Include="GameProjectLoader.cpp" />
+    <ClCompile Include="MoveVertexConstBufferMaterial.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="UI.cpp" />
   </ItemGroup>

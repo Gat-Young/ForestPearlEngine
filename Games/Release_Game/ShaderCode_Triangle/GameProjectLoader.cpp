@@ -4,6 +4,7 @@
 #include "GameController.h"
 #include "Triangle.h"
 #include "GameCamera.h"
+#include "MoveVertexConstBufferMaterial.h"
 
 #include <iostream>
 
@@ -27,6 +28,7 @@ void LoadClassRegist()
 	ClassRegistry->Register<UI>("UI");
 	ClassRegistry->Register<Triangle>("Triangle");
 	ClassRegistry->Register<GameCamera>("GameCamera");
+	//ClassRegistry->Register<MoveVertexConstBufferMaterial>("MoveVertexConstBufferMaterial");
 }
 
 void LoadAssets()

@@ -55,3 +55,17 @@ void* FPMaterial::GetVBLayoutPointer()
 	return VBLayout;
 }
 
+void* FPMaterial::GetVertexConstPointer()
+{
+	return VertextConst;
+}
+
+void* FPMaterial::GetPixelConstPointer()
+{
+	return PixelConst;
+}
+
+void FPMaterial::UpdateMaterial(float DeltaTime)
+{
+
+}

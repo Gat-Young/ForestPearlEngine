@@ -26,4 +26,6 @@ struct RenderItem
 	void* VertexShader = nullptr;
 	void* PixelShader = nullptr;
 	void* VBLayout = nullptr;
+	void* VertexConst = nullptr;
+	void* PixelConst = nullptr;
 };

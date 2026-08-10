@@ -53,7 +53,7 @@ struct VERTEX
 // 
 
 //상수 버퍼용 구조체 : 셰이더 내부 연산에 사용될 데이터들
-struct ConstBuffer
+struct MVPConstBuffer
 {
 	XMMATRIX WorldMatrix;
 	XMMATRIX ViewMatrix;
@@ -106,7 +106,10 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 	Device.RasterStateCreate();
 
-	Device.CreateConstBuffer(sizeof(ConstBuffer));
+	//256B의 ConstBuffer 생성
+	Device.CreateObjectConstBuffer(256);
+	Device.CreateVertexShaderConstBuffer(256);
+	Device.CreatePixelShaderConstBuffer(256);
 
 	return hr;
 }
@@ -116,7 +119,13 @@ void Renderer::ObjectRendering()
 	
 	Device.OMSetDepthStencilState(ZEnable);
 
-	ConstBuffer cb;
+
+	//상수 버퍼 설정
+	Device.ObjectSetConstantBuffers(0, 1);
+	Device.VSSetConstantBuffers(1, 1);
+	Device.PSSetConstantBuffers(2, 1);
+
+	MVPConstBuffer MVPCB;
 
 	//Camera Setting
 	FPCameraList* CameraList = static_cast<FPCameraList*>(FPGameInstance::Get().GetCameraList());
@@ -169,8 +178,8 @@ void Renderer::ObjectRendering()
 
 	}
 
-	cb.ViewMatrix = ViewMatrix;
-	cb.ProjMatrix = ProjectionMatrix;
+	MVPCB.ViewMatrix = ViewMatrix;
+	MVPCB.ProjMatrix = ProjectionMatrix;
 
 	//Object Draw
 	FPMeshRenderList* MeshRenderList = static_cast<FPMeshRenderList*>(FPGameInstance::Get().GetMeshRenderList());
@@ -219,26 +228,27 @@ void Renderer::ObjectRendering()
 		//모델링 행렬 SRT
 		TransformMatrix = Scale * Rotation * Position;
 
-		cb.WorldMatrix = TransformMatrix;
-		cb.WVPMatrix = cb.WorldMatrix * cb.ViewMatrix * cb.ProjMatrix;
+		MVPCB.WorldMatrix = TransformMatrix;
+		MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
 
-		//상수 버퍼 갱신
-		Device.UpdateSubresource(0, &cb, 0, 0);
+		//Object 상수 버퍼 갱신
+		Device.UpdateObjectSubresource(0, &MVPCB, 0, 0);
 		//렌더링 모드 전환
 		Device.UpdateRSSetState(*RenderItem.isFill, *RenderItem.isCull);
-
-		//Shader 설정
-		Device.VSSetShader(RenderItem.VertexShader);
-		Device.PSSetShader(RenderItem.PixelShader);
-
-		//상수 버퍼 설정
-		Device.VSSetConstantBuffers(0, 1);
 
 		//입력 레이아웃 설정
 		Device.IASetInputLayout(RenderItem.VBLayout);
 
 		//기하 위상 구조 설정
 		Device.IASetPrimitiveTopology(*RenderItem.Topo);
+
+		//Shader 설정
+		Device.VSSetShader(RenderItem.VertexShader);
+		Device.PSSetShader(RenderItem.PixelShader);
+
+		//Shader ConstBuffer가 있다면 갱신
+		if (RenderItem.VertexConst != nullptr) Device.UpdateVertexShaderSubresource(0, RenderItem.VertexConst, 0, 0);
+		if (RenderItem.PixelConst != nullptr) Device.UpdatePixelShaderSubresource(0, RenderItem.PixelConst, 0, 0);
 
 		//정점 버퍼 설정
 		UINT stride = *RenderItem.Stride;

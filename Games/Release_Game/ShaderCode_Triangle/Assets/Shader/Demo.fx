@@ -13,7 +13,9 @@ cbuffer ObejctConstBuffer : register(b0)
 cbuffer VertexConstBuffer : register(b1)
 {
     float4 Color;
-    float fTrans;
+    float4 fTrans;
+    float4 fRotate;
+    float fScale;
 };
 
 //VS 출력 구조체
@@ -26,7 +28,7 @@ struct VSOutput
 //셰이더 사용자 정의 함수 선언
 
 //이동 변환
-float4 transform(float4 pos, float fTrans);
+float4 transform(float4 pos, float4 fTrans);
 
 //회전 변환 (z축 기준)
 float4 rotationZ(float4 pos, float degree);
@@ -48,13 +50,22 @@ VSOutput VS_Main(
 {
     //입력된 정보 그대로 출력..
     VSOutput o = (VSOutput) 0;
-    pos.w = 1.0f;
     
+    //크기 변환 1
+    //pos.x *= fScale;
+    //pos.y *= fScale;
+    
+    //test2 회전 변환
+    pos = rotationZ(pos, fRotate.z);
+    
+        
     //test1 이동 변환
     pos = transform(pos, fTrans);
     
-    //test2 회전 변환
-    //pos = rotationZ(pos, 45);
+        //크기 변환 2
+    pos *= fScale;
+    pos.w = 1.0f;
+    
     
     //test3 회전 후 이동
     //pos = rotationZ(pos, 45);
@@ -76,6 +87,8 @@ VSOutput VS_Main(
     //test8 정점 좌표를 색상으로 지정
     //col = pos;
     
+    //col += Color;
+    
     //변환
     pos = mul(pos, mWVP);
     
@@ -89,9 +102,9 @@ VSOutput VS_Main(
 //셰이더 사용자 함수 정의
 
 //이동 변환
-float4 transform(float4 pos, float fTrans)
+float4 transform(float4 pos, float4 fTrans)
 {
-    pos.x += fTrans;
+    pos.x += fTrans.x;
     
     return pos;
 }
@@ -99,7 +112,7 @@ float4 transform(float4 pos, float fTrans)
 //회전 변환 (z축 기준)
 float4 rotationZ(float4 pos, float degree)
 {
-    float r = radians(degree);
+    float r = degree;
     
     float4 vp = pos;
     vp.x = pos.x * cos(r) - pos.y * sin(r);

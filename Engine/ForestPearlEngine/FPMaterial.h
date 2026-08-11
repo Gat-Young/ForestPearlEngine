@@ -26,14 +26,14 @@ class FPMaterial
 		void SetVertexShader(std::string VertexShaderPath);
 		void SetPixelShader(std::string PixelShaderPath);
 
-		void* GetVertexShaderPointer();
-		void* GetPixelShaderPointer();
+		void** GetVertexShaderPointer();
+		void** GetPixelShaderPointer();
 
-		void* GetVBLayoutPointer();
+		void** GetVBLayoutPointer();
 
-		void* GetVertexConstPointer();
-		void* GetPixelConstPointer();
+		void** GetVertexConstPointer();
+		void** GetPixelConstPointer();
 
-		virtual void UpdateMaterial(float DeltaTime);
+		virtual void UpdateMaterial(float DeltaTime) {};
 
 };

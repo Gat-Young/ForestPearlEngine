@@ -237,18 +237,18 @@ void Renderer::ObjectRendering()
 		Device.UpdateRSSetState(*RenderItem.isFill, *RenderItem.isCull);
 
 		//입력 레이아웃 설정
-		Device.IASetInputLayout(RenderItem.VBLayout);
+		Device.IASetInputLayout(*(RenderItem.VBLayout));
 
 		//기하 위상 구조 설정
 		Device.IASetPrimitiveTopology(*RenderItem.Topo);
 
 		//Shader 설정
-		Device.VSSetShader(RenderItem.VertexShader);
-		Device.PSSetShader(RenderItem.PixelShader);
+		Device.VSSetShader(*(RenderItem.VertexShader));
+		Device.PSSetShader(*(RenderItem.PixelShader));
 
 		//Shader ConstBuffer가 있다면 갱신
-		if (RenderItem.VertexConst != nullptr) Device.UpdateVertexShaderSubresource(0, RenderItem.VertexConst, 0, 0);
-		if (RenderItem.PixelConst != nullptr) Device.UpdatePixelShaderSubresource(0, RenderItem.PixelConst, 0, 0);
+		if (*(RenderItem.VertexConst) != nullptr) Device.UpdateVertexShaderSubresource(0, *(RenderItem.VertexConst), 0, 0);
+		if (*(RenderItem.PixelConst) != nullptr) Device.UpdatePixelShaderSubresource(0, *(RenderItem.PixelConst), 0, 0);
 
 		//정점 버퍼 설정
 		UINT stride = *RenderItem.Stride;

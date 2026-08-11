@@ -4,13 +4,15 @@
 
 class MoveVertexConstBufferMaterial : public FPMaterial
 {
-	struct ConstBuffer
+	struct alignas(16) ConstBuffer
 	{
 		float r, g, b, a;	//color
 		float x, y, z, w;	//offset
+		float Rotate_x, Rotate_y, Rotate_z, Rotate_w; // Rotation;
+		float scale;		//scale
 	};
 
-	ConstBuffer cb;
+	ConstBuffer* cb;
 
 	float r = 0;
 

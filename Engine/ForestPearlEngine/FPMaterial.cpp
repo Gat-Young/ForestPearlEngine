@@ -2,6 +2,7 @@
 #include "../ForestPearlEngine/Shader/ShaderFactory.h"
 #include "FPGameInstance.h"
 #include "FPAssetManager.h"
+#include <iostream>
 
 FPMaterial::FPMaterial()
 {
@@ -40,32 +41,28 @@ void FPMaterial::SetPixelShader(std::string PixelShaderPath)
 	PSCode = PShader.second;
 }
 
-void* FPMaterial::GetVertexShaderPointer()
+void** FPMaterial::GetVertexShaderPointer()
 {
-	return VertexShader;
+	return &VertexShader;
 }
 
-void* FPMaterial::GetPixelShaderPointer()
+void** FPMaterial::GetPixelShaderPointer()
 {
-	return PixelShader;
+	return &PixelShader;
 }
 
-void* FPMaterial::GetVBLayoutPointer()
+void** FPMaterial::GetVBLayoutPointer()
 {
-	return VBLayout;
+	return &VBLayout;
 }
 
-void* FPMaterial::GetVertexConstPointer()
+void** FPMaterial::GetVertexConstPointer()
 {
-	return VertextConst;
+	return &VertextConst;
 }
 
-void* FPMaterial::GetPixelConstPointer()
+void** FPMaterial::GetPixelConstPointer()
 {
-	return PixelConst;
+	return &PixelConst;
 }
 
-void FPMaterial::UpdateMaterial(float DeltaTime)
-{
-
-}

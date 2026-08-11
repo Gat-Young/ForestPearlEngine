@@ -23,9 +23,9 @@ struct RenderItem
 	FPQuaternion* Rotation = nullptr;
 	FPVector3* Scale = nullptr;
 	Topology* Topo = nullptr;
-	void* VertexShader = nullptr;
-	void* PixelShader = nullptr;
-	void* VBLayout = nullptr;
-	void* VertexConst = nullptr;
-	void* PixelConst = nullptr;
+	void** VertexShader = nullptr;
+	void** PixelShader = nullptr;
+	void** VBLayout = nullptr;
+	void** VertexConst = nullptr;
+	void** PixelConst = nullptr;
 };

@@ -5,8 +5,8 @@
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
 #include "ForestPearlEngine/InputValue.h"
 #include "ForestPearlEngine/FPGameTimer.h"
+#include "ForestPearlEngine/FPGameInstance.h"
 #include "MoveVertexConstBufferMaterial.h"
-#include "ForestPearlEngine/FPGameTimer.h"
 #include <iostream>
 
 void Triangle::Initialize()

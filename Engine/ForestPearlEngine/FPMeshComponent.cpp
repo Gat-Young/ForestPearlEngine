@@ -2,6 +2,7 @@
 #include "FPAssetManager.h"
 #include "FPGameInstance.h"
 #include "Define/FPDataDefine.h"
+#include <iostream>
 
 FPMeshComponent::FPMeshComponent(FPActor* Owner, std::string MeshPath) : FPPrimitiveComponent(Owner), MeshData(MeshPath)
 {
@@ -56,6 +57,8 @@ void FPMeshComponent::SetMaterial(FPMaterial* Material)
 	RenderItem->VertexShader = (this->Material->GetVertexShaderPointer());
 	RenderItem->PixelShader = (this->Material->GetPixelShaderPointer());
 	RenderItem->VBLayout = (this->Material->GetVBLayoutPointer());
+	RenderItem->VertexConst = (this->Material->GetVertexConstPointer());
+	RenderItem->PixelConst = (this->Material->GetPixelConstPointer());
 }
 
 FPMeshComponent::~FPMeshComponent()

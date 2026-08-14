@@ -170,6 +170,16 @@ void FPSceneComponent::Tick()
 		CalculateWorldTransform();
 	}
 
+	//행렬 계산
+	RelativeTransform.LocationMatrix = MatrtixTranslation(RelativeTransform.Location);
+	RelativeTransform.RotationMatrix = MatrixRotationQuaternion(RelativeTransform.QuaternionRotation);
+	RelativeTransform.ScaleMatrix = MatrixScaling(RelativeTransform.Scale);
+
+	WorldTransform.LocationMatrix = MatrtixTranslation(WorldTransform.Location);
+	WorldTransform.RotationMatrix = MatrixRotationQuaternion(WorldTransform.QuaternionRotation);
+	WorldTransform.ScaleMatrix = MatrixScaling(WorldTransform.Scale);
+	//
+
 	for (FPSceneComponent* child : ChildComponent)
 	{
 		child->Tick();

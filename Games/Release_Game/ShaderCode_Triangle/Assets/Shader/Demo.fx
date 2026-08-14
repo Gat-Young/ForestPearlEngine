@@ -56,15 +56,15 @@ VSOutput VS_Main(
     //pos.y *= fScale;
     
     //test2 회전 변환
-    pos = rotationZ(pos, fRotate.z);
+    //pos = rotationZ(pos, fRotate.z);
     
         
     //test1 이동 변환
-    pos = transform(pos, fTrans);
+    //pos = transform(pos, fTrans);
     
         //크기 변환 2
-    pos *= fScale;
-    pos.w = 1.0f;
+    //pos *= fScale;
+    //pos.w = 1.0f;
     
     
     //test3 회전 후 이동

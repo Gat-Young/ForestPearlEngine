@@ -399,7 +399,7 @@ HRESULT RenderingDevice::VSSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
 HRESULT RenderingDevice::PSSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
 {
 	HRESULT hr = S_OK;
-	DeviceContext->VSSetConstantBuffers(StartSlot, NumBuffers, &PixelShaderConstBuffer);
+	DeviceContext->PSSetConstantBuffers(StartSlot, NumBuffers, &PixelShaderConstBuffer);
 	return hr;
 }
 

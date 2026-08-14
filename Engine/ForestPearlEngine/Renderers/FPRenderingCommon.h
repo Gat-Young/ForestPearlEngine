@@ -19,13 +19,26 @@ struct RenderItem
 	int* Offset;
 	bool* isFill = nullptr;
 	bool* isCull = nullptr;
-	FPVector3* Location = nullptr;
-	FPQuaternion* Rotation = nullptr;
-	FPVector3* Scale = nullptr;
+	FPMatrix* Location = nullptr;
+	FPMatrix* Rotation = nullptr;
+	FPMatrix* Scale = nullptr;
 	Topology* Topo = nullptr;
 	void** VertexShader = nullptr;
 	void** PixelShader = nullptr;
 	void** VBLayout = nullptr;
 	void** VertexConst = nullptr;
 	void** PixelConst = nullptr;
+};
+
+struct CameraItem
+{
+	//카메라의 위치
+	FPMatrix* Location = nullptr;
+	FPMatrix* Rotation = nullptr;
+	FPMatrix* Scale = nullptr;
+
+	FPMatrix* View = nullptr;
+	FPMatrix* Projection = nullptr;
+
+	bool* Active = nullptr;			//카메라 사용 여부
 };

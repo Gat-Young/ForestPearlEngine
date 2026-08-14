@@ -127,60 +127,6 @@ void Renderer::ObjectRendering()
 
 	MVPConstBuffer MVPCB;
 
-	//Camera Setting
-	FPCameraList* CameraList = static_cast<FPCameraList*>(FPGameInstance::Get().GetCameraList());
-	std::vector<CameraItem> CamList = CameraList->GetRenderList();
-	
-	XMMATRIX ViewMatrix = XMMatrixIdentity();
-	XMMATRIX ProjectionMatrix = XMMatrixIdentity();
-
-	for (CameraItem& CamItem : CamList)
-	{
-		if (!(*(CamItem.Active))) continue;
-
-		//View 행렬
-		XMFLOAT4X4 xmView;
-		XMVECTOR eye, lookat, up;
-		eye = XMVectorSet(CamItem.Location->x, CamItem.Location->y, CamItem.Location->z, 1);
-		lookat = XMVectorSet(CamItem.LookAt->x, CamItem.LookAt->y, CamItem.LookAt->z, 1);
-		up = XMVectorSet(CamItem.Up->x, CamItem.Up->y, CamItem.Up->z, 0);
-		
-		//std::cout << "CameraItem : " << CamItem.Location->x << " : " << CamItem.Location->y << " : " << CamItem.Location->z << "\n";
-		XMStoreFloat4x4(&xmView, XMMatrixLookAtLH(eye, lookat, up));
-
-		ViewMatrix = XMLoadFloat4x4(&xmView);
-
-
-		//XMMATRIX TransformMatrix = XMMatrixIdentity();
-		////회전 처리
-		//XMFLOAT4X4 xmQuaternionRotation;
-		//XMVECTOR xmQuaternion = { CamItem.Rotation->x, CamItem.Rotation->y, CamItem.Rotation->z, CamItem.Rotation->w };
-		//XMStoreFloat4x4(&xmQuaternionRotation, XMMatrixRotationQuaternion(xmQuaternion));
-		//
-		//XMMATRIX Rotation = XMLoadFloat4x4(&xmQuaternionRotation);
-
-		////이동 처리
-		//XMFLOAT4X4 xmPosition;
-		//XMStoreFloat4x4(&xmPosition, XMMatrixTranslation(CamItem.Location->x, CamItem.Location->y, CamItem.Location->z));
-		//XMMATRIX Position = XMLoadFloat4x4(&xmPosition);
-
-		////모델링 행렬 TR
-		//TransformMatrix = Position * Rotation;
-
-		//뷰행렬 TR의 역
-		//ViewMatrix = XMMatrixInverse(nullptr, TransformMatrix);
-		//
-
-		//Projection 행렬
-		XMFLOAT4X4 xmProj;
-		XMStoreFloat4x4(&xmProj, XMMatrixPerspectiveFovLH(XMConvertToRadians(*CamItem.Fov), *CamItem.Aspect, *CamItem.Zn, *CamItem.Zf));
-		ProjectionMatrix = XMLoadFloat4x4(&xmProj);
-
-	}
-
-	MVPCB.ViewMatrix = ViewMatrix;
-	MVPCB.ProjMatrix = ProjectionMatrix;
-
 	//Object Draw
 	FPMeshRenderList* MeshRenderList = static_cast<FPMeshRenderList*>(FPGameInstance::Get().GetMeshRenderList());
 	std::vector<RenderItem> RenderList = MeshRenderList->GetRenderList();
@@ -207,32 +153,7 @@ void Renderer::ObjectRendering()
 			RenderQueue.pop();
 			continue;
 		}
-		XMMATRIX TransformMatrix = XMMatrixIdentity();
-
-		//스케일 처리
-		XMFLOAT4X4 xmScale;
-		XMStoreFloat4x4(&xmScale, XMMatrixScaling(RenderItem.Scale->x, RenderItem.Scale->y, RenderItem.Scale->z));
-		XMMATRIX Scale = XMLoadFloat4x4(&xmScale);
-
-		//회전 처리
-		XMFLOAT4X4 xmQuaternionRotation;
-		XMVECTOR xmQuaternion = { RenderItem.Rotation->x, RenderItem.Rotation->y, RenderItem.Rotation->z, RenderItem.Rotation->w };
-		XMStoreFloat4x4(&xmQuaternionRotation, XMMatrixRotationQuaternion(xmQuaternion));
-		XMMATRIX Rotation = XMLoadFloat4x4(&xmQuaternionRotation);
-
-		//이동 처리
-		XMFLOAT4X4 xmPosition;
-		XMStoreFloat4x4(&xmPosition, XMMatrixTranslation(RenderItem.Location->x, RenderItem.Location->y, RenderItem.Location->z));
-		XMMATRIX Position = XMLoadFloat4x4(&xmPosition);
-
-		//모델링 행렬 SRT
-		TransformMatrix = Scale * Rotation * Position;
-
-		MVPCB.WorldMatrix = TransformMatrix;
-		MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
-
-		//Object 상수 버퍼 갱신
-		Device.UpdateObjectSubresource(0, &MVPCB, 0, 0);
+		
 		//렌더링 모드 전환
 		Device.UpdateRSSetState(*RenderItem.isFill, *RenderItem.isCull);
 
@@ -250,16 +171,35 @@ void Renderer::ObjectRendering()
 		if (*(RenderItem.VertexConst) != nullptr) Device.UpdateVertexShaderSubresource(0, *(RenderItem.VertexConst), 0, 0);
 		if (*(RenderItem.PixelConst) != nullptr) Device.UpdatePixelShaderSubresource(0, *(RenderItem.PixelConst), 0, 0);
 
-		//정점 버퍼 설정
-		UINT stride = *RenderItem.Stride;
-		UINT offset = *RenderItem.Offset;
+		//Camera Setting
+		FPCameraList* CameraList = static_cast<FPCameraList*>(FPGameInstance::Get().GetCameraList());
+		std::vector<CameraItem> CamList = CameraList->GetRenderList();
 
-		int MeshSize = (RenderItem.VB)->size();
-		for (int i = 0; i < MeshSize; ++i)
+		for (CameraItem& CamItem : CamList)
 		{
-			Device.IASetVertexBuffers(0, 1, (RenderItem.VB)->at(i), &stride, &offset);
+			if (!(*(CamItem.Active))) continue;
 
-			Device.Draw((RenderItem.VertexSize)->at(i), 0);
+			MVPCB.WorldMatrix = ((*(RenderItem.Scale)) * (*(RenderItem.Rotation)) * (*(RenderItem.Location))).Matrix;
+			MVPCB.ViewMatrix = (*(CamItem.View)).Matrix ;
+			MVPCB.ProjMatrix = (*(CamItem.Projection)).Matrix;
+
+			MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
+
+			//Object 상수 버퍼 갱신
+			Device.UpdateObjectSubresource(0, &MVPCB, 0, 0);
+
+			//정점 버퍼 설정
+			UINT stride = *RenderItem.Stride;
+			UINT offset = *RenderItem.Offset;
+
+			int MeshSize = (RenderItem.VB)->size();
+			for (int i = 0; i < MeshSize; ++i)
+			{
+				Device.IASetVertexBuffers(0, 1, (RenderItem.VB)->at(i), &stride, &offset);
+
+				Device.Draw((RenderItem.VertexSize)->at(i), 0);
+			}
+
 		}
 
 		RenderQueue.pop();

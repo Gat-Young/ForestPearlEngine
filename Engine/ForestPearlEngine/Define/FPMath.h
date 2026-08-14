@@ -135,8 +135,40 @@ struct FPQuaternion
 
 };
 
-FPVector3 Rotate(const FPQuaternion& quat, const FPVector3& vec);
+struct FPMatrix
+{
+	DirectX::XMMATRIX Matrix = DirectX::XMMatrixIdentity();
 
+	FPMatrix() : Matrix(DirectX::XMMatrixIdentity()) {}
+	
+	FPMatrix(DirectX::XMMATRIX Matrix) : Matrix(Matrix) {}
+
+	//Matrix °ö
+	FPMatrix operator*(const FPMatrix& rhs) const
+	{
+		return FPMatrix(Matrix * rhs.Matrix);
+	}
+
+	//Scalar °ö
+	FPMatrix operator*(const float& rhs) const
+	{
+		return FPMatrix(rhs * Matrix);
+	}
+
+	FPMatrix operator*(const int& rhs) const
+	{
+		return FPMatrix(rhs * Matrix);
+	}
+
+	//¿ª Çà·Ä
+	FPMatrix MatrixInverse()
+	{
+		return FPMatrix(DirectX::XMMatrixInverse(nullptr, Matrix));
+	}
+
+};
+
+FPVector3 Rotate(const FPQuaternion& quat, const FPVector3& vec);
 
 FPQuaternion Conjugate(const FPQuaternion& quat);
 
@@ -146,4 +178,31 @@ FPQuaternion FromEuler(const FPVector3& eulerDeg);
 
 FPQuaternion AngleAxis(float angleRad, const FPVector3& axis);
 
+//Transform Çà·Ä
+FPMatrix MatrtixTranslation(const float& x, const float& y, const float& z);
 
+FPMatrix MatrtixTranslation(const FPVector3& Location);
+
+//Rotation Çà·Ä
+
+//RollPitchYaw
+FPMatrix MatrixRotaionRollPitch(const float& PitchDegree, const float& YawDegree, const float& RollDegree);
+
+//Quternion
+FPMatrix MatrixRotationQuaternion(const FPQuaternion& quat);
+
+//Scale Çà·Ä
+FPMatrix MatrixScaling(const float& x, const float& y, const float& z);
+
+FPMatrix MatrixScaling(const FPVector3& Scale);
+
+
+//View Çà·Ä
+
+//¿Þ¼Õ ÁÂÇ¥°è ¿ë
+FPMatrix MatrixLookAtLH(const FPVector3& eye, const FPVector3& target, const FPVector3& up);
+
+FPMatrix MatrixLookToLH(const FPVector3& eye, const FPVector3& direction, const FPVector3& up);
+
+//Projection Çà·Ä
+FPMatrix MatrixPerspectiveFovLH(const float& Fov, const float& Aspect, const float& Zn, const float& Zf);

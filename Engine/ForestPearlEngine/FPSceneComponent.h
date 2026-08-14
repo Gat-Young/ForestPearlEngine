@@ -64,5 +64,5 @@ class FPSceneComponent : public FPActorComponent
 		FPVector3 GetComponentScale();
 
 		//임시로 사용
-		void Tick();
+		virtual void Tick();
 };

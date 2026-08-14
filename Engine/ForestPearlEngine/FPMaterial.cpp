@@ -35,7 +35,7 @@ void FPMaterial::SetVertexShader(std::string VertexShaderPath)
 void FPMaterial::SetPixelShader(std::string PixelShaderPath)
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-	std::pair<void*, void*> PShader = AssetManager->GetVertexShader(PixelShaderPath);
+	std::pair<void*, void*> PShader = AssetManager->GetPixelShader(PixelShaderPath);
 
 	PixelShader = PShader.first;
 	PSCode = PShader.second;

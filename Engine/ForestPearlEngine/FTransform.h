@@ -8,6 +8,10 @@ struct FTransform
 	FPQuaternion QuaternionRotation;
 	FPVector3 Scale;
 
+	FPMatrix LocationMatrix;
+	FPMatrix RotationMatrix;
+	FPMatrix ScaleMatrix;
+
 	FTransform()
 	{
 		Location = { 0.0f, 0.0f, 0.0f };

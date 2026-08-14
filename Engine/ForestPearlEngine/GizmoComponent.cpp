@@ -177,9 +177,9 @@ void GizmoComponent::RegistGizmoRenderList()
 	RenderItem->VertexSize = &(this->VertexSize);
 	RenderItem->Stride = &(this->Stride);
 	RenderItem->Offset = &(this->Offest);
-	RenderItem->Location = &(this->WorldTransform.Location);
-	RenderItem->Rotation = &(this->WorldTransform.QuaternionRotation);
-	RenderItem->Scale = &(this->WorldTransform.Scale);
+	RenderItem->Location = &(this->WorldTransform.LocationMatrix);
+	RenderItem->Rotation = &(this->WorldTransform.RotationMatrix);
+	RenderItem->Scale = &(this->WorldTransform.ScaleMatrix);
 	RenderItem->Topo = &(this->Topo);
 	RenderItem->VertexShader = (this->Material->GetVertexShaderPointer());
 	RenderItem->PixelShader = (this->Material->GetPixelShaderPointer());

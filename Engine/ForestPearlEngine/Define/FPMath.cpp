@@ -157,3 +157,73 @@ FPQuaternion FromEuler(const FPVector3& eulerDeg)
 
 	return q.Normalize();
 }
+
+//Transform 행렬
+FPMatrix MatrtixTranslation(const float& x, const float& y, const float& z)
+{
+	return FPMatrix(DirectX::XMMatrixTranslation(x, y, z));
+}
+
+FPMatrix MatrtixTranslation(const FPVector3& Location)
+{
+	return FPMatrix(DirectX::XMMatrixTranslation(Location.x, Location.y, Location.z));
+}
+
+//Rotation 행렬
+
+//RollPitchYaw
+FPMatrix MatrixRotaionRollPitch(const float& PitchDegree, const float& YawDegree, const float& RollDegree)
+{
+	float PitchRadian = DirectX::XMConvertToRadians(PitchDegree);
+	float YawRadian = DirectX::XMConvertToRadians(YawDegree);
+	float RollRadian = DirectX::XMConvertToRadians(RollDegree);
+
+	return FPMatrix(DirectX::XMMatrixRotationRollPitchYaw(PitchRadian, YawRadian, RollRadian));
+}
+
+//Quternion
+FPMatrix MatrixRotationQuaternion(const FPQuaternion& quat)
+{
+	DirectX::XMVECTOR quaternion{ quat.x, quat.y, quat.z, quat.w };
+	return FPMatrix(DirectX::XMMatrixRotationQuaternion(quaternion));
+}
+
+//Scale 행렬
+FPMatrix MatrixScaling(const float& x, const float& y, const float& z)
+{
+	return FPMatrix(DirectX::XMMatrixScaling(x, y, z));
+}
+
+FPMatrix MatrixScaling(const FPVector3& Scale)
+{
+	DirectX::XMVECTOR ScaleVec{ Scale.x, Scale.y, Scale.z };
+	return FPMatrix(DirectX::XMMatrixScalingFromVector(ScaleVec));
+}
+
+
+//View 행렬
+
+//왼손 좌표계 용
+FPMatrix MatrixLookAtLH(const FPVector3& eye, const FPVector3& target, const FPVector3& up)
+{
+	DirectX::XMVECTOR Eye{ eye.x, eye.y, eye.z };
+	DirectX::XMVECTOR Target{ target.x, target.y, target.z };
+	DirectX::XMVECTOR Up{ up.x, up.y, up.z };
+
+	return FPMatrix(DirectX::XMMatrixLookAtLH(Eye, Target, Up));
+}
+
+FPMatrix MatrixLookToLH(const FPVector3& eye, const FPVector3& direction, const FPVector3& up)
+{
+	DirectX::XMVECTOR Eye{ eye.x, eye.y, eye.z };
+	DirectX::XMVECTOR Direction{ direction.x, direction.y, direction.z };
+	DirectX::XMVECTOR Up{ up.x, up.y, up.z };
+
+	return FPMatrix(DirectX::XMMatrixLookToLH(Eye, Direction, Up));
+}
+
+//Projection 행렬
+FPMatrix MatrixPerspectiveFovLH(const float& Fov, const float& Aspect, const float& Zn, const float& Zf)
+{
+	return FPMatrix(DirectX::XMMatrixPerspectiveFovLH(Fov, Aspect, Zn, Zf));
+}

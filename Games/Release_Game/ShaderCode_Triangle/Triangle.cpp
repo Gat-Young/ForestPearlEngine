@@ -7,17 +7,20 @@
 #include "ForestPearlEngine/FPGameTimer.h"
 #include "ForestPearlEngine/FPGameInstance.h"
 #include "MoveVertexConstBufferMaterial.h"
+#include "CB2Material.h"
 #include <iostream>
 
 void Triangle::Initialize()
 {
-	Mesh = new FPMeshComponent(this, "Triangle/Test_Triangle.fbx");
+	//Mesh = new FPMeshComponent(this, "Triangle/Test_Triangle.fbx");
+	Mesh = new FPMeshComponent(this, "Triangle/Test_Clip_Triangle.fbx");
 
 	SetRootComponent((FPSceneComponent*)Mesh);
 	Mesh->SetMeshCull(false);
 
-	MyMaterial = new MoveVertexConstBufferMaterial();
-	MyMaterial->SetVertexShader("Demo.fx");
+	MyMaterial = new CB2Material();
+	MyMaterial->SetVertexShader("2CB.fx");
+	MyMaterial->SetPixelShader("2CB.fx");
 
 	Mesh->SetMaterial(MyMaterial);
 
@@ -38,7 +41,10 @@ void Triangle::BeginPlay()
 void Triangle::Tick()
 {
 	FPGameTimer* GameTimer = static_cast<FPGameTimer*>(FPGameInstance::Get().GetGameTimer());
-	MyMaterial->UpdateMaterial(GameTimer->DeltaTime());
+
+	float DeltaTime = GameTimer->DeltaTime();
+	MyMaterial->UpdateMaterial(DeltaTime);
+
 	__super::Tick();
 }
 

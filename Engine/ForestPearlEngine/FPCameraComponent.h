@@ -16,6 +16,10 @@ class FPCameraComponent : public FPPrimitiveComponent
 		float Zn = 1.0f;						//근평면 거리
 		float Zf = 100.0f;						//원평면 거리
 
+
+		FPMatrix ViewMatrix;
+		FPMatrix ProjectionMatrix;
+
 		bool Active = true;			//카메라 사용 여부
 
 		CameraItem* CamItem = nullptr;
@@ -24,4 +28,5 @@ class FPCameraComponent : public FPPrimitiveComponent
 		FPCameraComponent(FPActor* Owner);
 		~FPCameraComponent();
 		void RegistCamera();
+		void Tick() override;
 };

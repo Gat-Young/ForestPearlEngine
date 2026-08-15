@@ -37,11 +37,14 @@ void LoadAssets()
 	AssetLoader->LoadFbxData("Triangle/Test_Triangle.fbx", AssetOwner::User);
 	AssetLoader->LoadFbxData("Triangle/Test_Clip_Triangle.fbx", AssetOwner::User);
 
-	AssetLoader->LoadVertexShader("Demo.fx","VS_Main", "vs_5_0", AssetOwner::User);
-	AssetLoader->LoadVertexShader("2CB.fx", "VS_Main", "vs_5_0", AssetOwner::User);
+	//AssetLoader->LoadVertexShader("Demo.fx","VS_Main", "vs_5_0", AssetOwner::User);
+	//AssetLoader->LoadVertexShader("2CB.fx", "VS_Main", "vs_5_0", AssetOwner::User);
 
-	AssetLoader->LoadPixelShader("Demo.fx", "PS_Main", "ps_5_0", AssetOwner::User);
-	AssetLoader->LoadPixelShader("2CB.fx", "PS_Main", "ps_5_0", AssetOwner::User);
+	//AssetLoader->LoadPixelShader("Demo.fx", "PS_Main", "ps_5_0", AssetOwner::User);
+	//AssetLoader->LoadPixelShader("2CB.fx", "PS_Main", "ps_5_0", AssetOwner::User);
+
+	AssetLoader->LoadVertexShader("Demo.vso", AssetOwner::User);
+	AssetLoader->LoadPixelShader("Demo.pso", AssetOwner::User);
 }
 
 std::string ReturnStartLevel()

@@ -19,8 +19,8 @@ void Triangle::Initialize()
 	Mesh->SetMeshCull(false);
 
 	MyMaterial = new CB2Material();
-	MyMaterial->SetVertexShader("2CB.fx");
-	MyMaterial->SetPixelShader("2CB.fx");
+	MyMaterial->SetVertexShader("Demo.vso");
+	MyMaterial->SetPixelShader("Demo.pso");
 
 	Mesh->SetMaterial(MyMaterial);
 

@@ -263,41 +263,115 @@ $ReleaseGameRoot
         | Out-Null
 
 
-    # ------------------------------------------------------------
-    # 폴더 내용 복사 함수
-    # ------------------------------------------------------------
+# ------------------------------------------------------------
+# Assets 복사 함수
+#
+# 일반 Asset:
+#   Assets\* -> Release\Assets\*
+#
+# Shader:
+#   Assets\Shader\bin\*
+#       -> Release\Assets\Shader\*
+#
+# 최종 결과에는 Shader\bin 폴더가 생성되지 않음
+# ------------------------------------------------------------
 
-    function Copy-AssetDirectory
+function Copy-AssetDirectory
+{
+    param
+    (
+        [string]$Source,
+        [string]$Destination
+    )
+
+
+    if (-not (Test-Path $Source))
     {
-        param
-        (
-            [string]$Source,
-            [string]$Destination
-        )
+        Write-Host "[Package] Assets not found, skipping:"
+        Write-Host "          $Source"
+
+        return
+    }
 
 
-        if (-not (Test-Path $Source))
-        {
-            Write-Host "[Package] Assets not found, skipping:"
-            Write-Host "          $Source"
+    Write-Host "[Package] Copy Assets:"
+    Write-Host "          $Source"
+    Write-Host "       -> $Destination"
 
-            return
+
+    # --------------------------------------------------------
+    # Shader를 제외한 일반 Asset 복사
+    # --------------------------------------------------------
+
+    Get-ChildItem `
+        -LiteralPath $Source `
+        -Force |
+        Where-Object {
+            $_.Name -ne "Shader"
+        } |
+        ForEach-Object {
+
+            Copy-Item `
+                -LiteralPath $_.FullName `
+                -Destination $Destination `
+                -Recurse `
+                -Force
         }
 
 
-        Write-Host "[Package] Copy Assets:"
-        Write-Host "          $Source"
-        Write-Host "       -> $Destination"
+    # --------------------------------------------------------
+    # Shader 처리
+    #
+    # Source:
+    #   Assets\Shader\bin\*
+    #
+    # Destination:
+    #   Release\Assets\Shader\*
+    #
+    # bin 폴더 자체는 복사하지 않음
+    # --------------------------------------------------------
+
+    $ShaderBinPath = Join-Path `
+        $Source `
+        "Shader\bin"
+
+    if (Test-Path $ShaderBinPath)
+    {
+        $DestinationShaderPath = Join-Path `
+            $Destination `
+            "Shader"
 
 
-        # Assets 폴더 자체가 아니라
-        # Assets 안의 내용만 복사
-        Copy-Item `
-            -Path (Join-Path $Source "*") `
-            -Destination $Destination `
-            -Recurse `
-            -Force
+        New-Item `
+            -ItemType Directory `
+            -Path $DestinationShaderPath `
+            -Force `
+            | Out-Null
+
+
+        Write-Host "[Package] Copy Shader:"
+        Write-Host "          $ShaderBinPath"
+        Write-Host "       -> $DestinationShaderPath"
+
+
+        Get-ChildItem `
+            -LiteralPath $ShaderBinPath `
+            -Force |
+            ForEach-Object {
+
+                Copy-Item `
+                    -LiteralPath $_.FullName `
+                    -Destination $DestinationShaderPath `
+                    -Recurse `
+                    -Force
+            }
     }
+    else
+    {
+        Write-Host "[Package] Shader bin not found, skipping:"
+        Write-Host "          $ShaderBinPath"
+    }
+}
 
 
     # ------------------------------------------------------------

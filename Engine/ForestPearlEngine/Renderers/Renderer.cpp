@@ -123,7 +123,7 @@ void Renderer::ObjectRendering()
 	//상수 버퍼 설정
 	Device.ObjectSetConstantBuffers(0, 1);
 	Device.VSSetConstantBuffers(1, 1);
-	Device.PSSetConstantBuffers(2, 1);
+	Device.PSSetConstantBuffers(0, 1);
 
 	MVPConstBuffer MVPCB;
 

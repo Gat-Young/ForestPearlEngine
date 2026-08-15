@@ -280,8 +280,14 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Shader\DefaultShader.fx">
+    <FxCompile Include="Assets\Shader\DefaultPixelShader.psh">
       <Filter>Assets\Shader</Filter>
-    </None>
+    </FxCompile>
+    <FxCompile Include="Assets\Shader\DefaultVertexShader.vsh">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shader\DefaultShader.fx">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

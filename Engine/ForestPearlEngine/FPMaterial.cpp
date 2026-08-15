@@ -9,8 +9,8 @@ FPMaterial::FPMaterial()
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
 	//Default Shader ¼¼ÆÃ
-	std::pair<void*, void*> VShader = AssetManager->GetVertexShader("DefaultShader.fx");
-	std::pair<void*, void*> PShader = AssetManager->GetPixelShader("DefaultShader.fx");
+	std::pair<void*, void*> VShader = AssetManager->GetVertexShader("DefaultVertexShader.vso");
+	std::pair<void*, void*> PShader = AssetManager->GetPixelShader("DefaultPixelShader.pso");
 
 	VertexShader = VShader.first;
 	VSCode = VShader.second;

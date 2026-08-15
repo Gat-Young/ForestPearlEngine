@@ -45,6 +45,32 @@ std::string FPPathManager::GetEngineAssetRoot() const
     return EngineAssetRoot.string();
 }
 
+std::string FPPathManager::GetEngineAssetShaderPath(const std::string& RelativePath) const
+{
+#ifdef _DEBUG
+    return (EngineAssetRoot / "Shader" / "bin" / RelativePath)
+        .lexically_normal()
+        .string();
+#else
+    return (EngineAssetRoot / "Shader" / RelativePath)
+        .lexically_normal()
+        .string();
+#endif
+}
+
+std::string FPPathManager::GetAssetShaderPath(const std::string& RelativePath) const
+{
+#ifdef _DEBUG
+    return (AssetRoot / "Shader" / "bin" / RelativePath)
+        .lexically_normal()
+        .string();
+#else
+    return (AssetRoot / "Shader" / RelativePath)
+        .lexically_normal()
+        .string();
+#endif
+}
+
 std::string FPPathManager::GetProjectName()
 {
     return ProjectName;

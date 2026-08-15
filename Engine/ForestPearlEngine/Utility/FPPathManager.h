@@ -22,6 +22,10 @@ public:
 
     std::string GetEngineAssetRoot() const;
 
+    std::string GetEngineAssetShaderPath(const std::string& RelativePath) const;
+
+    std::string GetAssetShaderPath(const std::string& RelativePath) const;
+
     std::string GetProjectName();
 
     std::wstring StringToWString(const std::string& String);

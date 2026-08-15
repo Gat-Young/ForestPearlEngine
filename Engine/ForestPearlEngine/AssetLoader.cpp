@@ -246,6 +246,36 @@ void FPAssetLoader::LoadLevelData(std::string LevelName, std::string LevelPath, 
 	}
 }
 
+void FPAssetLoader::LoadVertexShader(std::string ShaderObjPath, AssetOwner EngineAsset)
+{
+	std::wstring FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetAssetShaderPath(ShaderObjPath)));
+	if (EngineAsset == AssetOwner::Engine) FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetEngineAssetShaderPath(ShaderObjPath)));
+
+	void* VertexShader = nullptr;
+	void* VSCode = nullptr;
+
+	ShaderFactory::GetShaderFactory().VertexShaderLoad(FilePath.c_str(), &VertexShader, &VSCode);
+
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	AssetManager->AddVertexShader(ShaderObjPath, VertexShader, VSCode);
+}
+
+void FPAssetLoader::LoadPixelShader(std::string ShaderObjPath, AssetOwner EngineAsset)
+{
+	std::wstring FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetAssetShaderPath(ShaderObjPath)));
+	if (EngineAsset == AssetOwner::Engine) FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetEngineAssetShaderPath(ShaderObjPath)));
+
+	void* PixelShader = nullptr;
+	void* PSCode = nullptr;
+
+	ShaderFactory::GetShaderFactory().PixelShaderLoad(FilePath.c_str(), &PixelShader, &PSCode);
+
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	AssetManager->AddPixelShader(ShaderObjPath, PixelShader, PSCode);
+}
+
 void FPAssetLoader::LoadVertexShader(std::string ShaderPath, std::string VS_Main, std::string ShaderModel, AssetOwner EngineAsset)
 {
 	std::wstring FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetAssetPath("Shader/" + ShaderPath)));

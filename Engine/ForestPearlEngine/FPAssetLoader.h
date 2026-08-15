@@ -27,6 +27,8 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 
 		void LoadLevelData(std::string LevelName, std::string LevelPath, AssetOwner EngineAsset);
 
+		void LoadVertexShader(std::string ShaderObjPath, AssetOwner EngineAsset);
+		void LoadPixelShader(std::string ShaderObjPath, AssetOwner EngineAsset);
 		void LoadVertexShader(std::string ShaderPath, std::string VS_Main, std::string ShaderModel, AssetOwner EngineAsset);
 		void LoadPixelShader(std::string ShaderPath, std::string PS_Main, std::string ShaderModel, AssetOwner EngineAsset);
 };

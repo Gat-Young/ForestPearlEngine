@@ -87,5 +87,14 @@
     <FxCompile Include="Assets\Shader\2CB.fx">
       <Filter>Assets\Shader</Filter>
     </FxCompile>
+    <FxCompile Include="Assets\Shader\Demo.psh">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shader\Demo.vsh">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shader\funcs.fx">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

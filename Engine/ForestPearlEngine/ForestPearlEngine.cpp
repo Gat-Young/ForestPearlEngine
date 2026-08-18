@@ -7,6 +7,7 @@
 #include "GameProjectLoader.h"
 #include "EngineLoader.h"
 #include "Systems/InputSystem.h"
+#include "FPGameProjectSetting.h"
 //#include <iostream>
 #include "MCLOG.h"
 
@@ -23,11 +24,18 @@ bool ForestPearlEngine::PreInitialize()
 {
     RegistProjectName();
 
-    WinClassName = FPPathManager::Get().StringToWString(FPPathManager::Get().GetProjectName());
-    WinName = FPPathManager::Get().StringToWString(FPPathManager::Get().GetProjectName());
+    FPGameInstance::Get();
 
+    FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
     //윈도우 생성
-    Hwnd = CreateFPEWindow(WinClassName.c_str(), WinName.c_str(), WinWidth, WinHeight);
+    Hwnd = CreateFPEWindow(
+                GameProjectSetting->GetWinClassName().c_str(), 
+                GameProjectSetting->GetWinName().c_str(), 
+                GameProjectSetting->GetWinWidth(),
+                GameProjectSetting->GetWinHeight()
+                );
+
+    GameProjectSetting->SetHWND(Hwnd);
 
     if (Hwnd == nullptr)
     {
@@ -45,8 +53,6 @@ bool ForestPearlEngine::PreInitialize()
     //Render 등록
     Render = new Renderer(*RenderDevice);
     Render->InitializeRenderer(Hwnd);
-    
-    FPGameInstance::Get();
 
     LoadEngineAssets();
 

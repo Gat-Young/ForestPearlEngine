@@ -30,6 +30,16 @@ struct RenderItem
 	void** PixelConst = nullptr;
 };
 
+struct FPViewPort
+{
+	float TopLeftX = 0.0f;
+	float TopLeftY = 0.0f;
+	float Width;
+	float Height;
+	float MinDepth = 0.0f;
+	float MaxDepth = 1.0f;
+};
+
 struct CameraItem
 {
 	//카메라의 위치
@@ -39,6 +49,9 @@ struct CameraItem
 
 	FPMatrix* View = nullptr;
 	FPMatrix* Projection = nullptr;
+
+	//ViewPort
+	FPViewPort* ViewPort;
 
 	bool* Active = nullptr;			//카메라 사용 여부
 };

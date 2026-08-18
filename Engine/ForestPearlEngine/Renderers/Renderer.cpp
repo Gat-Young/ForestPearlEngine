@@ -92,8 +92,8 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 	Device.OMSetRenderTargets();
 
-	//뷰포트 설정
-	Device.SetViewPort(0.0f, 0.0f, (FLOAT)Device.GetWidth(), (FLOAT)Device.GetHeight(), 0.0f, 1.0f);
+	//뷰포트 설정 <- 카메라가 뷰포트 정보를 가지고 Draw 될 때 Set
+	//Device.SetViewPort(0.0f, 0.0f, (FLOAT)Device.GetWidth(), (FLOAT)Device.GetHeight(), 0.0f, 1.0f);
 
 	Device.GetDeviceInfo();
 	
@@ -178,6 +178,11 @@ void Renderer::ObjectRendering()
 		for (CameraItem& CamItem : CamList)
 		{
 			if (!(*(CamItem.Active))) continue;
+
+			FPViewPort CamViewPort = *(CamItem.ViewPort);
+			Device.SetViewPort(CamViewPort.TopLeftX, CamViewPort.TopLeftY, 
+								CamViewPort.Width, CamViewPort.Height, 
+								CamViewPort.MinDepth, CamViewPort.MaxDepth);
 
 			MVPCB.WorldMatrix = ((*(RenderItem.Scale)) * (*(RenderItem.Rotation)) * (*(RenderItem.Location))).Matrix;
 			MVPCB.ViewMatrix = (*(CamItem.View)).Matrix ;

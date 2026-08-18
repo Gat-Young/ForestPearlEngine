@@ -91,8 +91,10 @@ class ForestPearlEngine
 
 		std::wstring WinClassName;
 		std::wstring WinName;
-		const int WinWidth = 960;
-		const int WinHeight = 600;
+		int WinWidth = 960;
+		int WinHeight = 600;
+		int DisplayWidth;
+		int DisplayHeight;
 
 		////////////////////////////////
 		// Render Property 

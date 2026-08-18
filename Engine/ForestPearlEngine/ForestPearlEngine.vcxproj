@@ -144,6 +144,7 @@
     <ClInclude Include="FPAGameMode.h" />
     <ClInclude Include="FPGameInstance.h" />
     <ClInclude Include="FPGameInstanceSubSystem.h" />
+    <ClInclude Include="FPGameProjectSetting.h" />
     <ClInclude Include="FPMaterial.h" />
     <ClInclude Include="FPMovementComponent.h" />
     <ClInclude Include="FPPrimitiveComponent.h" />
@@ -186,6 +187,7 @@
     <ClCompile Include="FPAController.cpp" />
     <ClCompile Include="FPAGameMode.cpp" />
     <ClCompile Include="FPGameInstance.cpp" />
+    <ClCompile Include="FPGameProjectSetting.cpp" />
     <ClCompile Include="FPMaterial.cpp" />
     <ClCompile Include="FPMovementCompoent.cpp" />
     <ClCompile Include="FPMovementComponent.cpp" />

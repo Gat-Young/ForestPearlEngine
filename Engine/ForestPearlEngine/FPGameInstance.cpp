@@ -8,6 +8,7 @@
 #include "FPTextRenderList.h"
 #include "FPCameraList.h"
 #include "FPAssetLoader.h"
+#include "FPGameProjectSetting.h"
 
 
 auto Cast_SizeT = [](GameInstanceSubSystemName Name) -> size_t {return static_cast<size_t>(Name); };
@@ -22,6 +23,7 @@ FPGameInstance::FPGameInstance()
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::MeshRenderList)] = new FPMeshRenderList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::TextRenderList)] = new FPTextRenderList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::CameraList)] = new FPCameraList();
+	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::GameProjectSetting)] = new FPGameProjectSetting();
 
 }
 
@@ -116,4 +118,9 @@ FPGameInstanceSubSystem* FPGameInstance::GetCameraList()
 FPGameInstanceSubSystem* FPGameInstance::GetMeshRenderList()
 {
 	return GetInstanceSubSystem(GameInstanceSubSystemName::MeshRenderList);
+}
+
+FPGameInstanceSubSystem* FPGameInstance::GetGameProjectSetting()
+{
+	return GetInstanceSubSystem(GameInstanceSubSystemName::GameProjectSetting);
 }

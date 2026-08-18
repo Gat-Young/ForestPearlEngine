@@ -46,6 +46,15 @@
     <Filter Include="Assets\Shader">
       <UniqueIdentifier>{a1c83662-ba2a-4eba-a8ac-3979cdeefad8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="FPGameInstance">
+      <UniqueIdentifier>{73f7a809-2b88-4b57-83f4-4e10742310a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FPGameInstance\Header Files">
+      <UniqueIdentifier>{4db09870-4758-4cef-98cc-c787de365f90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FPGameInstance\Source Files">
+      <UniqueIdentifier>{12326347-c196-44b5-91da-aa7f4b35b10e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -60,28 +69,10 @@
     <ClInclude Include="Object\Object.h">
       <Filter>Object</Filter>
     </ClInclude>
-    <ClInclude Include="FPGameProjectClassRegistry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GameProjectLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FPGameInstance.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FPWorld.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FPAssetManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FPMeshRenderList.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FPTextRenderList.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Systems\InputSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Systems\KeyStateEnum.h">
@@ -99,13 +90,7 @@
     <ClInclude Include="FPAGameMode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FPGameTimer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Object\Components\InputComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FPCameraList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FPActorComponent.h">
@@ -159,9 +144,6 @@
     <ClInclude Include="GizmoComponent.h">
       <Filter>Component</Filter>
     </ClInclude>
-    <ClInclude Include="FPGameInstanceSubSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Libraries\nlohmann\json.hpp">
       <Filter>Libraries\nlohmann</Filter>
     </ClInclude>
@@ -171,33 +153,48 @@
     <ClInclude Include="Utility\FPPathManager.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="FPAssetLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Define\FPDataDefine.h">
       <Filter>Define</Filter>
     </ClInclude>
     <ClInclude Include="EngineLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FPAssetLoader.h">
+      <Filter>FPGameInstance\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FPAssetManager.h">
+      <Filter>FPGameInstance\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FPCameraList.h">
+      <Filter>FPGameInstance\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FPGameInstance.h">
+      <Filter>FPGameInstance\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FPGameInstanceSubSystem.h">
+      <Filter>FPGameInstance\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FPGameProjectClassRegistry.h">
+      <Filter>FPGameInstance\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FPGameTimer.h">
+      <Filter>FPGameInstance\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FPMeshRenderList.h">
+      <Filter>FPGameInstance\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FPTextRenderList.h">
+      <Filter>FPGameInstance\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Systems\InputSystem.h">
+      <Filter>FPGameInstance\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FPGameProjectSetting.h">
+      <Filter>FPGameInstance\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FPGameProjectClassRegistry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FPGameInstance.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FPAssetManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FPMeshRenderList.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FPTextRenderList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FPTextComponent.cpp">
@@ -209,22 +206,13 @@
     <ClCompile Include="Object\Components\InputMappingContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Systems\InputSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FPAGameMode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FPAController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FPGameTimer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Object\Components\InputComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FPCameraList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FPSceneComponent.cpp">
@@ -276,7 +264,34 @@
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="AssetLoader.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>FPGameInstance\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FPAssetManager.cpp">
+      <Filter>FPGameInstance\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FPCameraList.cpp">
+      <Filter>FPGameInstance\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FPGameInstance.cpp">
+      <Filter>FPGameInstance\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FPGameProjectClassRegistry.cpp">
+      <Filter>FPGameInstance\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FPGameTimer.cpp">
+      <Filter>FPGameInstance\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FPMeshRenderList.cpp">
+      <Filter>FPGameInstance\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FPTextRenderList.cpp">
+      <Filter>FPGameInstance\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Systems\InputSystem.cpp">
+      <Filter>FPGameInstance\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FPGameProjectSetting.cpp">
+      <Filter>FPGameInstance\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

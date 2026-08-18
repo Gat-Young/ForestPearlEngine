@@ -1,4 +1,4 @@
-#include "GameCamera.h"
+#include "GameCamera_Three.h"
 #include "ForestPearlEngine/FPCameraComponent.h"
 #include "ForestPearlEngine/FPAController.h"
 #include "ForestPearlEngine/FPWorld.h"
@@ -9,7 +9,7 @@
 #include "ForestPearlEngine/FPGameProjectSetting.h"
 #include <iostream>
 
-void GameCamera::Initialize()
+void GameCamera_Three::Initialize()
 {
 	Camera = new FPCameraComponent(this);
 
@@ -18,10 +18,10 @@ void GameCamera::Initialize()
 
 	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
 
-	Camera->SetViewPortSetting(0.0f, 0.0f,
-								GameProjectSetting->GetWinWidth()/3,
+	Camera->SetViewPortSetting(GameProjectSetting->GetWinWidth() / 3 * 2, 0.0f,
+								GameProjectSetting->GetWinWidth() / 3,
 								GameProjectSetting->GetWinHeight(),
-								0.0f,1.0f);
+								0.0f, 1.0f);
 
 	FPAController* Controller = GetWorld()->GetController(0);
 
@@ -31,11 +31,11 @@ void GameCamera::Initialize()
 
 }
 
-void GameCamera::BeginPlay()
+void GameCamera_Three::BeginPlay()
 {
 }
 
-void GameCamera::Tick()
+void GameCamera_Three::Tick()
 {
 
 	__super::Tick();

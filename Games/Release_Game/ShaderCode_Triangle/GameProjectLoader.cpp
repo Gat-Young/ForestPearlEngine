@@ -4,6 +4,8 @@
 #include "GameController.h"
 #include "Triangle.h"
 #include "GameCamera.h"
+#include "GameCamera_Two.h"
+#include "GameCamera_Three.h"
 #include "MoveVertexConstBufferMaterial.h"
 
 #include <iostream>
@@ -11,6 +13,7 @@
 void RegistProjectName()
 {
 	FPPathManager::Get().Initialize("ShaderCode_Triangle");
+	FPPathManager::Get().SetWinSize(1800, 600);
 }
 
 void LoadLevel()
@@ -28,6 +31,8 @@ void LoadClassRegist()
 	ClassRegistry->Register<UI>("UI");
 	ClassRegistry->Register<Triangle>("Triangle");
 	ClassRegistry->Register<GameCamera>("GameCamera");
+	ClassRegistry->Register<GameCamera_Two>("GameCamera_Two");
+	ClassRegistry->Register<GameCamera_Three>("GameCamera_Three");
 	//ClassRegistry->Register<MoveVertexConstBufferMaterial>("MoveVertexConstBufferMaterial");
 }
 

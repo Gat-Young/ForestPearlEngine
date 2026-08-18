@@ -16,6 +16,7 @@ enum class GameInstanceSubSystemName : size_t
 	MeshRenderList,
 	TextRenderList,
 	CameraList,
+	GameProjectSetting,
 
 	GameInstanceSubSystemList_MAX
 };
@@ -61,6 +62,7 @@ class FPGameInstance : public FPObject
 		FPGameInstanceSubSystem* GetTextRenderList();
 		FPGameInstanceSubSystem* GetCameraList();
 		FPGameInstanceSubSystem* GetMeshRenderList();
+		FPGameInstanceSubSystem* GetGameProjectSetting();
 	
 
 		void Initialize();

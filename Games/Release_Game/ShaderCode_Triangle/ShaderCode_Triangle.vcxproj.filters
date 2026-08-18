@@ -48,6 +48,12 @@
     <ClInclude Include="CB2Material.h">
       <Filter>Material</Filter>
     </ClInclude>
+    <ClInclude Include="GameCamera_Two.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameCamera_Three.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="UI.cpp">
@@ -73,6 +79,12 @@
     </ClCompile>
     <ClCompile Include="CB2Material.cpp">
       <Filter>Material</Filter>
+    </ClCompile>
+    <ClCompile Include="GameCamera_Two.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameCamera_Three.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

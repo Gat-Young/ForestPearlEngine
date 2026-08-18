@@ -16,6 +16,8 @@ class FPCameraComponent : public FPPrimitiveComponent
 		float Zn = 1.0f;						//근평면 거리
 		float Zf = 100.0f;						//원평면 거리
 
+		//ViewPort
+		FPViewPort ViewPort;
 
 		FPMatrix ViewMatrix;
 		FPMatrix ProjectionMatrix;
@@ -29,4 +31,6 @@ class FPCameraComponent : public FPPrimitiveComponent
 		~FPCameraComponent();
 		void RegistCamera();
 		void Tick() override;
+
+		void SetViewPortSetting(float TopLeftX, float TopLeftY, float Width, float Height, float MinDepth, float MaxDepth);
 };

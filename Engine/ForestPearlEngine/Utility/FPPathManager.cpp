@@ -75,6 +75,23 @@ std::string FPPathManager::GetProjectName()
 {
     return ProjectName;
 }
+
+void FPPathManager::SetWinSize(int Width, int Height)
+{
+    this->WinWidth = Width;
+    this->WinHeight = WinHeight;
+}
+
+int FPPathManager::GetWinWidth()
+{
+    return WinWidth;
+}
+
+int FPPathManager::GetWinHeight()
+{
+    return WinHeight;
+}
+
 std::wstring FPPathManager::StringToWString(const std::string& String)
 {
     if (String.empty())

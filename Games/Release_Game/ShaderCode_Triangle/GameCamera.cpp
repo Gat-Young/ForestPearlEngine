@@ -18,9 +18,9 @@ void GameCamera::Initialize()
 
 	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
 
-	Camera->SetViewPortSetting(0.0f, 0.0f,
+	Camera->SetViewPortSetting(0.0f, 100.0f,
 								GameProjectSetting->GetWinWidth()/3,
-								GameProjectSetting->GetWinHeight(),
+								400,
 								0.0f,1.0f);
 
 	FPAController* Controller = GetWorld()->GetController(0);

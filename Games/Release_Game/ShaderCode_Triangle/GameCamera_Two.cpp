@@ -18,9 +18,9 @@ void GameCamera_Two::Initialize()
 
 	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
 
-	Camera->SetViewPortSetting(GameProjectSetting->GetWinWidth() / 3, 0.0f,
+	Camera->SetViewPortSetting(GameProjectSetting->GetWinWidth() / 3, 100.0f,
 								GameProjectSetting->GetWinWidth() / 3,
-								GameProjectSetting->GetWinHeight(),
+								400,
 								0.0f, 1.0f);
 
 

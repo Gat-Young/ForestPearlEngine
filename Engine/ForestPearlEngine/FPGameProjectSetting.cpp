@@ -17,6 +17,7 @@ FPGameProjectSetting::FPGameProjectSetting()
 	WinName = FPPathManager::Get().StringToWString(FPPathManager::Get().GetProjectName());
 	WinWidth = FPPathManager::Get().GetWinWidth();
 	WinHeight = FPPathManager::Get().GetWinHeight();
+	DisplayAspect = FPPathManager::Get().GetAspect();
 	CalculateDisplaySize();
 }
 
@@ -75,4 +76,9 @@ int FPGameProjectSetting::GetDisplayWidth()
 int FPGameProjectSetting::GetDeisplayHeight()
 {
 	return DisplayHeight;
+}
+
+float FPGameProjectSetting::GetDisplayAspect()
+{
+	return DisplayAspect;
 }

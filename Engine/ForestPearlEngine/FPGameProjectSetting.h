@@ -14,6 +14,7 @@ class FPGameProjectSetting : public FPGameInstanceSubSystem
 		int WinHeight;
 		int DisplayWidth;
 		int DisplayHeight;
+		float DisplayAspect;
 		HWND hwnd;
 
 		void CalculateDisplaySize();
@@ -35,4 +36,5 @@ class FPGameProjectSetting : public FPGameInstanceSubSystem
 		int GetWinHeight();
 		int GetDisplayWidth();
 		int GetDeisplayHeight();
+		float GetDisplayAspect();
 };

@@ -92,9 +92,6 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 	Device.OMSetRenderTargets();
 
-	//뷰포트 설정 <- 카메라가 뷰포트 정보를 가지고 Draw 될 때 Set
-	//Device.SetViewPort(0.0f, 0.0f, (FLOAT)Device.GetWidth(), (FLOAT)Device.GetHeight(), 0.0f, 1.0f);
-
 	Device.GetDeviceInfo();
 	
 	FontBatch = Device.CreateSpriteBatch();
@@ -217,6 +214,7 @@ void Renderer::UIRendering()
 	FPTextRenderList* TextRenderList = static_cast<FPTextRenderList*>(FPGameInstance::Get().GetTextRenderList());
 	std::vector<UIContextItem> RenderList = TextRenderList->GetRenderList();
 
+	Device.SetViewPort(0.0f, 0.0f, Device.GetWidth(), Device.GetHeight(), 0.0f, 1.0f);
 	FontBatch->Begin();
 
 	for (UIContextItem UI : RenderList)

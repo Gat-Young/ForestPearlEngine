@@ -40,7 +40,8 @@ VSOutput
     VSOutput o = (VSOutput) 0;
     
     //변환
-    pos.x += VSx;
+    //pos.x += VSx;
+  
     
     //색상 변환
     col = col + RGBGen(VSPer, 0);

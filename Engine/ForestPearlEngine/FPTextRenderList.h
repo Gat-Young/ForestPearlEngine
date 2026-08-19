@@ -1,18 +1,9 @@
 #pragma once
 #include <string>
-#include "tchar.h"
 #include <vector>
-#include "../../Engine/ForestPearlEngine/Define/FPMath.h"
+#include "Define/FPMath.h"
 #include "FPGameInstanceSubSystem.h"
-
-struct UIContextItem
-{
-	bool** active;
-	int* x;
-	int* y;
-	FPVector4* color;
-	std::basic_string<TCHAR>* msg;
-};
+#include "Renderers/FPRenderingCommon.h"
 
 class FPTextRenderList : public FPGameInstanceSubSystem
 {

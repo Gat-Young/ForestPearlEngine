@@ -102,9 +102,6 @@
     <ClInclude Include="FPPrimitiveComponent.h">
       <Filter>Component</Filter>
     </ClInclude>
-    <ClInclude Include="FTransform.h">
-      <Filter>Component</Filter>
-    </ClInclude>
     <ClInclude Include="Define\FPMath.h">
       <Filter>Define</Filter>
     </ClInclude>
@@ -192,12 +189,12 @@
     <ClInclude Include="FPGameProjectSetting.h">
       <Filter>FPGameInstance\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FTransform.h">
+      <Filter>Define</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FPTextComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Object\Components\InputAction.cpp">
@@ -292,6 +289,9 @@
     </ClCompile>
     <ClCompile Include="FPGameProjectSetting.cpp">
       <Filter>FPGameInstance\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FPTextComponent.cpp">
+      <Filter>Component</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

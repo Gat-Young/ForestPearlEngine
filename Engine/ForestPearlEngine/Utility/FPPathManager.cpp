@@ -79,7 +79,13 @@ std::string FPPathManager::GetProjectName()
 void FPPathManager::SetWinSize(int Width, int Height)
 {
     this->WinWidth = Width;
-    this->WinHeight = WinHeight;
+    this->WinHeight = Height;
+    this->Aspect = Width / Height;
+}
+
+void FPPathManager::SetAspect(float Aspect)
+{
+    this->Aspect = Aspect;
 }
 
 int FPPathManager::GetWinWidth()
@@ -90,6 +96,11 @@ int FPPathManager::GetWinWidth()
 int FPPathManager::GetWinHeight()
 {
     return WinHeight;
+}
+
+float FPPathManager::GetAspect()
+{
+    return Aspect;
 }
 
 std::wstring FPPathManager::StringToWString(const std::string& String)

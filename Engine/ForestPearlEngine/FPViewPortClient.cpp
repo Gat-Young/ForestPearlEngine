@@ -5,37 +5,33 @@
 FPViewPortClient::FPViewPortClient()
 {
 	FPGameProjectSetting* ProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
-	//ViewPort 持失
 
+	//ViewPort 持失
 	float Aspect = ProjectSetting->GetDisplayAspect();
 	
 	int DisplayWidth = ProjectSetting->GetDisplayWidth();
 	int DisplayHeight = ProjectSetting->GetDeisplayHeight();
 
 	//MainGameViewPort
-	FPViewPort* MainGame[1];
-	MainGame[0] = new FPViewPort();
-
-
+	std::vector<FPViewPort*> MainGame;
+	MainGame.reserve(1);
 	MainGame[0]->Width = ProjectSetting->GetDisplayWidth();
 	MainGame[0]->Height = ProjectSetting->GetDeisplayHeight();
-	ViewPortArray[static_cast<size_t>(FPViewPortName::MainGameViewPort)] = MainGame;
+	ViewPortArray[static_cast<size_t>(FPViewPortName::MainGameViewPort)] = std::move(MainGame);
 
 	//UIViewPort
-	FPViewPort* UIViewPort[1];
-	UIViewPort[0] = new FPViewPort();
+	std::vector<FPViewPort*> UIViewPort;
+	UIViewPort.reserve(1);
 	UIViewPort[0]->Width = ProjectSetting->GetDisplayWidth();
 	UIViewPort[0]->Height = ProjectSetting->GetDeisplayHeight();
-	ViewPortArray[static_cast<size_t>(FPViewPortName::UIViewPort)] = UIViewPort;
+	ViewPortArray[static_cast<size_t>(FPViewPortName::UIViewPort)] = std::move(UIViewPort);
 
 	//TripleWaySplitViewPort
 
-	FPViewPort* TripleWaySplitViewPort[3];
-	TripleWaySplitViewPort[0] = new FPViewPort();
-	TripleWaySplitViewPort[0]->TopLeftX = 0.0f;
-	TripleWaySplitViewPort[0]->TopLeftY = ;
-	TripleWaySplitViewPort[0]->Width = ProjectSetting->GetDisplayWidth()/3;
-	TripleWaySplitViewPort[0]->Height = ProjectSetting->GetDeisplayHeight();
+	std::vector<FPViewPort*> TripleWaySplitViewPort;
+	TripleWaySplitViewPort.reserve(3);
+	CalculateViewPortSize(TripleWaySplitViewPort, DisplayWidth, DisplayHeight, Aspect);
+	ViewPortArray[static_cast<size_t>(FPViewPortName::UIViewPort)] = std::move(TripleWaySplitViewPort);
 
 }
 
@@ -46,7 +42,6 @@ std::vector<FPViewPort*> FPViewPortClient::GetViewPort(FPViewPortName ViewPortNa
 
 void FPViewPortClient::CalculateViewPortSize(std::vector<FPViewPort*> ViewPort, int Width, int Heigth, float Aspect)
 {
-	//塊肖 React React~
 	int ViewPortLength = ViewPort.size();
 
 	bool LongAxisVertical = Heigth > Width;
@@ -61,7 +56,7 @@ void FPViewPortClient::CalculateViewPortSize(std::vector<FPViewPort*> ViewPort, 
 
 		for (int i = 0; i < ViewPortLength; ++i)
 		{
-			ViewPort[i]->TopLeftX = Width - NewViewPortWidth/2;
+			ViewPort[i]->TopLeftX = Width/2 - NewViewPortWidth/2;
 			ViewPort[i]->TopLeftY = 0.0f + (NewViewPortHeight * i);
 			ViewPort[i]->Width = NewViewPortWidth;
 			ViewPort[i]->Height = NewViewPortHeight;
@@ -79,5 +74,21 @@ void FPViewPortClient::CalculateViewPortSize(std::vector<FPViewPort*> ViewPort, 
 			ViewPort[i]->Width = NewViewPortWidth;
 			ViewPort[i]->Height = NewViewPortHeight;
 		}
+	}
+}
+
+void FPViewPortClient::CalculateAllViewPortSize()
+{
+	FPGameProjectSetting* ProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
+
+	//ViewPort 持失
+	float Aspect = ProjectSetting->GetDisplayAspect();
+
+	int DisplayWidth = ProjectSetting->GetDisplayWidth();
+	int DisplayHeight = ProjectSetting->GetDeisplayHeight();
+	
+	for (int i = 0; i < static_cast<size_t>(FPViewPortName::FPViewPort_MAX_SIZE); ++i)
+	{
+		CalculateViewPortSize(ViewPortArray[i], DisplayWidth, DisplayHeight, Aspect);
 	}
 }

@@ -149,6 +149,7 @@
     <ClInclude Include="FPMovementComponent.h" />
     <ClInclude Include="FPPrimitiveComponent.h" />
     <ClInclude Include="FPSceneComponent.h" />
+    <ClInclude Include="FPViewPortClient.h" />
     <ClInclude Include="FPWorld.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="FPGameProjectClassRegistry.h" />
@@ -194,6 +195,7 @@
     <ClCompile Include="FPSceneComponent.cpp" />
     <ClCompile Include="FPGameProjectClassRegistry.cpp" />
     <ClCompile Include="FPGameTimer.cpp" />
+    <ClCompile Include="FPViewPortClient.cpp" />
     <ClCompile Include="FPWorld.cpp" />
     <ClCompile Include="GizmoComponent.cpp" />
     <ClCompile Include="Libraries\Ufbx\ufbx.c" />

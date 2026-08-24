@@ -43,6 +43,7 @@ struct CameraItem
 	FPMatrix* Projection = nullptr;
 
 	bool* Active = nullptr;			//카메라 사용 여부
+	bool* TripleCam = nullptr;
 };
 
 struct UIContextItem

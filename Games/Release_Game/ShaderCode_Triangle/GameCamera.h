@@ -21,4 +21,6 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick() override;
 
+	void OnTripleCam(FInputValue Value);
+
 };

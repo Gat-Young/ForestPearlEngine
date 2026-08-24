@@ -29,6 +29,8 @@ class FPGameProjectSetting : public FPGameInstanceSubSystem
 		void SetWinName(std::wstring WinName);
 		void SetWinWidth(int WinWidth);
 		void SetWinHeight(int WinHeight);
+		void SetDisplayWidth(int DisplayWidth);
+		void SetDisplayHeight(int DisplayHeight);
 
 		std::wstring GetWinClassName();
 		std::wstring GetWinName();

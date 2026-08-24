@@ -8,6 +8,7 @@
 #include "EngineLoader.h"
 #include "Systems/InputSystem.h"
 #include "FPGameProjectSetting.h"
+#include "FPViewPortClient.h"
 //#include <iostream>
 #include "MCLOG.h"
 
@@ -27,6 +28,11 @@ bool ForestPearlEngine::PreInitialize()
     FPGameInstance::Get();
 
     FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
+
+    GameProjectSetting->SetWinName(FPPathManager::Get().StringToWString(FPPathManager::Get().GetProjectName()));
+    GameProjectSetting->SetWinHeight(FPPathManager::Get().GetWinHeight());
+    GameProjectSetting->SetWinWidth(FPPathManager::Get().GetWinWidth());
+
     //윈도우 생성
     Hwnd = CreateFPEWindow(
                 GameProjectSetting->GetWinClassName().c_str(), 
@@ -149,12 +155,26 @@ LRESULT CALLBACK ForestPearlEngine::WndProc(HWND hWnd, UINT message, WPARAM wPar
         //MCLOG(LogMC, "");
         
         static_cast<FPInputSystem*>(FPGameInstance::Get().GetInputSystem())->HandleRawInput(lParam);
-        return DefWindowProc(hWnd, message, wParam, lParam);
         break;
 
     case WM_ACTIVATE:
         static_cast<FPInputSystem*>(FPGameInstance::Get().GetInputSystem())->ResetKeyStates();
         break;
+
+    case WM_SIZE:
+    {
+        //클라이언트로 변경된 크기
+        int Width = LOWORD(lParam);
+        int Height = HIWORD(lParam);
+
+        FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
+        GameProjectSetting->SetDisplayWidth(Width);
+        GameProjectSetting->SetDisplayHeight(Height);
+
+        FPViewPortClient* ViewPortClient = static_cast<FPViewPortClient*>(FPGameInstance::Get().GetViewPortClient());
+        ViewPortClient->CalculateAllViewPortSize();
+        break;
+    }
 
     case WM_QUIT:
     case WM_DESTROY:

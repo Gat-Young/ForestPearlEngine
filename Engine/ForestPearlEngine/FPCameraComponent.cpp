@@ -26,6 +26,7 @@ void FPCameraComponent::RegistCamera()
 	CamItem->Projection = &(this->ProjectionMatrix);
 
 	CamItem->Active = &(this->Active);
+	CamItem->TripleCam = &(this->TripleCame);
 }
 
 void FPCameraComponent::Tick()
@@ -35,4 +36,9 @@ void FPCameraComponent::Tick()
 	ViewMatrix = MatrixLookAtLH(WorldTransform.Location, LookAt, Up);
 	ProjectionMatrix = MatrixPerspectiveFovLH(Fov, Aspect, Zn, Zf);
 	
+}
+
+void FPCameraComponent::OnTripleCam()
+{
+	TripleCame != TripleCame;
 }

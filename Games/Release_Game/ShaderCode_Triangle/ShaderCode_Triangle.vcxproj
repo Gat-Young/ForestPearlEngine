@@ -21,8 +21,6 @@
   <ItemGroup>
     <ClInclude Include="CB2Material.h" />
     <ClInclude Include="GameCamera.h" />
-    <ClInclude Include="GameCamera_Three.h" />
-    <ClInclude Include="GameCamera_Two.h" />
     <ClInclude Include="GameController.h" />
     <ClInclude Include="GameMode.h" />
     <ClInclude Include="MoveVertexConstBufferMaterial.h" />
@@ -32,8 +30,6 @@
   <ItemGroup>
     <ClCompile Include="CB2Material.cpp" />
     <ClCompile Include="GameCamera.cpp" />
-    <ClCompile Include="GameCamera_Three.cpp" />
-    <ClCompile Include="GameCamera_Two.cpp" />
     <ClCompile Include="GameController.cpp" />
     <ClCompile Include="GameMode.cpp" />
     <ClCompile Include="GameProjectLoader.cpp" />

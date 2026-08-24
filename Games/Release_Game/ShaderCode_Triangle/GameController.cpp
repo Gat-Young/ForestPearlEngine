@@ -57,6 +57,8 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_AttachShield", 'X', ModifyInfoTriger);
 
 
+	//Action Button : Camera
+	GetInputComponent().AddMappingKey("IA_OnTripleCam", VK_F12, ModifyInfoTriger);
 
 	__super::Initialize();
 }

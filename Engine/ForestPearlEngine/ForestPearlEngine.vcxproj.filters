@@ -192,6 +192,9 @@
     <ClInclude Include="FTransform.h">
       <Filter>Define</Filter>
     </ClInclude>
+    <ClInclude Include="FPViewPortClient.h">
+      <Filter>FPGameInstance\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
@@ -292,6 +295,9 @@
     </ClCompile>
     <ClCompile Include="FPTextComponent.cpp">
       <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="FPViewPortClient.cpp">
+      <Filter>FPGameInstance\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

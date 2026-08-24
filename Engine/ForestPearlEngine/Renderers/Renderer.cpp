@@ -10,6 +10,7 @@
 #include "../FPMeshRenderList.h"
 #include "../FPCameraList.h"
 #include "FPRenderingCommon.h"
+#include "../FPViewPortClient.h"
 
 //객체 해제/제거 매크로()
 #ifndef SafeRelease
@@ -176,30 +177,43 @@ void Renderer::ObjectRendering()
 		{
 			if (!(*(CamItem.Active))) continue;
 
-			FPViewPort CamViewPort = *(CamItem.ViewPort);
-			Device.SetViewPort(CamViewPort.TopLeftX, CamViewPort.TopLeftY, 
-								CamViewPort.Width, CamViewPort.Height, 
-								CamViewPort.MinDepth, CamViewPort.MaxDepth);
+			std::vector<FPViewPort*> CamViewPorts;
 
-			MVPCB.WorldMatrix = ((*(RenderItem.Scale)) * (*(RenderItem.Rotation)) * (*(RenderItem.Location))).Matrix;
-			MVPCB.ViewMatrix = (*(CamItem.View)).Matrix ;
-			MVPCB.ProjMatrix = (*(CamItem.Projection)).Matrix;
+			FPViewPortClient* ViewPortClient = static_cast<FPViewPortClient*>(FPGameInstance::Get().GetViewPortClient());
 
-			MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
-
-			//Object 상수 버퍼 갱신
-			Device.UpdateObjectSubresource(0, &MVPCB, 0, 0);
-
-			//정점 버퍼 설정
-			UINT stride = *RenderItem.Stride;
-			UINT offset = *RenderItem.Offset;
-
-			int MeshSize = (RenderItem.VB)->size();
-			for (int i = 0; i < MeshSize; ++i)
+			CamViewPorts = ViewPortClient->GetViewPort(FPViewPortName::MainGameViewPort);
+			if ((*(CamItem.TripleCam)))
 			{
-				Device.IASetVertexBuffers(0, 1, (RenderItem.VB)->at(i), &stride, &offset);
+				CamViewPorts = ViewPortClient->GetViewPort(FPViewPortName::TripleWaySplitViewPort);
+			}
 
-				Device.Draw((RenderItem.VertexSize)->at(i), 0);
+			for (FPViewPort* CamViewPort : CamViewPorts)
+			{
+
+				Device.SetViewPort(CamViewPort->TopLeftX, CamViewPort->TopLeftY,
+					CamViewPort->Width, CamViewPort->Height,
+					CamViewPort->MinDepth, CamViewPort->MaxDepth);
+
+				MVPCB.WorldMatrix = ((*(RenderItem.Scale)) * (*(RenderItem.Rotation)) * (*(RenderItem.Location))).Matrix;
+				MVPCB.ViewMatrix = (*(CamItem.View)).Matrix;
+				MVPCB.ProjMatrix = (*(CamItem.Projection)).Matrix;
+
+				MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
+
+				//Object 상수 버퍼 갱신
+				Device.UpdateObjectSubresource(0, &MVPCB, 0, 0);
+
+				//정점 버퍼 설정
+				UINT stride = *RenderItem.Stride;
+				UINT offset = *RenderItem.Offset;
+
+				int MeshSize = (RenderItem.VB)->size();
+				for (int i = 0; i < MeshSize; ++i)
+				{
+					Device.IASetVertexBuffers(0, 1, (RenderItem.VB)->at(i), &stride, &offset);
+
+					Device.Draw((RenderItem.VertexSize)->at(i), 0);
+				}
 			}
 
 		}
@@ -214,21 +228,32 @@ void Renderer::UIRendering()
 	FPTextRenderList* TextRenderList = static_cast<FPTextRenderList*>(FPGameInstance::Get().GetTextRenderList());
 	std::vector<UIContextItem> RenderList = TextRenderList->GetRenderList();
 
-	Device.SetViewPort(0.0f, 0.0f, Device.GetWidth(), Device.GetHeight(), 0.0f, 1.0f);
-	FontBatch->Begin();
+	std::vector<FPViewPort*> CamViewPorts;
 
-	for (UIContextItem UI : RenderList)
+	FPViewPortClient* ViewPortClient = static_cast<FPViewPortClient*>(FPGameInstance::Get().GetViewPortClient());
+
+	CamViewPorts = ViewPortClient->GetViewPort(FPViewPortName::UIViewPort);
+
+	for (FPViewPort* CamViewPort : CamViewPorts)
 	{
-		if (!(*(*(UI.active))))
-		{
-			continue;
-		}
-		XMFLOAT4 Color = { (UI.color->x), (UI.color->y), (UI.color->z), (UI.color->w) };
-		XMFLOAT2 Position = { (float)(*(UI.x)), (float)(*(UI.y)) };
-		Font->DrawString(FontBatch, UI.msg->c_str(), Position, XMLoadFloat4(&Color));
-	}
+		Device.SetViewPort(CamViewPort->TopLeftX, CamViewPort->TopLeftY,
+			CamViewPort->Width, CamViewPort->Height,
+			CamViewPort->MinDepth, CamViewPort->MaxDepth);
+		FontBatch->Begin();
 
-	FontBatch->End();
+		for (UIContextItem UI : RenderList)
+		{
+			if (!(*(*(UI.active))))
+			{
+				continue;
+			}
+			XMFLOAT4 Color = { (UI.color->x), (UI.color->y), (UI.color->z), (UI.color->w) };
+			XMFLOAT2 Position = { (float)(*(UI.x)), (float)(*(UI.y)) };
+			Font->DrawString(FontBatch, UI.msg->c_str(), Position, XMLoadFloat4(&Color));
+		}
+
+		FontBatch->End();
+	}
 };
 
 

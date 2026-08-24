@@ -48,6 +48,16 @@ void FPGameProjectSetting::SetWinHeight(int WinHeight)
 	CalculateDisplaySize();
 }
 
+void FPGameProjectSetting::SetDisplayWidth(int DisplayWidth)
+{
+	this->DisplayWidth = DisplayWidth;
+}
+
+void FPGameProjectSetting::SetDisplayHeight(int DisplayHeight)
+{
+	this->DisplayHeight = DisplayHeight;
+}
+
 std::wstring FPGameProjectSetting::GetWinClassName()
 {
 	return WinClassName;

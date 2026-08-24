@@ -9,7 +9,7 @@
 #include "Systems/InputSystem.h"
 #include "FPGameProjectSetting.h"
 #include "FPViewPortClient.h"
-//#include <iostream>
+#include <iostream>
 #include "MCLOG.h"
 
 //½Ì±ÛÅæ ¿£Áø °´Ã¼ °¡Á®¿À±â
@@ -26,7 +26,6 @@ bool ForestPearlEngine::PreInitialize()
     RegistProjectName();
 
     FPGameInstance::Get();
-
     FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
 
     GameProjectSetting->SetWinName(FPPathManager::Get().StringToWString(FPPathManager::Get().GetProjectName()));
@@ -40,8 +39,10 @@ bool ForestPearlEngine::PreInitialize()
                 GameProjectSetting->GetWinWidth(),
                 GameProjectSetting->GetWinHeight()
                 );
-
     GameProjectSetting->SetHWND(Hwnd);
+
+    FPViewPortClient* ViewPort = static_cast<FPViewPortClient*>(FPGameInstance::Get().GetViewPortClient());
+    ViewPort->CreateViewPort();
 
     if (Hwnd == nullptr)
     {

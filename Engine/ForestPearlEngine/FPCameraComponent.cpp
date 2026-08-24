@@ -40,5 +40,5 @@ void FPCameraComponent::Tick()
 
 void FPCameraComponent::OnTripleCam()
 {
-	TripleCame != TripleCame;
+	TripleCame = !TripleCame;
 }

@@ -360,6 +360,20 @@ HRESULT RenderingDevice::CreatePixelShaderConstBuffer(UINT Size)
 	return hr;
 }
 
+HRESULT RenderingDevice::CreateVertexViewPortConstBuffer(UINT Size)
+{
+	HRESULT hr = S_OK;
+	hr = CreateConstBuffer(Size, &VertexViewPortConstBuffer);
+	return hr;
+}
+
+HRESULT RenderingDevice::CreatePixelViewPortConstBuffer(UINT Size)
+{
+	HRESULT hr = S_OK;
+	hr = CreateConstBuffer(Size, &PixelViewPortConstBuffer);
+	return hr;
+}
+
 int RenderingDevice::CreateConstBuffer(UINT Size, ID3D11Buffer** ReturnConstBuffer)
 {
 	HRESULT hr = S_OK;
@@ -403,6 +417,20 @@ HRESULT RenderingDevice::PSSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
 	return hr;
 }
 
+HRESULT RenderingDevice::VVPSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->VSSetConstantBuffers(StartSlot, NumBuffers, &VertexViewPortConstBuffer);
+	return hr;
+}
+
+HRESULT RenderingDevice::PVPSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->PSSetConstantBuffers(StartSlot, NumBuffers, &PixelViewPortConstBuffer);
+	return hr;
+}
+
 HRESULT RenderingDevice::UpdateObjectSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
 {
 	HRESULT hr = S_OK;
@@ -423,6 +451,21 @@ HRESULT RenderingDevice::UpdatePixelShaderSubresource(UINT DstSubresource, void*
 	DeviceContext->UpdateSubresource(PixelShaderConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
 	return hr;
 }
+
+HRESULT RenderingDevice::UpdateVertexViewPortSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->UpdateSubresource(VertexViewPortConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
+	return hr;
+}
+
+HRESULT RenderingDevice::UpdatePixelViewPortSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->UpdateSubresource(PixelViewPortConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
+	return hr;
+}
+
 
 HRESULT RenderingDevice::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, ID3DBlob* InVSCode, ID3D11InputLayout** ReturnLayout)
 {

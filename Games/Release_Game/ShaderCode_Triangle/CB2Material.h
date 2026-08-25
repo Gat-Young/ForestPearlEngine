@@ -33,10 +33,13 @@ class CB2Material : public FPMaterial
 		};
 
 		Color Colors[3] = {
-			{ 1.0f, 0.0f, 0.0f, 1.0f },
-			{ 0.0f, 1.0f, 0.0f, 1.0f },
-			{ 0.0f, 0.0f, 1.0f, 1.0f }
+			{ 1.0f, 0.0f, 0.0f, 1.0f }, //R
+			{ 0.0f, 1.0f, 0.0f, 1.0f }, //G
+			{ 0.0f, 0.0f, 1.0f, 1.0f }	//B
 		};
+
+		Color NowColor = { 1.0f, 0.0f, 0.0f, 1.0f };
+		Color NextColor = { 0.0f, 1.0f, 0.0f, 1.0f };
 
 	public:
 		CB2Material();

@@ -29,6 +29,8 @@ void FPViewPortClient::CreateViewPort()
 
 	MainGame[0]->Width = ProjectSetting->GetDisplayWidth();
 	MainGame[0]->Height = ProjectSetting->GetDeisplayHeight();
+	MainGame[0]->VertexConst = new VertexConst();
+
 	ViewPortArray[static_cast<size_t>(FPViewPortName::MainGameViewPort)] = std::move(MainGame);
 
 	//UIViewPort
@@ -45,8 +47,20 @@ void FPViewPortClient::CreateViewPort()
 	std::vector<FPViewPort*> TripleWaySplitViewPort;
 	TripleWaySplitViewPort.resize(3);
 	TripleWaySplitViewPort[0] = new FPViewPort();
+
+	VertexConst* Cam1VertexConst = new VertexConst();
+	Cam1VertexConst->AniOn = 0.0f;
+	Cam1VertexConst->BlendOn = 0.0f;
+	TripleWaySplitViewPort[0]->VertexConst = Cam1VertexConst;
+
+	VertexConst* Cam2VertexConst = new VertexConst();
+	Cam2VertexConst->AniOn = 1.0f;
+	Cam2VertexConst->BlendOn = 0.0f;
 	TripleWaySplitViewPort[1] = new FPViewPort();
+	TripleWaySplitViewPort[1]->VertexConst = Cam2VertexConst;
+
 	TripleWaySplitViewPort[2] = new FPViewPort();
+	TripleWaySplitViewPort[2]->VertexConst = new VertexConst();
 
 	CalculateViewPortSize(TripleWaySplitViewPort, DisplayWidth, DisplayHeight, Aspect);
 	ViewPortArray[static_cast<size_t>(FPViewPortName::TripleWaySplitViewPort)] = std::move(TripleWaySplitViewPort);

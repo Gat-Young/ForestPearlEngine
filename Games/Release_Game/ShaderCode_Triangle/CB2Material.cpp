@@ -1,5 +1,5 @@
 #include "CB2Material.h"
-
+#include <iostream>
 
 CB2Material::CB2Material()
 {
@@ -11,7 +11,7 @@ CB2Material::CB2Material()
 
 void CB2Material::UpdateMaterial(float DeltaTime)
 {
-	r += (3.141592654f / 2 * DeltaTime);
+	r += (3.141592654f / 6)  * (DeltaTime);
 
 	//VS ¼¼ÆÃ
 	Vscb->x = 0.5f * sinf(r);
@@ -20,25 +20,24 @@ void CB2Material::UpdateMaterial(float DeltaTime)
 	Pscb->per = fabsf(sinf(r));
 	Vscb->per = fabsf(sinf(r));
 
-	DurationTime += DeltaTime;
-
-	if (DurationTime >= 2.0f)
+	if (fabsf(sinf(r)) >= 0.999)
 	{
 		count++;
 		count %= 3;
-		DurationTime = 0.0f;
+		r = 0.0f;
+		NowColor = NextColor;
+		NextColor = Colors[count];
 	}
-
 
 	Pscb->r = Colors[count].r;
 	Pscb->g = Colors[count].g;
 	Pscb->b = Colors[count].b;
 	Pscb->a = Colors[count].a;
 
-	Vscb->r = Colors[count].r;
-	Vscb->g = Colors[count].g;
-	Vscb->b = Colors[count].b;
-	Vscb->a = Colors[count].a;
+	Vscb->r = (fabsf(sinf(r))) * NextColor.r + (1 - fabsf(sinf(r))) * NowColor.r;
+	Vscb->g = (fabsf(sinf(r))) * NextColor.g + (1 - fabsf(sinf(r))) * NowColor.g;
+	Vscb->b = (fabsf(sinf(r))) * NextColor.b + (1 - fabsf(sinf(r))) * NowColor.b;
+	Vscb->a = (fabsf(sinf(r))) * NextColor.a + (1 - fabsf(sinf(r))) * NowColor.a;
 }
 
 

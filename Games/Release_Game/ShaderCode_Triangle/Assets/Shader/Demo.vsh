@@ -18,6 +18,12 @@ cbuffer VertexConstBuffer : register(b1)
     float VSx;
 };
 
+cbuffer VertexViewPortConstBuffer : register(b2)
+{
+    float AniOn;
+    float BlendOn;
+};
+
 //VS 출력 구조체
 struct VSOutput
 {
@@ -44,10 +50,18 @@ VSOutput
   
     
     //색상 변환
-    col = col + RGBGen(VSPer, 0);
+    //col = (BlendOn * col) + (AniOn * RGBGen(VSPer, 0));
+    
+    float4 AniColor = 1;
+    
+    AniColor = AniOn * VSColor;    
+
     
     o.pos = pos;
-    o.col = col;
+    o.col =
+    (1 - BlendOn) * ((1 - AniOn) * col + (AniOn * VSColor))
+    + 
+    BlendOn * ((col * AniColor) + col);
     
     return o;
 }

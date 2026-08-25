@@ -108,6 +108,8 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 	Device.CreateObjectConstBuffer(256);
 	Device.CreateVertexShaderConstBuffer(256);
 	Device.CreatePixelShaderConstBuffer(256);
+	Device.CreateVertexViewPortConstBuffer(256);
+	Device.CreatePixelViewPortConstBuffer(256);
 
 	return hr;
 }
@@ -119,9 +121,15 @@ void Renderer::ObjectRendering()
 
 
 	//상수 버퍼 설정
+
+	//Vertex Shader
 	Device.ObjectSetConstantBuffers(0, 1);
 	Device.VSSetConstantBuffers(1, 1);
+	Device.VVPSetConstantBuffers(2, 1);
+
+	//PixelShader
 	Device.PSSetConstantBuffers(0, 1);
+	Device.PVPSetConstantBuffers(1, 1);
 
 	MVPConstBuffer MVPCB;
 
@@ -202,6 +210,11 @@ void Renderer::ObjectRendering()
 
 				//Object 상수 버퍼 갱신
 				Device.UpdateObjectSubresource(0, &MVPCB, 0, 0);
+
+
+				//ViewPort Shader ConstBuffer가 있다면 갱신
+				if ((CamViewPort->VertexConst) != nullptr) Device.UpdateVertexViewPortSubresource(0, CamViewPort->VertexConst, 0, 0);
+				if ((CamViewPort->PixelConst) != nullptr) Device.UpdatePixelViewPortSubresource(0, CamViewPort->PixelConst, 0, 0);
 
 				//정점 버퍼 설정
 				UINT stride = *RenderItem.Stride;

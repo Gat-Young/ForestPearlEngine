@@ -5,6 +5,9 @@ cbuffer PixelConstBuffer : register(b0)
     float PSPer;
 };
 
+cbuffer PixelViewPortConstBuffer : register(b1)
+{
+};
 
 ////////////////////////////////////////////////////////////////////////////// 
 //
@@ -18,13 +21,13 @@ float4 PS_Main(
                 ) : SV_TARGET
 {
     
-    float4 color = 1;
+    //float4 color = 1;
     
-    color = col + PSColor * PSPer;
+    //color = col + PSColor * PSPer;
     
-    color *= PSPer;
+    //color *= PSPer;
 	
-    return color;
+    //return color;
     
-    //return col;
+    return col;
 }

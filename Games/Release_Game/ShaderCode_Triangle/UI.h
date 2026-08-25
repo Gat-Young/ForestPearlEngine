@@ -39,10 +39,12 @@ class UI : public FPActor
 		FPTextComponent* CullText;
 		FPTextComponent* DepthText;
 		FPTextComponent* FillText;
+		FPTextComponent* TripleCamText;
 
 		bool ZEnable = true;
 		bool isCull = false;
 		bool isFill = true;
+		bool isTripleCam = false;
 
 	public:
 		virtual void Initialize() override;
@@ -58,4 +60,5 @@ class UI : public FPActor
 		void SetActiveDepthStencilBuffer(struct FInputValue Value);
 		void SetCull(struct FInputValue Value);
 		void SetFill(struct FInputValue Value);
+		void SetTripleCam(struct FInputValue Value);
 };

@@ -95,7 +95,6 @@ void FPViewPortClient::CalculateViewPortSize(std::vector<FPViewPort*> ViewPort, 
 		NewViewPortWidth = Width / ViewPortLength;
 		NewViewPortHeight = NewViewPortWidth * (1 / Aspect);
 
-		std::cout << "Cal_New_Vertical_ViewPortSize : " << NewViewPortWidth << " : " << NewViewPortHeight << "\n";
 
 
 
@@ -119,7 +118,7 @@ void FPViewPortClient::CalculateAllViewPortSize()
 	int DisplayWidth = ProjectSetting->GetDisplayWidth();
 	int DisplayHeight = ProjectSetting->GetDeisplayHeight();
 	
-	std::cout << "Cal_All_ViewPortSize : " << DisplayWidth << " : " << DisplayHeight << "\n";
+
 
 	for (int i = 0; i < static_cast<size_t>(FPViewPortName::FPViewPort_MAX_SIZE); ++i)
 	{

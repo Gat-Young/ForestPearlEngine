@@ -19,6 +19,7 @@ void UI::Initialize()
 	Controller->GetInputComponent().BindMethod("IA_SetDepthStencilBuffer", this, EKeyState::Down, &UI::SetActiveDepthStencilBuffer);
 	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &UI::SetFill);
 	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &UI::SetCull);
+	Controller->GetInputComponent().BindMethod("IA_OnTripleCam", this, EKeyState::Down, &UI::SetTripleCam);
 
 	SetUIContext(&AlwaysOn, 1, 1, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
 	FPSText = TextComponets.back();
@@ -70,6 +71,10 @@ void UI::Initialize()
 
 	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
 	FillText = TextComponets.back();
+
+	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
+	TripleCamText = TextComponets.back();
+
 }
 
 
@@ -133,6 +138,9 @@ void UI::SystemInfo(int x, int y, FPVector4 col)
 	_stprintf_s(text, _T("채우기:SPACE (%s)"), ((isFill == true) ? _T("SOLID") : _T("WIRE")));
 	FillText->SetTextData(&bShow, x, y += 14, col, text);
 
+	_stprintf_s(text, _T("3분할화면:F6 (%s)"), ((isTripleCam == true) ? _T("ON") : _T("OFF")));
+	TripleCamText->SetTextData(&bShow, x, y += 14, col, text);
+
 }
 
 void UI::AdapterInfo(int index, int x, int& y, FPVector4 col)
@@ -146,7 +154,7 @@ void UI::ShowInfo()
 
 	FPVector4 col = { 1.0f, 1.0f, 1.0f, 1.0f };
 	TCHAR text[1024];
-	_stprintf_s(text, _T("■ %s"), _T("Tri World - 2"));
+	_stprintf_s(text, _T("■ %s"), _T("1 Model + 3 ViewPort + 3 ConstantBuffer"));
 	Text1->SetTextData(&bShow, x, y, col, text);
 	y += 15;
 	Text2->SetTextData(&bShow, x, y += 15, col, _T("1. 머리에 풍차 붙이기와 마나 실드"));
@@ -191,4 +199,9 @@ void UI::SetCull(struct FInputValue Value)
 void UI::SetFill(struct FInputValue Value)
 {
 	isFill = !(isFill);
+}
+
+void UI::SetTripleCam(FInputValue Value)
+{
+	isTripleCam = !(isTripleCam);
 }

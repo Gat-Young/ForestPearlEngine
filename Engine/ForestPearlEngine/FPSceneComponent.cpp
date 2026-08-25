@@ -268,6 +268,7 @@ void FPSceneComponent::DetachChildComponent(FPSceneComponent* Child)
 
 	if (It != ChildComponent.end())
 	{
+		
 		std::cout << "Component erase" << "\n";
 		ChildComponent.erase(It);
 	}

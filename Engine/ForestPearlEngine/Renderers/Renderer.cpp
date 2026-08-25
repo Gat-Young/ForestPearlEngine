@@ -203,8 +203,6 @@ void Renderer::ObjectRendering()
 					CamViewPort->Width, CamViewPort->Height,
 					CamViewPort->MinDepth, CamViewPort->MaxDepth);
 
-				std::cout << CamViewPort->TopLeftX << " : " << CamViewPort->TopLeftY << " : "
-					<< CamViewPort->Width << " : " << CamViewPort->Height << "\n";
 
 				MVPCB.WorldMatrix = ((*(RenderItem.Scale)) * (*(RenderItem.Rotation)) * (*(RenderItem.Location))).Matrix;
 				MVPCB.ViewMatrix = (*(CamItem.View)).Matrix;

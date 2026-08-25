@@ -11,19 +11,16 @@ void FPGameProjectSetting::CalculateDisplaySize()
 	DisplayHeight = rect.bottom - rect.top;
 }
 
-FPGameProjectSetting::FPGameProjectSetting()
-{
-	WinClassName = FPPathManager::Get().StringToWString(FPPathManager::Get().GetProjectName());
-	WinName = FPPathManager::Get().StringToWString(FPPathManager::Get().GetProjectName());
-	WinWidth = FPPathManager::Get().GetWinWidth();
-	WinHeight = FPPathManager::Get().GetWinHeight();
-	DisplayAspect = FPPathManager::Get().GetAspect();
-	CalculateDisplaySize();
-}
-
 void FPGameProjectSetting::SetHWND(HWND hwnd)
 {
 	this->hwnd = hwnd;
+}
+
+void FPGameProjectSetting::ProjectSetting()
+{
+	WinClassName = FPPathManager::Get().StringToWString(FPPathManager::Get().GetProjectName());
+	WinName = FPPathManager::Get().StringToWString(FPPathManager::Get().GetProjectName());
+	CalculateDisplaySize();
 }
 
 void FPGameProjectSetting::SetWinClassName(std::wstring WinClassName)
@@ -39,13 +36,11 @@ void FPGameProjectSetting::SetWinName(std::wstring WinName)
 void FPGameProjectSetting::SetWinWidth(int WinWidth)
 {
 	this->WinWidth = WinWidth;
-	CalculateDisplaySize();
 }
 
 void FPGameProjectSetting::SetWinHeight(int WinHeight)
 {
 	this->WinHeight = WinHeight;
-	CalculateDisplaySize();
 }
 
 void FPGameProjectSetting::SetDisplayWidth(int DisplayWidth)

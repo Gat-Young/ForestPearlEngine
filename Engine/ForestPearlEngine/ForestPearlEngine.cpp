@@ -23,14 +23,11 @@ ForestPearlEngine& ForestPearlEngine::GetGameEngine()
 //엔진 부팅 및 기본 설정 모듈 불러오기
 bool ForestPearlEngine::PreInitialize()
 {
+    FPGameInstance::Get();
+
     RegistProjectName();
 
-    FPGameInstance::Get();
     FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
-
-    GameProjectSetting->SetWinName(FPPathManager::Get().StringToWString(FPPathManager::Get().GetProjectName()));
-    GameProjectSetting->SetWinHeight(FPPathManager::Get().GetWinHeight());
-    GameProjectSetting->SetWinWidth(FPPathManager::Get().GetWinWidth());
 
     //윈도우 생성
     Hwnd = CreateFPEWindow(
@@ -40,6 +37,7 @@ bool ForestPearlEngine::PreInitialize()
                 GameProjectSetting->GetWinHeight()
                 );
     GameProjectSetting->SetHWND(Hwnd);
+    GameProjectSetting->CalculateDisplaySize();
 
     FPViewPortClient* ViewPort = static_cast<FPViewPortClient*>(FPGameInstance::Get().GetViewPortClient());
     ViewPort->CreateViewPort();
@@ -113,6 +111,7 @@ void ForestPearlEngine::Finalize()
     Render->Finalize();
 }
 
+
 //윈도우 생성 함수
 HWND ForestPearlEngine::CreateFPEWindow(const wchar_t* className, const wchar_t* windowName, const int width, const int height)
 {
@@ -135,7 +134,7 @@ HWND ForestPearlEngine::CreateFPEWindow(const wchar_t* className, const wchar_t*
     AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, false);
 
     HWND hWnd = CreateWindowEx(NULL, MAKEINTATOM(classId), L"", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-        rc.right - rc.left, rc.bottom - rc.top, HWND(), HMENU(), HINSTANCE(), NULL);
+        rc.right - rc.left, rc.bottom - rc.top, HWND(), HMENU(), HINSTANCE(), this);
 
     if (NULL == hWnd) return (HWND)(NULL);
 
@@ -150,6 +149,33 @@ HWND ForestPearlEngine::CreateFPEWindow(const wchar_t* className, const wchar_t*
 //윈도우 콜백 함수
 LRESULT CALLBACK ForestPearlEngine::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    //WndProc에서 Engine 꺼내기
+    ForestPearlEngine* Engine = nullptr;
+
+    if (message == WM_NCCREATE)
+    {
+        CREATESTRUCT* CreateStruct =
+            reinterpret_cast<CREATESTRUCT*>(lParam);
+
+        Engine =
+            static_cast<ForestPearlEngine*>(
+                CreateStruct->lpCreateParams
+                );
+
+        SetWindowLongPtr(
+            hWnd,
+            GWLP_USERDATA,
+            reinterpret_cast<LONG_PTR>(Engine)
+        );
+    }
+    else
+    {
+        Engine =
+            reinterpret_cast<ForestPearlEngine*>(
+                GetWindowLongPtr(hWnd, GWLP_USERDATA)
+                );
+    }
+
     switch (message)
     {
     case WM_INPUT:
@@ -169,11 +195,18 @@ LRESULT CALLBACK ForestPearlEngine::WndProc(HWND hWnd, UINT message, WPARAM wPar
         int Height = HIWORD(lParam);
 
         FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
-        GameProjectSetting->SetDisplayWidth(Width);
-        GameProjectSetting->SetDisplayHeight(Height);
+        GameProjectSetting->SetWinWidth(Width);
+        GameProjectSetting->SetWinHeight(Height);
+        GameProjectSetting->CalculateDisplaySize();
 
         FPViewPortClient* ViewPortClient = static_cast<FPViewPortClient*>(FPGameInstance::Get().GetViewPortClient());
         ViewPortClient->CalculateAllViewPortSize();
+
+        if (Engine != nullptr && Engine->Render != nullptr)
+        {
+            Engine->Render->ResizeRenderTarget();
+        }
+
         break;
     }
 
@@ -213,6 +246,8 @@ int ForestPearlEngine::MessagePump()
 
     return FALSE;
 }
+
+
 
 void ForestPearlEngine::RegisterFPRawInputDevices()
 {
@@ -264,4 +299,4 @@ const TCHAR* ForestPearlEngine::GetSrtFeatureLevel() { return Render->GetRenderi
 UINT ForestPearlEngine::GetWidth() { return Render->GetRenderingDevice().GetWidth(); };
 UINT ForestPearlEngine::GetHeight() { return Render->GetRenderingDevice().GetHeight(); };
 
-void ForestPearlEngine::SetZEnable(bool State) { Render->SetZEnable(State); };
+void ForestPearlEngine::SetZEnable(bool State) { Render->SetZEnable(State); }

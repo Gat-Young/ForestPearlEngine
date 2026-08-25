@@ -28,16 +28,6 @@ public:
 
     std::string GetProjectName();
 
-    void SetWinSize(int Width, int Height);
-
-    void SetAspect(float Aspect);
-
-    int GetWinWidth();
-
-    int GetWinHeight();
-
-    float GetAspect();
-
     std::wstring StringToWString(const std::string& String);
 
 private:
@@ -47,7 +37,4 @@ private:
     std::filesystem::path AssetRoot;
     std::filesystem::path EngineAssetRoot;
     std::string ProjectName;
-    int WinWidth = 960;         //기본 사이즈
-    int WinHeight = 600;        //기본 사이즈
-    float Aspect = 16.0f / 10.0f;		//가로:세로 비율
 };

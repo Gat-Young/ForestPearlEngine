@@ -11,7 +11,12 @@
 void RegistProjectName()
 {
 	FPPathManager::Get().Initialize("ShaderCode_Triangle");
-	FPPathManager::Get().SetWinSize(1800, 600);
+
+	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
+	GameProjectSetting->SetWinWidth(1800);
+	GameProjectSetting->SetWinHeight(600);
+	GameProjectSetting->ProjectSetting();
+
 }
 
 void LoadLevel()

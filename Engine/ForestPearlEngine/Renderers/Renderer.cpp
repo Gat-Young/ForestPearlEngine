@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "../FPGameInstance.h"
+#include "../FPGameProjectSetting.h"
 
 #include "../FPTextRenderList.h"
 #include "../FPMeshRenderList.h"
@@ -202,6 +203,9 @@ void Renderer::ObjectRendering()
 					CamViewPort->Width, CamViewPort->Height,
 					CamViewPort->MinDepth, CamViewPort->MaxDepth);
 
+				std::cout << CamViewPort->TopLeftX << " : " << CamViewPort->TopLeftY << " : "
+					<< CamViewPort->Width << " : " << CamViewPort->Height << "\n";
+
 				MVPCB.WorldMatrix = ((*(RenderItem.Scale)) * (*(RenderItem.Rotation)) * (*(RenderItem.Location))).Matrix;
 				MVPCB.ViewMatrix = (*(CamItem.View)).Matrix;
 				MVPCB.ProjMatrix = (*(CamItem.Projection)).Matrix;
@@ -299,4 +303,33 @@ void Renderer::FontRelease()
 {
 	SafeDelete(FontBatch);
 	SafeDelete(Font);
+}
+
+//RenderTarget 재생성 (임시)
+void Renderer::ResizeRenderTarget()
+{
+	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
+	
+	//기존 렌더 타겟 바인딩 해제
+	Device.OMResetRenderTargets();
+
+	//기존 RenderTargetView / Depth 관련 객체 해제
+	Device.ResetRTVandDepthObj();
+
+	//DisplayMode 재설정
+	Device.DisplayModeSize(GameProjectSetting->GetDisplayWidth(), GameProjectSetting->GetDeisplayHeight());
+
+	//Swapchain BackBuffer Resize
+	Device.ResizeSwapChainBuffer(GameProjectSetting->GetDisplayWidth(), GameProjectSetting->GetDeisplayHeight());
+
+	//새 BackBuffer로 RTV 생성
+	HRESULT hr = S_OK;
+	hr = Device.SetBackBufferToRenderTargetView();
+	assert(SUCCEEDED(hr) && "백버퍼 - 렌더타겟 설정 실패\n");
+
+	//새 Depth Buffer생성
+	hr = Device.CreateDepthStencil();
+	assert(SUCCEEDED(hr) && "깊이-스텐실 버퍼 생성 실패\n");
+
+	Device.OMSetRenderTargets();
 }

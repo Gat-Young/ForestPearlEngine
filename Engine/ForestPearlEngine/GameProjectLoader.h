@@ -3,6 +3,7 @@
 #include "FPGameProjectClassRegistry.h"
 #include "FPAssetLoader.h"
 #include "Utility/FPPathManager.h"
+#include "FPGameProjectSetting.h"
 
 
 void RegistProjectName();

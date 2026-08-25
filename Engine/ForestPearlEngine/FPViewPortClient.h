@@ -48,4 +48,6 @@ class FPViewPortClient : public FPGameInstanceSubSystem
 		void CalculateViewPortSize(std::vector<FPViewPort*> ViewPort, int Width, int Heigth, float Aspect);
 
 		void CalculateAllViewPortSize();
+
+		void CalculateUIViewPortSize(std::vector<FPViewPort*> ViewPort, int Width, int Heigth, float Aspect);
 };

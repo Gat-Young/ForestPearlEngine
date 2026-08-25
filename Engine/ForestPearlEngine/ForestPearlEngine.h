@@ -61,6 +61,7 @@ class ForestPearlEngine
 		//깊이 스텐실 버퍼 설정
 		void SetZEnable(bool State);
 
+
 	private:
 		ForestPearlEngine() = default;
 
@@ -79,11 +80,11 @@ class ForestPearlEngine
 
 		////////////////////////////////
 		// Renderer
-		Renderer* Render;
+		Renderer* Render = nullptr;
 
 		////////////////////////////////
 		// RenderingDevice
-		RenderingDevice* RenderDevice;
+		RenderingDevice* RenderDevice = nullptr;
 
 		// 나중에 설정파일 로더로 변경할 것
 		////////////////////////////////

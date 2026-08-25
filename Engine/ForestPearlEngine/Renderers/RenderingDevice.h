@@ -135,6 +135,8 @@ class RenderingDevice
 
 		HRESULT OMSetRenderTargets();
 
+		HRESULT OMResetRenderTargets();
+
 		HRESULT SetViewPort(float TopLeftX, float TopLeftY, float Width, float Height, float MinDepth, float MaxDepth);
 
 		void ClearBackBuffer();
@@ -259,4 +261,15 @@ class RenderingDevice
 		const TCHAR* GetSrtFeatureLevel() { return StrFeatureLevel; };
 		UINT GetWidth() { return DisplayMode.Width; };
 		UINT GetHeight() { return DisplayMode.Height; };
+
+
+		//ReSize 관련 함수
+		
+		//RenderTargetView, Depth 관련 객체 해제
+		void ResetRTVandDepthObj();
+
+		//SwapChainBuffer 크기 재설정
+		void ResizeSwapChainBuffer(int Width, int Height);
+
+		void DisplayModeSize(int Width, int Height);
 };

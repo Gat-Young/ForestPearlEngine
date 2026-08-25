@@ -2,8 +2,11 @@
 #include "FPGameInstance.h"
 #include "FPGameProjectSetting.h"
 
+
 FPCameraComponent::FPCameraComponent(FPActor* Owner) : FPPrimitiveComponent(Owner)
 {
+	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
+	this->Aspect = GameProjectSetting->GetDisplayAspect();
 	RegistCamera();
 }
 

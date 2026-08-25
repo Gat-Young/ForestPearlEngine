@@ -1,6 +1,7 @@
 #include "FPViewPortClient.h"
 #include "FPGameInstance.h"
 #include "FPGameProjectSetting.h"
+#include <iostream>
 
 FPViewPortClient::FPViewPortClient()
 {
@@ -26,10 +27,9 @@ void FPViewPortClient::CreateViewPort()
 	std::vector<FPViewPort*> MainGame;
 	MainGame.resize(1);
 	MainGame[0] = new FPViewPort();
-
-	MainGame[0]->Width = ProjectSetting->GetDisplayWidth();
-	MainGame[0]->Height = ProjectSetting->GetDeisplayHeight();
 	MainGame[0]->VertexConst = new VertexConst();
+
+	CalculateViewPortSize(MainGame, DisplayWidth, DisplayHeight, Aspect);
 
 	ViewPortArray[static_cast<size_t>(FPViewPortName::MainGameViewPort)] = std::move(MainGame);
 
@@ -40,6 +40,7 @@ void FPViewPortClient::CreateViewPort()
 
 	UIViewPort[0]->Width = ProjectSetting->GetDisplayWidth();
 	UIViewPort[0]->Height = ProjectSetting->GetDeisplayHeight();
+
 	ViewPortArray[static_cast<size_t>(FPViewPortName::UIViewPort)] = std::move(UIViewPort);
 
 	//TripleWaySplitViewPort
@@ -70,14 +71,8 @@ void FPViewPortClient::CalculateViewPortSize(std::vector<FPViewPort*> ViewPort, 
 {
 	int ViewPortLength = ViewPort.size();
 	if (ViewPortLength == 0) return;
-	if (ViewPortLength == 1)
-	{
-		ViewPort[0]->Width = Width;
-		ViewPort[0]->Height = Heigth;
-		return;
-	}
 
-	bool LongAxisVertical = Heigth > Width;
+	bool LongAxisVertical = Heigth >= Width;
 
 	int NewViewPortWidth = 0;
 	int NewViewPortHeight = 0;
@@ -100,6 +95,10 @@ void FPViewPortClient::CalculateViewPortSize(std::vector<FPViewPort*> ViewPort, 
 		NewViewPortWidth = Width / ViewPortLength;
 		NewViewPortHeight = NewViewPortWidth * (1 / Aspect);
 
+		std::cout << "Cal_New_Vertical_ViewPortSize : " << NewViewPortWidth << " : " << NewViewPortHeight << "\n";
+
+
+
 		for (int i = 0; i < ViewPortLength; ++i)
 		{
 			ViewPort[i]->TopLeftX = 0.0f + (NewViewPortWidth * i);
@@ -120,8 +119,24 @@ void FPViewPortClient::CalculateAllViewPortSize()
 	int DisplayWidth = ProjectSetting->GetDisplayWidth();
 	int DisplayHeight = ProjectSetting->GetDeisplayHeight();
 	
+	std::cout << "Cal_All_ViewPortSize : " << DisplayWidth << " : " << DisplayHeight << "\n";
+
 	for (int i = 0; i < static_cast<size_t>(FPViewPortName::FPViewPort_MAX_SIZE); ++i)
 	{
+		if (i == static_cast<size_t>(FPViewPortName::UIViewPort))
+		{
+			CalculateUIViewPortSize(ViewPortArray[i], DisplayWidth, DisplayHeight, Aspect);
+			continue;
+		}
 		CalculateViewPortSize(ViewPortArray[i], DisplayWidth, DisplayHeight, Aspect);
 	}
+}
+
+void FPViewPortClient::CalculateUIViewPortSize(std::vector<FPViewPort*> ViewPort, int Width, int Heigth, float Aspect)
+{
+	int ViewPortLength = ViewPort.size();
+	if (ViewPortLength == 0) return;
+
+	ViewPort[0]->Width = Width;
+	ViewPort[0]->Height = Heigth;
 }

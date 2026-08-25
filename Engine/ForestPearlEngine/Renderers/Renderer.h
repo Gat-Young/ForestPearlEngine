@@ -39,6 +39,9 @@ class Renderer
 
 		RenderingDevice& GetRenderingDevice();
 
+		//RenderTarget 재생성 (임시)
+		void ResizeRenderTarget();
+
 		//렌더링 속성 변경
 		void SetZEnable(bool State) { ZEnable = State; };
 };

@@ -257,6 +257,15 @@ HRESULT RenderingDevice::OMSetRenderTargets()
 	return hr;
 }
 
+HRESULT RenderingDevice::OMResetRenderTargets()
+{
+	HRESULT hr = S_OK;
+
+	DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+
+	return hr;
+}
+
 //ViewPort 설정
 HRESULT RenderingDevice::SetViewPort(float TopLeftX, float TopLeftY, float Width, float Height, float MinDepth, float MaxDepth)
 {
@@ -822,4 +831,27 @@ HRESULT RenderingDevice::Draw(UINT VertexCount, UINT StartVertexLocation)
 {
 	DeviceContext->Draw(VertexCount, StartVertexLocation);
 	return S_OK;
+}
+
+
+
+//RenderTargetView, Depth 관련 객체 해제
+void RenderingDevice::ResetRTVandDepthObj()
+{
+	RenderTargetView.Reset();
+	DepthStencilBuffer.Reset();
+	DepthStencilBufferView.Reset();
+}
+
+
+//SwapChainBuffer 크기 재설정
+void RenderingDevice::ResizeSwapChainBuffer(int Width, int Height)
+{
+	SwapChain->ResizeBuffers(0, Width, Height, DXGI_FORMAT_UNKNOWN, 0);
+}
+
+void RenderingDevice::DisplayModeSize(int Width, int Height)
+{
+	DisplayMode.Width = Width;
+	DisplayMode.Height = Height;
 }

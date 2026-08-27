@@ -75,6 +75,16 @@ void UI::Initialize()
 	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
 	TripleCamText = TextComponets.back();
 
+	//상수 버퍼 데이터 출력
+	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
+	State1Text = TextComponets.back();
+
+	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
+	State2Text = TextComponets.back();
+
+	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
+	State3Text = TextComponets.back();
+
 }
 
 
@@ -143,6 +153,19 @@ void UI::SystemInfo(int x, int y, FPVector4 col)
 
 }
 
+void UI::ConstBufferInfo()
+{
+	FPVector4 Col = FPVector4{1.0f, 1.0f, 0.0f, 1.0f} *0.7f;
+	Col.w = 1.0f;
+
+	ConstStateOn = (isTripleCam && bShow);
+	TCHAR text[1024];
+
+	State1Text->SetTextData(&ConstStateOn, 250, 450, Col, _T("1. 원본 색상"));
+	State2Text->SetTextData(&ConstStateOn, 850, 450, Col, _T("2. 색상 애니"));
+	State3Text->SetTextData(&ConstStateOn, 1450,450, Col, _T("3. 최종 혼합"));
+}
+
 void UI::AdapterInfo(int index, int x, int& y, FPVector4 col)
 {
 	
@@ -150,24 +173,25 @@ void UI::AdapterInfo(int index, int x, int& y, FPVector4 col)
 
 void UI::ShowInfo()
 {	
-	int x = 300, y = 5;
+	int x = 600, y = 5;
 
 	FPVector4 col = { 1.0f, 1.0f, 1.0f, 1.0f };
 	TCHAR text[1024];
 	_stprintf_s(text, _T("■ %s"), _T("1 Model + 3 ViewPort + 3 ConstantBuffer"));
 	Text1->SetTextData(&bShow, x, y, col, text);
 	y += 15;
-	Text2->SetTextData(&bShow, x, y += 15, col, _T("1. 머리에 풍차 붙이기와 마나 실드"));
-	Text3->SetTextData(&bShow, x, y += 15, col, _T("2. Z : 머리에 풍차 붙이기 , X : 마나 실드, R, F : 풍차 크기 조절"));
-	Text4->SetTextData(&bShow, x, y += 15, col, _T("3. 마나 실드 상태에서 , 과 . 을 사용시 크기를 늘리거나 줄일 수 있습니다."));
-	Text5->SetTextData(&bShow, x, y += 15, col, _T("4. XBOX 게임 패드에 A 버튼과 B 버튼으로 풍차 붙이기와 마나 실드를 사용할 수 있습니다."));
-	Text6->SetTextData(&bShow, x, y += 15, col, _T("5. L,R Sholder Pad 버튼으로 마나 실드 후 풍차의 크기를 늘리거나 줄일 수 있습니다."));
+	Text2->SetTextData(&bShow, x, y += 15, col, _T("> 사용한 셰이더 코드 Demo.vsh, Demo.psh"));
+	Text3->SetTextData(&bShow, x, y += 15, col, _T("> 애니메이션 색상을 만들고 넘기는 코드는 CB2Material.cpp에서 확인 가능합니다."));
+	Text4->SetTextData(&bShow, x, y += 15, col, _T("> 사용한 버퍼들 : [VertexShader : MVP용, Material용, ViewPort용] | [PixelShader : Material용, ViewPort용]"));
+	Text5->SetTextData(&bShow, x, y += 15, col, _T("> 총 5개가 할당 및 Set되어 있으나, 이번 예제에서는 VertexShader쪽 상수 버퍼의 값만 사용합니다."));
+	Text6->SetTextData(&bShow, x, y += 15, col, _T("> Animation과 BlendOn 정보는 ViewPort의 상수 버퍼에 전달됩니다."));
 	Text7->SetTextData(&bShow, x, y += 15, col, _T(""));
 	Text8->SetTextData(&bShow, x, y += 15, col, _T("게임인재원 8기 프로그래밍학과 임백규"));
 
 	Text9->SetTextData(&bShow, x, y += 15, { 1.0f, 0.0f, 0.0f, 1.0f }, _T("Have Fun~"));
 
 	SystemInfo(1, 20, {1.0f, 1.0f, 0.0f, 1.0f});
+	ConstBufferInfo();
 }
 
 void UI::SetUIContext( bool* actieve, int x, int y, FPVector4 color, std::basic_string<TCHAR> text)

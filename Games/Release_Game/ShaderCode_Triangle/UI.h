@@ -30,6 +30,12 @@ class UI : public FPActor
 		FPTextComponent* Text8;
 		FPTextComponent* Text9;
 
+		//상수 버퍼 출력
+		bool ConstStateOn = false;
+		FPTextComponent* State1Text;
+		FPTextComponent* State2Text;
+		FPTextComponent* State3Text;
+
 		//장치 / GPU 및 시스템 정보 출력
 		FPTextComponent* SystemTitle;
 		FPTextComponent* GPUDescriptionText;
@@ -61,4 +67,5 @@ class UI : public FPActor
 		void SetCull(struct FInputValue Value);
 		void SetFill(struct FInputValue Value);
 		void SetTripleCam(struct FInputValue Value);
+		void ConstBufferInfo();
 };

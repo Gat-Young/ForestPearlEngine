@@ -14,13 +14,16 @@
 void RegistProjectName()
 {
 	FPPathManager::Get().Initialize("Tri_World");
+	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
+	GameProjectSetting->SetWinWidth(960);
+	GameProjectSetting->SetWinHeight(600);
+	GameProjectSetting->ProjectSetting();
 }
 
 void LoadLevel()
 {
-	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-	AssetManager->LoadLevelData("TriWorld", "TriWorld.json");
-
+	FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
+	AssetLoader->LoadLevelData("TriWorld", "TriWorld.json", AssetOwner::User);
 }
 
 void LoadClassRegist()
@@ -41,13 +44,13 @@ void LoadClassRegist()
 
 void LoadAssets()
 {
-	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-	AssetManager->LoadFbxData("ToonLink/ToonLinkTriangle.fbx");
-	AssetManager->LoadFbxData("ToonLink/ToonLink.fbx");
-	AssetManager->LoadFbxData("Terrain/Terrain.fbx");
-	AssetManager->LoadFbxData("Tree/Tree.fbx");
-	AssetManager->LoadFbxData("Windmill/Windmill_Body.fbx");
-	AssetManager->LoadFbxData("Windmill/Windmill_Wing.fbx");
+	FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
+	AssetLoader->LoadFbxData("ToonLink/ToonLinkTriangle.fbx", AssetOwner::User);
+	AssetLoader->LoadFbxData("ToonLink/ToonLink.fbx", AssetOwner::User);
+	AssetLoader->LoadFbxData("Terrain/Terrain.fbx", AssetOwner::User);
+	AssetLoader->LoadFbxData("Tree/Tree.fbx", AssetOwner::User);
+	AssetLoader->LoadFbxData("Windmill/Windmill_Body.fbx", AssetOwner::User);
+	AssetLoader->LoadFbxData("Windmill/Windmill_Wing.fbx", AssetOwner::User);
 }
 
 std::string ReturnStartLevel()

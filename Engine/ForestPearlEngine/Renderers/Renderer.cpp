@@ -151,50 +151,49 @@ void Renderer::ObjectRendering()
 		RenderQueue.push(RenderItem);
 	}
 
-	while(!RenderQueue.empty())
+	//Camera Setting
+	FPCameraList* CameraList = static_cast<FPCameraList*>(FPGameInstance::Get().GetCameraList());
+	std::vector<CameraItem> CamList = CameraList->GetRenderList();
+
+	for (CameraItem& CamItem : CamList)
 	{
-		const RenderItem& RenderItem = RenderQueue.top();
+		if (!(*(CamItem.Active))) continue;
 
-		if (!(*(RenderItem.Active)))
+		std::vector<FPViewPort*> CamViewPorts;
+
+		FPViewPortClient* ViewPortClient = static_cast<FPViewPortClient*>(FPGameInstance::Get().GetViewPortClient());
+
+		CamViewPorts = ViewPortClient->GetViewPort(FPViewPortName::MainGameViewPort);
+		if ((*(CamItem.TripleCam)))
 		{
-			RenderQueue.pop();
-			continue;
+			CamViewPorts = ViewPortClient->GetViewPort(FPViewPortName::TripleWaySplitViewPort);
 		}
-		
-		//렌더링 모드 전환
-		Device.UpdateRSSetState(*RenderItem.isFill, *RenderItem.isCull);
-
-		//입력 레이아웃 설정
-		Device.IASetInputLayout(*(RenderItem.VBLayout));
-
-		//기하 위상 구조 설정
-		Device.IASetPrimitiveTopology(*RenderItem.Topo);
-
-		//Shader 설정
-		Device.VSSetShader(*(RenderItem.VertexShader));
-		Device.PSSetShader(*(RenderItem.PixelShader));
-
-		//Shader ConstBuffer가 있다면 갱신
-		if (*(RenderItem.VertexConst) != nullptr) Device.UpdateVertexShaderSubresource(0, *(RenderItem.VertexConst), 0, 0);
-		if (*(RenderItem.PixelConst) != nullptr) Device.UpdatePixelShaderSubresource(0, *(RenderItem.PixelConst), 0, 0);
-
-		//Camera Setting
-		FPCameraList* CameraList = static_cast<FPCameraList*>(FPGameInstance::Get().GetCameraList());
-		std::vector<CameraItem> CamList = CameraList->GetRenderList();
-
-		for (CameraItem& CamItem : CamList)
+		while (!RenderQueue.empty())
 		{
-			if (!(*(CamItem.Active))) continue;
+			const RenderItem& RenderItem = RenderQueue.top();
 
-			std::vector<FPViewPort*> CamViewPorts;
-
-			FPViewPortClient* ViewPortClient = static_cast<FPViewPortClient*>(FPGameInstance::Get().GetViewPortClient());
-
-			CamViewPorts = ViewPortClient->GetViewPort(FPViewPortName::MainGameViewPort);
-			if ((*(CamItem.TripleCam)))
+			if (!(*(RenderItem.Active)))
 			{
-				CamViewPorts = ViewPortClient->GetViewPort(FPViewPortName::TripleWaySplitViewPort);
+				RenderQueue.pop();
+				continue;
 			}
+
+			//렌더링 모드 전환
+			Device.UpdateRSSetState(*RenderItem.isFill, *RenderItem.isCull);
+
+			//입력 레이아웃 설정
+			Device.IASetInputLayout(*(RenderItem.VBLayout));
+
+			//기하 위상 구조 설정
+			Device.IASetPrimitiveTopology(*RenderItem.Topo);
+
+			//Shader 설정
+			Device.VSSetShader(*(RenderItem.VertexShader));
+			Device.PSSetShader(*(RenderItem.PixelShader));
+
+			//Shader ConstBuffer가 있다면 갱신
+			if (*(RenderItem.VertexConst) != nullptr) Device.UpdateVertexShaderSubresource(0, *(RenderItem.VertexConst), 0, 0);
+			if (*(RenderItem.PixelConst) != nullptr) Device.UpdatePixelShaderSubresource(0, *(RenderItem.PixelConst), 0, 0);
 
 			for (FPViewPort* CamViewPort : CamViewPorts)
 			{
@@ -230,12 +229,9 @@ void Renderer::ObjectRendering()
 					Device.Draw((RenderItem.VertexSize)->at(i), 0);
 				}
 			}
-
+			RenderQueue.pop();
 		}
-
-		RenderQueue.pop();
 	}
-
 }
 
 void Renderer::UIRendering()

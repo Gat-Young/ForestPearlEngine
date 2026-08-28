@@ -2,7 +2,7 @@
 // 기본 VertexShader 소스
 
 //상수 버퍼
-cbuffer ConstBuffer
+cbuffer ConstBuffer : register(b0)
 {
     matrix mWorld;
     matrix mView;
@@ -31,8 +31,7 @@ VSOutput VS_Main(
 {
     //입력된 정보 그대로 출력..
     VSOutput o = (VSOutput) 0;
-    pos.w = 1.0f;
-    
+
     //변환
     pos = mul(pos, mWVP);
     

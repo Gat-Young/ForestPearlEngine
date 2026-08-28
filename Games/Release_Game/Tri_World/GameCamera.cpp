@@ -14,10 +14,6 @@ void GameCamera::Initialize()
 
 	Camera->SetupAttachment(RootComponent);
 	Camera->SetRelativeLocation({ 0.0f, 20.0f, -45.0f });
-
-	//std::cout << "GameCamera : " << Camera->GetRelativeLocation().x << " : " << Camera->GetRelativeLocation().y << " : " << Camera->GetRelativeLocation().z << "\n";
-	//std::cout << "GameCamera : " << Camera->GetComponentLocation().x << " : " << Camera->GetComponentLocation().y << " : " << Camera->GetComponentLocation().z << "\n";
-
 	FPAController* Controller = GetWorld()->GetController(0);
 
 	if (Controller == nullptr)

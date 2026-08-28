@@ -48,9 +48,6 @@
     <ClInclude Include="CB2Material.h">
       <Filter>Material</Filter>
     </ClInclude>
-    <ClInclude Include="ConstBufferData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="UI.cpp">
@@ -76,9 +73,6 @@
     </ClCompile>
     <ClCompile Include="CB2Material.cpp">
       <Filter>Material</Filter>
-    </ClCompile>
-    <ClCompile Include="ConstBufferData.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

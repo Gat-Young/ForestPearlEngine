@@ -40,10 +40,11 @@ void Player::Tick()
 {
 	float mov = 180.0f * GetWorld()->GetGameTimer()->DeltaTime();
 	RootComponent->AddLocalRotation(FPVector3{ 0.0f, -mov, 0.0f });
-	__super::Tick();
 
 	float RotateSpeed = 360.0f;
 	ShieldPivot->AddLocalRotation(FPVector3{ 0.0f,  RotateSpeed * GetWorld()->GetGameTimer()->DeltaTime(),0.0f });
+
+	__super::Tick();
 }
 
 void Player::Move(FInputValue Value)

@@ -101,9 +101,4 @@
       <Filter>Level</Filter>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Assets\Shader\Demo.fx">
-      <Filter>Assets\Shader</Filter>
-    </FxCompile>
-  </ItemGroup>
 </Project>

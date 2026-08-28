@@ -12,7 +12,7 @@ class FPCameraComponent : public FPPrimitiveComponent
 
 		//투영 변환 용
 		float Fov = 45.0f;							//시야각			
-		float Aspect = 16.0f / 10.0f;				//가로:세로 비율
+		float Aspect = 960.0f / 600.0f;				//가로:세로 비율
 		float Zn = 1.0f;							//근평면 거리
 		float Zf = 100.0f;							//원평면 거리
 

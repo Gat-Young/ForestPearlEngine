@@ -55,7 +55,7 @@ struct VERTEX
 // 
 
 //상수 버퍼용 구조체 : 셰이더 내부 연산에 사용될 데이터들
-struct MVPConstBuffer
+struct alignas(16) MVPConstBuffer
 {
 	XMMATRIX WorldMatrix;
 	XMMATRIX ViewMatrix;
@@ -202,12 +202,18 @@ void Renderer::ObjectRendering()
 					CamViewPort->Width, CamViewPort->Height,
 					CamViewPort->MinDepth, CamViewPort->MaxDepth);
 
-
+				//HLSL은 열벡터 기준이므로 Transepose 해줄 것!!
 				MVPCB.WorldMatrix = ((*(RenderItem.Scale)) * (*(RenderItem.Rotation)) * (*(RenderItem.Location))).Matrix;
 				MVPCB.ViewMatrix = (*(CamItem.View)).Matrix;
 				MVPCB.ProjMatrix = (*(CamItem.Projection)).Matrix;
 
 				MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
+
+				MVPCB.WorldMatrix = DirectX::XMMatrixTranspose(MVPCB.WorldMatrix);
+				MVPCB.ViewMatrix = DirectX::XMMatrixTranspose(MVPCB.ViewMatrix);
+				MVPCB.ProjMatrix = DirectX::XMMatrixTranspose(MVPCB.ProjMatrix);
+				MVPCB.WVPMatrix = DirectX::XMMatrixTranspose(MVPCB.WVPMatrix);
+
 
 				//Object 상수 버퍼 갱신
 				Device.UpdateObjectSubresource(0, &MVPCB, 0, 0);

@@ -27,7 +27,7 @@ void Windmill::BeginPlay()
 
 void Windmill::Tick()
 {
-
+	__super::Tick();
 }
 
 void Windmill::Move(FInputValue Value)

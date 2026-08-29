@@ -25,7 +25,7 @@ void Tree::BeginPlay()
 
 void Tree::Tick()
 {
-
+	__super::Tick();
 }
 
 void Tree::SetFillTriangel(FInputValue Value)

@@ -178,6 +178,7 @@ FPQuaternion FromEuler(const FPVector3& eulerDeg);
 
 FPQuaternion AngleAxis(float angleRad, const FPVector3& axis);
 
+
 //Transform За·Д
 FPMatrix MatrtixTranslation(const float& x, const float& y, const float& z);
 

@@ -110,6 +110,11 @@ FPQuaternion AngleAxis(float angleRad, const FPVector3& axis)
 	return FPQuaternion{axis.x * s, axis.y * s, axis.z * s, c}.Normalize();
 }
 
+float ConvertToRadian(float Degree)
+{
+	return 0.0f;
+}
+
 FPVector3 FPQuaternion::ToEuler() const
 {
 	FPQuaternion q = Normalize();

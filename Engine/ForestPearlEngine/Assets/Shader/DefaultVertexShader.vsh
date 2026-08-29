@@ -38,7 +38,7 @@ VSOutput VS_Main(
     matrix m = mWorld * mView * mProj;
     //pos = mul(pos, mWorld);
     //pos = mul(pos, m);
-    pos = mul(pos, mWVP);
+    pos = mul(mWVP, pos);
     
     //pos = mul(pos, m);
     o.pos = pos;

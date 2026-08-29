@@ -209,10 +209,10 @@ void Renderer::ObjectRendering()
 
 				MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
 
-				MVPCB.WorldMatrix = DirectX::XMMatrixTranspose(MVPCB.WorldMatrix);
-				MVPCB.ViewMatrix = DirectX::XMMatrixTranspose(MVPCB.ViewMatrix);
-				MVPCB.ProjMatrix = DirectX::XMMatrixTranspose(MVPCB.ProjMatrix);
-				MVPCB.WVPMatrix = DirectX::XMMatrixTranspose(MVPCB.WVPMatrix);
+				//MVPCB.WorldMatrix = DirectX::XMMatrixTranspose(MVPCB.WorldMatrix);
+				//MVPCB.ViewMatrix = DirectX::XMMatrixTranspose(MVPCB.ViewMatrix);
+				//MVPCB.ProjMatrix = DirectX::XMMatrixTranspose(MVPCB.ProjMatrix);
+				//MVPCB.WVPMatrix = DirectX::XMMatrixTranspose(MVPCB.WVPMatrix);
 
 
 				//Object 상수 버퍼 갱신

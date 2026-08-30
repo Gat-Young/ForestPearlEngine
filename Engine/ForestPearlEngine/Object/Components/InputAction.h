@@ -7,6 +7,7 @@
 struct FBindInfo
 {
 	enum EKeyState CallState;
+	void* BindObj;
 	std::function<void(FInputValue)> BindFuncPtr;
 };
 

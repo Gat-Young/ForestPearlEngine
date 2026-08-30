@@ -50,6 +50,8 @@ public:
 
 		BindInfo.CallState = BindKeyState;
 
+		BindInfo.BindObj = BindActor;
+
 		//std::cout << "BindActor ptr: " << (void*)BindActor << "\n";
 		BindInfo.BindFuncPtr = [BindActor, FuncPtr](FInputValue val)
 			{
@@ -62,6 +64,9 @@ public:
 
 	void ProcessInputTick();
 
+	void Possess(void* Actor);
+	void UnPossess();
+
 private:
 	bool ProcessKeyEvent(struct FKeyInputInfo KeyInputInfo);
 
@@ -70,6 +75,7 @@ private:
 
 	std::map<std::string, FPInputAction*> ActivatedIA;
 
+	void* PossessedActor = nullptr;
 	//std::set<USHORT> PressedKeys;
 };
 

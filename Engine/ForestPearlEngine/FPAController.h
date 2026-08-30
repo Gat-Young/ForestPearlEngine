@@ -13,8 +13,12 @@ class FPAController : public FPActor
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
 
+		void Possess(FPActor* PossessActor);
+		void UnPossess();
+
 		FPInputComponent& GetInputComponent() { return *InputComponent; }
 
 	private:
 		FPInputComponent* InputComponent;
+		FPActor* PossesedActor;
 };

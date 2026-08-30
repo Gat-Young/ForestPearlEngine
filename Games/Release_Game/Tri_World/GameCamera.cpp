@@ -13,7 +13,7 @@ void GameCamera::Initialize()
 	Camera = new FPCameraComponent(this);
 
 	Camera->SetupAttachment(RootComponent);
-	Camera->SetRelativeLocation({ 0.0f, 10.0f, -20.0f });
+	Camera->SetRelativeLocation({ 0.0f, 20.0f, -45.0f });
 	FPAController* Controller = GetWorld()->GetController(0);
 
 	if (Controller == nullptr)

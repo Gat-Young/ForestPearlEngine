@@ -51,6 +51,17 @@ void FPInputComponent::ProcessInputTick()
 	//}
 }
 
+void FPInputComponent::Possess(void* Actor)
+{
+	this->PossessedActor = Actor;
+}
+
+void FPInputComponent::UnPossess()
+{
+	this->PossessedActor = nullptr;
+}
+
+
 bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)
 {
 	if (IMC == nullptr)
@@ -82,6 +93,8 @@ bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)
 
 	for (FBindInfo BindInfo : BindInfos)
 	{
+		if (BindInfo.BindObj != PossessedActor) continue;
+
 		EKeyState CallKeyState = BindInfo.CallState;
 		std::function<void(FInputValue)> BindFuncPtr = BindInfo.BindFuncPtr;
 

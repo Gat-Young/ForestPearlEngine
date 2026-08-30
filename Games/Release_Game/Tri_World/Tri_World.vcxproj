@@ -27,6 +27,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Tree.h" />
+    <ClInclude Include="TripleWindmillWing.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="Windmill.h" />
     <ClInclude Include="WindmillWing.h" />
@@ -41,6 +42,7 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Tree.cpp" />
+    <ClCompile Include="TripleWindmillWing.cpp" />
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="Windmill.cpp" />
     <ClCompile Include="WindmillWing.cpp" />

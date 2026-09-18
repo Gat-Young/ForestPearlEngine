@@ -16,8 +16,7 @@ void GameCamera::Initialize()
 	Camera->SetRelativeLocation({ 0.0f, 20.0f, -45.0f });
 	FPAController* Controller = GetWorld()->GetController(0);
 
-	if (Controller == nullptr)
-		return;
+	if (Controller == nullptr) { return };
 
 	Controller->GetInputComponent().BindMethod("IA_SetMoveCamera", this, EKeyState::Pressed, &GameCamera::Move);
 
@@ -44,8 +43,8 @@ void GameCamera::Tick()
 
 void GameCamera::Move(FInputValue value)
 {
-	//std::cout << "CameraMove [ " << Camera->GetComponentRotation().x << " : " << Camera->GetComponentRotation().y << " : " << Camera->GetComponentRotation().z << " ]\n";
-	//std::cout << "CameraMove [ " << GetActorRotation().x << " : " << GetActorRotation().y << " : " << GetActorRotation().z << " ]\n";
+	std::cout << "CameraMove [ " << Camera->GetComponentRotation().x << " : " << Camera->GetComponentRotation().y << " : " << Camera->GetComponentRotation().z << " ]\n";
+	std::cout << "CameraMove [ " << GetActorRotation().x << " : " << GetActorRotation().y << " : " << GetActorRotation().z << " ]\n";
 	float mov = 30.0f;
 	float move_x = value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
 	float move_y = value.Y * mov * (GetWorld()->GetGameTimer()->DeltaTime());

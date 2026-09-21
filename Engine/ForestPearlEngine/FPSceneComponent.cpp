@@ -158,8 +158,7 @@ FPVector3 FPSceneComponent::GetRelativeScale3D()
 	return RelativeTransform.Scale;
 }
 
-//임시로 사용
-void FPSceneComponent::Tick()
+void FPSceneComponent::CalculateTransformBranch()
 {
 	if (ParentComponent == nullptr)
 	{
@@ -169,6 +168,14 @@ void FPSceneComponent::Tick()
 	{
 		CalculateWorldTransform();
 	}
+}
+
+
+//임시로 사용
+void FPSceneComponent::Tick()
+{
+	//Transform 계산 분기, virtual 함수 이므로 필요에 따라 상속으로 변경 가능
+	CalculateTransformBranch();
 
 	//행렬 계산
 	RelativeTransform.LocationMatrix = MatrtixTranslation(RelativeTransform.Location);

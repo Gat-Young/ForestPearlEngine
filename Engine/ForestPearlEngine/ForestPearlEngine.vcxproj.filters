@@ -195,6 +195,9 @@
     <ClInclude Include="FPViewPortClient.h">
       <Filter>FPGameInstance\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FPSpringArmComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
@@ -298,6 +301,9 @@
     </ClCompile>
     <ClCompile Include="FPViewPortClient.cpp">
       <Filter>FPGameInstance\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FPSpringArmComponent.cpp">
+      <Filter>Component</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

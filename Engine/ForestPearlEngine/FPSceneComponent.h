@@ -23,6 +23,9 @@ class FPSceneComponent : public FPActorComponent
 		void AttachChildComponent(FPSceneComponent* Child);
 		void DetachChildComponent(FPSceneComponent* Child);
 
+		//Tick에서 트랜스폼 계산을 위한 분기용 함수 (필요에 따라 상속한 컴포넌트에서 분기를 구현)
+		virtual void CalculateTransformBranch();
+
 	public:
 		FPSceneComponent(FPActor* Owner);
 		void SetupAttachment(FPSceneComponent* Parent);

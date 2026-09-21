@@ -149,6 +149,7 @@
     <ClInclude Include="FPMovementComponent.h" />
     <ClInclude Include="FPPrimitiveComponent.h" />
     <ClInclude Include="FPSceneComponent.h" />
+    <ClInclude Include="FPSpringArmComponent.h" />
     <ClInclude Include="FPViewPortClient.h" />
     <ClInclude Include="FPWorld.h" />
     <ClInclude Include="framework.h" />
@@ -195,6 +196,7 @@
     <ClCompile Include="FPSceneComponent.cpp" />
     <ClCompile Include="FPGameProjectClassRegistry.cpp" />
     <ClCompile Include="FPGameTimer.cpp" />
+    <ClCompile Include="FPSpringArmComponent.cpp" />
     <ClCompile Include="FPViewPortClient.cpp" />
     <ClCompile Include="FPWorld.cpp" />
     <ClCompile Include="GizmoComponent.cpp" />

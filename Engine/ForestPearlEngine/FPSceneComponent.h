@@ -14,6 +14,10 @@ class FPSceneComponent : public FPActorComponent
 		FPSceneComponent* ParentComponent = nullptr;
 		std::vector<FPSceneComponent*> ChildComponent;
 
+		//Parent Socket
+		//비어 있다면 Socket을 사용하지 않는 것
+		std::string ParentSocketName = "";
+
 		//월드 트랜스폼 계산
 		void CalculateWorldTransform();
 
@@ -28,7 +32,7 @@ class FPSceneComponent : public FPActorComponent
 
 	public:
 		FPSceneComponent(FPActor* Owner);
-		void SetupAttachment(FPSceneComponent* Parent);
+		void SetupAttachment(FPSceneComponent* Parent, std::string SocketName = "");
 		void DetachFromComponent();
 
 		//이동 시키기
@@ -65,6 +69,9 @@ class FPSceneComponent : public FPActorComponent
 		FPVector3 GetComponentRotation();
 		FPQuaternion GetComponentQuat();
 		FPVector3 GetComponentScale();
+
+		//Socekt
+		virtual FTransform GetSocketTransform(const std::string& SocketName) const;
 
 		//임시로 사용
 		virtual void Tick();

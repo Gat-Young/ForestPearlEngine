@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ForestPearlEngine/Object/Actor.h"
+#include "ForestPearlEngine/Object/FPPawn.h"
 #include "ForestPearlEngine/Systems/KeyStateEnum.h"
 #include "ForestPearlEngine/Define/FPMath.h"
 
@@ -9,7 +9,7 @@ class FPInputAction;
 struct FInputValue;
 class FPMeshComponent;
 
-class Windmill : public FPActor
+class Windmill : public FPPawn
 {
 	private:
 		FPMeshComponent* Body;

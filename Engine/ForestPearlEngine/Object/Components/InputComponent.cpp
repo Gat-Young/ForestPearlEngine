@@ -53,12 +53,12 @@ void FPInputComponent::ProcessInputTick()
 
 void FPInputComponent::Possess(void* Pawn)
 {
-	this->PossesedPawn = Pawn;
+	this->PossessedPawn = Pawn;
 }
 
 void FPInputComponent::UnPossess()
 {
-	this->PossesedPawn = nullptr;
+	this->PossessedPawn = nullptr;
 }
 
 

@@ -229,7 +229,7 @@ void FPSceneComponent::CalculateWorldTransform()
 	if (ParentComponent == nullptr) { WorldTransform = RelativeTransform; return; };
 
 	//Socket을 가지고 있다면 Socket 위치까지 고려한 부모의 월드를 사용
-	FTransform ParentWorldTransform = GetSocketTransform(ParentSocketName);
+	FTransform ParentWorldTransform = ParentComponent->GetSocketTransform(ParentSocketName);
 
 
 	//Scale 계산 (부모 월드 스케일 * 로컬 스케일)
@@ -252,7 +252,7 @@ void FPSceneComponent::CalculateLocalTransform()
 	if (ParentComponent == nullptr) { RelativeTransform = WorldTransform; return; };
 
 	//Socket을 가지고 있다면 Socket 위치까지 고려한 부모의 월드를 사용
-	FTransform ParentWorldTransform = GetSocketTransform(ParentSocketName);
+	FTransform ParentWorldTransform = ParentComponent->GetSocketTransform(ParentSocketName);
 
 	//부모의 월드 스케일 역
 	FPVector3 ParentInverseScale = { 1 / ParentWorldTransform.Scale.x, 1 / ParentWorldTransform.Scale.y, 1 / ParentWorldTransform.Scale.z };

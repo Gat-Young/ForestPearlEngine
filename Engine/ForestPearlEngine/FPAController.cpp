@@ -24,14 +24,18 @@ void FPAController::Tick()
 	InputComponent->ProcessInputTick();
 }
 
-void FPAController::Possess(FPActor* PossessActor)
+void FPAController::Possess(FPPawn* PossessedPawn)
 {
-	this->PossesedActor = PossessActor;
-	InputComponent->Possess(PossessActor);
+	if (this->PossessedPawn) { this->PossessedPawn->UnPossesed(); }
+
+	this->PossessedPawn = PossessedPawn;
+	this->PossessedPawn->PossessedBy(this);
+	InputComponent->Possess(PossessedPawn);
 }
 
 void FPAController::UnPossess()
 {
-	this->PossesedActor = nullptr;
+	if (this->PossessedPawn) { this->PossessedPawn->UnPossesed(); }
+	this->PossessedPawn = nullptr;
 	InputComponent->UnPossess();
 }

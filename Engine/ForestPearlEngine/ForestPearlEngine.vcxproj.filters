@@ -198,6 +198,9 @@
     <ClInclude Include="FPSpringArmComponent.h">
       <Filter>Component</Filter>
     </ClInclude>
+    <ClInclude Include="Object\FPPawn.h">
+      <Filter>Object</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
@@ -304,6 +307,9 @@
     </ClCompile>
     <ClCompile Include="FPSpringArmComponent.cpp">
       <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Object\FPPawn.cpp">
+      <Filter>Object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

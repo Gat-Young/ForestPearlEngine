@@ -1,5 +1,5 @@
 #pragma once
-#include "../ForestPearlEngine/Object/Actor.h"
+#include "../ForestPearlEngine/Object/FPPawn.h"
 
 class FPInputComponent;
 
@@ -13,12 +13,12 @@ class FPAController : public FPActor
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
 
-		void Possess(FPActor* PossessActor);
+		void Possess(FPPawn* PossessedPawn);
 		void UnPossess();
 
 		FPInputComponent& GetInputComponent() { return *InputComponent; }
 
 	private:
 		FPInputComponent* InputComponent;
-		FPActor* PossesedActor;
+		FPPawn* PossessedPawn;
 };

@@ -64,7 +64,7 @@ public:
 
 	void ProcessInputTick();
 
-	void Possess(void* Actor);
+	void Possess(void* Pawn);
 	void UnPossess();
 
 private:
@@ -75,7 +75,7 @@ private:
 
 	std::map<std::string, FPInputAction*> ActivatedIA;
 
-	void* PossessedActor = nullptr;
+	void* PossessedPawn = nullptr;
 	//std::set<USHORT> PressedKeys;
 };
 

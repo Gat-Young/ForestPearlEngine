@@ -10,7 +10,7 @@ class FPSpringArmComponent : public FPSceneComponent
 		//추후에 SpringArmEndPoint가 벽 등에 충돌해 위치를 옮기는 멤버 함수를 추가
 
 	public:
-
+		FPSpringArmComponent(FPActor* Owner);
 		//true일 경우 PlayerController에 회전을 따라감
 		bool bUsePawnControlRotation = false;
 

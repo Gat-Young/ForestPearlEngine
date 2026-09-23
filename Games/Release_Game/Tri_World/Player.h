@@ -7,12 +7,16 @@ class FPInputMappingContext;
 class FPInputAction;
 struct FInputValue;
 class FPMeshComponent;
+class FPSpringArmComponent;
+class FPCameraComponent;
 
 class Player : public FPPawn
 {
 	private:
 		FPMeshComponent* Mesh;
 		FPSceneComponent* ShieldPivot;
+		FPSpringArmComponent* SpringArm;
+		FPCameraComponent* PlayerCamera;
 
 		bool isFill = true;
 		bool isCull = false;
@@ -28,6 +32,7 @@ class Player : public FPPawn
 		virtual void Tick() override;
 
 		void Move(FInputValue value);
+		void CameraMove(FInputValue value);
 		void SetFillTriangel(FInputValue Value);
 		void SetCullTriangle(FInputValue Value);
 		FPSceneComponent* GetShieldPivot();

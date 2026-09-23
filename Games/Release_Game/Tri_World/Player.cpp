@@ -5,6 +5,8 @@
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
 #include "ForestPearlEngine/InputValue.h"
 #include "ForestPearlEngine/FPGameTimer.h"
+#include "ForestPearlEngine/FPCameraComponent.h"
+#include "ForestPearlEngine/FPSpringArmComponent.h"
 #include <iostream>
 
 void Player::Initialize()
@@ -21,6 +23,18 @@ void Player::Initialize()
 	ShieldPivot->SetupAttachment(Mesh);
 	ShieldPivot->SetRelativeLocation({ 0.0f, 3.0f, 0.0f });
 
+	//카메라 설정
+	SpringArm = new FPSpringArmComponent(this);
+	SpringArm->SetupAttachment(RootComponent);
+	SpringArm->TargetArmLength = 50.0f;
+	SpringArm->SetRelativeRotation({ 60.0f, 0.0f, 0.0f });
+	SpringArm->bUsePawnControlRotation = true;
+
+	PlayerCamera = new FPCameraComponent(this);
+	PlayerCamera->SetupAttachment(SpringArm);
+	PlayerCamera->LookAt = SpringArm->GetComponentLocation();
+
+
 	FPAController* Controller = GetWorld()->GetController(0);
 
 	if (Controller == nullptr)
@@ -29,6 +43,7 @@ void Player::Initialize()
 	Controller->GetInputComponent().BindMethod("IA_SetMoveTriangel", this, EKeyState::Pressed, &Player::Move);
 	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &Player::SetFillTriangel);
 	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &Player::SetCullTriangle);
+	Controller->GetInputComponent().BindMethod("IA_SetMoveCamera", this, EKeyState::Pressed, &Player::CameraMove);
 	Controller->Possess(this);
 
 }
@@ -55,6 +70,10 @@ void Player::Move(FInputValue Value)
 	float move_x = Value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
 	float move_y = Value.Y * mov * (GetWorld()->GetGameTimer()->DeltaTime());
 	RootComponent->AddWorldOffset(FPVector3{ move_x, 0.0f, move_y });
+}
+
+void Player::CameraMove(FInputValue value)
+{
 }
 
 void Player::SetFillTriangel(FInputValue Value)

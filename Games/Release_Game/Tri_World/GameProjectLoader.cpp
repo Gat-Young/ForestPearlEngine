@@ -35,7 +35,7 @@ void LoadClassRegist()
 	ClassRegistry->Register<UI>("UI");
 	ClassRegistry->Register<Player>("Player");
 	ClassRegistry->Register<Tree>("Tree");
-	ClassRegistry->Register<GameCamera>("GameCamera");
+	//ClassRegistry->Register<GameCamera>("GameCamera");
 	ClassRegistry->Register<Grid>("Grid");
 	ClassRegistry->Register<Axis>("Axis");
 	ClassRegistry->Register<Terrain>("Terrain");

@@ -16,7 +16,7 @@ void GameCamera::Initialize()
 	Camera->SetRelativeLocation({ 0.0f, 20.0f, -45.0f });
 	FPAController* Controller = GetWorld()->GetController(0);
 
-	if (Controller == nullptr) { return };
+	//if (Controller == nullptr) { return };
 
 	Controller->GetInputComponent().BindMethod("IA_SetMoveCamera", this, EKeyState::Pressed, &GameCamera::Move);
 

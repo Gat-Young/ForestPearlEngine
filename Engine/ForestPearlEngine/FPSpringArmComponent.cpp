@@ -2,6 +2,11 @@
 #include "./Object/FPPawn.h"
 #include "FPAController.h"
 
+FPSpringArmComponent::FPSpringArmComponent(FPActor* Owner) : FPSceneComponent(Owner)
+{
+
+}
+
 void FPSpringArmComponent::CalculateTransformBranch()
 {
 	//SpringArmEndPoint가 고려된 분기를 만들 것
@@ -38,8 +43,8 @@ FTransform FPSpringArmComponent::GetSocketTransform(const std::string& SocketNam
 {
 	//SpringArmEndPoint Socket까지 고려된 위치를 반환 할 것
 	
-	//+x축을 앞 방향 벡터로 할 것
-	FPVector3 Forward = { 1.0f, 0.0f, 0.0f };
+	//+z축을 앞 방향 벡터로 할 것 (DX11 왼손 좌표계를 기준으로)
+	FPVector3 Forward = { 0.0f, 0.0f, 1.0f };
 	Forward = Rotate(WorldTransform.QuaternionRotation , Forward);
 	
 	//Scale 계산 (부모 월드 스케일 * 로컬 스케일)

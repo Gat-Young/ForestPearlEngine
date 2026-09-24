@@ -69,16 +69,6 @@ struct FPVector3
 		ret.z = z * rhs.z;
 		return ret;
 	}
-
-	FPVector3 operator =(const FPVector3& rhs) const
-	{
-		FPVector3 ret;
-		ret.x = rhs.x;
-		ret.y = rhs.y;
-		ret.z = rhs.z;
-		return ret;
-	}
-
 	float LengthSq() const;
 
 	float Length() const;
@@ -104,15 +94,6 @@ struct FPVector4
 		return ret;
 	}
 
-	FPVector4 operator =(const FPVector4& rhs) const
-	{
-		FPVector4 ret;
-		ret.x = rhs.x;
-		ret.y = rhs.y;
-		ret.z = rhs.z;
-		ret.w = rhs.w;
-		return ret;
-	}
 };
 
 struct FPQuaternion
@@ -144,15 +125,6 @@ struct FPQuaternion
 		return out;
 	}
 
-	FPQuaternion operator =(const FPQuaternion& rhs) const
-	{
-		FPQuaternion ret;
-		ret.x = rhs.x;
-		ret.y = rhs.y;
-		ret.z = rhs.z;
-		ret.w = rhs.w;
-		return ret;
-	}
 
 	float LengthSq() const;
 

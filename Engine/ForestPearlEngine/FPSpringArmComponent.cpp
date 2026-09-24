@@ -1,6 +1,8 @@
 #include "FPSpringArmComponent.h"
 #include "./Object/FPPawn.h"
 #include "FPAController.h"
+#include <iostream>
+
 
 FPSpringArmComponent::FPSpringArmComponent(FPActor* Owner) : FPSceneComponent(Owner)
 {
@@ -43,6 +45,9 @@ FTransform FPSpringArmComponent::GetSocketTransform(const std::string& SocketNam
 {
 	//SpringArmEndPoint Socket까지 고려된 위치를 반환 할 것
 	
+	//SpringArmEndPoint의 Transform
+	FTransform SpringArmEndPoint;
+
 	//+z축을 앞 방향 벡터로 할 것 (DX11 왼손 좌표계를 기준으로)
 	FPVector3 Forward = { 0.0f, 0.0f, 1.0f };
 	Forward = Rotate(WorldTransform.QuaternionRotation , Forward);
@@ -59,7 +64,12 @@ FTransform FPSpringArmComponent::GetSocketTransform(const std::string& SocketNam
 		Rotate(WorldTransform.QuaternionRotation, (RelativeTransform.Location * WorldTransform.Scale));
 
 	//-x축 방향으로 TargetArmLength 거리 만큼 뒤에 위치
-	SpringArmEndPoint.Location = SpringArmEndPoint.Location + -Forward * TargetArmLength;
+	FPVector3 BackForwardSocketPosition = -Forward * TargetArmLength;
+	SpringArmEndPoint.Location = (SpringArmEndPoint.Location + BackForwardSocketPosition);
+
+	std::cout << "[Spring Arm EndPoint] : " << SpringArmEndPoint.Location.x << " , " << SpringArmEndPoint.Location.y << " , " << SpringArmEndPoint.Location.z << "\n";
+	//std::cout << "[-Forward * TargetArmLength] : " << (-Forward * TargetArmLength).x << " , " << (-Forward * TargetArmLength).y << " , " << (-Forward * TargetArmLength).z << "\n";
+
 
 	return SpringArmEndPoint;
 }

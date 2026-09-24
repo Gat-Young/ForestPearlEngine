@@ -20,9 +20,6 @@ class FPSpringArmComponent : public FPSceneComponent
 		//
 		//로컬 X축에 반대 방향으로 TargetArmLength 만큼의 Location이 자식 컴포넌트의 위치가 됨
 		float TargetArmLength = 100.0f;
-		
-		//SpringArmEndPoint의 Transform
-		FTransform SpringArmEndPoint;
 
 
 		///////////////////////////////////

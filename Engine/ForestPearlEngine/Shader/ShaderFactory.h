@@ -21,9 +21,15 @@ class ShaderFactory
 
 	public:
 		static ShaderFactory& GetShaderFactory();
-		void 	ShaderUpdate();
 
-		HRESULT VertexShaderLoad(const TCHAR* fxname, const CHAR* entry, const CHAR* target, void** ppVS, void** ppCode = NULL);
-		HRESULT PixelShaderLoad(const TCHAR* fxname, const CHAR* entry, const CHAR* target, void** ppPS, void** ppCode = NULL);
+		//목적 파일 로드
+		HRESULT VertexShaderLoad(const TCHAR* Objectname, void** ppVS, void** ppCode = NULL);
+		HRESULT PixelShaderLoad(const TCHAR* Objectname, void** ppPS, void** ppCode = NULL);
+		
+		//D3D Compiler 사용
+		HRESULT VertexShaderLoad(const TCHAR* filename, const CHAR* entry, const CHAR* target, void** ppVS, void** ppCode = NULL);
+		HRESULT PixelShaderLoad(const TCHAR* filename, const CHAR* entry, const CHAR* target, void** ppPS, void** ppCode = NULL);
+
+
 		HRESULT CreateInputLayout(void* InVSCode, void** ReturnLayout);
 };

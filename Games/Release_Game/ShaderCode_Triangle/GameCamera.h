@@ -1,6 +1,7 @@
 #pragma once
 #include "ForestPearlEngine/Object/Actor.h"
 #include "ForestPearlEngine/Define/FPMath.h"
+
 class FPInputMappingContext;
 class FPInputAction;
 struct FInputValue;
@@ -20,5 +21,6 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick() override;
 
-	void Move(FInputValue value);
+	void OnTripleCam(FInputValue Value);
+
 };

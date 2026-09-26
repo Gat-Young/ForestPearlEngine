@@ -2,9 +2,10 @@
 #include "InputAction.h"
 #include "../../FPGameInstance.h"
 
-FPInputComponent::FPInputComponent()
+FPInputComponent::FPInputComponent(void* Controller)
 {
 	IMC = new FPInputMappingContext();
+	PlayerController = Controller;
 }
 
 FPInputComponent::~FPInputComponent()
@@ -51,6 +52,17 @@ void FPInputComponent::ProcessInputTick()
 	//}
 }
 
+void FPInputComponent::Possess(void* Pawn)
+{
+	this->PossessedPawn = Pawn;
+}
+
+void FPInputComponent::UnPossess()
+{
+	this->PossessedPawn = nullptr;
+}
+
+
 bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)
 {
 	if (IMC == nullptr)
@@ -63,8 +75,8 @@ bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)
 	FModifyInfo ModifyInfo;
 	bool SearchResult = IMC->SearchMappingInfo(KeyInputInfo.VKey, IAName, ModifyInfo);
 
-	//std::cout << "VKey : " << KeyInputInfo.VKey << " KeyState : " << KeyInputInfo.KeyState << "\n";
-	//std::cout << "SearchResult IAName : " << IAName << " KeyState : " << KeyInputInfo.KeyState << "\n";
+	std::cout << "VKey : " << KeyInputInfo.VKey << " KeyState : " << KeyInputInfo.KeyState << "\n";
+	std::cout << "SearchResult IAName : " << IAName << " KeyState : " << KeyInputInfo.KeyState << "\n";
 
 	if (SearchResult == false)
 	{
@@ -82,6 +94,8 @@ bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)
 
 	for (FBindInfo BindInfo : BindInfos)
 	{
+		if ((BindInfo.BindObj != PossessedPawn) && (BindInfo.BindObj != PlayerController)) { std::cout << "Skip Input" << "\n";  continue; }
+
 		EKeyState CallKeyState = BindInfo.CallState;
 		std::function<void(FInputValue)> BindFuncPtr = BindInfo.BindFuncPtr;
 

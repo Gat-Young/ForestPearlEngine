@@ -2,11 +2,13 @@
 #include "Object.h"
 #include <string>
 
+class FPSceneComponent;
+
 class FPActor : public FPObject
 {
 	protected:
 		std::string ActorName = "";
-		class FPSceneComponent* RootComponent = nullptr;
+		FPSceneComponent* RootComponent = nullptr;
 
 	public :
 		FPActor();

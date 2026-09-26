@@ -1,7 +1,9 @@
 #pragma once
-#include "../ForestPearlEngine/Object/Actor.h"
+#include "Object/Actor.h"
+#include "Define/FPMath.h"
 
 class FPInputComponent;
+class FPPawn;
 
 class FPAController : public FPActor
 {
@@ -13,8 +15,19 @@ class FPAController : public FPActor
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
 
+		void Possess(FPPawn* PossessedPawn);
+		void UnPossess();
+
+		//Controller 회전
+		void AddYawInput(float Value);
+		void AddPitchInput(float Value);
+		void AddRollInput(float Value);
+
 		FPInputComponent& GetInputComponent() { return *InputComponent; }
 
 	private:
 		FPInputComponent* InputComponent;
+		FPPawn* PossessedPawn = nullptr;
+		//회전 누적용
+		FPVector3 ControlRotation;
 };

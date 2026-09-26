@@ -25,6 +25,17 @@ struct FPVector3
 	float y = 0;
 	float z = 0;
 
+	FPVector3() {}
+
+	FPVector3(float x, float y, float z) : x(x), y(y), z(z) {}
+
+	FPVector3(DirectX::XMVECTOR& XMVector)
+	{
+		x = DirectX::XMVectorGetX(XMVector);
+		y = DirectX::XMVectorGetY(XMVector);
+		z = DirectX::XMVectorGetZ(XMVector);
+	}
+
 	FPVector3 operator -() const
 	{
 		FPVector3 ret;
@@ -69,7 +80,6 @@ struct FPVector3
 		ret.z = z * rhs.z;
 		return ret;
 	}
-
 	float LengthSq() const;
 
 	float Length() const;
@@ -94,6 +104,7 @@ struct FPVector4
 		ret.w = w * rhs;
 		return ret;
 	}
+
 };
 
 struct FPQuaternion
@@ -125,6 +136,7 @@ struct FPQuaternion
 		return out;
 	}
 
+
 	float LengthSq() const;
 
 	float Length() const;
@@ -135,8 +147,45 @@ struct FPQuaternion
 
 };
 
-FPVector3 Rotate(const FPQuaternion& quat, const FPVector3& vec);
+struct FPMatrix
+{
+	DirectX::XMMATRIX Matrix = DirectX::XMMatrixIdentity();
 
+	FPMatrix() : Matrix(DirectX::XMMatrixIdentity()) {}
+	
+	FPMatrix(DirectX::XMMATRIX Matrix) : Matrix(Matrix) {}
+
+	//Matrix 곱
+	FPMatrix operator*(const FPMatrix& rhs) const
+	{
+		return FPMatrix(Matrix * rhs.Matrix);
+	}
+
+	//Scalar 곱
+	FPMatrix operator*(const float& rhs) const
+	{
+		return FPMatrix(rhs * Matrix);
+	}
+
+	FPMatrix operator*(const int& rhs) const
+	{
+		return FPMatrix(rhs * Matrix);
+	}
+
+	//역 행렬
+	FPMatrix MatrixInverse()
+	{
+		return FPMatrix(DirectX::XMMatrixInverse(nullptr, Matrix));
+	}
+
+	FPMatrix Transpose()
+	{
+		return FPMatrix(DirectX::XMMatrixTranspose(Matrix));
+	}
+
+};
+
+FPVector3 Rotate(const FPQuaternion& quat, const FPVector3& vec);
 
 FPQuaternion Conjugate(const FPQuaternion& quat);
 
@@ -146,4 +195,35 @@ FPQuaternion FromEuler(const FPVector3& eulerDeg);
 
 FPQuaternion AngleAxis(float angleRad, const FPVector3& axis);
 
+//Angle 범위 -180 ~ 180 제한
+float NormalizeAxis(float Angle);
 
+
+//Transform 행렬
+FPMatrix MatrtixTranslation(const float& x, const float& y, const float& z);
+
+FPMatrix MatrtixTranslation(const FPVector3& Location);
+
+//Rotation 행렬
+
+//RollPitchYaw
+FPMatrix MatrixRotaionRollPitch(const float& PitchDegree, const float& YawDegree, const float& RollDegree);
+
+//Quternion
+FPMatrix MatrixRotationQuaternion(const FPQuaternion& quat);
+
+//Scale 행렬
+FPMatrix MatrixScaling(const float& x, const float& y, const float& z);
+
+FPMatrix MatrixScaling(const FPVector3& Scale);
+
+
+//View 행렬
+
+//왼손 좌표계 용
+FPMatrix MatrixLookAtLH(const FPVector3& eye, const FPVector3& target, const FPVector3& up);
+
+FPMatrix MatrixLookToLH(const FPVector3& eye, const FPVector3& direction, const FPVector3& up);
+
+//Projection 행렬
+FPMatrix MatrixPerspectiveFovLH(const float& Fov, const float& Aspect, const float& Zn, const float& Zf);

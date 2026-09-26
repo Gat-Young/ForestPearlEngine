@@ -1,8 +1,12 @@
 #include "FPCameraComponent.h"
 #include "FPGameInstance.h"
+#include "FPGameProjectSetting.h"
+
 
 FPCameraComponent::FPCameraComponent(FPActor* Owner) : FPPrimitiveComponent(Owner)
 {
+	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
+	this->Aspect = GameProjectSetting->GetDisplayAspect();
 	RegistCamera();
 }
 
@@ -17,17 +21,29 @@ void FPCameraComponent::RegistCamera()
 	FPCameraList* CameraList = static_cast<FPCameraList*>(FPGameInstance::Get().GetCameraList());
 	CamItem = CameraList->RegistRenderList();
 
-	CamItem->Location = &(this->WorldTransform.Location);
-	CamItem->Rotation = &(this->WorldTransform.QuaternionRotation);
-	CamItem->Scale = &(this->WorldTransform.Scale);
+	CamItem->Location = &(this->WorldTransform.LocationMatrix);
+	CamItem->Rotation = &(this->WorldTransform.RotationMatrix);
+	CamItem->Scale = &(this->WorldTransform.ScaleMatrix);
 
-	CamItem->LookAt = &(this->LookAt);
-	CamItem->Up = &(this->Up);
-
-	CamItem->Fov = &(this->Fov);
-	CamItem->Aspect = &(this->Aspect);
-	CamItem->Zn = &(this->Zn);
-	CamItem->Zf = &(this->Zf);
+	CamItem->View = &(this->ViewMatrix);
+	CamItem->Projection = &(this->ProjectionMatrix);
 
 	CamItem->Active = &(this->Active);
+	CamItem->TripleCam = &(this->TripleCame);
+}
+
+void FPCameraComponent::Tick()
+{
+	__super::Tick();
+
+	//ViewMatrix = MatrixLookAtLH(WorldTransform.Location, LookAt, Up);
+
+	ViewMatrix = MatrtixTranslation(-WorldTransform.Location) * WorldTransform.RotationMatrix.Transpose();
+	ProjectionMatrix = MatrixPerspectiveFovLH(Fov, Aspect, Zn, Zf);
+	
+}
+
+void FPCameraComponent::OnTripleCam()
+{
+	TripleCame = !TripleCame;
 }

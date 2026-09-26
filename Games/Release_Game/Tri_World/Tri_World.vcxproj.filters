@@ -36,9 +36,6 @@
     <ClInclude Include="GameController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameCamera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Grid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -57,6 +54,9 @@
     <ClInclude Include="WindmillWing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TripleWindmillWing.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="UI.cpp">
@@ -72,9 +72,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GameController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Grid.cpp">
@@ -95,15 +92,13 @@
     <ClCompile Include="WindmillWing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TripleWindmillWing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Level\Triworld.json">
       <Filter>Level</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Assets\Shader\Demo.fx">
-      <Filter>Assets\Shader</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>

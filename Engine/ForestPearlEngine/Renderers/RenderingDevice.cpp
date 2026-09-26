@@ -257,6 +257,15 @@ HRESULT RenderingDevice::OMSetRenderTargets()
 	return hr;
 }
 
+HRESULT RenderingDevice::OMResetRenderTargets()
+{
+	HRESULT hr = S_OK;
+
+	DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+
+	return hr;
+}
+
 //ViewPort 설정
 HRESULT RenderingDevice::SetViewPort(float TopLeftX, float TopLeftY, float Width, float Height, float MinDepth, float MaxDepth)
 {
@@ -310,7 +319,7 @@ void RenderingDevice::RenderTargetPresent()
 // param		Size			정점 데이터크기
 // param		Stride			정점 데이터 하나의 크기
 //
-int RenderingDevice::CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride)
+void* RenderingDevice::CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride)
 {
 
 	// 정점 버퍼 정보 구성
@@ -326,25 +335,51 @@ int RenderingDevice::CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride
 	Rd.pSysMem = VertexData;						//버퍼에 저장될 데이터 : "정점들"
 
 	//정점 버퍼 생성
-	VertexBufferList.push_back(nullptr);
-	VertexBufferSize++;
+	ID3D11Buffer* VertexBuffer = nullptr;
 
-	HRESULT hr = Device->CreateBuffer(&Bd, &Rd, &VertexBufferList[VertexBufferSize]);
+	HRESULT hr = Device->CreateBuffer(&Bd, &Rd, &VertexBuffer);
 	assert(SUCCEEDED(hr) && "정점 버퍼 생성 실패");
 
-	return VertexBufferSize;
+	return VertexBuffer;
 }
-
 
 // 상수 버퍼 생성
 //
 // 14개 등록 가능. 다른 셰이더와 혼용 가능.
 // 셰이더 소스에 임의 지정 가능. register(b#)으로 지정, 약어 b = 상수버퍼
 //
-int RenderingDevice::CreateConstBuffer(UINT Size)
+HRESULT RenderingDevice::CreateObjectConstBuffer(UINT Size)
 {
 	HRESULT hr = S_OK;
-	hr = CreateConstBuffer(Size, &ConstBuffer);
+	hr = CreateConstBuffer(Size, &ObjectConstBuffer);
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateVertexShaderConstBuffer(UINT Size)
+{
+	HRESULT hr = S_OK;
+	hr = CreateConstBuffer(Size, &VertexShaderConstBuffer);
+	return hr;
+}
+
+HRESULT RenderingDevice::CreatePixelShaderConstBuffer(UINT Size)
+{
+	HRESULT hr = S_OK;
+	hr = CreateConstBuffer(Size, &PixelShaderConstBuffer);
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateVertexViewPortConstBuffer(UINT Size)
+{
+	HRESULT hr = S_OK;
+	hr = CreateConstBuffer(Size, &VertexViewPortConstBuffer);
+	return hr;
+}
+
+HRESULT RenderingDevice::CreatePixelViewPortConstBuffer(UINT Size)
+{
+	HRESULT hr = S_OK;
+	hr = CreateConstBuffer(Size, &PixelViewPortConstBuffer);
 	return hr;
 }
 
@@ -370,19 +405,76 @@ int RenderingDevice::CreateConstBuffer(UINT Size, ID3D11Buffer** ReturnConstBuff
 	return 0;
 }
 
-HRESULT RenderingDevice::VSSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
+HRESULT RenderingDevice::ObjectSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
 {
 	HRESULT hr = S_OK;
-	DeviceContext->VSSetConstantBuffers(StartSlot, NumBuffers, &ConstBuffer);
+	DeviceContext->VSSetConstantBuffers(StartSlot, NumBuffers, &ObjectConstBuffer);
 	return hr;
 }
 
-HRESULT RenderingDevice::UpdateSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
+HRESULT RenderingDevice::VSSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
 {
 	HRESULT hr = S_OK;
-	DeviceContext->UpdateSubresource(ConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
+	DeviceContext->VSSetConstantBuffers(StartSlot, NumBuffers, &VertexShaderConstBuffer);
 	return hr;
 }
+
+HRESULT RenderingDevice::PSSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->PSSetConstantBuffers(StartSlot, NumBuffers, &PixelShaderConstBuffer);
+	return hr;
+}
+
+HRESULT RenderingDevice::VVPSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->VSSetConstantBuffers(StartSlot, NumBuffers, &VertexViewPortConstBuffer);
+	return hr;
+}
+
+HRESULT RenderingDevice::PVPSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->PSSetConstantBuffers(StartSlot, NumBuffers, &PixelViewPortConstBuffer);
+	return hr;
+}
+
+HRESULT RenderingDevice::UpdateObjectSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->UpdateSubresource(ObjectConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
+	return hr;
+}
+
+HRESULT RenderingDevice::UpdateVertexShaderSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->UpdateSubresource(VertexShaderConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
+	return hr;
+}
+
+HRESULT RenderingDevice::UpdatePixelShaderSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->UpdateSubresource(PixelShaderConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
+	return hr;
+}
+
+HRESULT RenderingDevice::UpdateVertexViewPortSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->UpdateSubresource(VertexViewPortConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
+	return hr;
+}
+
+HRESULT RenderingDevice::UpdatePixelViewPortSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
+{
+	HRESULT hr = S_OK;
+	DeviceContext->UpdateSubresource(PixelViewPortConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
+	return hr;
+}
+
 
 HRESULT RenderingDevice::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, ID3DBlob* InVSCode, ID3D11InputLayout** ReturnLayout)
 {
@@ -687,9 +779,10 @@ void RenderingDevice::PSSetShader(void* PS)
 }
 
 
-void RenderingDevice::IASetVertexBuffers(UINT StartSlot, UINT NumBuffers, UINT VertexBufferIndex, UINT* Strides, UINT* Offsets)
+void RenderingDevice::IASetVertexBuffers(UINT StartSlot, UINT NumBuffers, void* VertexBuffer, UINT* Strides, UINT* Offsets)
 {
-	DeviceContext->IASetVertexBuffers(StartSlot, NumBuffers, &VertexBufferList[VertexBufferIndex], Strides, Offsets);
+	ID3D11Buffer* VB = static_cast<ID3D11Buffer*>(VertexBuffer);
+	DeviceContext->IASetVertexBuffers(StartSlot, NumBuffers, &VB, Strides, Offsets);
 }
 
 
@@ -738,4 +831,27 @@ HRESULT RenderingDevice::Draw(UINT VertexCount, UINT StartVertexLocation)
 {
 	DeviceContext->Draw(VertexCount, StartVertexLocation);
 	return S_OK;
+}
+
+
+
+//RenderTargetView, Depth 관련 객체 해제
+void RenderingDevice::ResetRTVandDepthObj()
+{
+	RenderTargetView.Reset();
+	DepthStencilBuffer.Reset();
+	DepthStencilBufferView.Reset();
+}
+
+
+//SwapChainBuffer 크기 재설정
+void RenderingDevice::ResizeSwapChainBuffer(int Width, int Height)
+{
+	SwapChain->ResizeBuffers(0, Width, Height, DXGI_FORMAT_UNKNOWN, 0);
+}
+
+void RenderingDevice::DisplayModeSize(int Width, int Height)
+{
+	DisplayMode.Width = Width;
+	DisplayMode.Height = Height;
 }

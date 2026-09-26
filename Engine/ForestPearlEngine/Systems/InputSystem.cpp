@@ -195,18 +195,27 @@ void FPInputSystem::HandleGamepadInput()
     if (XInputGetState(0, &state) != ERROR_SUCCESS)
         return;
 
-    // 버튼 처리 (8개 버튼만 우선 예시: A, B, X, Y, LB, RB, Start, Back)
+    // 버튼 처리 (8개 버튼만 우선 예시: A, B, X, Y, LB, RB, Start, Back, Dpad_UP, Dpad_DOWN, Dpad_LEFT, D_Pad_RIGHT, L-Stick_Button, R-Stick_Button)
     struct { WORD Mask; USHORT VKey; } Buttons[] = {
-        { XINPUT_GAMEPAD_A, 102 },
-        { XINPUT_GAMEPAD_B, 103 },
-        { XINPUT_GAMEPAD_X, 104 },
-        { XINPUT_GAMEPAD_Y, 105 },
-        { XINPUT_GAMEPAD_LEFT_SHOULDER, 106 },
-        { XINPUT_GAMEPAD_RIGHT_SHOULDER, 107 },
-        { XINPUT_GAMEPAD_START, 108 },
-        { XINPUT_GAMEPAD_BACK, 109 },
-    };
+        { XINPUT_GAMEPAD_A,              0x0102 },
+        { XINPUT_GAMEPAD_B,              0x0103 },
+        { XINPUT_GAMEPAD_X,              0x0104 },
+        { XINPUT_GAMEPAD_Y,              0x0105 },
 
+        { XINPUT_GAMEPAD_LEFT_SHOULDER,  0x0106 },
+        { XINPUT_GAMEPAD_RIGHT_SHOULDER, 0x0107 },
+
+        { XINPUT_GAMEPAD_START,          0x0108 },
+        { XINPUT_GAMEPAD_BACK,           0x0109 },
+
+        { XINPUT_GAMEPAD_DPAD_UP,        0x010A },
+        { XINPUT_GAMEPAD_DPAD_DOWN,      0x010B },
+        { XINPUT_GAMEPAD_DPAD_LEFT,      0x010C },
+        { XINPUT_GAMEPAD_DPAD_RIGHT,     0x010D },
+
+        { XINPUT_GAMEPAD_LEFT_THUMB,     0x010E },
+        { XINPUT_GAMEPAD_RIGHT_THUMB,    0x010F }
+    };
     for (auto& btn : Buttons)
     {
         bool bIsDown = (state.Gamepad.wButtons & btn.Mask) != 0;
@@ -235,7 +244,7 @@ void FPInputSystem::HandleGamepadInput()
     if (fabsf(LX) > 0.1f || fabsf(LY) > 0.1f) // 데드존
     {
         FInputValue InputValue = { LX, LY, 0.0f, true, 1.0f };
-        FKeyInputInfo KeyInputInfo = { 100, EKeyState::Pressed, InputValue }; // 스틱용 VKey 임시값
+        FKeyInputInfo KeyInputInfo = { 0x100, EKeyState::Pressed, InputValue }; // 스틱용 VKey 임시값
         //MCLOG(LogMC, "");
         InputQueue.push(KeyInputInfo);
     }
@@ -247,7 +256,7 @@ void FPInputSystem::HandleGamepadInput()
     if (fabsf(RX) > 0.1f || fabsf(RY) > 0.1f) // 데드존
     {
         FInputValue InputValue = { RX, RY, 0.0f, true, 1.0f };
-        FKeyInputInfo KeyInputInfo = { 101, EKeyState::Pressed, InputValue }; // 스틱용 VKey 임시값
+        FKeyInputInfo KeyInputInfo = { 0x101, EKeyState::Pressed, InputValue }; // 스틱용 VKey 임시값
         //MCLOG(LogMC, "R Stick Trigger");
         InputQueue.push(KeyInputInfo);
     }

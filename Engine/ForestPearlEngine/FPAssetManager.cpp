@@ -1,159 +1,79 @@
 #include "FPAssetManager.h"
-#include "Renderers/RenderingDevice.h"
 #include <iostream>
-#include <fstream>
-#include "Libraries/nlohmann/json.hpp"
 #include "Utility/FPPathManager.h"
 
-using json = nlohmann::json;
 
-std::vector<std::pair<int, int> > FPAssetManager::LoadVertexBuffer(std::string MeshPath)
+////////////////////////////
+//
+// Mesh
+//
+std::vector<FPVertexBufferData> FPAssetManager::GetVertexBuffer(std::string MeshPath)
 {
-	if (MeshMap.count(MeshPath) > 0)
+	if (MeshVertexBuffer.count(MeshPath) <= 0)
 	{
-		return MeshMap[MeshPath];
+		std::cout << MeshPath << "의 VB 데이터가 없습니다." << "\n";
+
+		return {};
 	}
 
-	//추후 메시 파일 로드로 변경
-	LoadFbxData(MeshPath);
-
-
-	return MeshMap[MeshPath];
+	return MeshVertexBuffer[MeshPath];
 }
 
-int FPAssetManager::MakeVertexBuffer(std::vector<VERTEX> Mesh)
+void FPAssetManager::AddMeshData(std::string FbxPath, FPMeshData* MeshData)
 {
-	return RenderingDevice::GetRenderingDevice().CreateVertexBuffer(Mesh.data(), Mesh.size(), sizeof(VERTEX));
+	LoadedMeshData[FbxPath].push_back(std::move(*MeshData));
 }
 
-void FPAssetManager::LoadFbxData(std::string FbxPath)
+void FPAssetManager::AddVertexBuffer(std::string FbxPath, void* VertexBuffer, int VBSize, int Stride, int Offset)
 {
-	//fbx Load 옵션 설정
-	ufbx_load_opts Opts = {};
-	Opts.target_axes = ufbx_axes_left_handed_y_up;
-	Opts.target_unit_meters = 1.0f;
+	FPVertexBufferData VBData;
+	VBData.VertexBuffer = VertexBuffer;
+	VBData.Size = VBSize;
+	VBData.Stride = Stride;
+	VBData.Offset = Offset;
 
-	ufbx_error Error;
-
-
-	std::string FilePath = (FPPathManager::Get().GetAssetPath("Model/" + FbxPath));
-
-	ufbx_scene* Scene = ufbx_load_file(FilePath.c_str(), &Opts, &Error);
-	if (!Scene)
-	{
-		fprintf(stderr, "Failed to load Scene : %s\n", Error.description.data);
-	}
-
-	for (ufbx_node* Node : Scene->nodes)
-	{
-		if (!Node) { continue; }
-
-		const std::string NodeName = ConvertUfbxString(Node->name);
-
-		// 본, 카메라, 라이트, 빈 노드 등 메시가 없는 요소는 건너 뜀
-		if (!Node->mesh) { continue; }
-
-		const ufbx_mesh* Mesh = Node->mesh;
-
-		//메시 정점 추출
-		FPMeshData MeshData = ConvertUfbxMesh(Mesh, Node);
-
-		if (MeshData.Name.empty())
-		{
-			MeshData.Name = NodeName;
-		}
-
-		LoadedMeshData[FbxPath].push_back(std::move(MeshData));
-
-		//정점버퍼 생성 후 Map에 정보 등록 {VertexBufferList의 Index, Vertex의 Size}
-		MeshMap[FbxPath].push_back({ MakeVertexBuffer(LoadedMeshData[FbxPath].back().Vertices), LoadedMeshData[FbxPath].back().Vertices.size()});
-		
-	}
-	ufbx_free_scene(Scene);
+	MeshVertexBuffer[FbxPath].push_back(VBData);
 }
 
-//Level 정보를 저장
-void FPAssetManager::LoadLevelData(std::string LevelName, std::string LevelPath)
+std::vector<FPMeshData> FPAssetManager::GetMeshData(std::string FbxPath)
+{
+	return LoadedMeshData[FbxPath];
+}
+
+
+////////////////////////////
+//
+// Level
+//
+
+bool FPAssetManager::HasLevelData(std::string LevelName)
 {
 	if (LevelData.count(LevelName) > 0)
 	{
-		std::cout << "같은 이름의 Level이 존재합니다." << "\n";
-		return;
+		return true;
 	}
 
-	std::ifstream File(FPPathManager::Get().GetAssetPath("Level/" + LevelPath));
-
-	if (!File.is_open())
-	{
-		std::cerr << "Level.json 파일 열기 실패\n";
-		return;
-	}
-
-	json JsonLevelData;
-
-	try
-	{
-		File >> JsonLevelData;
-	}
-	catch (const json::parse_error& Error)
-	{
-		std::cerr << "JSON 파싱 실패: "
-			<< Error.what()
-			<< '\n';
-
-		return;
-	}
-
-	std::string GameModeName = JsonLevelData["gamemode"];
-	GameModeData[LevelName] = GameModeName;
-
-
-	for (const json& ActorData : JsonLevelData["actors"])
-	{
-		std::string ClassName = ActorData["class"];
-		std::string ActorName = ActorData["name"];
-
-		const json& Transform = ActorData["transform"];
-		const json& Location = Transform["location"];
-		const json& Rotation = Transform["rotation"];
-		const json& Scale = Transform["scale"];
-
-		float LocationX = Location["x"];
-		float LocationY = Location["y"];
-		float LocationZ = Location["z"];
-
-		float RotationX = Rotation["x"];
-		float RotationY = Rotation["y"];
-		float RotationZ = Rotation["z"];
-
-		float ScaleX = Scale["x"];
-		float ScaleY = Scale["y"];
-		float ScaleZ = Scale["z"];
-
-		FPActorData Data;
-
-		Data.ClassName = ClassName;
-		Data.ActorName = ActorName;
-
-		Data.Location_x = LocationX;
-		Data.Location_y = LocationY;
-		Data.Location_z = LocationZ;
-
-		Data.Rotation_x = RotationX;
-		Data.Rotation_y = RotationY;
-		Data.Rotation_z = RotationZ;
-
-		Data.Scale_x = ScaleX;
-		Data.Scale_y = ScaleY;
-		Data.Scale_Z = ScaleZ;
-
-		LevelData[LevelName].push_back(Data);
-	}
+	return false;
 }
+
+void FPAssetManager::AddLevelData(std::string LevelName, FPActorData* ActorData)
+{
+	LevelData[LevelName].push_back(std::move(*ActorData));
+}
+
 
 std::vector<FPActorData>& FPAssetManager::GetLevelData(std::string LevelName)
 {
 	return LevelData[LevelName];
+}
+
+////////////////////////////
+//
+// GameMode
+//
+void FPAssetManager::AddGameModeData(std::string LevelName, std::string GameModeName)
+{
+	GameModeData[LevelName] = GameModeName;
 }
 
 std::string FPAssetManager::GetGameModeData(std::string LevelName)
@@ -161,103 +81,67 @@ std::string FPAssetManager::GetGameModeData(std::string LevelName)
 	return GameModeData[LevelName];
 }
 
-//ufbx_string -> std::string
-std::string FPAssetManager::ConvertUfbxString(ufbx_string String)
+////////////////////////////
+//
+// Shader
+//
+bool FPAssetManager::HasVertexShader(std::string ShaderPath)
 {
-	if (!String.data || String.length == 0)
+	if (VertexShaderData.count(ShaderPath) > 0)
 	{
+		return true;
+	}
+	return false;
+}
+
+bool FPAssetManager::HasPixelShader(std::string ShaderPath)
+{
+	if (PixelShaderData.count(ShaderPath) > 0)
+	{
+		return true;
+	}
+	return false;
+}
+
+void FPAssetManager::AddVertexShader(std::string ShaderPath, void* VertexShader, void* VSCode)
+{
+	VertexShaderData[ShaderPath] = { VertexShader, VSCode };
+}
+
+void FPAssetManager::AddPixelShader(std::string ShaderPath, void* PixelShader, void* PSCode)
+{
+	PixelShaderData[ShaderPath] = { PixelShader, PSCode };
+}
+
+std::pair<void*, void*> FPAssetManager::GetVertexShader(std::string ShaderPath)
+{
+	if (VertexShaderData.count(ShaderPath) <= 0)
+	{
+		std::cout << ShaderPath << "의 Vertex Shader 데이터가 없습니다." << "\n";
+
 		return {};
 	}
-
-	return std::string(String.data, String.length);
+	return VertexShaderData[ShaderPath];
 }
 
-// ufbx_mesh -> FPMeshData
-// 인덱스 버퍼를 생성하지 않음
-// 삼각형 코너마다 정점을 하나씩 복사
-FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node* Node)
+std::pair<void*, void*> FPAssetManager::GetPixelShader(std::string ShaderPath)
 {
-	FPMeshData Result;
-
-	if (!Mesh)
+	if (PixelShaderData.count(ShaderPath) <= 0)
 	{
-		return Result;
+		std::cout << ShaderPath << "의 Pixel Shader 데이터가 없습니다." << "\n";
+
+		return {};
 	}
-
-	Result.Name = ConvertUfbxString(Mesh->name);
-
-	// 각 면을 삼각형화할 때 사용할 임시 코너 인덱스 배열
-	// 삼각형 하나당 코너 인덱스 3개가 필요
-	std::vector<uint32_t> TriangleCorners(Mesh->max_face_triangles * 3);
-
-	//메모리 재할당 감소를 위해 대략적인 정점 메모리를 미리 예약
-	Result.Vertices.reserve(Mesh->num_indices);
-
-	//모든 면 순회
-	for (const ufbx_face& Face : Mesh->faces)
-	{
-		//모두 삼각형으로 변환해 면에서 생성된 삼각형 개수 반환
-		const uint32_t TriangleCount = ufbx_triangulate_face(TriangleCorners.data(), TriangleCorners.size(), Mesh, Face);
-
-		//코너 개수
-		const size_t CornerCount = static_cast<size_t>(TriangleCount) * 3;
-
-		//삼각형 코너 마다 정점 생성
-		for (size_t Corner = 0; Corner < CornerCount; ++Corner)
-		{
-			//ufbx에서 이 값은 단순 위치 정점 번호가 아니라, 면에서 사용하는 코너 인덱스
-			//Position, Normal, UV, Color를 모두 같은 CornerIndex로 조회
-
-			const uint32_t CornerIndex = TriangleCorners[Corner];
-
-			//Position(Local)
-			const ufbx_vec3 Position = ufbx_get_vertex_vec3(&Mesh->vertex_position, CornerIndex);
-
-			//Position(World)
-			const ufbx_vec3 WorldPosition = ufbx_transform_position(
-				&Node->node_to_world,
-				Position
-			);
-			//Normal
-			ufbx_vec3 Normal = { 0.0f, 0.0f, 0.0f };
-
-			if (Mesh->vertex_normal.exists)
-			{
-				Normal = ufbx_get_vertex_vec3(&Mesh->vertex_normal, CornerIndex);
-			}
-
-			//UV
-			ufbx_vec2 UV = { 0.0f, 0.0f };
-
-			if (Mesh->vertex_uv.exists)
-			{
-				UV = ufbx_get_vertex_vec2(&Mesh->vertex_uv, CornerIndex);
-			}
-
-			//VertexColor
-			ufbx_vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-			if (Mesh->vertex_color.exists)
-			{
-				Color = ufbx_get_vertex_vec4(&Mesh->vertex_color, CornerIndex);
-			}
-
-			//엔진 정점으로 복사
-			VERTEX Vertex{};
-			Vertex.x = static_cast<float>(WorldPosition.x);
-			Vertex.y = static_cast<float>(WorldPosition.y);
-			Vertex.z = static_cast<float>(WorldPosition.z);
-
-			Vertex.r = static_cast<float>(Color.x);
-			Vertex.g = static_cast<float>(Color.y);
-			Vertex.b = static_cast<float>(Color.z);
-			Vertex.a = static_cast<float>(Color.w);
-
-			Result.Vertices.push_back(Vertex);
-		}
-	}
-
-
-
-	return Result;
+	return PixelShaderData[ShaderPath];
 }
+
+
+
+
+
+
+
+
+
+
+

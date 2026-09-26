@@ -20,20 +20,19 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Axis.h" />
-    <ClInclude Include="GameCamera.h" />
     <ClInclude Include="GameController.h" />
     <ClInclude Include="GameMode.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Tree.h" />
+    <ClInclude Include="TripleWindmillWing.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="Windmill.h" />
     <ClInclude Include="WindmillWing.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Axis.cpp" />
-    <ClCompile Include="GameCamera.cpp" />
     <ClCompile Include="GameController.cpp" />
     <ClCompile Include="GameMode.cpp" />
     <ClCompile Include="GameProjectLoader.cpp" />
@@ -41,17 +40,13 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Tree.cpp" />
+    <ClCompile Include="TripleWindmillWing.cpp" />
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="Windmill.cpp" />
     <ClCompile Include="WindmillWing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Level\Triworld.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Assets\Shader\Demo.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </FxCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

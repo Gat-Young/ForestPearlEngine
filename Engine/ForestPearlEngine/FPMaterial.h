@@ -1,9 +1,9 @@
 #pragma once
-#include "tchar.h"
+#include <string>
 
 class FPMaterial
 {
-	private:
+	protected:
 		void* VertexShader = nullptr;
 		void* PixelShader = nullptr;
 
@@ -13,16 +13,27 @@ class FPMaterial
 		//픽셀 셰이더 컴파일 코드 개체
 		void* PSCode = nullptr;
 
-		//셰이더 파일 이름
-		const TCHAR* Filename;
-
 		//정점 입력구조 Input Layout
 		void* VBLayout = nullptr;
 
+		//Material 상수 버퍼
+		void* VertextConst = nullptr;
+		void* PixelConst = nullptr;
+		
+
 	public:
 		FPMaterial();
-		void* GetVertexShaderPointer();
-		void* GetPixelShaderPointer();
-		void* GetVBLayoutPointer();
+		void SetVertexShader(std::string VertexShaderPath);
+		void SetPixelShader(std::string PixelShaderPath);
+
+		void** GetVertexShaderPointer();
+		void** GetPixelShaderPointer();
+
+		void** GetVBLayoutPointer();
+
+		void** GetVertexConstPointer();
+		void** GetPixelConstPointer();
+
+		virtual void UpdateMaterial(float DeltaTime) {};
 
 };

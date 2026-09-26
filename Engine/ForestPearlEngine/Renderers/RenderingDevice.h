@@ -99,12 +99,13 @@ class RenderingDevice
 		};
 		std::vector<DEVICEINFO> DevInfo;				//다중 GPU를 위한 배열 처리
 
-		//VertexBufferList
-		std::vector<ID3D11Buffer*> VertexBufferList;
-		int VertexBufferSize = -1;
-
 		//ConstBuffer
-		ID3D11Buffer* ConstBuffer;
+		ID3D11Buffer* ObjectConstBuffer;
+		ID3D11Buffer* VertexShaderConstBuffer;
+		ID3D11Buffer* PixelShaderConstBuffer;
+
+		ID3D11Buffer* VertexViewPortConstBuffer;
+		ID3D11Buffer* PixelViewPortConstBuffer;
 
 		//VSync 여부
 		bool IsVSync = true;
@@ -134,6 +135,8 @@ class RenderingDevice
 
 		HRESULT OMSetRenderTargets();
 
+		HRESULT OMResetRenderTargets();
+
 		HRESULT SetViewPort(float TopLeftX, float TopLeftY, float Width, float Height, float MinDepth, float MaxDepth);
 
 		void ClearBackBuffer();
@@ -145,17 +148,29 @@ class RenderingDevice
 		HRESULT Draw(UINT VertexCount, UINT StartVertexLocation);
 
 		//VB 만들기
-		int CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride);
+		void* CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride);
 
 		//CB 만들기
-		int CreateConstBuffer(UINT Size);
+		HRESULT CreateObjectConstBuffer(UINT Size);
+		HRESULT CreateVertexShaderConstBuffer(UINT Size);
+		HRESULT CreatePixelShaderConstBuffer(UINT Size);
+		HRESULT CreateVertexViewPortConstBuffer(UINT Size);
+		HRESULT CreatePixelViewPortConstBuffer(UINT Size);
 		int CreateConstBuffer(UINT Size, ID3D11Buffer** ReturnConstBuffer);
 
 		//CB 등록
+		HRESULT ObjectSetConstantBuffers(UINT StartSlot, UINT NumBuffers);
 		HRESULT VSSetConstantBuffers(UINT StartSlot, UINT NumBuffers);
+		HRESULT PSSetConstantBuffers(UINT StartSlot, UINT NumBuffers);
+		HRESULT VVPSetConstantBuffers(UINT StartSlot, UINT NumBuffers);
+		HRESULT PVPSetConstantBuffers(UINT StartSlot, UINT NumBuffers);
 
 		//CB 업데이트
-		HRESULT UpdateSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch);
+		HRESULT UpdateObjectSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch);
+		HRESULT UpdateVertexShaderSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch);
+		HRESULT UpdatePixelShaderSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch);
+		HRESULT UpdateVertexViewPortSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch);
+		HRESULT UpdatePixelViewPortSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch);
 
 		//입력 레이아웃 생성
 		HRESULT CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, ID3DBlob* InVSCode, ID3D11InputLayout** ReturnLayout);
@@ -207,7 +222,7 @@ class RenderingDevice
 		void PSSetShader(void* PS);
 
 		//정점 버퍼 설정
-		void IASetVertexBuffers(UINT StartSlot, UINT NumBuffers, UINT VertexBufferIndex, UINT* Strides, UINT* Offsets);
+		void IASetVertexBuffers(UINT StartSlot, UINT NumBuffers, void* VertexBuffer, UINT* Strides, UINT* Offsets);
 		
 		//입력 레이아웃 설정
 		void IASetInputLayout(void* InputLayout);
@@ -246,4 +261,15 @@ class RenderingDevice
 		const TCHAR* GetSrtFeatureLevel() { return StrFeatureLevel; };
 		UINT GetWidth() { return DisplayMode.Width; };
 		UINT GetHeight() { return DisplayMode.Height; };
+
+
+		//ReSize 관련 함수
+		
+		//RenderTargetView, Depth 관련 객체 해제
+		void ResetRTVandDepthObj();
+
+		//SwapChainBuffer 크기 재설정
+		void ResizeSwapChainBuffer(int Width, int Height);
+
+		void DisplayModeSize(int Width, int Height);
 };

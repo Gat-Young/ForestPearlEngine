@@ -12,9 +12,44 @@ ShaderFactory& ShaderFactory::GetShaderFactory()
 	return ShaderFactorySingleton;
 }
 
-//기본 셰이더 시스템 갱신
-void ShaderFactory::ShaderUpdate()
+HRESULT ShaderFactory::VertexShaderLoad(const TCHAR* Objectname, void** ppVS, void** ppCode)
 {
+	ID3DBlob* pCode = nullptr;
+	
+	//정점 셰이더 파일 로드
+	HRESULT hr = D3DReadFileToBlob(Objectname, &pCode);
+	assert(SUCCEEDED(hr) && "정점 셰이더 로딩 실패");
+
+	//정점 셰이더 객체 생성
+	ID3D11VertexShader* pVS = nullptr;
+	hr = RenderingDevice::GetRenderingDevice().GetDXDevice()->CreateVertexShader(pCode->GetBufferPointer(), pCode->GetBufferSize(), nullptr, &pVS);
+	assert(SUCCEEDED(hr) && "정점 셰이더 객체 생성 실패");
+
+	//완료후 외부 리턴
+	*ppVS = pVS;
+	*ppCode = pCode;
+
+	return hr;
+}
+
+HRESULT ShaderFactory::PixelShaderLoad(const TCHAR* Objectname, void** ppPS, void** ppCode)
+{
+	ID3DBlob* pCode = nullptr;
+
+	//픽셀 셰이더 파일 로드
+	HRESULT hr = D3DReadFileToBlob(Objectname, &pCode);
+	assert(SUCCEEDED(hr) && "픽셀 셰이더 로딩 실패");
+
+	//픽셀 셰이더 객체 생성
+	ID3D11PixelShader* pPS = nullptr;
+	hr = RenderingDevice::GetRenderingDevice().GetDXDevice()->CreatePixelShader(pCode->GetBufferPointer(), pCode->GetBufferSize(), nullptr, &pPS);
+	assert(SUCCEEDED(hr) && "픽셀 셰이더 객체 생성 실패");
+
+	//완료후 외부 리턴
+	*ppPS = pPS;
+	*ppCode = pCode;
+
+	return hr;
 }
 
 // 정점 셰이더 로드
@@ -27,13 +62,13 @@ void ShaderFactory::ShaderUpdate()
 // param[out]	ppCode		셰이더 코드 (컴파일된, 바이너리)
 // return	성공시 S_OK, 실패시 DX 에러코드
 //
-HRESULT ShaderFactory::VertexShaderLoad(const TCHAR* fxname, const CHAR* entry, const CHAR* target, void** ppVS, void** ppCode)
+HRESULT ShaderFactory::VertexShaderLoad(const TCHAR* filename, const CHAR* entry, const CHAR* target, void** ppVS, void** ppCode)
 {
 	HRESULT hr = S_OK;
 
 	//셰이더 컴파일
 	ID3DBlob* pCode = nullptr;
-	hr = ShaderCompile(fxname, entry, target, &pCode);
+	hr = ShaderCompile(filename, entry, target, &pCode);
 	assert(SUCCEEDED(hr) && "정점 셰이더 컴파일 실패");
 
 	//정점 셰이더 객체 생성
@@ -59,13 +94,13 @@ HRESULT ShaderFactory::VertexShaderLoad(const TCHAR* fxname, const CHAR* entry, 
 // return	성공시 S_OK, 실패시 DX 에러코드
 //
 
-HRESULT ShaderFactory::PixelShaderLoad(const TCHAR* fxname, const CHAR* entry, const CHAR* target, void** ppPS, void** ppCode)
+HRESULT ShaderFactory::PixelShaderLoad(const TCHAR* filename, const CHAR* entry, const CHAR* target, void** ppPS, void** ppCode)
 {
 	HRESULT hr = S_OK;
 
 	//셰이더 컴파일
 	ID3DBlob* pCode = nullptr;
-	hr = ShaderCompile(fxname, entry, target, &pCode);
+	hr = ShaderCompile(filename, entry, target, &pCode);
 	assert(SUCCEEDED(hr) && "픽셀 셰이더 컴파일 실패");
 
 	//픽셀 셰이더 객체 생성
@@ -129,10 +164,10 @@ HRESULT ShaderFactory::CreateInputLayout(void* InVSCode, void** ReturnLayout)
 	HRESULT hr = S_OK;
 
 	//정점 입력구조 객체 생성
-	//함께 사용될 셰이더(컴파일된 바이너리 코드)가 필교
+	//함께 사용될 셰이더(컴파일된 바이너리 코드)가 필요
 	ID3D11InputLayout* Layout = nullptr;
 	ID3DBlob* VScode = static_cast<ID3DBlob*>(InVSCode);
-
+	
 	// 정점 입력 구조 
 	// GPU에 공급될 기하데이터 - 개별 정점의 데이터 구조와 용도등의 정보를 구성
 	//

@@ -14,7 +14,7 @@
 class FPInputComponent
 {
 public:
-	FPInputComponent();
+	FPInputComponent(void* Controller);
 	~FPInputComponent();
 
 	FPInputAction& GetIA(std::string IAName) { return *ActivatedIA[IAName]; }
@@ -50,6 +50,8 @@ public:
 
 		BindInfo.CallState = BindKeyState;
 
+		BindInfo.BindObj = BindActor;
+
 		//std::cout << "BindActor ptr: " << (void*)BindActor << "\n";
 		BindInfo.BindFuncPtr = [BindActor, FuncPtr](FInputValue val)
 			{
@@ -62,6 +64,9 @@ public:
 
 	void ProcessInputTick();
 
+	void Possess(void* Pawn);
+	void UnPossess();
+
 private:
 	bool ProcessKeyEvent(struct FKeyInputInfo KeyInputInfo);
 
@@ -70,6 +75,8 @@ private:
 
 	std::map<std::string, FPInputAction*> ActivatedIA;
 
+	void* PossessedPawn = nullptr;
+	void* PlayerController = nullptr;
 	//std::set<USHORT> PressedKeys;
 };
 

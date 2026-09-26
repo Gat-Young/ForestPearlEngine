@@ -5,11 +5,13 @@
 #include <iostream>
 
 #include "../FPGameInstance.h"
+#include "../FPGameProjectSetting.h"
 
 #include "../FPTextRenderList.h"
 #include "../FPMeshRenderList.h"
 #include "../FPCameraList.h"
 #include "FPRenderingCommon.h"
+#include "../FPViewPortClient.h"
 
 //객체 해제/제거 매크로()
 #ifndef SafeRelease
@@ -53,7 +55,7 @@ struct VERTEX
 // 
 
 //상수 버퍼용 구조체 : 셰이더 내부 연산에 사용될 데이터들
-struct ConstBuffer
+struct alignas(16) MVPConstBuffer
 {
 	XMMATRIX WorldMatrix;
 	XMMATRIX ViewMatrix;
@@ -92,9 +94,6 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 	Device.OMSetRenderTargets();
 
-	//뷰포트 설정
-	Device.SetViewPort(0.0f, 0.0f, (FLOAT)Device.GetWidth(), (FLOAT)Device.GetHeight(), 0.0f, 1.0f);
-
 	Device.GetDeviceInfo();
 	
 	FontBatch = Device.CreateSpriteBatch();
@@ -106,7 +105,12 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 	Device.RasterStateCreate();
 
-	Device.CreateConstBuffer(sizeof(ConstBuffer));
+	//256B의 ConstBuffer 생성
+	Device.CreateObjectConstBuffer(256);
+	Device.CreateVertexShaderConstBuffer(256);
+	Device.CreatePixelShaderConstBuffer(256);
+	Device.CreateVertexViewPortConstBuffer(256);
+	Device.CreatePixelViewPortConstBuffer(256);
 
 	return hr;
 }
@@ -116,61 +120,19 @@ void Renderer::ObjectRendering()
 	
 	Device.OMSetDepthStencilState(ZEnable);
 
-	ConstBuffer cb;
 
-	//Camera Setting
-	FPCameraList* CameraList = static_cast<FPCameraList*>(FPGameInstance::Get().GetCameraList());
-	std::vector<CameraItem> CamList = CameraList->GetRenderList();
-	
-	XMMATRIX ViewMatrix = XMMatrixIdentity();
-	XMMATRIX ProjectionMatrix = XMMatrixIdentity();
+	//상수 버퍼 설정
 
-	for (CameraItem& CamItem : CamList)
-	{
-		if (!(*(CamItem.Active))) continue;
+	//Vertex Shader
+	Device.ObjectSetConstantBuffers(0, 1);
+	Device.VSSetConstantBuffers(1, 1);
+	Device.VVPSetConstantBuffers(2, 1);
 
-		//View 행렬
-		XMFLOAT4X4 xmView;
-		XMVECTOR eye, lookat, up;
-		eye = XMVectorSet(CamItem.Location->x, CamItem.Location->y, CamItem.Location->z, 1);
-		lookat = XMVectorSet(CamItem.LookAt->x, CamItem.LookAt->y, CamItem.LookAt->z, 1);
-		up = XMVectorSet(CamItem.Up->x, CamItem.Up->y, CamItem.Up->z, 0);
-		
-		//std::cout << "CameraItem : " << CamItem.Location->x << " : " << CamItem.Location->y << " : " << CamItem.Location->z << "\n";
-		XMStoreFloat4x4(&xmView, XMMatrixLookAtLH(eye, lookat, up));
+	//PixelShader
+	Device.PSSetConstantBuffers(0, 1);
+	Device.PVPSetConstantBuffers(1, 1);
 
-		ViewMatrix = XMLoadFloat4x4(&xmView);
-
-
-		//XMMATRIX TransformMatrix = XMMatrixIdentity();
-		////회전 처리
-		//XMFLOAT4X4 xmQuaternionRotation;
-		//XMVECTOR xmQuaternion = { CamItem.Rotation->x, CamItem.Rotation->y, CamItem.Rotation->z, CamItem.Rotation->w };
-		//XMStoreFloat4x4(&xmQuaternionRotation, XMMatrixRotationQuaternion(xmQuaternion));
-		//
-		//XMMATRIX Rotation = XMLoadFloat4x4(&xmQuaternionRotation);
-
-		////이동 처리
-		//XMFLOAT4X4 xmPosition;
-		//XMStoreFloat4x4(&xmPosition, XMMatrixTranslation(CamItem.Location->x, CamItem.Location->y, CamItem.Location->z));
-		//XMMATRIX Position = XMLoadFloat4x4(&xmPosition);
-
-		////모델링 행렬 TR
-		//TransformMatrix = Position * Rotation;
-
-		//뷰행렬 TR의 역
-		//ViewMatrix = XMMatrixInverse(nullptr, TransformMatrix);
-		//
-
-		//Projection 행렬
-		XMFLOAT4X4 xmProj;
-		XMStoreFloat4x4(&xmProj, XMMatrixPerspectiveFovLH(XMConvertToRadians(*CamItem.Fov), *CamItem.Aspect, *CamItem.Zn, *CamItem.Zf));
-		ProjectionMatrix = XMLoadFloat4x4(&xmProj);
-
-	}
-
-	cb.ViewMatrix = ViewMatrix;
-	cb.ProjMatrix = ProjectionMatrix;
+	MVPConstBuffer MVPCB;
 
 	//Object Draw
 	FPMeshRenderList* MeshRenderList = static_cast<FPMeshRenderList*>(FPGameInstance::Get().GetMeshRenderList());
@@ -189,72 +151,93 @@ void Renderer::ObjectRendering()
 		RenderQueue.push(RenderItem);
 	}
 
-	while(!RenderQueue.empty())
+	//Camera Setting
+	FPCameraList* CameraList = static_cast<FPCameraList*>(FPGameInstance::Get().GetCameraList());
+	std::vector<CameraItem> CamList = CameraList->GetRenderList();
+
+	for (CameraItem& CamItem : CamList)
 	{
-		const RenderItem& RenderItem = RenderQueue.top();
+		if (!(*(CamItem.Active))) continue;
 
-		if (!(*(RenderItem.Active)))
+		std::vector<FPViewPort*> CamViewPorts;
+
+		FPViewPortClient* ViewPortClient = static_cast<FPViewPortClient*>(FPGameInstance::Get().GetViewPortClient());
+
+		CamViewPorts = ViewPortClient->GetViewPort(FPViewPortName::MainGameViewPort);
+		if ((*(CamItem.TripleCam)))
 		{
+			CamViewPorts = ViewPortClient->GetViewPort(FPViewPortName::TripleWaySplitViewPort);
+		}
+		while (!RenderQueue.empty())
+		{
+			const RenderItem& RenderItem = RenderQueue.top();
+
+			if (!(*(RenderItem.Active)))
+			{
+				RenderQueue.pop();
+				continue;
+			}
+
+			//렌더링 모드 전환
+			Device.UpdateRSSetState(*RenderItem.isFill, *RenderItem.isCull);
+
+			//입력 레이아웃 설정
+			Device.IASetInputLayout(*(RenderItem.VBLayout));
+
+			//기하 위상 구조 설정
+			Device.IASetPrimitiveTopology(*RenderItem.Topo);
+
+			//Shader 설정
+			Device.VSSetShader(*(RenderItem.VertexShader));
+			Device.PSSetShader(*(RenderItem.PixelShader));
+
+			//Shader ConstBuffer가 있다면 갱신
+			if (*(RenderItem.VertexConst) != nullptr) Device.UpdateVertexShaderSubresource(0, *(RenderItem.VertexConst), 0, 0);
+			if (*(RenderItem.PixelConst) != nullptr) Device.UpdatePixelShaderSubresource(0, *(RenderItem.PixelConst), 0, 0);
+
+			for (FPViewPort* CamViewPort : CamViewPorts)
+			{
+
+				Device.SetViewPort(CamViewPort->TopLeftX, CamViewPort->TopLeftY,
+					CamViewPort->Width, CamViewPort->Height,
+					CamViewPort->MinDepth, CamViewPort->MaxDepth);
+
+				//HLSL은 열벡터 기준이므로 HLSL에서는 연산을 반대로 할 것
+				MVPCB.WorldMatrix = ((*(RenderItem.Scale)) * (*(RenderItem.Rotation)) * (*(RenderItem.Location))).Matrix;
+				MVPCB.ViewMatrix = (*(CamItem.View)).Matrix;
+				MVPCB.ProjMatrix = (*(CamItem.Projection)).Matrix;
+
+				MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
+
+				//MVPCB.WorldMatrix = DirectX::XMMatrixTranspose(MVPCB.WorldMatrix);
+				//MVPCB.ViewMatrix = DirectX::XMMatrixTranspose(MVPCB.ViewMatrix);
+				//MVPCB.ProjMatrix = DirectX::XMMatrixTranspose(MVPCB.ProjMatrix);
+				//MVPCB.WVPMatrix = DirectX::XMMatrixTranspose(MVPCB.WVPMatrix);
+
+
+				//Object 상수 버퍼 갱신
+				Device.UpdateObjectSubresource(0, &MVPCB, 0, 0);
+
+
+				//ViewPort Shader ConstBuffer가 있다면 갱신
+				if ((CamViewPort->VertexConst) != nullptr) Device.UpdateVertexViewPortSubresource(0, CamViewPort->VertexConst, 0, 0);
+				if ((CamViewPort->PixelConst) != nullptr) Device.UpdatePixelViewPortSubresource(0, CamViewPort->PixelConst, 0, 0);
+
+				//정점 버퍼 설정
+				UINT stride = *RenderItem.Stride;
+				UINT offset = *RenderItem.Offset;
+
+				int MeshSize = (RenderItem.VB)->size();
+				for (int i = 0; i < MeshSize; ++i)
+				{
+					Device.IASetVertexBuffers(0, 1, (RenderItem.VB)->at(i), &stride, &offset);
+
+					Device.Draw((RenderItem.VertexSize)->at(i), 0);
+				}
+			}
 			RenderQueue.pop();
-			continue;
 		}
-		XMMATRIX TransformMatrix = XMMatrixIdentity();
-
-		//스케일 처리
-		XMFLOAT4X4 xmScale;
-		XMStoreFloat4x4(&xmScale, XMMatrixScaling(RenderItem.Scale->x, RenderItem.Scale->y, RenderItem.Scale->z));
-		XMMATRIX Scale = XMLoadFloat4x4(&xmScale);
-
-		//회전 처리
-		XMFLOAT4X4 xmQuaternionRotation;
-		XMVECTOR xmQuaternion = { RenderItem.Rotation->x, RenderItem.Rotation->y, RenderItem.Rotation->z, RenderItem.Rotation->w };
-		XMStoreFloat4x4(&xmQuaternionRotation, XMMatrixRotationQuaternion(xmQuaternion));
-		XMMATRIX Rotation = XMLoadFloat4x4(&xmQuaternionRotation);
-
-		//이동 처리
-		XMFLOAT4X4 xmPosition;
-		XMStoreFloat4x4(&xmPosition, XMMatrixTranslation(RenderItem.Location->x, RenderItem.Location->y, RenderItem.Location->z));
-		XMMATRIX Position = XMLoadFloat4x4(&xmPosition);
-
-		//모델링 행렬 SRT
-		TransformMatrix = Scale * Rotation * Position;
-
-		cb.WorldMatrix = TransformMatrix;
-		cb.WVPMatrix = cb.WorldMatrix * cb.ViewMatrix * cb.ProjMatrix;
-
-		//상수 버퍼 갱신
-		Device.UpdateSubresource(0, &cb, 0, 0);
-		//렌더링 모드 전환
-		Device.UpdateRSSetState(*RenderItem.isFill, *RenderItem.isCull);
-
-		//Shader 설정
-		Device.VSSetShader(RenderItem.VertexShader);
-		Device.PSSetShader(RenderItem.PixelShader);
-
-		//상수 버퍼 설정
-		Device.VSSetConstantBuffers(0, 1);
-
-		//입력 레이아웃 설정
-		Device.IASetInputLayout(RenderItem.VBLayout);
-
-		//기하 위상 구조 설정
-		Device.IASetPrimitiveTopology(*RenderItem.Topo);
-
-		//정점 버퍼 설정
-		UINT stride = sizeof(VERTEX);
-		UINT offset = 0;
-
-		int MeshSize = (RenderItem.VBIndex)->size();
-		for (int i = 0; i < MeshSize; ++i)
-		{
-			Device.IASetVertexBuffers(0, 1, (RenderItem.VBIndex)->at(i), &stride, &offset);
-
-			Device.Draw((RenderItem.VertexSize)->at(i), 0);
-		}
-
-		RenderQueue.pop();
 	}
-
 }
 
 void Renderer::UIRendering()
@@ -262,20 +245,32 @@ void Renderer::UIRendering()
 	FPTextRenderList* TextRenderList = static_cast<FPTextRenderList*>(FPGameInstance::Get().GetTextRenderList());
 	std::vector<UIContextItem> RenderList = TextRenderList->GetRenderList();
 
-	FontBatch->Begin();
+	std::vector<FPViewPort*> CamViewPorts;
 
-	for (UIContextItem UI : RenderList)
+	FPViewPortClient* ViewPortClient = static_cast<FPViewPortClient*>(FPGameInstance::Get().GetViewPortClient());
+
+	CamViewPorts = ViewPortClient->GetViewPort(FPViewPortName::UIViewPort);
+
+	for (FPViewPort* CamViewPort : CamViewPorts)
 	{
-		if (!(*(*(UI.active))))
-		{
-			continue;
-		}
-		XMFLOAT4 Color = { (UI.color->x), (UI.color->y), (UI.color->z), (UI.color->w) };
-		XMFLOAT2 Position = { (float)(*(UI.x)), (float)(*(UI.y)) };
-		Font->DrawString(FontBatch, UI.msg->c_str(), Position, XMLoadFloat4(&Color));
-	}
+		Device.SetViewPort(CamViewPort->TopLeftX, CamViewPort->TopLeftY,
+			CamViewPort->Width, CamViewPort->Height,
+			CamViewPort->MinDepth, CamViewPort->MaxDepth);
+		FontBatch->Begin();
 
-	FontBatch->End();
+		for (UIContextItem UI : RenderList)
+		{
+			if (!(*(*(UI.active))))
+			{
+				continue;
+			}
+			XMFLOAT4 Color = { (UI.color->x), (UI.color->y), (UI.color->z), (UI.color->w) };
+			XMFLOAT2 Position = { (float)(*(UI.x)), (float)(*(UI.y)) };
+			Font->DrawString(FontBatch, UI.msg->c_str(), Position, XMLoadFloat4(&Color));
+		}
+
+		FontBatch->End();
+	}
 };
 
 
@@ -308,4 +303,33 @@ void Renderer::FontRelease()
 {
 	SafeDelete(FontBatch);
 	SafeDelete(Font);
+}
+
+//RenderTarget 재생성 (임시)
+void Renderer::ResizeRenderTarget()
+{
+	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
+	
+	//기존 렌더 타겟 바인딩 해제
+	Device.OMResetRenderTargets();
+
+	//기존 RenderTargetView / Depth 관련 객체 해제
+	Device.ResetRTVandDepthObj();
+
+	//DisplayMode 재설정
+	Device.DisplayModeSize(GameProjectSetting->GetDisplayWidth(), GameProjectSetting->GetDeisplayHeight());
+
+	//Swapchain BackBuffer Resize
+	Device.ResizeSwapChainBuffer(GameProjectSetting->GetDisplayWidth(), GameProjectSetting->GetDeisplayHeight());
+
+	//새 BackBuffer로 RTV 생성
+	HRESULT hr = S_OK;
+	hr = Device.SetBackBufferToRenderTargetView();
+	assert(SUCCEEDED(hr) && "백버퍼 - 렌더타겟 설정 실패\n");
+
+	//새 Depth Buffer생성
+	hr = Device.CreateDepthStencil();
+	assert(SUCCEEDED(hr) && "깊이-스텐실 버퍼 생성 실패\n");
+
+	Device.OMSetRenderTargets();
 }

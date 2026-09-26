@@ -1,5 +1,8 @@
 #include "GameController.h"
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
+#include "ForestPearlEngine/Object/FPPawn.h"
+#include "ForestPearlEngine/Utility/FPGameplayStatics.h"
+#include <iostream>
 
 void GameController::Initialize()
 {
@@ -33,15 +36,20 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_SetScaleWing", VK_OEM_PERIOD, ModifyInfoD);
 
 	// Axis : Game Pad 
-	GetInputComponent().AddMappingKey("IA_SetMoveTriangel", 100 , ModifyInfoD);
-	GetInputComponent().AddMappingKey("IA_SetMoveCamera", 101, ModifyInfoD);
+	GetInputComponent().AddMappingKey("IA_SetMoveTriangel", 0x100 , ModifyInfoD);
+	GetInputComponent().AddMappingKey("IA_SetMoveCamera", 0x101, ModifyInfoD);
 
-	GetInputComponent().AddMappingKey("IA_SetScaleWing", 106, ModifyInfoA);
-	GetInputComponent().AddMappingKey("IA_SetScaleWing", 107, ModifyInfoD);
+	GetInputComponent().AddMappingKey("IA_SetMoveWindmill", 0x100, ModifyInfoD);
+
+	GetInputComponent().AddMappingKey("IA_SetScaleWing", 0x106, ModifyInfoA);
+	GetInputComponent().AddMappingKey("IA_SetScaleWing", 0x107, ModifyInfoD);
+
+	GetInputComponent().AddMappingKey("IA_SetRotateWindmill", 0x010E, ModifyInfoA);
+	GetInputComponent().AddMappingKey("IA_SetRotateWindmill", 0x010F, ModifyInfoD);
 
 	//Action Button : Game Pad
-	GetInputComponent().AddMappingKey("IA_AttachHead", 102, ModifyInfoTriger);
-	GetInputComponent().AddMappingKey("IA_AttachShield", 103, ModifyInfoTriger);
+	GetInputComponent().AddMappingKey("IA_AttachHead", 0x102, ModifyInfoTriger);
+	GetInputComponent().AddMappingKey("IA_AttachShield", 0x103, ModifyInfoTriger);
 
 	//Action Button : KeyBoard
 	GetInputComponent().AddMappingKey("IA_SetFillTriangel", VK_SPACE, ModifyInfoTriger);
@@ -56,7 +64,14 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_AttachHead", 'Z', ModifyInfoTriger);
 	GetInputComponent().AddMappingKey("IA_AttachShield", 'X', ModifyInfoTriger);
 
+	//D-PAD LEFT/RIGHT Posses 전환
+	GetInputComponent().AddMappingKey("IA_NextActor", 0x10D, ModifyInfoTriger); //RIGHT
+	GetInputComponent().AddMappingKey("IA_PrevActor", 0x10C, ModifyInfoTriger); //LEFT
 
+
+	//Posses 바인딩
+	GetInputComponent().BindMethod("IA_NextActor", this, EKeyState::Down, &GameController::NextPawn);
+	GetInputComponent().BindMethod("IA_PrevActor", this, EKeyState::Down, &GameController::PrevPawn);
 
 	__super::Initialize();
 }
@@ -64,9 +79,30 @@ void GameController::Initialize()
 void GameController::BeginPlay()
 {
 	__super::BeginPlay();
+	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "Player")));
+	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "Windmill")));
+	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "TripleWindmillWing")));
+	ControllPawnSize = ControllPawn.size();
 }
 
 void GameController::Tick()
 {
 	__super::Tick();
+}
+
+void GameController::NextPawn(FInputValue value)
+{
+	ControllPawnIndex++;
+	ControllPawnIndex %= ControllPawnSize;
+	Possess(ControllPawn[ControllPawnIndex]);
+}
+
+void GameController::PrevPawn(FInputValue value)
+{
+	ControllPawnIndex--;
+	if (ControllPawnIndex < 0)
+	{
+		ControllPawnIndex = ControllPawnSize - 1;
+	}
+	Possess(ControllPawn[ControllPawnIndex]);
 }

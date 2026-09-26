@@ -1,8 +1,9 @@
 #include "GizmoComponent.h"
-#include "FPAssetManager.h"
+#include "FPAssetLoader.h"
 #include "FPGameInstance.h"
+#include "Define/FPDataDefine.h"
 
-int GizmoComponent::MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh)
+void* GizmoComponent::MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh)
 {
 	std::vector<VERTEX> Vertex;
 
@@ -11,8 +12,10 @@ int GizmoComponent::MakeVertexBuffer(std::vector<GIZMO_VERTEX> GizmoMesh)
 		Vertex.push_back(VERTEX{ GizmoMesh[i].x, GizmoMesh[i].y, GizmoMesh[i].z, GizmoMesh[i].r, GizmoMesh[i].g, GizmoMesh[i].b, GizmoMesh[i].a});
 	}
 
-	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-	return AssetManager->MakeVertexBuffer(Vertex);
+	FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
+	Stride = sizeof(VERTEX);
+	Offest = 0;
+	return AssetLoader->MakeVertexBuffer(Vertex);
 }
 
 void GizmoComponent::MakeGrid(GRIDINFO* grid)
@@ -85,7 +88,7 @@ void GizmoComponent::MakeGrid(GRIDINFO* grid)
 	//정점 개수.
 	VertexSize.push_back(vtxcnt);
 
-	VBIndex.push_back(MakeVertexBuffer(GizmoDatas));
+	VB.push_back(MakeVertexBuffer(GizmoDatas));
 
 	isActive = true;
 }
@@ -158,7 +161,7 @@ void GizmoComponent::MakeAxis(GIZMO_AXISINFO* axis)
 
 	isActive = true;
 
-	VBIndex.push_back(MakeVertexBuffer(GizmoDatas));
+	VB.push_back(MakeVertexBuffer(GizmoDatas));
 }
 
 void GizmoComponent::RegistGizmoRenderList()
@@ -168,17 +171,21 @@ void GizmoComponent::RegistGizmoRenderList()
 
 	RenderItem->Priority = &(this->Priority);
 	RenderItem->Active = &(this->isActive);
-	RenderItem->VBIndex = &(this->VBIndex);
+	RenderItem->VB = &(this->VB);
 	RenderItem->isFill = &(this->isFill);
 	RenderItem->isCull = &(this->isCull);
 	RenderItem->VertexSize = &(this->VertexSize);
-	RenderItem->Location = &(this->WorldTransform.Location);
-	RenderItem->Rotation = &(this->WorldTransform.QuaternionRotation);
-	RenderItem->Scale = &(this->WorldTransform.Scale);
+	RenderItem->Stride = &(this->Stride);
+	RenderItem->Offset = &(this->Offest);
+	RenderItem->Location = &(this->WorldTransform.LocationMatrix);
+	RenderItem->Rotation = &(this->WorldTransform.RotationMatrix);
+	RenderItem->Scale = &(this->WorldTransform.ScaleMatrix);
 	RenderItem->Topo = &(this->Topo);
 	RenderItem->VertexShader = (this->Material->GetVertexShaderPointer());
 	RenderItem->PixelShader = (this->Material->GetPixelShaderPointer());
 	RenderItem->VBLayout = (this->Material->GetVBLayoutPointer());
+	RenderItem->VertexConst = (this->Material->GetVertexConstPointer());
+	RenderItem->PixelConst = (this->Material->GetPixelConstPointer());
 }
 
 GizmoComponent::GizmoComponent(FPActor* Owner) : FPPrimitiveComponent(Owner)

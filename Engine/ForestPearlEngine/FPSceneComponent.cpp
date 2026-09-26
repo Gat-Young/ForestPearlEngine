@@ -233,16 +233,35 @@ void FPSceneComponent::CalculateWorldTransform()
 
 
 	//Scale 계산 (부모 월드 스케일 * 로컬 스케일)
-	WorldTransform.Scale = ParentWorldTransform.Scale * RelativeTransform.Scale;
+	CalculateWorldScale(ParentWorldTransform);
 
+	//Rotation 계산 (부모 사원수 회전 * 로컬 사원수 회전)
+	CalculateWorldRotation(ParentWorldTransform);
+
+	//Location 계산 (부모 위치 + Rotate(부모 회전 사원수, (자식 위치 * 부모 크기)) 
+	CalculateWorldLocation(ParentWorldTransform);
+
+}
+
+void FPSceneComponent::CalculateWorldScale(const FTransform& ParentWorldTransform)
+{
+	//Scale 계산 (부모 월드 스케일 * 로컬 스케일)
+	WorldTransform.Scale = ParentWorldTransform.Scale * RelativeTransform.Scale;
+}
+
+void FPSceneComponent::CalculateWorldRotation(const FTransform& ParentWorldTransform)
+{
 	//Rotation 계산 (부모 사원수 회전 * 로컬 사원수 회전)
 	WorldTransform.QuaternionRotation = (ParentWorldTransform.QuaternionRotation * RelativeTransform.QuaternionRotation).Normalize();
 	WorldTransform.Rotation = WorldTransform.QuaternionRotation.ToEuler();
 
+}
+
+void FPSceneComponent::CalculateWorldLocation(const FTransform& ParentWorldTransform)
+{
 	//Location 계산 (부모 위치 + Rotate(부모 회전 사원수, (자식 위치 * 부모 크기)) 
 	WorldTransform.Location = ParentWorldTransform.Location +
 		Rotate(ParentWorldTransform.QuaternionRotation, (RelativeTransform.Location * ParentWorldTransform.Scale));
-
 }
 
 //부모의 월드와 나의 월드로 나의 로컬을 계산

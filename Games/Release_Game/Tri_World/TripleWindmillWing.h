@@ -1,5 +1,5 @@
 #pragma once
-#include "ForestPearlEngine/Object/Actor.h"
+#include "ForestPearlEngine/Object/FPPawn.h"
 #include "ForestPearlEngine/Systems/KeyStateEnum.h"
 #include "ForestPearlEngine/Define/FPMath.h"
 
@@ -8,7 +8,7 @@ class FPInputAction;
 struct FInputValue;
 class FPMeshComponent;
 
-class TripleWindmillWing : public FPActor
+class TripleWindmillWing : public FPPawn
 {
 private:
 	FPMeshComponent* Wing;

@@ -20,6 +20,9 @@ class FPSceneComponent : public FPActorComponent
 
 		//월드 트랜스폼 계산
 		void CalculateWorldTransform();
+		void CalculateWorldScale(const FTransform& ParentWorldTransform);
+		void CalculateWorldRotation(const FTransform& ParentWorldTransform);
+		void CalculateWorldLocation(const FTransform& ParentWorldTransform);
 
 		//로컬 트랜스폼 계산
 		void CalculateLocalTransform();

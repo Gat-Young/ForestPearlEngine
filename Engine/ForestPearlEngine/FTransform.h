@@ -19,4 +19,22 @@ struct FTransform
 		QuaternionRotation = { 0.0f, 0.0f, 0.0f, 1.0f };
 		Scale	 = { 1.0f, 1.0f, 1.0f };
 	}
+
+	FPVector3 Right()
+	{
+		FPVector3 Right(RotationMatrix.Matrix.r[0]);
+		return Right;
+	}
+
+	FPVector3 Up()
+	{
+		FPVector3 Up(RotationMatrix.Matrix.r[1]);
+		return Up;
+	}
+
+	FPVector3 Foraward()
+	{
+		FPVector3 Forward(RotationMatrix.Matrix.r[2]);
+		return Forward;
+	}
 };

@@ -2,9 +2,10 @@
 #include "InputAction.h"
 #include "../../FPGameInstance.h"
 
-FPInputComponent::FPInputComponent()
+FPInputComponent::FPInputComponent(void* Controller)
 {
 	IMC = new FPInputMappingContext();
+	PlayerController = Controller;
 }
 
 FPInputComponent::~FPInputComponent()
@@ -93,7 +94,7 @@ bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)
 
 	for (FBindInfo BindInfo : BindInfos)
 	{
-		if (BindInfo.BindObj != PossessedPawn) continue;
+		if ((BindInfo.BindObj != PossessedPawn) && (BindInfo.BindObj != PlayerController)) { std::cout << "Skip Input" << "\n";  continue; }
 
 		EKeyState CallKeyState = BindInfo.CallState;
 		std::function<void(FInputValue)> BindFuncPtr = BindInfo.BindFuncPtr;

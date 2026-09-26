@@ -22,18 +22,20 @@ void FPSpringArmComponent::CalculateTransformBranch()
 		FPPawn* Pawn = static_cast<FPPawn*>(GetOwner());
 		FPAController* Controller = Pawn->GetController();
 
-		if (Controller != nullptr)
+		if (Controller)
 		{
 			FTransform ControllerTransform = Controller->GetActorTransform();
 
-			//Rotation 계산 (부모 사원수 회전 * 로컬 사원수 회전)
-			WorldTransform.QuaternionRotation = (ControllerTransform.QuaternionRotation * RelativeTransform.QuaternionRotation).Normalize();
-			WorldTransform.Rotation = WorldTransform.QuaternionRotation.ToEuler();
+			FTransform ParentWorldTransform = ParentComponent->GetSocketTransform(ParentSocketName);
+
+			CalculateWorldScale(ParentWorldTransform);
+			CalculateWorldRotation(ControllerTransform);
+			CalculateWorldLocation(ParentWorldTransform);
 		}
-
-		CalculateWorldTransform();
-
-
+		else
+		{
+			CalculateWorldTransform();
+		}
 	}
 	else
 	{
@@ -67,7 +69,7 @@ FTransform FPSpringArmComponent::GetSocketTransform(const std::string& SocketNam
 	FPVector3 BackForwardSocketPosition = -Forward * TargetArmLength;
 	SpringArmEndPoint.Location = (SpringArmEndPoint.Location + BackForwardSocketPosition);
 
-	std::cout << "[Spring Arm EndPoint] : " << SpringArmEndPoint.Location.x << " , " << SpringArmEndPoint.Location.y << " , " << SpringArmEndPoint.Location.z << "\n";
+	//std::cout << "[Spring Arm EndPoint] : " << SpringArmEndPoint.Location.x << " , " << SpringArmEndPoint.Location.y << " , " << SpringArmEndPoint.Location.z << "\n";
 	//std::cout << "[-Forward * TargetArmLength] : " << (-Forward * TargetArmLength).x << " , " << (-Forward * TargetArmLength).y << " , " << (-Forward * TargetArmLength).z << "\n";
 
 

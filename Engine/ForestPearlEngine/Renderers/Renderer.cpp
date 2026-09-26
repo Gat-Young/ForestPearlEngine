@@ -202,7 +202,7 @@ void Renderer::ObjectRendering()
 					CamViewPort->Width, CamViewPort->Height,
 					CamViewPort->MinDepth, CamViewPort->MaxDepth);
 
-				//HLSL은 열벡터 기준이므로 Transepose 해줄 것!!
+				//HLSL은 열벡터 기준이므로 HLSL에서는 연산을 반대로 할 것
 				MVPCB.WorldMatrix = ((*(RenderItem.Scale)) * (*(RenderItem.Rotation)) * (*(RenderItem.Location))).Matrix;
 				MVPCB.ViewMatrix = (*(CamItem.View)).Matrix;
 				MVPCB.ProjMatrix = (*(CamItem.Projection)).Matrix;

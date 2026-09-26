@@ -14,7 +14,7 @@
 class FPInputComponent
 {
 public:
-	FPInputComponent();
+	FPInputComponent(void* Controller);
 	~FPInputComponent();
 
 	FPInputAction& GetIA(std::string IAName) { return *ActivatedIA[IAName]; }
@@ -76,6 +76,7 @@ private:
 	std::map<std::string, FPInputAction*> ActivatedIA;
 
 	void* PossessedPawn = nullptr;
+	void* PlayerController = nullptr;
 	//std::set<USHORT> PressedKeys;
 };
 

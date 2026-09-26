@@ -25,6 +25,17 @@ struct FPVector3
 	float y = 0;
 	float z = 0;
 
+	FPVector3() {}
+
+	FPVector3(float x, float y, float z) : x(x), y(y), z(z) {}
+
+	FPVector3(DirectX::XMVECTOR& XMVector)
+	{
+		x = DirectX::XMVectorGetX(XMVector);
+		y = DirectX::XMVectorGetY(XMVector);
+		z = DirectX::XMVectorGetZ(XMVector);
+	}
+
 	FPVector3 operator -() const
 	{
 		FPVector3 ret;
@@ -167,6 +178,11 @@ struct FPMatrix
 		return FPMatrix(DirectX::XMMatrixInverse(nullptr, Matrix));
 	}
 
+	FPMatrix Transpose()
+	{
+		return FPMatrix(DirectX::XMMatrixTranspose(Matrix));
+	}
+
 };
 
 FPVector3 Rotate(const FPQuaternion& quat, const FPVector3& vec);
@@ -178,6 +194,9 @@ FPQuaternion Inverse(const FPQuaternion& quat);
 FPQuaternion FromEuler(const FPVector3& eulerDeg);
 
 FPQuaternion AngleAxis(float angleRad, const FPVector3& axis);
+
+//Angle 범위 -180 ~ 180 제한
+float NormalizeAxis(float Angle);
 
 
 //Transform 행렬

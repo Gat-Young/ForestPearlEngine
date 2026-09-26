@@ -110,6 +110,27 @@ FPQuaternion AngleAxis(float angleRad, const FPVector3& axis)
 	return FPQuaternion{axis.x * s, axis.y * s, axis.z * s, c}.Normalize();
 }
 
+float NormalizeAxis(float Angle)
+{
+	if (!std::isfinite(Angle))
+	{
+		return 0.0f;
+	}
+
+	Angle = std::fmod(Angle, 360.0f);
+
+	if(Angle > 180.0f)
+	{
+		Angle -= 360.0f;
+	}
+	else if (Angle < -180.0f)
+	{
+		Angle += 360.0f;
+	}
+
+	return Angle;
+}
+
 float ConvertToRadian(float Degree)
 {
 	return 0.0f;

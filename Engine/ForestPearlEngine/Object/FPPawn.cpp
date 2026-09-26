@@ -16,3 +16,30 @@ void FPPawn::UnPossesed()
 {
 	Controller = nullptr;
 }
+
+void FPPawn::AddControllerYawInput(float Value)
+{
+	FPAController* Controller = GetController();
+	if (Controller)
+	{
+		Controller->AddYawInput(Value);
+	}
+}
+
+void FPPawn::AddControllerPitchInput(float Value)
+{
+	FPAController* Controller = GetController();
+	if (Controller)
+	{
+		Controller->AddPitchInput(Value);
+	}
+}
+
+void FPPawn::AddControllerRollInput(float Value)
+{
+	FPAController* Controller = GetController();
+	if (Controller)
+	{
+		Controller->AddRollInput(Value);
+	}
+}

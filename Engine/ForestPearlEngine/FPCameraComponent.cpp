@@ -36,7 +36,9 @@ void FPCameraComponent::Tick()
 {
 	__super::Tick();
 
-	ViewMatrix = MatrixLookAtLH(WorldTransform.Location, LookAt, Up);
+	//ViewMatrix = MatrixLookAtLH(WorldTransform.Location, LookAt, Up);
+
+	ViewMatrix = MatrtixTranslation(-WorldTransform.Location) * WorldTransform.RotationMatrix.Transpose();
 	ProjectionMatrix = MatrixPerspectiveFovLH(Fov, Aspect, Zn, Zf);
 	
 }

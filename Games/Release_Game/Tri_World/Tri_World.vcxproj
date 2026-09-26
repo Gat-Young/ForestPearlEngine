@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Axis.h" />
-    <ClInclude Include="GameCamera.h" />
     <ClInclude Include="GameController.h" />
     <ClInclude Include="GameMode.h" />
     <ClInclude Include="Grid.h" />
@@ -34,7 +33,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Axis.cpp" />
-    <ClCompile Include="GameCamera.cpp" />
     <ClCompile Include="GameController.cpp" />
     <ClCompile Include="GameMode.cpp" />
     <ClCompile Include="GameProjectLoader.cpp" />

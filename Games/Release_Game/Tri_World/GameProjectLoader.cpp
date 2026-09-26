@@ -3,7 +3,6 @@
 #include "GameMode.h"
 #include "GameController.h"
 #include "Player.h"
-#include "GameCamera.h"
 #include "Grid.h"
 #include "Axis.h"
 #include "Terrain.h"
@@ -35,7 +34,6 @@ void LoadClassRegist()
 	ClassRegistry->Register<UI>("UI");
 	ClassRegistry->Register<Player>("Player");
 	ClassRegistry->Register<Tree>("Tree");
-	//ClassRegistry->Register<GameCamera>("GameCamera");
 	ClassRegistry->Register<Grid>("Grid");
 	ClassRegistry->Register<Axis>("Axis");
 	ClassRegistry->Register<Terrain>("Terrain");

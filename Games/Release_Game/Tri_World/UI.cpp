@@ -160,14 +160,14 @@ void UI::ShowInfo()
 
 	FPVector4 col = { 1.0f, 1.0f, 1.0f, 1.0f };
 	TCHAR text[1024];
-	_stprintf_s(text, _T("■ %s"), _T("Tri World - 2"));
+	_stprintf_s(text, _T("■ %s"), _T("Tri World - 3"));
 	Text1->SetTextData(&bShow, x, y, col, text);
 	y += 15;
-	Text2->SetTextData(&bShow, x, y += 15, col, _T("1. 머리에 풍차 붙이기와 마나 실드"));
-	Text3->SetTextData(&bShow, x, y += 15, col, _T("2. Z : 머리에 풍차 붙이기 , X : 마나 실드, R, F : 풍차 크기 조절"));
-	Text4->SetTextData(&bShow, x, y += 15, col, _T("3. 마나 실드 상태에서 , 과 . 을 사용시 크기를 늘리거나 줄일 수 있습니다."));
-	Text5->SetTextData(&bShow, x, y += 15, col, _T("4. XBOX 게임 패드에 A 버튼과 B 버튼으로 풍차 붙이기와 마나 실드를 사용할 수 있습니다."));
-	Text6->SetTextData(&bShow, x, y += 15, col, _T("5. L,R Sholder Pad 버튼으로 마나 실드 후 풍차의 크기를 늘리거나 줄일 수 있습니다."));
+	Text2->SetTextData(&bShow, x, y += 15, col, _T("1. SpringArmComponent와 Possess"));
+	Text3->SetTextData(&bShow, x, y += 15, col, _T("2. D-Pad LEFT/RIGHT로 Possess를 전환할 수 있습니다."));
+	Text4->SetTextData(&bShow, x, y += 15, col, _T("3. L-Stick으로 이동, R-Stick으로 카메라를 회전 시킬 수 있습니다."));
+	Text5->SetTextData(&bShow, x, y += 15, col, _T("4. Player와 풍차를 Possess로 전환해 이동해보세요!"));
+	Text6->SetTextData(&bShow, x, y += 15, col, _T("5. SprigArmComponent는 Controller의 Rotation을 따라 회전합니다."));
 	Text7->SetTextData(&bShow, x, y += 15, col, _T(""));
 	Text8->SetTextData(&bShow, x, y += 15, col, _T("게임인재원 8기 프로그래밍학과 임백규"));
 

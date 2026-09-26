@@ -39,8 +39,13 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_SetMoveTriangel", 0x100 , ModifyInfoD);
 	GetInputComponent().AddMappingKey("IA_SetMoveCamera", 0x101, ModifyInfoD);
 
+	GetInputComponent().AddMappingKey("IA_SetMoveWindmill", 0x100, ModifyInfoD);
+
 	GetInputComponent().AddMappingKey("IA_SetScaleWing", 0x106, ModifyInfoA);
 	GetInputComponent().AddMappingKey("IA_SetScaleWing", 0x107, ModifyInfoD);
+
+	GetInputComponent().AddMappingKey("IA_SetRotateWindmill", 0x010E, ModifyInfoA);
+	GetInputComponent().AddMappingKey("IA_SetRotateWindmill", 0x010F, ModifyInfoD);
 
 	//Action Button : Game Pad
 	GetInputComponent().AddMappingKey("IA_AttachHead", 0x102, ModifyInfoTriger);
@@ -87,21 +92,17 @@ void GameController::Tick()
 
 void GameController::NextPawn(FInputValue value)
 {
-	std::cout << "[GameController] : NextPawn" <<  "\n";
 	ControllPawnIndex++;
 	ControllPawnIndex %= ControllPawnSize;
-	std::cout << "[GameController] : " << ControllPawnIndex << " : " << ControllPawnSize << "\n";
 	Possess(ControllPawn[ControllPawnIndex]);
 }
 
 void GameController::PrevPawn(FInputValue value)
 {
-	std::cout << "[GameController] : PrevPawn" <<  "\n";
 	ControllPawnIndex--;
 	if (ControllPawnIndex < 0)
 	{
 		ControllPawnIndex = ControllPawnSize - 1;
 	}
-	std::cout << "[GameController] : " << ControllPawnIndex << " : " << ControllPawnSize << "\n";
 	Possess(ControllPawn[ControllPawnIndex]);
 }

@@ -32,10 +32,6 @@ void FPSpringArmComponent::CalculateTransformBranch()
 			CalculateWorldRotation(ControllerTransform);
 			CalculateWorldLocation(ParentWorldTransform);
 		}
-		else
-		{
-			CalculateWorldTransform();
-		}
 	}
 	else
 	{

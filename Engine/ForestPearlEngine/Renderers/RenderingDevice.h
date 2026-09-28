@@ -228,7 +228,7 @@ class RenderingDevice
 		void IASetInputLayout(void* InputLayout);
 
 		//기하 위상 구조 설정
-		void IASetPrimitiveTopology(enum Topology topo);
+		void IASetPrimitiveTopology(enum class Topology topo);
 
 		//장치 정보 반환 함수
 		const TCHAR* GetAdapterDescription(int index) { return DevInfo[index].AdapterDescription.Description; };

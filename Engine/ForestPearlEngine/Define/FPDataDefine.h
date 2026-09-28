@@ -15,6 +15,14 @@ struct FPMeshData
 	std::vector<VERTEX> Vertices;
 };
 
+//VertexBuffer Topology
+enum class Topology
+{
+	TRIANGLELIST,
+	TRIANGLESTRIP,
+	LINELIST
+};
+
 //VertexBuffer 데이터 구조체
 struct FPVertexBufferData
 {

@@ -1,0 +1,48 @@
+{
+  "MeshData": [
+    {
+      "Path": "Windmill/Windmill_Body.fbx",
+      "Topology": "TRIANGLELIST"
+    }
+  ],
+
+  "Sockets": [
+    {
+      "Name": "WingPoint1",
+      "Transform": {
+        "Location": [ 0.0, 3.0, -1.0 ],
+        "Rotation": [ -90.0, 0.0, 0.0 ],
+        "Scale": [ 1.0, 1.0, 1.0 ]
+      }
+    },
+
+    {
+      "Name": "WingPoint2",
+      "Transform": {
+        "Location": [ 1.0, 4.0, 0.0 ],
+        "Rotation": [ -90.0, -1.5, 0.0 ],
+        "Scale": [ 1.0, 1.0, 1.0 ]
+      }
+    },
+
+    {
+      "Name": "WingPoint3",
+      "Transform": {
+        "Location": [ -0.5, 6.0, 0.5 ],
+        "Rotation": [ -90.0, 2.36, 0.0 ],
+        "Scale": [ 1.0, 1.0, 1.0 ]
+      }
+    },
+
+    {
+      "Name": "TripleWingPoint",
+      "Transform": {
+        "Location": [ 0.0, 1.0, -1.5 ],
+        "Rotation": [ -90.0, 0.0, 0.0 ],
+        "Scale": [ 1.0, 1.0, 1.0 ]
+      }
+    }
+  ],
+
+  "Material": ""
+}

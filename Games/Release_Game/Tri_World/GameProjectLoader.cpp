@@ -40,6 +40,9 @@ void LoadClassRegist()
 	ClassRegistry->Register<Windmill>("Windmill");
 	ClassRegistry->Register<WindmillWing>("WindmillWing");
 	ClassRegistry->Register<TripleWindmillWing>("TripleWindmillWing");
+
+
+	//Material Class µî·Ï
 }
 
 void LoadAssets()

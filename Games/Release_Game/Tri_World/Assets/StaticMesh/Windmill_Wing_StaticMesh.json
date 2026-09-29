@@ -1,0 +1,21 @@
+{
+  "MeshData": [
+    {
+      "Path": "Windmill/Windmill_Wing.fbx",
+      "Topology": "TRIANGLELIST"
+    }
+  ],
+
+  "Sockets": [
+    {
+      "Name": "WingPoint1",
+      "Transform": {
+        "Location": [ 0.0, 0.2, 0.0 ],
+        "Rotation": [ -90.0, 0.0, 0.0 ],
+        "Scale": [ 1.0, 1.0, 1.0 ]
+      }
+    }
+  ],
+
+  "Material": ""
+}

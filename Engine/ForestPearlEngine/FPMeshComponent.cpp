@@ -4,7 +4,7 @@
 #include "Define/FPDataDefine.h"
 #include <iostream>
 
-FPMeshComponent::FPMeshComponent(FPActor* Owner, std::string MeshPath) : FPPrimitiveComponent(Owner), MeshPath(MeshPath)
+FPMeshComponent::FPMeshComponent(FPActor* Owner, std::string MeshName) : FPPrimitiveComponent(Owner), MeshName(MeshName)
 {
 }
 

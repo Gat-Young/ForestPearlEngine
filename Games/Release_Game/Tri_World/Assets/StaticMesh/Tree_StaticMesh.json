@@ -1,0 +1,12 @@
+{
+  "MeshData": [
+    {
+      "Path": "Tree/Tree.fbx",
+      "Topology": "TRIANGLELIST"
+    }
+  ],
+
+  "Sockets": [],
+
+  "Material": ""
+}

@@ -25,12 +25,12 @@ class FPStaticMesh : public FPStreamableRenderAsset
 		FPMaterialInterface* Material = nullptr;
 
 	public:
-		FPStaticMesh(std::string MeshPath);
+		FPStaticMesh(std::string StaticMeshPath, std::string Topo);
 
 		void AddSocketData(std::string SocketName, FTransform SocketTransform);
 		void SetMaterial(FPMaterialInterface* Material);
 
-		FTransform& GetSocketData(std::string SocketName);
+		FTransform& GetSocketTransform(std::string SocketName);
 		std::vector<void*>* GetVBData();
 		std::vector<int>* GetVertexSize();
 		int* GetStride();

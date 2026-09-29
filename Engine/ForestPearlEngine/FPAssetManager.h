@@ -5,12 +5,17 @@
 #include "FPGameInstanceSubSystem.h"
 #include "Define/FPDataDefine.h"
 
+class FPStaticMesh;
+class FPMaterialInterface;
+
 class FPAssetManager : public FPGameInstanceSubSystem
 {
 	private:
 		std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshVertexBuffer;
 
 		std::unordered_map<std::string, std::vector<FPMeshData> > LoadedMeshData;
+		
+		std::unordered_map<std::string, FPStaticMeshData> LoadedStaticMeshData;
 
 		std::unordered_map<std::string, std::vector<FPActorData> > LevelData;
 
@@ -32,6 +37,13 @@ class FPAssetManager : public FPGameInstanceSubSystem
 
 		std::vector<FPMeshData> GetMeshData(std::string FbxPath);
 
+		//StaticMesh
+		FPStaticMesh* GetStaticMeshData(std::string StaticMeshName);
+
+		void AddStaticMeshData(std::string StaticMeshName, FPStaticMeshData* StaticMeshData);
+
+		bool HasStaticMeshData(std::string StaticMeshName);
+
 		//Level
 		bool HasLevelData(std::string LevelName);
 
@@ -43,6 +55,9 @@ class FPAssetManager : public FPGameInstanceSubSystem
 		void AddGameModeData(std::string LevelName, std::string GameModeName);
 		std::string GetGameModeData(std::string LevelName);
 
+		//Material
+		FPMaterialInterface* MakeMaterial(std::string MaterialName);
+		
 		//Shader
 		bool HasVertexShader(std::string ShaderPath);
 		bool HasPixelShader(std::string ShaderPath);

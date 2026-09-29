@@ -181,7 +181,7 @@ void FPAssetLoader::LoadLevelData(std::string LevelName, std::string LevelPath, 
 
 	if (!File.is_open())
 	{
-		std::cerr << "Level.json 파일 열기 실패\n";
+		std::cerr << LevelName << ".json 파일 열기 실패\n";
 		return;
 	}
 
@@ -304,4 +304,88 @@ void FPAssetLoader::LoadPixelShader(std::string ShaderPath, std::string PS_Main,
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
 	AssetManager->AddPixelShader(ShaderPath, PixelShader, PSCode);
+}
+
+void FPAssetLoader::LoadStaticMesh(std::string StaticMeshName, std::string StaticMeshPath, AssetOwner EngineAsset)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	if (AssetManager->HasStaticMeshData(StaticMeshName))
+	{
+		std::cout << "같은 이름의 StaticMesh가 존재합니다." << "\n";
+		return;
+	}
+
+	std::ifstream File(FPPathManager::Get().GetAssetPath("StaticMesh/" + StaticMeshPath));
+	if (EngineAsset == AssetOwner::Engine) File = std::ifstream(FPPathManager::Get().GetEngineAssetPath("StaticMesh/" + StaticMeshPath));
+
+	if (!File.is_open())
+	{
+		std::cerr << StaticMeshName << ".json 파일 열기 실패\n";
+		return;
+	}
+
+	json JsonStaticMeshData;
+
+	try
+	{
+		File >> JsonStaticMeshData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPStaticMeshData Data;
+
+	for (const json& MeshData : JsonStaticMeshData["MeshData"])
+	{
+		Data.MeshPath = MeshData["Path"];
+		Data.MeshTopology = MeshData["Topology"];
+	}
+
+	for (const json& SocketData : JsonStaticMeshData["Sockets"])
+	{
+		std::string SocketName = SocketData["Name"];
+
+		const json& Transform = SocketData["Transform"];
+		const json& Location = Transform["Location"];
+		const json& Rotation = Transform["Rotation"];
+		const json& Scale = Transform["Scale"];
+
+		float LocationX = Location["x"];
+		float LocationY = Location["y"];
+		float LocationZ = Location["z"];
+
+		float RotationX = Rotation["x"];
+		float RotationY = Rotation["y"];
+		float RotationZ = Rotation["z"];
+
+		float ScaleX = Scale["x"];
+		float ScaleY = Scale["y"];
+		float ScaleZ = Scale["z"];
+
+		SOCKET_TRANSFORM SocketTransform;
+		SocketTransform.SocketName = SocketName;
+		SocketTransform.Location_x = LocationX;
+		SocketTransform.Location_y = LocationY;
+		SocketTransform.Location_z = LocationZ;
+
+		SocketTransform.Rotation_x = RotationX;
+		SocketTransform.Rotation_y = RotationY;
+		SocketTransform.Rotation_z = RotationZ;
+
+		SocketTransform.Scale_x = ScaleX;
+		SocketTransform.Scale_y = ScaleY;
+		SocketTransform.Scale_Z = ScaleZ;
+
+		Data.Sockets.push_back(SocketTransform);
+	}
+
+	Data.MaterialName = JsonStaticMeshData["Material"];
+
+	AssetManager->AddStaticMeshData(StaticMeshName, &Data);
 }

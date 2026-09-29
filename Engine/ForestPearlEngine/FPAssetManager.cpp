@@ -1,7 +1,10 @@
 #include "FPAssetManager.h"
 #include <iostream>
 #include "Utility/FPPathManager.h"
-
+#include "FPGameInstance.h"
+#include "FPGameProjectClassRegistry.h"
+#include "FPMaterialInterface.h"
+#include "FPStaticMesh.h"
 
 ////////////////////////////
 //
@@ -43,6 +46,55 @@ std::vector<FPMeshData> FPAssetManager::GetMeshData(std::string FbxPath)
 
 ////////////////////////////
 //
+// StaticMesh
+//
+FPStaticMesh* FPAssetManager::GetStaticMeshData(std::string StaticMeshName)
+{
+	FPStaticMeshData StaticMeshData = LoadedStaticMeshData[StaticMeshName];
+	FPStaticMesh* StaticMesh = new FPStaticMesh(StaticMeshData.MeshPath, StaticMeshData.MeshTopology);
+
+	for (SOCKET_TRANSFORM& Socket : StaticMeshData.Sockets)
+	{
+		FTransform SocketTransform;
+		SocketTransform.Location.x = Socket.Location_x;
+		SocketTransform.Location.y = Socket.Location_y;
+		SocketTransform.Location.z = Socket.Location_z;
+
+		SocketTransform.Rotation.x = Socket.Rotation_x;
+		SocketTransform.Rotation.y = Socket.Rotation_y;
+		SocketTransform.Rotation.z = Socket.Rotation_z;
+
+		SocketTransform.Scale.x = Socket.Scale_x;
+		SocketTransform.Scale.y = Socket.Scale_y;
+		SocketTransform.Scale.z = Socket.Scale_Z;
+		
+		StaticMesh->AddSocketData(Socket.SocketName, SocketTransform);
+	}
+
+	FPMaterialInterface* Material = MakeMaterial(StaticMeshData.MaterialName);
+	StaticMesh->SetMaterial(Material);
+
+	return StaticMesh;
+}
+
+void FPAssetManager::AddStaticMeshData(std::string StaticMeshName, FPStaticMeshData* StaticMeshData)
+{
+	LoadedStaticMeshData[StaticMeshName] = std::move(*StaticMeshData);
+}
+
+bool FPAssetManager::HasStaticMeshData(std::string StaticMeshName)
+{
+	if (LoadedStaticMeshData.count(StaticMeshName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+
+////////////////////////////
+//
 // Level
 //
 
@@ -79,6 +131,21 @@ void FPAssetManager::AddGameModeData(std::string LevelName, std::string GameMode
 std::string FPAssetManager::GetGameModeData(std::string LevelName)
 {
 	return GameModeData[LevelName];
+}
+
+////////////////////////////
+//
+// Material
+//
+FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
+{
+	FPGameProjectClassRegistry* ClassRegistry = static_cast<FPGameProjectClassRegistry*>(FPGameInstance::Get().GetClassRegister());
+	if (ClassRegistry->HasFactory(MaterialName))
+	{
+		FPMaterialInterface* Material = static_cast<FPMaterialInterface*>((ClassRegistry->Create(MaterialName)).release());
+		return Material;
+	}
+	return nullptr;
 }
 
 ////////////////////////////

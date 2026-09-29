@@ -4,10 +4,10 @@
 #include "FPMaterial.h"
 #include <iostream>
 
-FPStaticMesh::FPStaticMesh(std::string MeshPath)
+FPStaticMesh::FPStaticMesh(std::string StaticMeshPath, std::string Topo)
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-	std::vector<FPVertexBufferData> MeshData = AssetManager->GetVertexBuffer(MeshPath);
+	std::vector<FPVertexBufferData> MeshData = AssetManager->GetVertexBuffer(StaticMeshPath);
 
 	for (FPVertexBufferData Mesh : MeshData)
 	{
@@ -16,6 +16,8 @@ FPStaticMesh::FPStaticMesh(std::string MeshPath)
 		Stride = Mesh.Stride;
 		Offset = Mesh.Offset;
 	}
+	
+	this->Topo = StringToTopology(Topo);
 
 	if (Material == nullptr) { Material = new FPMaterial(); }
 }
@@ -32,7 +34,7 @@ void FPStaticMesh::AddSocketData(std::string SocketName, FTransform SocketTransf
 	}
 }
 
-FTransform& FPStaticMesh::GetSocketData(std::string SocketName)
+FTransform& FPStaticMesh::GetSocketTransform(std::string SocketName)
 {
 	if (Sockets.find(SocketName) != Sockets.end())
 	{

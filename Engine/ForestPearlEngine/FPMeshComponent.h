@@ -8,7 +8,7 @@ class FPMaterialInterface;
 class FPMeshComponent : public FPPrimitiveComponent
 {
 	protected:
-		std::string MeshPath;
+		std::string MeshName;
 
 		int Priority = 0;
 		bool isFill = true;
@@ -22,7 +22,7 @@ class FPMeshComponent : public FPPrimitiveComponent
 		virtual void SetRenderItemData() = 0;
 
 	public:
-		FPMeshComponent(FPActor* Owner, std::string MeshPath);
+		FPMeshComponent(FPActor* Owner, std::string MesName);
 
 		~FPMeshComponent();
 

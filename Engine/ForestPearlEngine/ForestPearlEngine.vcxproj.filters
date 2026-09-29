@@ -336,7 +336,7 @@
       <Filter>Component\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="FPStaticMesh.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>RenderAsset</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

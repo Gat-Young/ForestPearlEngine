@@ -5,11 +5,11 @@
 #include "FPMaterial.h"
 #include <iostream>
 
-FPStaticMeshComponent::FPStaticMeshComponent(FPActor* Owner, std::string MeshPath) : FPMeshComponent(Owner, MeshPath)
+FPStaticMeshComponent::FPStaticMeshComponent(FPActor* Owner, std::string StaticMeshName) : FPMeshComponent(Owner, StaticMeshName)
 {
 	//AssetManager로 부터 MeshPath의 StaticMesh_Json 파일을 읽고 Static_Mesh 객체를 반환 받아 저장.
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-	//StaticMesh = AssetManager->GetStaticMesh(MeshPath);
+	StaticMesh = AssetManager->GetStaticMesh(StaticMeshName);
 
 	FPMaterialInterface* StaticMeshMaterial = *(StaticMesh->GetStaticMeshMaterial());
 	if (StaticMeshMaterial == nullptr) { Material = new FPMaterial(); }
@@ -51,6 +51,19 @@ void FPStaticMeshComponent::SetRenderItemData()
 	RenderItem->PixelConst = (SelectedMaterial->GetPixelConstPointer());
 }
 
+FTransform FPStaticMeshComponent::GetSocketTransform(const std::string& SocketName) const
+{
+	return StaticMesh->GetSocketTransform(SocketName);
+}
+
 FPStaticMeshComponent::~FPStaticMeshComponent()
 {
+}
+
+void FPStaticMeshComponent::SetStaticMesh(std::string StaticMeshName)
+{
+	//AssetManager로 부터 MeshPath의 StaticMesh_Json 파일을 읽고 Static_Mesh 객체를 반환 받아 저장.
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	StaticMesh = AssetManager->GetStaticMesh(StaticMeshName);
+	RegistMeshRenderList();
 }

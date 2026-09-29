@@ -1,0 +1,12 @@
+{
+  "MeshData": [
+    {
+      "Path": "ToonLink/ToonLink.fbx",
+      "Topology": "TRIANGLELIST"
+    }
+  ],
+
+  "Sockets": [],
+
+  "Material": ""
+}

@@ -6,17 +6,18 @@
 class FPInputMappingContext;
 class FPInputAction;
 struct FInputValue;
-class FPMeshComponent;
+class FPStaticMeshComponent;
 
 class WindmillWing : public FPPawn
 {
 private:
-	FPMeshComponent* Wing;
+	FPStaticMeshComponent* Wing;
 	FPActor* Body;
 	FPActor* Player;
 	FPSceneComponent* ShieldPivot;
 
 	float ScaleOffset = 1.0f;
+
 	bool isFill = true;
 	bool isCull = false;
 

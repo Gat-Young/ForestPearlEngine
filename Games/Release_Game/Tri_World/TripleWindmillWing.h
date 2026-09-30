@@ -6,14 +6,14 @@
 class FPInputMappingContext;
 class FPInputAction;
 struct FInputValue;
-class FPMeshComponent;
+class FPStaticMeshComponent;
 
 class TripleWindmillWing : public FPPawn
 {
 private:
-	FPMeshComponent* Wing;
-	FPMeshComponent* Wing1;
-	FPMeshComponent* Wing2;
+	FPStaticMeshComponent* Wing;
+	FPStaticMeshComponent* Wing1;
+	FPStaticMeshComponent* Wing2;
 	FPActor* Body;
 
 	float ScaleOffset = 1.0f;

@@ -34,15 +34,17 @@ void FPStaticMesh::AddSocketData(std::string SocketName, FTransform SocketTransf
 	}
 }
 
-FTransform& FPStaticMesh::GetSocketTransform(std::string SocketName)
+bool FPStaticMesh::GetSocketTransform(std::string SocketName, FTransform& OutSocketTransform)
 {
 	if (Sockets.find(SocketName) != Sockets.end())
 	{
-		return Sockets[SocketName];
+		OutSocketTransform = Sockets[SocketName];
+		return true;
 	}
 	else
 	{
-		std::cout << "[StaticMesh] : 해당 이름의 Socket이 없습니다 : " << SocketName << "\n";
+		//std::cout << "[StaticMesh] : 해당 이름의 Socket이 없습니다 : " << SocketName << "\n";
+		return false;
 	}
 }
 
@@ -64,6 +66,11 @@ int* FPStaticMesh::GetStride()
 int* FPStaticMesh::GetOffset()
 {
 	return &(this->Offset);
+}
+
+void FPStaticMesh::SetTopo(std::string Topology)
+{
+	this->Topo = StringToTopology(Topology);
 }
 
 Topology* FPStaticMesh::GetTopo()

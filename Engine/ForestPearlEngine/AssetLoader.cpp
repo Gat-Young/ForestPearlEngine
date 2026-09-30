@@ -347,42 +347,61 @@ void FPAssetLoader::LoadStaticMesh(std::string StaticMeshName, std::string Stati
 		Data.MeshTopology = MeshData["Topology"];
 	}
 
-	for (const json& SocketData : JsonStaticMeshData["Sockets"])
+	if (JsonStaticMeshData.contains("Sockets") && JsonStaticMeshData["Sockets"].is_array())
 	{
-		std::string SocketName = SocketData["Name"];
+		if (!JsonStaticMeshData["Sockets"].empty())
+		{
+			for (const json& SocketData : JsonStaticMeshData["Sockets"])
+			{
+				std::string SocketName = SocketData["Name"];
 
-		const json& Transform = SocketData["Transform"];
-		const json& Location = Transform["Location"];
-		const json& Rotation = Transform["Rotation"];
-		const json& Scale = Transform["Scale"];
+				const json& Transform = SocketData["Transform"];
+				const json& Location = Transform["Location"];
+				const json& Rotation = Transform["Rotation"];
+				const json& Scale = Transform["Scale"];
 
-		float LocationX = Location["x"];
-		float LocationY = Location["y"];
-		float LocationZ = Location["z"];
+				float LocationX = Location["x"];
+				float LocationY = Location["y"];
+				float LocationZ = Location["z"];
 
-		float RotationX = Rotation["x"];
-		float RotationY = Rotation["y"];
-		float RotationZ = Rotation["z"];
+				float RotationX = Rotation["x"];
+				float RotationY = Rotation["y"];
+				float RotationZ = Rotation["z"];
 
-		float ScaleX = Scale["x"];
-		float ScaleY = Scale["y"];
-		float ScaleZ = Scale["z"];
+				float ScaleX = Scale["x"];
+				float ScaleY = Scale["y"];
+				float ScaleZ = Scale["z"];
 
-		SOCKET_TRANSFORM SocketTransform;
-		SocketTransform.SocketName = SocketName;
-		SocketTransform.Location_x = LocationX;
-		SocketTransform.Location_y = LocationY;
-		SocketTransform.Location_z = LocationZ;
+				SOCKET_TRANSFORM SocketTransform;
+				SocketTransform.SocketName = SocketName;
+				SocketTransform.Location_x = LocationX;
+				SocketTransform.Location_y = LocationY;
+				SocketTransform.Location_z = LocationZ;
 
-		SocketTransform.Rotation_x = RotationX;
-		SocketTransform.Rotation_y = RotationY;
-		SocketTransform.Rotation_z = RotationZ;
+				SocketTransform.Rotation_x = RotationX;
+				SocketTransform.Rotation_y = RotationY;
+				SocketTransform.Rotation_z = RotationZ;
 
-		SocketTransform.Scale_x = ScaleX;
-		SocketTransform.Scale_y = ScaleY;
-		SocketTransform.Scale_Z = ScaleZ;
+				SocketTransform.Scale_x = ScaleX;
+				SocketTransform.Scale_y = ScaleY;
+				SocketTransform.Scale_Z = ScaleZ;
 
-		Data.Sockets.push_back(SocketTransform);
+				Data.Sockets.push_back(SocketTransform);
+			}
+		}
+	}
+
+	std::string Material;
+
+	if (JsonStaticMeshData.contains("Material") && JsonStaticMeshData["Material"].is_string())
+	{
+		Material = JsonStaticMeshData["Material"].get<std::string>();
+
+		if (Material.empty())
+		{
+			// Material ¾øÀ½
+			Material.clear();
+		}
 	}
 
 	Data.MaterialName = JsonStaticMeshData["Material"];

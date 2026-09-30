@@ -7,12 +7,12 @@
 class FPInputMappingContext;
 class FPInputAction;
 struct FInputValue;
-class FPMeshComponent;
+class FPStaticMeshComponent;
 
 class Windmill : public FPPawn
 {
 	private:
-		FPMeshComponent* Body;
+		FPStaticMeshComponent* Body;
 
 		float ScaleOffset = 1.0f;
 		bool isFill = true;

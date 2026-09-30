@@ -118,5 +118,8 @@
     <None Include="Assets\StaticMesh\Tree_StaticMesh.json">
       <Filter>Assets\StaticMesh</Filter>
     </None>
+    <None Include="Assets\StaticMesh\Terrain_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
   </ItemGroup>
 </Project>

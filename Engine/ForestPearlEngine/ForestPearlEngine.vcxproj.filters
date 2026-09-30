@@ -338,6 +338,9 @@
     <ClCompile Include="FPStaticMesh.cpp">
       <Filter>RenderAsset</Filter>
     </ClCompile>
+    <ClCompile Include="Define\FPDataDefine.cpp">
+      <Filter>Define</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shader\DefaultPixelShader.psh">

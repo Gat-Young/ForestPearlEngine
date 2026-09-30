@@ -13,6 +13,7 @@
 #include "FPRenderingCommon.h"
 #include "../FPViewPortClient.h"
 
+
 //객체 해제/제거 매크로()
 #ifndef SafeRelease
 template<typename T> void _SafeRelease(T*& ptr)
@@ -33,13 +34,6 @@ template<typename T> void _SafeDelArray(T*& ptr)
 #define SafeDelete		_SafeDelete
 #define SafeDelArray	_SafeDelArray
 #endif
-
-//정점 구조체
-struct VERTEX
-{
-	float x, y, z;		//좌표 Position
-	float r, g, b, a;	//색상 Diffuse Color
-};
 
 //DirectX Math 타입
 // XMMATRIX		<행렬		: 16바이트 정렬,	SIMD 버전,	전역/지역 변수용,		Register Type

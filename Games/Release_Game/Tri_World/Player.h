@@ -6,14 +6,14 @@
 class FPInputMappingContext;
 class FPInputAction;
 struct FInputValue;
-class FPMeshComponent;
+class FPStaticMeshComponent;
 class FPSpringArmComponent;
 class FPCameraComponent;
 
 class Player : public FPPawn
 {
 	private:
-		FPMeshComponent* Mesh;
+		FPStaticMeshComponent* Mesh;
 		FPSceneComponent* ShieldPivot;
 		FPSpringArmComponent* SpringArm;
 		FPCameraComponent* PlayerCamera;

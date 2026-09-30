@@ -1,5 +1,5 @@
 #include "Windmill.h"
-#include "ForestPearlEngine/FPMeshComponent.h"
+#include "ForestPearlEngine/FPStaticMeshComponent.h"
 #include "ForestPearlEngine/FPAController.h"
 #include "ForestPearlEngine/FPWorld.h"
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
@@ -9,7 +9,7 @@
 
 void Windmill::Initialize()
 {
-	Body = new FPMeshComponent(this, "Windmill/Windmill_Body.fbx");
+	Body = new FPStaticMeshComponent(this, "Windmill_Body_StaticMesh");
 	SetRootComponent((FPSceneComponent*)Body);
 	Body->SetMeshCull(false);
  

@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <string>
 
 //정점 구조체
 struct VERTEX
@@ -42,25 +43,7 @@ enum class Topology
 	LINELIST
 };
 
-Topology StringToTopology(std::string Topo)
-{
-	if (Topo == "TRIANGLELIST")
-	{
-		return Topology::TRIANGLELIST;
-	}
-
-	if (Topo == "TRIANGLESTRIP")
-	{
-		return Topology::TRIANGLESTRIP;
-	}
-
-	if (Topo == "LINELIST")
-	{
-		return Topology::LINELIST;
-	}
-
-	return Topology::TRIANGLELIST;
-}
+Topology StringToTopology(std::string Topo);
 
 //VertexBuffer 데이터 구조체
 struct FPVertexBufferData

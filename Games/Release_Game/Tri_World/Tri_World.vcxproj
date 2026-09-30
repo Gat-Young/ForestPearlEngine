@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Level\Triworld.json" />
+    <None Include="Assets\StaticMesh\Terrain_StaticMesh.json" />
     <None Include="Assets\StaticMesh\ToonLinkTriangle_StaticMesh.json" />
     <None Include="Assets\StaticMesh\ToonLink_StaticMesh.json" />
     <None Include="Assets\StaticMesh\Tree_StaticMesh.json" />

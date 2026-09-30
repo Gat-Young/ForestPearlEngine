@@ -186,6 +186,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssetLoader.cpp" />
+    <ClCompile Include="Define\FPDataDefine.cpp" />
     <ClCompile Include="FPAssetManager.cpp" />
     <ClCompile Include="FPCameraComponent.cpp" />
     <ClCompile Include="FPCameraList.cpp" />

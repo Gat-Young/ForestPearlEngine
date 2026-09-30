@@ -1,5 +1,5 @@
 #include "Player.h"
-#include "ForestPearlEngine/FPMeshComponent.h"
+#include "ForestPearlEngine/FPStaticMeshComponent.h"
 #include "ForestPearlEngine/FPAController.h"
 #include "ForestPearlEngine/FPWorld.h"
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
@@ -11,10 +11,10 @@
 
 void Player::Initialize()
 {
-	Mesh = new FPMeshComponent(this, "ToonLink/ToonLinkTriangle.fbx");
+	Mesh = new FPStaticMeshComponent(this, "ToonLinkTriangle_StaticMesh");
 
 	//real Model
-	//Mesh = new MeshComponent(this, "ToonLink/ToonLink.fbx");
+	//Mesh = new FPStaticMeshComponent(this, "ToonLink_StaticMesh");
 
 	SetRootComponent((FPSceneComponent*)Mesh);
 	Mesh->SetMeshCull(false);
@@ -22,6 +22,7 @@ void Player::Initialize()
 	ShieldPivot = new FPSceneComponent(this);
 	ShieldPivot->SetupAttachment(Mesh);
 	ShieldPivot->SetRelativeLocation({ 0.0f, 3.0f, 0.0f });
+	ShieldPivot->SetRelativeRotation({ -90.0f, 0.0f, 0.0f });
 
 	//카메라 설정
 	SpringArm = new FPSpringArmComponent(this);

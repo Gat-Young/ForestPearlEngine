@@ -1,5 +1,5 @@
 #include "TripleWindmillWing.h"
-#include "ForestPearlEngine/FPMeshComponent.h"
+#include "ForestPearlEngine/FPStaticMeshComponent.h"
 #include "ForestPearlEngine/FPAController.h"
 #include "ForestPearlEngine/FPWorld.h"
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
@@ -10,17 +10,17 @@
 
 void TripleWindmillWing::Initialize()
 {
-	Wing = new FPMeshComponent(this, "Windmill/Windmill_Wing.fbx");
+	Wing = new FPStaticMeshComponent(this, "Windmill_Wing_StaticMesh");
 	Wing->SetMeshCull(false);
 	SetRootComponent(Wing);
 
-	Wing1 = new FPMeshComponent(this, "Windmill/Windmill_Wing.fbx");
+	Wing1 = new FPStaticMeshComponent(this, "Windmill_Wing_StaticMesh");
 	Wing1->SetMeshCull(false);
 	Wing1->SetupAttachment(Wing);
 	Wing1->SetRelativeLocation({ 0.0f, 0.2f, 0.0f });
 	Wing1->SetWorldScale3D({ 1.0f, 1.0f, 1.0f });
 
-	Wing2 = new FPMeshComponent(this, "Windmill/Windmill_Wing.fbx");
+	Wing2 = new FPStaticMeshComponent(this, "Windmill_Wing_StaticMesh");
 	Wing2->SetMeshCull(false);
 	Wing2->SetupAttachment(Wing1);
 	Wing2->SetRelativeLocation({ 0.0f, 0.2f, 0.0f });

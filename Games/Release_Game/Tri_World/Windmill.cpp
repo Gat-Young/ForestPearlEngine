@@ -17,8 +17,6 @@ void Windmill::Initialize()
 	Controller->GetInputComponent().BindMethod("IA_SetMoveTriangel", this, EKeyState::Pressed, &Windmill::Move);
 	Controller->GetInputComponent().BindMethod("IA_SetRotateWindmill", this, EKeyState::Pressed, &Windmill::Rotate);
 	Controller->GetInputComponent().BindMethod("IA_SetScaleWindmill", this, EKeyState::Pressed, &Windmill::Scaling);
-	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &Windmill::SetFillTriangel);
-	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &Windmill::SetCullTriangle);
 }
 
 void Windmill::BeginPlay()

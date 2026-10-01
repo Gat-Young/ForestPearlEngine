@@ -13,10 +13,6 @@ void Terrain::Initialize()
 	SetRootComponent((FPSceneComponent*)Mesh);
 
 	Mesh->SetMeshCull(false);
-	FPAController* Controller = GetWorld()->GetController(0);
-
-	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &Terrain::SetFillTriangel);
-	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &Terrain::SetCullTriangle);
 
 }
 

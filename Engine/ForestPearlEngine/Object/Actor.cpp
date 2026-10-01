@@ -20,7 +20,7 @@ bool FPActor::AttachToComponent(FPSceneComponent* Parent)
     return true;
 }
 
-bool FPActor::AttachToActor(FPActor* Parent)
+bool FPActor::AttachToActor(FPActor* Parent, std::string SocketName)
 {
     if (RootComponent == nullptr) return false;
     RootComponent->SetupAttachment(Parent->RootComponent);

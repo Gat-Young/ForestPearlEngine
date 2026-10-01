@@ -22,4 +22,11 @@ class GameController : public FPAController
 
 		void NextPawn(FInputValue value);
 		void PrevPawn(FInputValue value);
+
+		void SetFillTriangel(FInputValue Value);
+		void SetCullTriangle(FInputValue Value);
+		void SetActiveViewHelp(struct FInputValue Value);
+		void SetActiveDepthStencilBuffer(struct FInputValue Value);
+		void SetGridOn(struct FInputValue Value);
+		void SetAxisOn(struct FInputValue Value);
 };

@@ -11,11 +11,6 @@ void Tree::Initialize()
 
 	SetRootComponent((FPSceneComponent*)Mesh);
 	Mesh->SetMeshCull(false);
-
-	FPAController* Controller = GetWorld()->GetController(0);
-
-	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &Tree::SetFillTriangel);
-	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &Tree::SetCullTriangle);
 }
 
 void Tree::BeginPlay()

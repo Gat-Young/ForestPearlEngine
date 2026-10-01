@@ -7,13 +7,6 @@
 
 void Grid::Initialize()
 {
-	FPAController* Controller = GetWorld()->GetController(0);
-
-	if (Controller == nullptr)
-		return;
-
-	Controller->GetInputComponent().BindMethod("IA_SetGrid", this, EKeyState::Down, &Grid::SetActiveViewHelp);
-
 	GridComponets = new GizmoComponent(this);
 
 	//Grid ¸¸µé±â

@@ -7,12 +7,7 @@
 
 void Axis::Initialize()
 {
-	FPAController* Controller = GetWorld()->GetController(0);
 
-	if (Controller == nullptr)
-		return;
-
-	Controller->GetInputComponent().BindMethod("IA_SetAxis", this, EKeyState::Down, &Axis::SetActiveViewHelp);
 
 	AxisComponets = new GizmoComponent(this);
 

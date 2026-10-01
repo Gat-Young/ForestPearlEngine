@@ -18,8 +18,6 @@ void WindmillWing::Initialize()
 	FPAController* Controller = GetWorld()->GetController(0);
 	Controller->GetInputComponent().BindMethod("IA_AttachHead", this, EKeyState::Down, &WindmillWing::AttachHead);
 	Controller->GetInputComponent().BindMethod("IA_AttachShield", this, EKeyState::Down, &WindmillWing::AttachShield);
-	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &WindmillWing::SetFillTriangel);
-	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &WindmillWing::SetCullTriangle);
 	Controller->GetInputComponent().BindMethod("IA_SetScaleWing", this, EKeyState::Pressed, &WindmillWing::SetScaleWing);
 }
 

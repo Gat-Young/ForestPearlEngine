@@ -27,8 +27,6 @@ void TripleWindmillWing::Initialize()
 	Wing2->SetWorldScale3D({ 0.5f, 0.5f, 0.5f });
 
 	FPAController* Controller = GetWorld()->GetController(0);
-	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &TripleWindmillWing::SetFillTriangel);
-	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &TripleWindmillWing::SetCullTriangle);
 	Controller->GetInputComponent().BindMethod("IA_SetScaleWing", this, EKeyState::Pressed, &TripleWindmillWing::SetScaleWing);
 }
 

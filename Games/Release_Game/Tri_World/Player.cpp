@@ -7,6 +7,8 @@
 #include "ForestPearlEngine/FPGameTimer.h"
 #include "ForestPearlEngine/FPCameraComponent.h"
 #include "ForestPearlEngine/FPSpringArmComponent.h"
+#include "WindmillWing.h"
+#include "TripleWindmillWing.h"
 #include <iostream>
 
 void Player::Initialize()
@@ -42,6 +44,9 @@ void Player::Initialize()
 
 	Controller->GetInputComponent().BindMethod("IA_SetMoveTriangel", this, EKeyState::Pressed, &Player::Move);
 	Controller->GetInputComponent().BindMethod("IA_SetMoveCamera", this, EKeyState::Pressed, &Player::CameraMove);
+	Controller->GetInputComponent().BindMethod("IA_SetScaleWing", this, EKeyState::Pressed, &Player::SetScaleWing);
+	Controller->GetInputComponent().BindMethod("IA_AttachHead", this, EKeyState::Down, &Player::AttachHead);
+	Controller->GetInputComponent().BindMethod("IA_AttachShield", this, EKeyState::Down, &Player::AttachShield);
 	Controller->Possess(this);
 
 }
@@ -98,6 +103,39 @@ void Player::SetCullTriangle(FInputValue Value)
 {
 	isCull = !isCull;
 	Mesh->SetMeshCull(isCull);
+}
+
+void Player::SetScaleWing(FInputValue Value)
+{
+	if (OneWindmillWing != nullptr)
+	{
+		OneWindmillWing->SetScaleWing(Value);
+	}
+
+	if (TripleWing != nullptr)
+	{
+		TripleWing->SetScaleWing(Value);
+	}
+}
+
+void Player::SetOneWindmillWing(WindmillWing* Wing)
+{
+	OneWindmillWing = Wing;
+}
+
+void Player::SetTripleWindmillWing(TripleWindmillWing* Wing)
+{
+	TripleWing = Wing;
+}
+
+void Player::AttachHead(FInputValue Value)
+{
+
+}
+
+void Player::AttachShield(FInputValue Value)
+{
+
 }
 
 FPSceneComponent* Player::GetShieldPivot()

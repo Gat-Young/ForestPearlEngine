@@ -108,8 +108,13 @@ void GameController::BeginPlay()
 {
 	__super::BeginPlay();
 	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "Player")));
-	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "Windmill")));
-	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "TripleWindmillWing")));
+
+	std::vector<FPActor*> WindmillActor;
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Windmill", WindmillActor);
+	for (FPActor* Windmiill : WindmillActor)
+	{
+		ControllPawn.push_back(static_cast<FPPawn*>(Windmiill));
+	}
 	ControllPawnSize = ControllPawn.size();
 }
 

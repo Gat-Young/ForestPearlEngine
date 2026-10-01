@@ -6,6 +6,8 @@
 #include "ForestPearlEngine/InputValue.h"
 #include "ForestPearlEngine/FPGameInstance.h"
 #include "ForestPearlEngine/FPGameTimer.h"
+#include "WindmillWing.h"
+#include "TripleWindmillWing.h"
 
 void Windmill::Initialize()
 {
@@ -17,6 +19,7 @@ void Windmill::Initialize()
 	Controller->GetInputComponent().BindMethod("IA_SetMoveTriangel", this, EKeyState::Pressed, &Windmill::Move);
 	Controller->GetInputComponent().BindMethod("IA_SetRotateWindmill", this, EKeyState::Pressed, &Windmill::Rotate);
 	Controller->GetInputComponent().BindMethod("IA_SetScaleWindmill", this, EKeyState::Pressed, &Windmill::Scaling);
+	Controller->GetInputComponent().BindMethod("IA_SetScaleWing", this, EKeyState::Pressed, &Windmill::SetScaleWing);
 }
 
 void Windmill::BeginPlay()
@@ -26,6 +29,16 @@ void Windmill::BeginPlay()
 void Windmill::Tick()
 {
 	__super::Tick();
+}
+
+void Windmill::SetOneWindmillWing(WindmillWing* Wing)
+{
+	OneWindmillWing = Wing;
+}
+
+void Windmill::SetTripleWindmillWing(TripleWindmillWing* Wing)
+{
+	TripleWing = Wing;
 }
 
 void Windmill::Move(FInputValue Value)
@@ -60,4 +73,17 @@ void Windmill::SetCullTriangle(FInputValue Value)
 {
 	isCull = !isCull;
 	Body->SetMeshCull(isCull);
+}
+
+void Windmill::SetScaleWing(FInputValue Value)
+{
+	if (OneWindmillWing != nullptr)
+	{
+		OneWindmillWing->SetScaleWing(Value);
+	}
+
+	if (TripleWing != nullptr)
+	{
+		TripleWing->SetScaleWing(Value);
+	}
 }

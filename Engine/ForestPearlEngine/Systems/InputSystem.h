@@ -36,6 +36,7 @@ enum class XBOX_GAMEPAD
 	GAMEPAD_LEFT_TRIGER = 0x0110,
 	GAMEPAD_RIGHT_TRIGER = 0x0111
 };
+
 struct FKeyInputInfo
 {
 	USHORT VKey;

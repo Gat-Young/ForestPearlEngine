@@ -50,20 +50,23 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_SetScaleWing", VK_OEM_PERIOD, ModifyInfoD);
 
 	// Axis : Game Pad 
-	GetInputComponent().AddMappingKey("IA_SetMoveTriangel", 0x100 , ModifyInfoD);
-	GetInputComponent().AddMappingKey("IA_SetMoveCamera", 0x101, ModifyInfoD);
+	GetInputComponent().AddMappingKey("IA_SetMoveTriangel", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_LSTICK), ModifyInfoD);
+	GetInputComponent().AddMappingKey("IA_SetMoveCamera", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_RSTICK), ModifyInfoD);
 
-	GetInputComponent().AddMappingKey("IA_SetMoveWindmill", 0x100, ModifyInfoD);
+	GetInputComponent().AddMappingKey("IA_SetMoveWindmill", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_LSTICK), ModifyInfoD);
 
-	GetInputComponent().AddMappingKey("IA_SetScaleWing", 0x106, ModifyInfoA);
-	GetInputComponent().AddMappingKey("IA_SetScaleWing", 0x107, ModifyInfoD);
+	GetInputComponent().AddMappingKey("IA_SetScaleWindmill", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_LEFT_TRIGER), ModifyInfoA);
+	GetInputComponent().AddMappingKey("IA_SetScaleWindmill", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_RIGHT_TRIGER), ModifyInfoD);
 
-	GetInputComponent().AddMappingKey("IA_SetRotateWindmill", 0x010E, ModifyInfoA);
-	GetInputComponent().AddMappingKey("IA_SetRotateWindmill", 0x010F, ModifyInfoD);
+	GetInputComponent().AddMappingKey("IA_SetScaleWing", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_LEFT_SHOULDER), ModifyInfoA);
+	GetInputComponent().AddMappingKey("IA_SetScaleWing", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_RIGHT_SHOULDER), ModifyInfoD);
+
+	GetInputComponent().AddMappingKey("IA_SetRotateWindmill", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_LEFT_THUMB), ModifyInfoA);
+	GetInputComponent().AddMappingKey("IA_SetRotateWindmill", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_RIGHT_THUMB), ModifyInfoD);
 
 	//Action Button : Game Pad
-	GetInputComponent().AddMappingKey("IA_AttachHead", 0x102, ModifyInfoTriger);
-	GetInputComponent().AddMappingKey("IA_AttachShield", 0x103, ModifyInfoTriger);
+	GetInputComponent().AddMappingKey("IA_AttachHead", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_A), ModifyInfoTriger);
+	GetInputComponent().AddMappingKey("IA_AttachShield", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_B), ModifyInfoTriger);
 
 	//Action Button : KeyBoard
 	GetInputComponent().AddMappingKey("IA_SetFillTriangel", VK_SPACE, ModifyInfoTriger);
@@ -79,8 +82,8 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_AttachShield", 'X', ModifyInfoTriger);
 
 	//D-PAD LEFT/RIGHT Posses 전환
-	GetInputComponent().AddMappingKey("IA_NextActor", 0x10D, ModifyInfoTriger); //RIGHT
-	GetInputComponent().AddMappingKey("IA_PrevActor", 0x10C, ModifyInfoTriger); //LEFT
+	GetInputComponent().AddMappingKey("IA_NextActor", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_DPAD_RIGHT), ModifyInfoTriger); //RIGHT
+	GetInputComponent().AddMappingKey("IA_PrevActor", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_DPAD_LEFT), ModifyInfoTriger); //LEFT
 
 
 	//Posses 바인딩

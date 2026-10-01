@@ -47,7 +47,6 @@ void Windmill::Scaling(FInputValue Value)
 {
 	float mov =1.0f;
 	float move_x = Value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
-
 	RootComponent->SetWorldScale3D(RootComponent->GetComponentScale() + FPVector3{move_x, move_x, move_x});
 }
 

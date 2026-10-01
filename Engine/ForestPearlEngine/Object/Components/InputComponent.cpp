@@ -94,7 +94,7 @@ bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)
 
 	for (FBindInfo BindInfo : BindInfos)
 	{
-		if ((BindInfo.BindObj != PossessedPawn) && (BindInfo.BindObj != PlayerController)) { std::cout << "Skip Input" << "\n";  continue; }
+		if ((BindInfo.BindObj != PossessedPawn) && (BindInfo.BindObj != PlayerController)) { continue; }
 
 		EKeyState CallKeyState = BindInfo.CallState;
 		std::function<void(FInputValue)> BindFuncPtr = BindInfo.BindFuncPtr;

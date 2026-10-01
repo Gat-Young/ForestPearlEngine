@@ -16,14 +16,12 @@ void TripleWindmillWing::Initialize()
 
 	Wing1 = new FPStaticMeshComponent(this, "Windmill_Wing_StaticMesh");
 	Wing1->SetMeshCull(false);
-	Wing1->SetupAttachment(Wing);
-	Wing1->SetRelativeLocation({ 0.0f, 0.2f, 0.0f });
+	Wing1->SetupAttachment(Wing, "WingPoint1");
 	Wing1->SetWorldScale3D({ 1.0f, 1.0f, 1.0f });
 
 	Wing2 = new FPStaticMeshComponent(this, "Windmill_Wing_StaticMesh");
 	Wing2->SetMeshCull(false);
-	Wing2->SetupAttachment(Wing1);
-	Wing2->SetRelativeLocation({ 0.0f, 0.2f, 0.0f });
+	Wing2->SetupAttachment(Wing1, "WingPoint1");
 	Wing2->SetWorldScale3D({ 0.5f, 0.5f, 0.5f });
 
 	FPAController* Controller = GetWorld()->GetController(0);
@@ -45,8 +43,7 @@ void TripleWindmillWing::BeginPlay()
 		}
 	}
 
-	AttachToActor(Body);
-	Wing->SetRelativeLocation({ 0.0f, 1.0f, -1.5f });
+	AttachToActor(Body, "TripleWingPoint");
 }
 
 void TripleWindmillWing::Tick()

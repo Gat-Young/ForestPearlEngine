@@ -28,8 +28,7 @@ void WindmillWing::BeginPlay()
 
 	ShieldPivot = static_cast<class Player*>(Player)->GetShieldPivot();
 
-	AttachToActor(Body);
-	Wing->SetRelativeLocation({ 0.0f, 3.0f, -1.0f });
+	AttachToActor(Body, "WingPoint1");
 }
 
 void WindmillWing::Tick()
@@ -50,16 +49,16 @@ void WindmillWing::AttachHead(FInputValue Value)
 	if (isHead)
 	{
 		isShield = false;
-		AttachToActor(Player);
+		AttachToActor(Player, "HeadPivot");
 		Wing->SetRelativeScale3D({ 1.0f, 1.0f, 1.0f });
-		Wing->SetRelativeRotation({ 0.0f, 0.0f, 0.0f });
-		Wing->SetRelativeLocation({0.0f, 5.0f, 0.0f});
+		//Wing->SetRelativeRotation({ 0.0f, 0.0f, 0.0f });
+		//Wing->SetRelativeLocation({0.0f, 5.0f, 0.0f});
 	}
 	else
 	{
-		AttachToActor(Body);
-		Wing->SetRelativeRotation({ -90.0f, 0.0f, 0.0f });
-		Wing->SetRelativeLocation({ 0.0f, 3.0f, -1.0f });
+		AttachToActor(Body, "WingPoint1");
+		//Wing->SetRelativeRotation({ -90.0f, 0.0f, 0.0f });
+		//Wing->SetRelativeLocation({ 0.0f, 3.0f, -1.0f });
 	}
 }
 
@@ -77,10 +76,10 @@ void WindmillWing::AttachShield(FInputValue Value)
 	}
 	else
 	{
-		AttachToActor(Body);
+		AttachToActor(Body, "WingPoint1");
 		Wing->SetRelativeScale3D({ 1.0f, 1.0f, 1.0f });
-		Wing->SetRelativeRotation({ -90.0f, 0.0f, 0.0f });
-		Wing->SetRelativeLocation({ 0.0f, 3.0f, -1.0f });
+		//Wing->SetRelativeRotation({ -90.0f, 0.0f, 0.0f });
+		//Wing->SetRelativeLocation({ 0.0f, 3.0f, -1.0f });
 	}
 }
 

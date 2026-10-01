@@ -56,6 +56,18 @@ FTransform FPStaticMeshComponent::GetSocketTransform(const std::string& SocketNa
 	FTransform SocketTransform;
 	if (StaticMesh->GetSocketTransform(SocketName, SocketTransform))
 	{
+		//Scale 계산
+		SocketTransform.Scale = WorldTransform.Scale * SocketTransform.Scale;
+
+		SocketTransform.QuaternionRotation = FromEuler(SocketTransform.Rotation);
+		//Rotation 계산 (부모 사원수 회전 * 로컬 사원수 회전)
+		SocketTransform.QuaternionRotation = (WorldTransform.QuaternionRotation * SocketTransform.QuaternionRotation).Normalize();
+		SocketTransform.Rotation = SocketTransform.QuaternionRotation.ToEuler();
+
+		//Location 계산 (부모 위치 + Rotate(부모 회전 사원수, (자식 위치 * 부모 크기)) 
+		SocketTransform.Location = WorldTransform.Location +
+			Rotate(WorldTransform.QuaternionRotation, (SocketTransform.Location * WorldTransform.Scale));
+
 		return SocketTransform;
 	}
 	return WorldTransform;

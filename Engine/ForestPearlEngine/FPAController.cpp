@@ -44,6 +44,11 @@ void FPAController::UnPossess()
 	InputComponent->UnPossess();
 }
 
+FPPawn* FPAController::GetPawn()
+{
+	return this->PossessedPawn;
+}
+
 void FPAController::AddYawInput(float Value)
 {
 	ControlRotation.y += Value;

@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "ForestPearlEngine/Utility/FPGameplayStatics.h"
 #include "ForestPearlEngine/FPStaticMeshComponent.h"
 #include "ForestPearlEngine/FPAController.h"
 #include "ForestPearlEngine/FPWorld.h"
@@ -23,7 +24,7 @@ void Player::Initialize()
 
 	ShieldPivot = new FPSceneComponent(this);
 	ShieldPivot->SetupAttachment(Mesh);
-	ShieldPivot->SetRelativeLocation({ 0.0f, 3.0f, 0.0f });
+	ShieldPivot->SetRelativeLocation({ 0.0f, 2.0f, 0.0f });
 	ShieldPivot->SetRelativeRotation({ -90.0f, 0.0f, 0.0f });
 
 	//카메라 설정
@@ -53,6 +54,8 @@ void Player::Initialize()
 
 void Player::BeginPlay()
 {
+	OneWindmillWing = static_cast<WindmillWing*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "WindmillWing"));
+	TripleWing = static_cast<TripleWindmillWing*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "TripleWindmillWing"));
 }
 
 void Player::Tick()
@@ -61,7 +64,7 @@ void Player::Tick()
 	RootComponent->AddLocalRotation(FPVector3{ 0.0f, -mov, 0.0f });
 
 	float RotateSpeed = 360.0f;
-	ShieldPivot->AddLocalRotation(FPVector3{ 0.0f,  RotateSpeed * GetWorld()->GetGameTimer()->DeltaTime(),0.0f });
+	ShieldPivot->AddLocalRotation(FPVector3{ 0.0f, 0.0f, RotateSpeed * GetWorld()->GetGameTimer()->DeltaTime() });
 
 
 	__super::Tick();
@@ -131,11 +134,19 @@ void Player::SetTripleWindmillWing(TripleWindmillWing* Wing)
 void Player::AttachHead(FInputValue Value)
 {
 
+	if (OneWindmillWing != nullptr)
+	{
+		OneWindmillWing->AttachHead(Value);
+	}
 }
 
 void Player::AttachShield(FInputValue Value)
 {
 
+	if (OneWindmillWing != nullptr)
+	{
+		OneWindmillWing->AttachShield(Value);
+	}
 }
 
 FPSceneComponent* Player::GetShieldPivot()

@@ -16,8 +16,6 @@ void WindmillWing::Initialize()
 	SetRootComponent(Wing);
 
 	FPAController* Controller = GetWorld()->GetController(0);
-	Controller->GetInputComponent().BindMethod("IA_AttachHead", this, EKeyState::Down, &WindmillWing::AttachHead);
-	Controller->GetInputComponent().BindMethod("IA_AttachShield", this, EKeyState::Down, &WindmillWing::AttachShield);
 	Controller->GetInputComponent().BindMethod("IA_SetScaleWing", this, EKeyState::Pressed, &WindmillWing::SetScaleWing);
 }
 
@@ -44,42 +42,50 @@ void WindmillWing::Tick()
 
 void WindmillWing::AttachHead(FInputValue Value)
 {
+	ScaleOffset = 1.0f;
 	isHead = !isHead;
 
+	std::cout << "Attach Head : ";
 	if (isHead)
 	{
+		std::cout << "Player\n";
 		isShield = false;
 		AttachToActor(Player, "HeadPivot");
 		Wing->SetRelativeScale3D({ 1.0f, 1.0f, 1.0f });
-		//Wing->SetRelativeRotation({ 0.0f, 0.0f, 0.0f });
-		//Wing->SetRelativeLocation({0.0f, 5.0f, 0.0f});
+		Wing->SetRelativeRotation({ 0.0f, 0.0f, 0.0f });
+		Wing->SetRelativeLocation({0.0f, 0.0f, 0.0f});
 	}
 	else
 	{
+		std::cout << "Windmill\n";
 		AttachToActor(Body, "WingPoint1");
-		//Wing->SetRelativeRotation({ -90.0f, 0.0f, 0.0f });
-		//Wing->SetRelativeLocation({ 0.0f, 3.0f, -1.0f });
+		Wing->SetRelativeRotation({ 0.0f, 0.0f, 0.0f });
+		Wing->SetRelativeLocation({ 0.0f, 0.0f, 0.0f });
 	}
 }
 
 void WindmillWing::AttachShield(FInputValue Value)
 {
+	ScaleOffset = 1.0f;
 	isShield = !isShield;
 
+	std::cout << "Attach Shield : ";
 	if (isShield)
 	{
+		std::cout << "Player\n";
 		isHead = false;
 		AttachToComponent(ShieldPivot);
-		Wing->SetRelativeScale3D({ ScaleOffset, ScaleOffset, ScaleOffset });
-		Wing->SetRelativeRotation({ -90.0f, 0.0f, 0.0f });
-		Wing->SetRelativeLocation({ 0.0f, 0.0f, ScaleOffset * 5.0f });
+		Wing->SetRelativeScale3D({ 1.0f, 1.0f, 1.0f });
+		Wing->SetRelativeRotation({ 0.0f, 0.0f, 0.0f });
+		Wing->SetRelativeLocation({ 0.0f, 3.0f, 0.0f });
 	}
 	else
 	{
+		std::cout << "Windmill\n";
 		AttachToActor(Body, "WingPoint1");
 		Wing->SetRelativeScale3D({ 1.0f, 1.0f, 1.0f });
-		//Wing->SetRelativeRotation({ -90.0f, 0.0f, 0.0f });
-		//Wing->SetRelativeLocation({ 0.0f, 3.0f, -1.0f });
+		Wing->SetRelativeRotation({ 0.0f, 0.0f, 0.0f });
+		Wing->SetRelativeLocation({ 0.0f, 0.0f, 0.0f });
 	}
 }
 
@@ -97,12 +103,12 @@ void WindmillWing::SetScaleWing(FInputValue Value)
 		if (isBig) { ScaleOffset = 2.0f; return; }
 		if (isSmall) { ScaleOffset = 0.3f; return; }
 
-		Wing->AddLocalOffset({0.0f, 0.0f, move_x * 5});
+		Wing->AddLocalOffset({ 0.0f, move_x * 5, 0.0});
 
 		std::cout << Wing->GetRelativeLocation().x << " : " << Wing->GetRelativeLocation().y << " : " << Wing->GetRelativeLocation().z << "\n";
-
- 		Wing->SetWorldScale3D(Wing->GetComponentScale() + FPVector3{ move_x, move_x, move_x });
 	}
+
+	Wing->SetWorldScale3D(Wing->GetComponentScale() + FPVector3{ move_x, move_x, move_x });
 }
 
 void WindmillWing::SetFillTriangel(FInputValue Value)

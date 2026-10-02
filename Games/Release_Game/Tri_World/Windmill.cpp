@@ -1,4 +1,5 @@
 #include "Windmill.h"
+#include "ForestPearlEngine/Utility/FPGameplayStatics.h"
 #include "ForestPearlEngine/FPStaticMeshComponent.h"
 #include "ForestPearlEngine/FPAController.h"
 #include "ForestPearlEngine/FPWorld.h"
@@ -24,6 +25,8 @@ void Windmill::Initialize()
 
 void Windmill::BeginPlay()
 {
+	OneWindmillWing = static_cast<WindmillWing*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "WindmillWing"));
+	TripleWing = static_cast<TripleWindmillWing*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "TripleWindmillWing"));
 }
 
 void Windmill::Tick()
@@ -77,13 +80,16 @@ void Windmill::SetCullTriangle(FInputValue Value)
 
 void Windmill::SetScaleWing(FInputValue Value)
 {
+	std::cout << "[Windmill] : " << "SetScaleWing" << "\n";
 	if (OneWindmillWing != nullptr)
 	{
+		std::cout << "[Windmill] : " << "SetScaleWing : OneWing" << "\n";
 		OneWindmillWing->SetScaleWing(Value);
 	}
 
 	if (TripleWing != nullptr)
 	{
+		std::cout << "[Windmill] : " << "SetScaleWing : TripleWing" << "\n";
 		TripleWing->SetScaleWing(Value);
 	}
 }

@@ -17,8 +17,10 @@
 [입력](#-input-시스템) ·
 [에셋](#-assets-구조) ·
 [빌드](#-build-시스템) ·
+[VS 설정](#visual-studio-설정) ·
 [사용 가이드](#-콘텐츠-프로그래머-가이드) ·
-[Demo](#-demo-프로젝트--tri_world)
+[Demo](#-demo-프로젝트--tri_world) ·
+[알려진 문제](#-알려진-문제--소멸-처리)
 
 </div>
 
@@ -272,7 +274,7 @@ FPAssetLoader* AssetLoader =
 | SubSystem | Getter | 역할 |
 |---|---|---|
 | `FPGameTimer` | `GetGameTimer()` | `QueryPerformanceCounter` 기반. `DeltaTime()`(초), `DeltaTimeMS()`, `TotalTime()`, `Start/Stop/Reset` |
-| `FPGameProjectClassRegistry` | `GetClassRegister()` | `Register<T>("이름")`, `Create("이름")`, `HasFactory("이름")` |
+| `FPGameProjectClassRegistry` | `GetClassRegister()` | `Register<T>("이름")`, `Create("이름")`, `HasFactory("이름")`. 이름은 **클래스 이름과 동일**해야 함 ([등록 규칙](#클래스-등록-규칙)) |
 | `FPInputSystem` | `GetInputSystem()` | Raw Input / XInput 수집, 입력 큐 |
 | `FPAssetManager` | `GetAssetManager()` | Mesh · VertexBuffer · StaticMesh · Level · GameMode · Shader 저장소 |
 | `FPAssetLoader` | `GetAssetLoader()` | FBX / Level JSON / StaticMesh JSON / Shader 로딩 |
@@ -862,13 +864,105 @@ flowchart LR
 | ufbx | `Libraries/Ufbx` | FBX 로딩 | `ufbx.c`를 엔진에 포함해 컴파일 |
 | nlohmann/json | `Libraries/nlohmann` | JSON 파싱 | 헤더 전용 |
 
+### Visual Studio 설정
+
+프로젝트 속성은 저장소의 `.vcxproj`에 이미 들어 있습니다.
+**①** 은 clone 후 PC마다 직접 해야 하는 설정이고, **② ~ ⑤** 는 새 게임 프로젝트를 만들거나 설정을 점검할 때 확인하는 항목입니다.
+
+#### ① clone 후 직접 해야 하는 설정
+
+`.vs/`, `*.vcxproj.user`, `**/Bin/`은 git에 포함되지 않으므로 아래 항목은 저장소에 저장되지 않습니다.
+
+| # | 항목 | 설정 방법 |
+|:-:|---|---|
+| 1 | 워크로드 | Visual Studio Installer → **C++를 사용한 데스크톱 개발** (MSVC v143, Windows 10/11 SDK) |
+| 2 | DirectXTK 라이브러리 | `Engine/ForestPearlEngine/Libraries/DirectXTK/DirectXTK_Desktop_2022.sln`을 열어 `Debug\|x64`, `Release\|x64`를 각각 빌드 → `Bin/Desktop_2022/x64/<구성>/DirectXTK.lib` 생성. x86으로 빌드하려면 `Win32` 구성도 빌드 |
+| 3 | 시작 프로젝트 | 솔루션 탐색기 → **Runner** 우클릭 → **시작 프로젝트로 설정**. 엔진과 게임은 정적 라이브러리라 실행할 수 없음 |
+| 4 | 솔루션 플랫폼 | 도구 모음에서 **x64** 선택. 패키징은 `Release\|x64`에서만 동작 |
+| 5 | 디버깅 작업 디렉터리 | Runner 속성 → 디버깅 → 작업 디렉터리 = `$(ProjectDir)` (기본값 유지). Debug 구성은 작업 디렉터리 기준 `../../Games/…`, `../../Engine/…`에서 에셋을 읽음 |
+| 6 | 시스템 로캘 | Windows 시스템 로캘 **한국어** 기준. 소스 대부분이 CP949(ANSI)로 저장되어 있고, 렌더러가 `Font/굴림9k.sfont`를 좁은 문자열 경로로 엶 |
+
+> [!CAUTION]
+> 프로젝트에 `/utf-8` 컴파일 옵션을 추가하지 마세요. BOM 없는 CP949 소스의 한글 문자열과 주석이 깨집니다.
+
+#### ② 게임 프로젝트 속성
+
+프로젝트 우클릭 → 속성. 구성 **모든 구성**, 플랫폼 **모든 플랫폼**으로 두고 설정합니다.
+
+| 속성 페이지 | 항목 | 값 |
+|---|---|---|
+| 구성 속성 → 일반 | 구성 형식 | **정적 라이브러리(.lib)** |
+| 구성 속성 → 일반 | 플랫폼 도구 집합 | Visual Studio 2022 (v143) |
+| 구성 속성 → 일반 | C++ 언어 표준 | ISO C++17 표준 (`/std:c++17`) |
+| 구성 속성 → 고급 | 문자 집합 | **유니코드 문자 집합 사용** (엔진 API가 `TCHAR` 문자열을 주고받음) |
+| C/C++ → 일반 | 추가 포함 디렉터리 | `$(SolutionDir)Engine` |
+| C/C++ → 미리 컴파일된 헤더 | 미리 컴파일된 헤더 | 사용 안 함 |
+| 구성 속성 → 일반 | 출력 디렉터리 | 기본값 유지 (x64 기준 `$(SolutionDir)x64\$(Configuration)\`) |
+
+- 프로젝트 위치는 `Games/Release_Game/<이름>/<이름>.vcxproj` 이어야 합니다.
+- **폴더 이름 = 프로젝트 이름 = `FPPathManager::Get().Initialize("<이름>")`** 을 모두 같게 맞춥니다. 프로젝트 이름은 패키징된 exe 이름이 됩니다.
+- Level / StaticMesh JSON은 **기존 항목 추가**로 넣어 두면 편집하기 편합니다. 빌드에는 참여하지 않습니다.
+
+#### ③ 솔루션 연결 (참조)
+
+| 순서 | 작업 |
+|:-:|---|
+| 1 | 솔루션 폴더 `Games/Release` 우클릭 → 추가 → 기존 프로젝트 → 게임 `.vcxproj` |
+| 2 | **ForestPearlEngine** → 참조 우클릭 → **참조 추가** → 게임 프로젝트 체크 |
+| 3 | 같은 창에서 이전 게임 프로젝트의 체크 해제 |
+
+> [!IMPORTANT]
+> 엔진이 참조하는 `Games/Release_Game` 아래 프로젝트는 **정확히 1개**여야 합니다.
+> 0개이거나 2개 이상이면 패키징 스크립트가 실패하고, 2개 이상이면 어느 게임의 Hook 함수가 링크될지 보장되지 않습니다.
+
+#### ④ 엔진 · Runner 프로젝트 속성 (확인용)
+
+| 프로젝트 | 속성 | 값 |
+|---|---|---|
+| ForestPearlEngine | 구성 형식 | 정적 라이브러리(.lib) |
+| | C/C++ → 일반 → 추가 포함 디렉터리 | `$(SolutionDir)Engine/ForestPearlEngine/Libraries/DirectXTK/Inc` |
+| | 참조 | 게임 프로젝트 1개 |
+| Runner | 구성 형식 | 애플리케이션(.exe) |
+| | 링커 → 시스템 → 하위 시스템 | 콘솔 (로그용 콘솔 창이 게임 창과 함께 열림) |
+| | C/C++ → 일반 → 추가 포함 디렉터리 | `$(SolutionDir)Engine/ForestPearlEngine/Libraries/DirectXTK/Inc` |
+| | 링커 → 일반 → 추가 라이브러리 디렉터리 | `$(SolutionDir)Engine\ForestPearlEngine\Libraries\DirectXTK\Bin\Desktop_2022\$(Platform)\$(Configuration)` |
+| | 링커 → 입력 → 추가 종속성 | `DirectXTK.lib` |
+| | 참조 | ForestPearlEngine |
+
+`D3D11`, `dxgi`, `d3dcompiler`, `Xinput`은 엔진 소스의 `#pragma comment(lib, …)`로 링크되므로 따로 설정하지 않습니다.
+
+#### ⑤ HLSL 파일 속성
+
+셰이더 파일을 프로젝트에 추가하면 Visual Studio가 HLSL 컴파일 대상으로 처리합니다.
+기본값은 진입점 `main`, 출력 `$(OutDir)%(Filename).cso`이므로 **파일마다** 속성을 바꿔야 합니다 (파일 우클릭 → 속성, 모든 구성 / 모든 플랫폼).
+
+| 속성 페이지 | 항목 | Vertex Shader | Pixel Shader |
+|---|---|---|---|
+| HLSL 컴파일러 → 일반 | 진입점 이름 | `VS_Main` | `PS_Main` |
+| HLSL 컴파일러 → 일반 | 셰이더 형식 | 꼭짓점 셰이더 (`/vs`) | 픽셀 셰이더 (`/ps`) |
+| HLSL 컴파일러 → 일반 | 셰이더 모델 | Shader Model 5.0 (`/5_0`) | Shader Model 5.0 (`/5_0`) |
+| HLSL 컴파일러 → 출력 파일 | 개체 파일 이름 | `$(ProjectDir)\Assets\Shader\bin\%(Filename).vso` | `$(ProjectDir)\Assets\Shader\bin\%(Filename).pso` |
+
+컴파일하지 않을 참고용 파일(`.fx` 등)은 구성 속성 → 일반 → **빌드에서 제외 = 예**로 설정합니다.
+
+#### 프로젝트 템플릿
+
+`GameTemplate/TriWorldTemplate_Ver1.0.zip`은 Visual Studio **프로젝트 템플릿**입니다.
+
+1. zip 파일을 압축을 풀지 않은 채 `문서\Visual Studio 2022\Templates\ProjectTemplates\`에 복사합니다.
+2. Visual Studio를 다시 시작합니다.
+3. 솔루션에서 추가 → 새 프로젝트 → `TriWorldTemplate_Ver1.0`을 선택하고, 위치를 `Games\Release_Game\`으로 지정합니다.
+
+> [!NOTE]
+> 템플릿은 ②의 프로젝트 속성을 그대로 담고 있지만, 포함된 소스는 이전 버전 API 기준입니다
+> (예: `FPAssetManager::LoadLevelData` → 현재는 `FPAssetLoader::LoadLevelData(…, AssetOwner)`).
+> 소스는 현재 `Tri_World`를 기준으로 맞춰야 빌드됩니다.
+
 ### 빌드 절차
 
-1. **DirectXTK 빌드** (최초 1회) — `Bin/` 폴더는 git에 포함되지 않습니다.
-   `Engine/ForestPearlEngine/Libraries/DirectXTK/DirectXTK_Desktop_2022.sln`을 열어 사용할 구성(`Debug|x64`, `Release|x64`)으로 빌드합니다.
+1. [Visual Studio 설정](#visual-studio-설정)의 ①을 마칩니다 (DirectXTK 빌드, 시작 프로젝트, x64).
 2. `ForestPearlEngine.sln`을 엽니다.
-3. **Runner**를 시작 프로젝트로 설정합니다.
-4. 구성을 선택하고 빌드합니다.
+3. 구성을 선택하고 **Runner**를 빌드합니다. 참조에 따라 게임 → 엔진 → Runner 순으로 빌드됩니다.
 
 | 구성 | 결과 | 실행 |
 |---|---|---|
@@ -937,8 +1031,8 @@ x64/Release/
 
 ### 0. 프로젝트 만들기
 
-- `GameTemplate/TriWorldTemplate_Ver1.0.zip`을 템플릿으로 프로젝트를 만듭니다.
-- 구성 유형 **Static Library**, C++17, 추가 포함 디렉터리 `$(SolutionDir)Engine`
+- [Visual Studio 설정](#visual-studio-설정)의 ② 게임 프로젝트 속성, ③ 솔루션 연결을 따라 프로젝트를 만듭니다 ([프로젝트 템플릿](#프로젝트-템플릿) 사용 가능).
+- 구성 형식 **정적 라이브러리**, C++17, 유니코드, 추가 포함 디렉터리 `$(SolutionDir)Engine`
 - 엔진 헤더는 `#include "ForestPearlEngine/..."` 형태로 포함합니다.
 - [실행할 게임 바꾸기](#실행할-게임-바꾸기) 절차로 엔진에 연결합니다.
 
@@ -1001,8 +1095,39 @@ void LoadAssets()
 std::string ReturnStartLevel() { return "TriWorld"; }
 ```
 
-> [!NOTE]
-> 등록하는 클래스는 `FPObject`를 상속하고 **기본 생성자**가 있어야 합니다.
+#### 클래스 등록 규칙
+
+> [!WARNING]
+> **등록 이름은 반드시 등록하는 C++ 클래스 이름과 같아야 합니다** (대소문자 포함).
+>
+> ```cpp
+> Registry->Register<Player>("Player");   // ✔ 클래스 이름 = 등록 이름
+> Registry->Register<Player>("Hero");     // ✘ 이름이 다름
+> Registry->Register<Windmill>("Player"); // ✘ 다른 클래스의 이름
+> ```
+
+레지스트리는 문자열과 타입이 일치하는지 검사하지 않습니다. 등록 이름은 데이터와 코드가 클래스를 가리키는 유일한 수단이며, 아래 모든 곳에서 **클래스 이름**으로 사용됩니다.
+
+| 이름을 사용하는 곳 | 예 |
+|---|---|
+| Level JSON `gamemode` | `"gamemode": "GameMode"` |
+| Level JSON `actors[].class` | `"class": "Tree"` |
+| `FPAGameMode::ControllerList` | `ControllerList.push_back("GameController")` |
+| StaticMesh JSON `Material` | `"Material": "CB2Material"` |
+| `FPGameplayStatics` | `GetActorOfClass(GetWorld(), "Player")` → 결과를 `static_cast<Player*>`로 사용 |
+| `FPWorld::SpawnActor` | `SpawnActor("Tree", "RuntimeTree")` |
+
+| 잘못된 등록 | 결과 |
+|---|---|
+| 사용하는 이름이 등록되어 있지 않음 | Level 로드 · Controller 생성 · `SpawnActor`에서 `nullptr` 역참조로 종료. GameMode는 콘솔에 `…의 Class가 존재하지 않음`을 출력한 뒤 World 초기화에서 종료. `GetActorOfClass`는 `std::bad_typeid` 예외 |
+| 다른 클래스의 이름으로 등록 | 엉뚱한 클래스가 생성되고, 이름을 믿고 `static_cast`한 코드가 잘못된 타입을 다룸 |
+| 같은 이름으로 두 번 등록 | 경고 없이 나중 등록이 앞의 것을 덮어씀 |
+| Material 이름이 등록되어 있지 않음 | 기본 `FPMaterial` 사용 (오류 없음) |
+
+그 밖의 조건:
+
+- 등록하는 클래스는 `FPObject`를 상속하고 **기본 생성자**가 있어야 합니다.
+- Level JSON · GameMode · StaticMesh JSON · `FPGameplayStatics`에서 이름으로 쓰는 클래스는 **모두** 등록해야 합니다.
 
 ### 2. GameMode — 사용할 Controller 지정
 
@@ -1099,6 +1224,10 @@ void Player::Tick()
 | `BeginPlay()` | 모든 액터의 `Initialize()` 이후 | 다른 액터 검색, Attach |
 | `Tick()` | 매 프레임 | 로직 후 `__super::Tick()` |
 
+> [!CAUTION]
+> 소멸 처리는 아직 구성되지 않았습니다. 액터와 컴포넌트를 런타임에 `delete`하지 말고 `SetActive(false)`로 숨기세요.
+> 자세한 내용은 [알려진 문제 — 소멸 처리](#-알려진-문제--소멸-처리)를 참고하세요.
+
 ### 5. 컴포넌트 레퍼런스
 
 #### `FPSceneComponent` — 트랜스폼 계층
@@ -1127,7 +1256,7 @@ auto* Body = new FPStaticMeshComponent(this, "Windmill_Body_StaticMesh");  // Lo
 | `SetPriority(int)` | 큰 값이 먼저 그려짐 |
 | `SetMaterial(FPMaterialInterface*)` | Material 교체 |
 | `SetTopology("TRIANGLELIST")` | Topology 변경 |
-| `SetStaticMesh(name)` | 메시 교체 |
+| `SetStaticMesh(name)` | 메시 교체. 현재는 이전 메시의 렌더 항목이 남아 함께 그려짐 ([알려진 문제](#-알려진-문제--소멸-처리)) |
 | `GetSocketTransform(name)` | Socket의 월드 Transform |
 
 #### `FPCameraComponent` — 카메라
@@ -1354,6 +1483,88 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 | `IA_SetDepthStencilBuffer` | F5 | — | Down | `GameController::SetActiveDepthStencilBuffer` |
 
 </details>
+
+---
+
+## 🚧 알려진 문제 — 소멸 처리
+
+현재 버전은 객체를 **생성**하는 경로는 갖춰져 있지만 **소멸**하는 경로는 아직 구성되지 않았습니다.
+대부분의 소멸자가 `= default`이거나 비어 있고, `new`로 만든 객체를 소유자가 `delete`하지 않습니다.
+Tri_World처럼 *레벨 하나를 열어 종료할 때까지 유지*하는 흐름에서는 드러나지 않지만, 아래 상황에서는 문제가 됩니다.
+
+| 상황 | 현재 결과 |
+|---|---|
+| 프로그램 종료 | SubSystem · GPU 리소스 미해제, D3D Device 계열 이중 Release |
+| 레벨 전환 (`OpenLevel` 재호출) | 이전 레벨의 액터가 모두 누수되고, 메시 · 텍스트 · 카메라가 렌더 목록에 남아 계속 사용됨 |
+| 런타임에 액터 `delete` | 컴포넌트가 남아 계속 그려지고, 입력 · UI 쪽에 Dangling 포인터 발생 |
+| 런타임에 컴포넌트 `delete` | 트랜스폼 계층과 렌더 목록에 Dangling 포인터 발생 |
+
+### 1. 소유한 객체를 해제하지 않는 곳
+
+| 소유자 | 해제되지 않는 대상 | 현재 소멸자 |
+|---|---|---|
+| `FPGameInstance` | 생성자에서 `new`한 SubSystem 10개 | `= default` |
+| `FPWorld` | `GameActorList`의 모든 액터 | `= default`. `Finalize()` / `UnLoadData()`를 직접 호출해야만 삭제됨 |
+| `FPGameInstance::OpenLevel` | 이전 World의 액터 전부 | `World.reset()`만 호출하고 `Finalize()`를 호출하지 않음 |
+| `FPAGameMode` | `GameController`의 Controller들 | `= default` |
+| `FPAController` | `InputComponent` | 비어 있음. `FPInputComponent`의 소멸자는 IMC · Input Action을 해제하지만 호출되지 않음 |
+| `FPActor` | 기본 `RootComponent`, 액터가 `new`로 만든 모든 컴포넌트 | `= default`. 액터는 자신이 만든 컴포넌트 목록을 갖고 있지 않음 |
+| `FPStaticMeshComponent` | `StaticMesh`(컴포넌트마다 새로 생성되는 `FPStaticMesh`), `Material` | 비어 있음 |
+| `FPStaticMesh` | `Material`. 생성자에서 만든 `FPMaterial`이 곧바로 `SetMaterial()`로 덮어써져 즉시 누수 | 없음 |
+| `FPMaterial` | `VBLayout`(InputLayout). `SetVertexShader()`를 호출하면 이전 레이아웃도 해제되지 않음 | 없음 |
+| `GizmoComponent` | `Material`, 직접 만든 VertexBuffer | 렌더 목록 해제만 수행 |
+| `FPViewPortClient` | `FPViewPort` 5개, `VertexConst` 4개 | `= default` |
+| `FPAssetManager` | `void*`로 보관하는 VertexBuffer, Shader 객체, Shader 바이트코드 | `= default` |
+| `RenderingDevice` | 상수 버퍼 5개, DepthStencilState 3개, 열거한 `IDXGIAdapter1`, `IDXGIAdapter4` | 없음 |
+| `ForestPearlEngine` | `Renderer` | `Finalize()`만 호출 |
+| `FPGameplayStatics::GetActorOfClass` · `GetAllActorsOfClass` | 타입 비교용 임시 인스턴스의 `RootComponent` — **호출할 때마다** 1개 | — |
+| `FPWorld::CreateClassInstnce<T>` | `dynamic_cast`가 실패한 객체 (`release()` 후 버려짐) | — |
+| 게임 코드 (`UI` 등) | 직접 `new`한 `FPTextComponent` | 없음 |
+
+### 2. 잘못 해제하는 곳
+
+| 위치 | 문제 |
+|---|---|
+| `RenderingDevice::DeviceFinalize()` | `RenderTargetView`, `SwapChain`, `DeviceContext`, `Device`는 `ComPtr`인데 `->Release()`로 직접 해제함. 종료 시 싱글톤이 소멸하면서 `ComPtr`이 한 번 더 Release → **이중 해제** |
+| `FPWorld::UnLoadData()` | 액터를 `delete`한 뒤 `GameActorList`를 비우지 않음. 이후 `Tick()`이 돌거나 다시 호출되면 해제된 메모리 접근 / 이중 `delete` |
+| `FPGameInstance::UnLoadData()` + `Finalize()` | `Finalize()`가 내부에서 `UnLoadData()`를 다시 호출하므로 둘 다 호출하면 같은 액터를 두 번 `delete` |
+| `FPActor::SetRootComponent()` | 기본 루트를 `delete`함. 이미 자식이 붙어 있거나 다른 컴포넌트에 Attach된 뒤라면 상대 쪽 포인터가 Dangling |
+| `FPStaticMeshComponent::SetStaticMesh()` | 이전 `FPStaticMesh`를 해제하지 않고 렌더 항목을 새로 등록함. 이전 항목이 목록에 남아 두 메시가 함께 그려짐 |
+
+### 3. 소멸자를 구현하기 전에 먼저 고쳐야 하는 구조
+
+소멸자를 채우기만 해서는 해결되지 않는 부분입니다.
+
+**렌더 목록이 내준 포인터가 무효화됨**
+`FPMeshRenderList` · `FPCameraList` · `FPTextRenderList`는 `std::vector`에 항목을 넣고 `&vector.back()`을 돌려줍니다.
+다음 등록에서 재할당이 일어나거나 `erase`로 항목이 당겨지면 컴포넌트가 들고 있는 포인터가 무효가 됩니다.
+
+- `FPMeshComponent` · `FPCameraComponent` · `FPTextComponent` · `GizmoComponent`의 소멸자는 주소 비교로 자기 항목을 찾기 때문에, 찾지 못하거나 다른 컴포넌트의 항목을 지울 수 있습니다.
+- `FPMeshComponent::SetMaterial()`은 이 포인터를 통해 값을 다시 쓰므로, 다른 컴포넌트가 등록된 뒤에 호출하면 무효한 메모리에 씁니다.
+
+**`FPSceneComponent`에 소멸자가 없음**
+부모의 `ChildComponent`와 자식의 `ParentComponent`에서 자신을 제거하지 않습니다.
+다른 액터에 Attach된 경우(예: `WindmillWing` → `Windmill`) 삭제 순서에 따라 Dangling 포인터가 남습니다.
+
+**렌더 항목이 컴포넌트 · 액터 멤버의 주소를 참조함**
+`RenderItem`, `CameraItem`, `UIContextItem`은 값이 아니라 주소를 담습니다.
+특히 `FPTextComponent`의 `active`는 **액터 멤버 `bool`의 주소**라서, 액터만 삭제되고 텍스트 컴포넌트가 남으면 렌더러가 해제된 메모리를 읽습니다.
+
+**입력 바인딩을 해제할 수단이 없음**
+`FBindInfo::BindObj`와 바인딩 람다는 객체의 원시 포인터를 보관하고, 바인딩을 제거하는 API가 없습니다.
+`FPPawn`은 소멸할 때 `UnPossess`하지 않으므로 Controller와 `FPInputComponent`의 `PossessedPawn`이 Dangling으로 남습니다.
+
+### 4. 현재 버전에서 지켜야 할 사용 규칙
+
+| 규칙 | 이유 |
+|---|---|
+| 액터 · 컴포넌트를 런타임에 `delete`하지 않는다. 숨길 때는 `SetActive(false)` | 1, 3번 |
+| 한 번의 실행에서 레벨은 하나만 연다 (`OpenLevel`을 다시 호출하지 않는다) | 이전 레벨이 누수되고 렌더 목록에 남음 |
+| `FPGameInstance::UnLoadData()`를 직접 호출하지 않는다 | 종료 시 엔진이 `Finalize()`를 호출하므로 이중 `delete` |
+| `GetActorOfClass` 계열은 `BeginPlay()`에서 한 번 호출해 멤버에 보관한다. `Tick()`에서 매 프레임 호출하지 않는다 | 호출마다 임시 인스턴스의 컴포넌트가 누수됨 |
+| `SetRootComponent()`는 `Initialize()`에서 다른 컴포넌트를 붙이기 전에 가장 먼저 호출한다 | 기본 루트가 `delete`됨 |
+| `SetMaterial()`은 메시 컴포넌트를 만든 직후에 호출한다 | 렌더 항목 포인터 무효화 |
+| `SetStaticMesh()` · `SetVertexShader()`를 반복 호출하지 않는다 | 이전 리소스가 해제되지 않음 |
 
 ---
 

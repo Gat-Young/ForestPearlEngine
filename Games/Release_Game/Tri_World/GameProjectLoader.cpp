@@ -10,6 +10,7 @@
 #include "Windmill.h"
 #include "WindmillWing.h"
 #include "TripleWindmillWing.h"
+#include "TripleWingWindmill.h"
 
 void RegistProjectName()
 {
@@ -40,6 +41,7 @@ void LoadClassRegist()
 	ClassRegistry->Register<Windmill>("Windmill");
 	ClassRegistry->Register<WindmillWing>("WindmillWing");
 	ClassRegistry->Register<TripleWindmillWing>("TripleWindmillWing");
+	ClassRegistry->Register<TripleWingWindmill>("TripleWingWindmill");
 
 
 	//Material Class µî·Ï

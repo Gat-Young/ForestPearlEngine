@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -18,49 +18,11 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Axis.h" />
-    <ClInclude Include="GameController.h" />
-    <ClInclude Include="GameMode.h" />
-    <ClInclude Include="Grid.h" />
-    <ClInclude Include="Player.h" />
-    <ClInclude Include="Terrain.h" />
-    <ClInclude Include="Tree.h" />
-    <ClInclude Include="TripleWindmillWing.h" />
-    <ClInclude Include="TripleWingWindmill.h" />
-    <ClInclude Include="UI.h" />
-    <ClInclude Include="Windmill.h" />
-    <ClInclude Include="WindmillWing.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Axis.cpp" />
-    <ClCompile Include="GameController.cpp" />
-    <ClCompile Include="GameMode.cpp" />
-    <ClCompile Include="GameProjectLoader.cpp" />
-    <ClCompile Include="Grid.cpp" />
-    <ClCompile Include="Player.cpp" />
-    <ClCompile Include="Terrain.cpp" />
-    <ClCompile Include="Tree.cpp" />
-    <ClCompile Include="TripleWindmillWing.cpp" />
-    <ClCompile Include="TripleWingWindmill.cpp" />
-    <ClCompile Include="UI.cpp" />
-    <ClCompile Include="Windmill.cpp" />
-    <ClCompile Include="WindmillWing.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Assets\Level\Triworld.json" />
-    <None Include="Assets\StaticMesh\Terrain_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLinkTriangle_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\Tree_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\Windmill_Body_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\Windmill_Wing_StaticMesh.json" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{874c49a3-fd56-4137-9cfa-a3bd1b70917e}</ProjectGuid>
-    <RootNamespace>Tri_World</RootNamespace>
+    <ProjectGuid>{5409c873-2943-4b95-8d3a-5b8305f120c6}</ProjectGuid>
+    <RootNamespace>DOHWA</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -116,8 +78,6 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -135,8 +95,6 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -152,8 +110,6 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -171,8 +127,6 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -180,6 +134,24 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="Dohwa.h" />
+    <ClInclude Include="DohwaClass.h" />
+    <ClInclude Include="DohwaDefine.h" />
+    <ClInclude Include="DohwaGraphics.h" />
+    <ClInclude Include="DohwaMath.h" />
+    <ClInclude Include="DohwaVertexBuffer.h" />
+    <ClInclude Include="DOHWAx9Types.h" />
+    <ClInclude Include="DOHWAUnknownbase.h" />
+    <ClInclude Include="DOHWAx9.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Dohwa.cpp" />
+    <ClCompile Include="DohwaGraphics.cpp" />
+    <ClCompile Include="DOHWAGUID.cpp" />
+    <ClCompile Include="DohwaMath.cpp" />
+    <ClCompile Include="DohwaVertexBuffer.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

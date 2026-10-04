@@ -59,6 +59,7 @@ void WindmillWing::AttachHead(FInputValue Value)
 	{
 		std::cout << "Windmill\n";
 		AttachToActor(Body, "WingPoint1");
+		Wing->SetRelativeScale3D({ 1.0f, 1.0f, 1.0f });
 		Wing->SetRelativeRotation({ 0.0f, 0.0f, 0.0f });
 		Wing->SetRelativeLocation({ 0.0f, 0.0f, 0.0f });
 	}
@@ -91,6 +92,11 @@ void WindmillWing::AttachShield(FInputValue Value)
 
 void WindmillWing::SetScaleWing(FInputValue Value)
 {
+	FPPawn* ParentPawn = static_cast<FPPawn*>(RootComponent->GetAttachmentRoot()->GetOwner());
+	FPAController* PawnController = ParentPawn->GetController();
+	//자신이 붙어있는 오브젝트가 Possess가 아니라면 넘어감
+	if ((PawnController != nullptr) && (ParentPawn != ParentPawn->GetController()->GetPawn())) return;
+
 	float mov = 1.0f;
 	float move_x = Value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
 	

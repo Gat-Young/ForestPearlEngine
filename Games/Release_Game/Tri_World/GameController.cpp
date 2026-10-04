@@ -10,6 +10,7 @@
 #include "Windmill.h"
 #include "WindmillWing.h"
 #include "Terrain.h"
+#include "TripleWingWindmill.h"
 
 //UI 贸府
 #include "UI.h"
@@ -115,6 +116,8 @@ void GameController::BeginPlay()
 	{
 		ControllPawn.push_back(static_cast<FPPawn*>(Windmiill));
 	}
+	
+	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "TripleWingWindmill")));
 	ControllPawnSize = ControllPawn.size();
 }
 
@@ -176,6 +179,15 @@ void GameController::SetFillTriangel(FInputValue Value)
 	{
 		TripleWindmillWing* GameTripleWindmillWing = static_cast<TripleWindmillWing*>(Actor);
 		GameTripleWindmillWing->SetFillTriangel(Value);
+	}
+	ActorList.clear();
+
+	//TripleWingWindmill 贸府
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "TripleWingWindmill", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		TripleWingWindmill* GameTripleWingWindmill = static_cast<TripleWingWindmill*>(Actor);
+		GameTripleWingWindmill->SetFillTriangel(Value);
 	}
 	ActorList.clear();
 
@@ -244,6 +256,16 @@ void GameController::SetCullTriangle(FInputValue Value)
 		GameTripleWindmillWing->SetCullTriangle(Value);
 	}
 	ActorList.clear();
+
+	//TripleWingWindmill 贸府
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "TripleWingWindmill", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		TripleWingWindmill* GameTripleWingWindmill = static_cast<TripleWingWindmill*>(Actor);
+		GameTripleWingWindmill->SetCullTriangle(Value);
+	}
+	ActorList.clear();
+
 
 	//Terrain 贸府
 	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Terrain", ActorList);

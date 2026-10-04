@@ -23,7 +23,7 @@ class FPActor : public FPObject
 		virtual FPWorld* GetWorld() override final{ return Outer->GetWorld(); }
 
 		bool AttachToComponent(FPSceneComponent* Parent);
-		bool AttachToActor(FPActor* Parent);
+		bool AttachToActor(FPActor* Parent, std::string SocketName);
 		bool DetachFromActor();
 		bool SetRootComponent(FPSceneComponent* Component);
 

@@ -10,18 +10,6 @@
 
 void UI::Initialize()
 {
-	FPAController* Controller = GetWorld()->GetController(0);
-
-	if (Controller == nullptr)
-		return;
-
-	Controller->GetInputComponent().BindMethod("IA_SetUITriangel", this, EKeyState::Down, &UI::SetActiveViewHelp);
-	Controller->GetInputComponent().BindMethod("IA_SetDepthStencilBuffer", this, EKeyState::Down, &UI::SetActiveDepthStencilBuffer);
-	Controller->GetInputComponent().BindMethod("IA_SetGrid", this, EKeyState::Down, &UI::SetGridOn);
-	Controller->GetInputComponent().BindMethod("IA_SetAxis", this, EKeyState::Down, &UI::SetAxisOn);
-	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &UI::SetFill);
-	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &UI::SetCull);
-
 	SetUIContext(&AlwaysOn, 1, 1, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
 	FPSText = TextComponets.back();
 

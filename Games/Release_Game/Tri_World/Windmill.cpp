@@ -1,15 +1,18 @@
 #include "Windmill.h"
-#include "ForestPearlEngine/FPMeshComponent.h"
+#include "ForestPearlEngine/Utility/FPGameplayStatics.h"
+#include "ForestPearlEngine/FPStaticMeshComponent.h"
 #include "ForestPearlEngine/FPAController.h"
 #include "ForestPearlEngine/FPWorld.h"
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
 #include "ForestPearlEngine/InputValue.h"
 #include "ForestPearlEngine/FPGameInstance.h"
 #include "ForestPearlEngine/FPGameTimer.h"
+#include "WindmillWing.h"
+#include "TripleWindmillWing.h"
 
 void Windmill::Initialize()
 {
-	Body = new FPMeshComponent(this, "Windmill/Windmill_Body.fbx");
+	Body = new FPStaticMeshComponent(this, "Windmill_Body_StaticMesh");
 	SetRootComponent((FPSceneComponent*)Body);
 	Body->SetMeshCull(false);
  
@@ -17,17 +20,28 @@ void Windmill::Initialize()
 	Controller->GetInputComponent().BindMethod("IA_SetMoveTriangel", this, EKeyState::Pressed, &Windmill::Move);
 	Controller->GetInputComponent().BindMethod("IA_SetRotateWindmill", this, EKeyState::Pressed, &Windmill::Rotate);
 	Controller->GetInputComponent().BindMethod("IA_SetScaleWindmill", this, EKeyState::Pressed, &Windmill::Scaling);
-	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &Windmill::SetFillTriangel);
-	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &Windmill::SetCullTriangle);
+	Controller->GetInputComponent().BindMethod("IA_SetScaleWing", this, EKeyState::Pressed, &Windmill::SetScaleWing);
 }
 
 void Windmill::BeginPlay()
 {
+	OneWindmillWing = static_cast<WindmillWing*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "WindmillWing"));
+	TripleWing = static_cast<TripleWindmillWing*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "TripleWindmillWing"));
 }
 
 void Windmill::Tick()
 {
 	__super::Tick();
+}
+
+void Windmill::SetOneWindmillWing(WindmillWing* Wing)
+{
+	OneWindmillWing = Wing;
+}
+
+void Windmill::SetTripleWindmillWing(TripleWindmillWing* Wing)
+{
+	TripleWing = Wing;
 }
 
 void Windmill::Move(FInputValue Value)
@@ -49,7 +63,6 @@ void Windmill::Scaling(FInputValue Value)
 {
 	float mov =1.0f;
 	float move_x = Value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
-
 	RootComponent->SetWorldScale3D(RootComponent->GetComponentScale() + FPVector3{move_x, move_x, move_x});
 }
 
@@ -63,4 +76,20 @@ void Windmill::SetCullTriangle(FInputValue Value)
 {
 	isCull = !isCull;
 	Body->SetMeshCull(isCull);
+}
+
+void Windmill::SetScaleWing(FInputValue Value)
+{
+	std::cout << "[Windmill] : " << "SetScaleWing" << "\n";
+	if (OneWindmillWing != nullptr)
+	{
+		std::cout << "[Windmill] : " << "SetScaleWing : OneWing" << "\n";
+		OneWindmillWing->SetScaleWing(Value);
+	}
+
+	if (TripleWing != nullptr)
+	{
+		std::cout << "[Windmill] : " << "SetScaleWing : TripleWing" << "\n";
+		TripleWing->SetScaleWing(Value);
+	}
 }

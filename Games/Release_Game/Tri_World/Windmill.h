@@ -7,12 +7,16 @@
 class FPInputMappingContext;
 class FPInputAction;
 struct FInputValue;
-class FPMeshComponent;
+class FPStaticMeshComponent;
+class WindmillWing;
+class TripleWindmillWing;
 
 class Windmill : public FPPawn
 {
 	private:
-		FPMeshComponent* Body;
+		FPStaticMeshComponent* Body;
+		WindmillWing* OneWindmillWing;
+		TripleWindmillWing* TripleWing;
 
 		float ScaleOffset = 1.0f;
 		bool isFill = true;
@@ -24,9 +28,13 @@ class Windmill : public FPPawn
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
 
+		void SetOneWindmillWing(WindmillWing* Wing);
+		void SetTripleWindmillWing(TripleWindmillWing* Wing);
+
 		void Move(FInputValue Value);
 		void Rotate(FInputValue Value);
 		void Scaling(FInputValue Value);
 		void SetFillTriangel(FInputValue Value);
 		void SetCullTriangle(FInputValue Value);
+		void SetScaleWing(FInputValue Value);
 };

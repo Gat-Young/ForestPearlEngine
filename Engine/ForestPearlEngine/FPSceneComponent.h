@@ -73,6 +73,9 @@ class FPSceneComponent : public FPActorComponent
 		FPQuaternion GetComponentQuat();
 		FPVector3 GetComponentScale();
 
+		//Root Component Ã£±â
+		FPSceneComponent* GetAttachmentRoot();
+
 		//Socekt
 		virtual FTransform GetSocketTransform(const std::string& SocketName) const;
 

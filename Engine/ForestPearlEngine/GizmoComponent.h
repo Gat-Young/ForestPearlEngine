@@ -47,7 +47,7 @@ class GizmoComponent : FPPrimitiveComponent
 		bool isFill = false;
 		bool isCull = false;
 		bool isActive = true;
-		Topology Topo = LINELIST;
+		Topology Topo = Topology::LINELIST;
 		FPMaterial* Material = nullptr;
 
 		RenderItem* RenderItem = nullptr;

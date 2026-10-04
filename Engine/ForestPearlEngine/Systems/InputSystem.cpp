@@ -223,13 +223,21 @@ void FPInputSystem::HandleGamepadInput()
 
         EKeyState ChangedKeyState = EKeyState::None;
         if (!bWasDown && bIsDown)
+        {
             ChangedKeyState = EKeyState::Down;
+        }
         else if (bWasDown && !bIsDown)
+        {
             ChangedKeyState = EKeyState::Up;
+        }
         else if (bWasDown && bIsDown)
+        {
             ChangedKeyState = EKeyState::Pressed;
+        }
         else
+        {
             continue;
+        }
 
         FInputValue InputValue = { 1.0f, 0.0f, 0.0f, true, 1.0f };
         FKeyInputInfo KeyInputInfo = { btn.VKey, ChangedKeyState, InputValue };
@@ -258,6 +266,24 @@ void FPInputSystem::HandleGamepadInput()
         FInputValue InputValue = { RX, RY, 0.0f, true, 1.0f };
         FKeyInputInfo KeyInputInfo = { 0x101, EKeyState::Pressed, InputValue }; // 스틱용 VKey 임시값
         //MCLOG(LogMC, "R Stick Trigger");
+        InputQueue.push(KeyInputInfo);
+    }
+
+    // 왼쪽 트리거 처리
+    float LT = state.Gamepad.bLeftTrigger / 255.0f;
+    if (LT > XINPUT_GAMEPAD_TRIGGER_THRESHOLD / 255.0f)
+    {
+        FInputValue InputValue = { LT, 0.0f, 0.0f, true, 1.0f };
+        FKeyInputInfo KeyInputInfo = { 0x0110, EKeyState::Pressed, InputValue };
+        InputQueue.push(KeyInputInfo);
+    }
+
+    //오른쪽 트리거 처리
+    float RT = state.Gamepad.bRightTrigger / 255.0f;
+    if(RT > XINPUT_GAMEPAD_TRIGGER_THRESHOLD / 255.0f)
+    {
+        FInputValue InputValue = { RT, 0.0f, 0.0f, true, 1.0f };
+        FKeyInputInfo KeyInputInfo = { 0x0111, EKeyState::Pressed, InputValue };
         InputQueue.push(KeyInputInfo);
     }
 

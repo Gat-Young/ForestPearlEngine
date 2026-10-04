@@ -75,8 +75,8 @@ bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)
 	FModifyInfo ModifyInfo;
 	bool SearchResult = IMC->SearchMappingInfo(KeyInputInfo.VKey, IAName, ModifyInfo);
 
-	std::cout << "VKey : " << KeyInputInfo.VKey << " KeyState : " << KeyInputInfo.KeyState << "\n";
-	std::cout << "SearchResult IAName : " << IAName << " KeyState : " << KeyInputInfo.KeyState << "\n";
+	//std::cout << "VKey : " << KeyInputInfo.VKey << " KeyState : " << KeyInputInfo.KeyState << "\n";
+	//std::cout << "SearchResult IAName : " << IAName << " KeyState : " << KeyInputInfo.KeyState << "\n";
 
 	if (SearchResult == false)
 	{
@@ -94,7 +94,7 @@ bool FPInputComponent::ProcessKeyEvent(FKeyInputInfo KeyInputInfo)
 
 	for (FBindInfo BindInfo : BindInfos)
 	{
-		if ((BindInfo.BindObj != PossessedPawn) && (BindInfo.BindObj != PlayerController)) { std::cout << "Skip Input" << "\n";  continue; }
+		if ((BindInfo.BindObj != PossessedPawn) && (BindInfo.BindObj != PlayerController)) { continue; }
 
 		EKeyState CallKeyState = BindInfo.CallState;
 		std::function<void(FInputValue)> BindFuncPtr = BindInfo.BindFuncPtr;

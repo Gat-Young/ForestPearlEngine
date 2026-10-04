@@ -1,5 +1,6 @@
 #include "Player.h"
-#include "ForestPearlEngine/FPMeshComponent.h"
+#include "ForestPearlEngine/Utility/FPGameplayStatics.h"
+#include "ForestPearlEngine/FPStaticMeshComponent.h"
 #include "ForestPearlEngine/FPAController.h"
 #include "ForestPearlEngine/FPWorld.h"
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
@@ -7,21 +8,24 @@
 #include "ForestPearlEngine/FPGameTimer.h"
 #include "ForestPearlEngine/FPCameraComponent.h"
 #include "ForestPearlEngine/FPSpringArmComponent.h"
+#include "WindmillWing.h"
+#include "TripleWindmillWing.h"
 #include <iostream>
 
 void Player::Initialize()
 {
-	Mesh = new FPMeshComponent(this, "ToonLink/ToonLinkTriangle.fbx");
+	Mesh = new FPStaticMeshComponent(this, "ToonLinkTriangle_StaticMesh");
 
 	//real Model
-	//Mesh = new MeshComponent(this, "ToonLink/ToonLink.fbx");
+	//Mesh = new FPStaticMeshComponent(this, "ToonLink_StaticMesh");
 
 	SetRootComponent((FPSceneComponent*)Mesh);
 	Mesh->SetMeshCull(false);
 
 	ShieldPivot = new FPSceneComponent(this);
 	ShieldPivot->SetupAttachment(Mesh);
-	ShieldPivot->SetRelativeLocation({ 0.0f, 3.0f, 0.0f });
+	ShieldPivot->SetRelativeLocation({ 0.0f, 2.0f, 0.0f });
+	ShieldPivot->SetRelativeRotation({ -90.0f, 0.0f, 0.0f });
 
 	//카메라 설정
 	SpringArm = new FPSpringArmComponent(this);
@@ -40,15 +44,18 @@ void Player::Initialize()
 		return;
 
 	Controller->GetInputComponent().BindMethod("IA_SetMoveTriangel", this, EKeyState::Pressed, &Player::Move);
-	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &Player::SetFillTriangel);
-	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &Player::SetCullTriangle);
 	Controller->GetInputComponent().BindMethod("IA_SetMoveCamera", this, EKeyState::Pressed, &Player::CameraMove);
+	Controller->GetInputComponent().BindMethod("IA_SetScaleWing", this, EKeyState::Pressed, &Player::SetScaleWing);
+	Controller->GetInputComponent().BindMethod("IA_AttachHead", this, EKeyState::Down, &Player::AttachHead);
+	Controller->GetInputComponent().BindMethod("IA_AttachShield", this, EKeyState::Down, &Player::AttachShield);
 	Controller->Possess(this);
 
 }
 
 void Player::BeginPlay()
 {
+	OneWindmillWing = static_cast<WindmillWing*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "WindmillWing"));
+	TripleWing = static_cast<TripleWindmillWing*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "TripleWindmillWing"));
 }
 
 void Player::Tick()
@@ -57,7 +64,7 @@ void Player::Tick()
 	RootComponent->AddLocalRotation(FPVector3{ 0.0f, -mov, 0.0f });
 
 	float RotateSpeed = 360.0f;
-	ShieldPivot->AddLocalRotation(FPVector3{ 0.0f,  RotateSpeed * GetWorld()->GetGameTimer()->DeltaTime(),0.0f });
+	ShieldPivot->AddLocalRotation(FPVector3{ 0.0f, 0.0f, RotateSpeed * GetWorld()->GetGameTimer()->DeltaTime() });
 
 
 	__super::Tick();
@@ -99,6 +106,47 @@ void Player::SetCullTriangle(FInputValue Value)
 {
 	isCull = !isCull;
 	Mesh->SetMeshCull(isCull);
+}
+
+void Player::SetScaleWing(FInputValue Value)
+{
+	if (OneWindmillWing != nullptr)
+	{
+		OneWindmillWing->SetScaleWing(Value);
+	}
+
+	if (TripleWing != nullptr)
+	{
+		TripleWing->SetScaleWing(Value);
+	}
+}
+
+void Player::SetOneWindmillWing(WindmillWing* Wing)
+{
+	OneWindmillWing = Wing;
+}
+
+void Player::SetTripleWindmillWing(TripleWindmillWing* Wing)
+{
+	TripleWing = Wing;
+}
+
+void Player::AttachHead(FInputValue Value)
+{
+
+	if (OneWindmillWing != nullptr)
+	{
+		OneWindmillWing->AttachHead(Value);
+	}
+}
+
+void Player::AttachShield(FInputValue Value)
+{
+
+	if (OneWindmillWing != nullptr)
+	{
+		OneWindmillWing->AttachShield(Value);
+	}
 }
 
 FPSceneComponent* Player::GetShieldPivot()

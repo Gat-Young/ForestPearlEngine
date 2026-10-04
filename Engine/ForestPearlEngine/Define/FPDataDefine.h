@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <string>
 
 //정점 구조체
 struct VERTEX
@@ -14,6 +15,35 @@ struct FPMeshData
 	std::string Name;
 	std::vector<VERTEX> Vertices;
 };
+
+//소켓용 트랜스폼
+struct SOCKET_TRANSFORM
+{
+	std::string SocketName;
+
+	float Location_x, Location_y, Location_z;
+	float Rotation_x, Rotation_y, Rotation_z;
+	float Scale_x, Scale_y, Scale_Z;
+};
+
+//Static 메시 데이터 구조체
+struct FPStaticMeshData
+{
+	std::string MeshPath;
+	std::string MeshTopology;
+	std::vector<SOCKET_TRANSFORM> Sockets;
+	std::string MaterialName;
+};
+
+//VertexBuffer Topology
+enum class Topology
+{
+	TRIANGLELIST,
+	TRIANGLESTRIP,
+	LINELIST
+};
+
+Topology StringToTopology(std::string Topo);
 
 //VertexBuffer 데이터 구조체
 struct FPVertexBufferData

@@ -55,6 +55,15 @@
     <Filter Include="FPGameInstance\Source Files">
       <UniqueIdentifier>{12326347-c196-44b5-91da-aa7f4b35b10e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="RenderAsset">
+      <UniqueIdentifier>{2aaab95f-cc58-4da8-98f4-3d5acd134882}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Material">
+      <UniqueIdentifier>{83a9c508-8769-4482-b25a-88f2ee8d7c64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component\Mesh">
+      <UniqueIdentifier>{196c86d0-1c45-40e6-ac9b-7c7a677f5b4a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -105,9 +114,6 @@
     <ClInclude Include="Define\FPMath.h">
       <Filter>Define</Filter>
     </ClInclude>
-    <ClInclude Include="FPMeshComponent.h">
-      <Filter>Component</Filter>
-    </ClInclude>
     <ClInclude Include="FPMovementComponent.h">
       <Filter>Component</Filter>
     </ClInclude>
@@ -119,9 +125,6 @@
     </ClInclude>
     <ClInclude Include="Renderers\RenderingDevice.h">
       <Filter>Renderers</Filter>
-    </ClInclude>
-    <ClInclude Include="FPMaterial.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Shader\ShaderFactory.h">
       <Filter>Renderers\Shader</Filter>
@@ -201,6 +204,24 @@
     <ClInclude Include="Object\FPPawn.h">
       <Filter>Object</Filter>
     </ClInclude>
+    <ClInclude Include="FPStreamableRenderAssetr.h">
+      <Filter>RenderAsset</Filter>
+    </ClInclude>
+    <ClInclude Include="FPStaticMesh.h">
+      <Filter>RenderAsset</Filter>
+    </ClInclude>
+    <ClInclude Include="FPMaterial.h">
+      <Filter>Material</Filter>
+    </ClInclude>
+    <ClInclude Include="FPMaterialInterface.h">
+      <Filter>Material</Filter>
+    </ClInclude>
+    <ClInclude Include="FPMeshComponent.h">
+      <Filter>Component\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="FPStaticMeshComponent.h">
+      <Filter>Component\Mesh</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
@@ -227,9 +248,6 @@
     <ClCompile Include="Define\FPMath.cpp">
       <Filter>Define</Filter>
     </ClCompile>
-    <ClCompile Include="FPMeshComponent.cpp">
-      <Filter>Component</Filter>
-    </ClCompile>
     <ClCompile Include="FPMovementCompoent.cpp">
       <Filter>Component</Filter>
     </ClCompile>
@@ -247,9 +265,6 @@
     </ClCompile>
     <ClCompile Include="Renderers\RenderingDevice.cpp">
       <Filter>Renderers</Filter>
-    </ClCompile>
-    <ClCompile Include="FPMaterial.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Shader\ShaderFactory.cpp">
       <Filter>Renderers\Shader</Filter>
@@ -310,6 +325,21 @@
     </ClCompile>
     <ClCompile Include="Object\FPPawn.cpp">
       <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="FPMaterial.cpp">
+      <Filter>Material</Filter>
+    </ClCompile>
+    <ClCompile Include="FPMeshComponent.cpp">
+      <Filter>Component\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="FPStaticMeshComponent.cpp">
+      <Filter>Component\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="FPStaticMesh.cpp">
+      <Filter>RenderAsset</Filter>
+    </ClCompile>
+    <ClCompile Include="Define\FPDataDefine.cpp">
+      <Filter>Define</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

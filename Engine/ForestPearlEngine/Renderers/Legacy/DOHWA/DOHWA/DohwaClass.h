@@ -1,0 +1,23 @@
+#pragma once
+
+/////////////////////////////////////////////////////////////////////////////// 
+//
+// Dohwa 클래스 선행 선언
+//
+/////////////////////////////////////////////////////////////////////////////// 
+
+class	DohwaDevice9;
+
+class	DohwaDevice9x;
+
+
+
+class	DohwaSurface;
+
+class	DohwaRenderTarget;
+
+class	DohwaDepthStencil;
+
+class	DohwaVertexBuffer9;
+
+class	DohwaGraphicsEngine9;

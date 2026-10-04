@@ -798,15 +798,15 @@ void RenderingDevice::IASetPrimitiveTopology(Topology topo)
 	
 	switch (topo)
 	{
-		case TRIANGLELIST:
+		case Topology::TRIANGLELIST:
 			D3DTopo = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 			break;
 
-		case TRIANGLESTRIP:
+		case Topology::TRIANGLESTRIP:
 			D3DTopo = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
 			break;
 
-		case LINELIST:
+		case Topology::LINELIST:
 			D3DTopo = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
 			break;
 	}

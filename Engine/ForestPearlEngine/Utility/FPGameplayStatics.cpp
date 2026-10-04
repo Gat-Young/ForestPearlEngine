@@ -45,3 +45,9 @@ void FPGameplayStatics::GetAllActorsOfClass(FPWorld* World, std::string ClassNam
 		}
 	}
 }
+
+std::vector<class FPActor*> FPGameplayStatics::GetAllActors(FPWorld* World)
+{
+	std::vector<FPActor*> Acotrs = World->GetGameActorList();
+	return Acotrs;
+}

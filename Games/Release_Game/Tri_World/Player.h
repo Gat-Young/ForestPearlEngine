@@ -6,17 +6,21 @@
 class FPInputMappingContext;
 class FPInputAction;
 struct FInputValue;
-class FPMeshComponent;
+class FPStaticMeshComponent;
 class FPSpringArmComponent;
 class FPCameraComponent;
+class WindmillWing;
+class TripleWindmillWing;
 
 class Player : public FPPawn
 {
 	private:
-		FPMeshComponent* Mesh;
+		FPStaticMeshComponent* Mesh;
 		FPSceneComponent* ShieldPivot;
 		FPSpringArmComponent* SpringArm;
 		FPCameraComponent* PlayerCamera;
+		WindmillWing* OneWindmillWing;
+		TripleWindmillWing* TripleWing;
 
 		bool isFill = true;
 		bool isCull = false;
@@ -31,9 +35,16 @@ class Player : public FPPawn
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
 
+		void SetOneWindmillWing(WindmillWing* Wing);
+		void SetTripleWindmillWing(TripleWindmillWing* Wing);
+
 		void Move(FInputValue value);
 		void CameraMove(FInputValue value);
 		void SetFillTriangel(FInputValue Value);
 		void SetCullTriangle(FInputValue Value);
+		void SetScaleWing(FInputValue Value);
+		void AttachHead(FInputValue Value);
+		void AttachShield(FInputValue Value);
+
 		FPSceneComponent* GetShieldPivot();
 };

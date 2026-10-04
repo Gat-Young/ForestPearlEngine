@@ -12,4 +12,6 @@ public:
 	static class FPActor* GetActorOfClass(FPWorld* World, std::string ClassName);
 
 	static void GetAllActorsOfClass(FPWorld* World, std::string ClassName, std::vector<FPActor*>& OutActors);
+
+	static std::vector<class FPActor*> GetAllActors(FPWorld* World);
 };

@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Dbg">
+      <UniqueIdentifier>{cbf7ac5d-e64e-4461-8da7-c66c37361a7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Device">
+      <UniqueIdentifier>{96e7c298-a3cc-4be0-b963-8bec004fe0b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{dc40b26b-cd31-4e8a-b0dd-4ef58b33acfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Device\Graphics">
+      <UniqueIdentifier>{04298d5a-7856-4b03-9246-8fcbfebf3b8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{ab6cba86-608a-4b66-964d-8152ef06315e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource">
+      <UniqueIdentifier>{b13f47ce-6c44-42f6-bb5e-125f802fc23c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DOHWAx9.h">
+      <Filter>Device</Filter>
+    </ClInclude>
+    <ClInclude Include="DOHWAx9Types.h">
+      <Filter>Device</Filter>
+    </ClInclude>
+    <ClInclude Include="Dohwa.h" />
+    <ClInclude Include="DohwaMath.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="DohwaDefine.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="DOHWAUnknownbase.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="DohwaVertexBuffer.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="DohwaGraphics.h">
+      <Filter>Device\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="DohwaClass.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Dohwa.cpp" />
+    <ClCompile Include="DohwaMath.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="DOHWAGUID.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="DohwaGraphics.cpp">
+      <Filter>Device\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="DohwaVertexBuffer.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

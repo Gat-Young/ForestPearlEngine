@@ -15,8 +15,10 @@ class FPAController : public FPActor
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
 
+		//Possess 관련
 		void Possess(FPPawn* PossessedPawn);
 		void UnPossess();
+		FPPawn* GetPawn();						//Possess된 Pawn 정보를 반환
 
 		//Controller 회전
 		void AddYawInput(float Value);

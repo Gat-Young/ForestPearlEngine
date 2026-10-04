@@ -22,6 +22,9 @@
     <Filter Include="Assets\Shader">
       <UniqueIdentifier>{dd79e454-4509-4f95-a147-e32797327204}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\StaticMesh">
+      <UniqueIdentifier>{f562b373-3b75-433f-bfe5-9099879da954}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UI.h">
@@ -55,6 +58,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TripleWindmillWing.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TripleWingWindmill.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -95,10 +101,31 @@
     <ClCompile Include="TripleWindmillWing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TripleWingWindmill.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Level\Triworld.json">
       <Filter>Level</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLinkTriangle_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\Windmill_Body_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\Windmill_Wing_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\Tree_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\Terrain_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -1,5 +1,5 @@
 #include "Tree.h"
-#include "ForestPearlEngine/FPMeshComponent.h"
+#include "ForestPearlEngine/FPStaticMeshComponent.h"
 #include "ForestPearlEngine/FPAController.h"
 #include "ForestPearlEngine/FPWorld.h"
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
@@ -7,15 +7,10 @@
 
 void Tree::Initialize()
 {
-	Mesh = new FPMeshComponent(this, "Tree/Tree.fbx");
+	Mesh = new FPStaticMeshComponent(this, "Tree_StaticMesh");
 
 	SetRootComponent((FPSceneComponent*)Mesh);
 	Mesh->SetMeshCull(false);
-
-	FPAController* Controller = GetWorld()->GetController(0);
-
-	Controller->GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &Tree::SetFillTriangel);
-	Controller->GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &Tree::SetCullTriangle);
 }
 
 void Tree::BeginPlay()

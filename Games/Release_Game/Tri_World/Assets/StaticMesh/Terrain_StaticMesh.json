@@ -1,0 +1,12 @@
+{
+  "MeshData": [
+    {
+      "Path": "Terrain/Terrain.fbx",
+      "Topology": "TRIANGLELIST"
+    }
+  ],
+
+  "Sockets": [],
+
+  "Material": ""
+}

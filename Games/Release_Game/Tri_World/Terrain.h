@@ -6,12 +6,12 @@
 class FPInputMappingContext;
 class FPInputAction;
 struct FInputValue;
-class FPMeshComponent;
+class FPStaticMeshComponent;
 
 class Terrain : public FPActor
 {
 	private:
-		FPMeshComponent* Mesh;
+		FPStaticMeshComponent* Mesh;
 
 		bool isFill = true;
 		bool isCull = false;

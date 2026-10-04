@@ -1,7 +1,8 @@
 #pragma once
 #include <string>
+#include "FPMaterialInterface.h"
 
-class FPMaterial
+class FPMaterial : public FPMaterialInterface
 {
 	protected:
 		void* VertexShader = nullptr;
@@ -23,16 +24,16 @@ class FPMaterial
 
 	public:
 		FPMaterial();
-		void SetVertexShader(std::string VertexShaderPath);
-		void SetPixelShader(std::string PixelShaderPath);
+		void SetVertexShader(std::string VertexShaderPath) override;
+		void SetPixelShader(std::string PixelShaderPath) override;
 
-		void** GetVertexShaderPointer();
-		void** GetPixelShaderPointer();
+		void** GetVertexShaderPointer() override;
+		void** GetPixelShaderPointer() override;
 
-		void** GetVBLayoutPointer();
+		void** GetVBLayoutPointer() override;
 
-		void** GetVertexConstPointer();
-		void** GetPixelConstPointer();
+		void** GetVertexConstPointer() override;
+		void** GetPixelConstPointer() override;
 
 		virtual void UpdateMaterial(float DeltaTime) {};
 

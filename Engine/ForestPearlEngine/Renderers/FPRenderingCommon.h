@@ -1,15 +1,9 @@
 #pragma once
 #include "../Define/FPMath.h"
+#include "../Define/FPDataDefine.h"
 #include <string>
 #include "tchar.h"
 #include <vector>
-
-enum Topology
-{
-	TRIANGLELIST,
-	TRIANGLESTRIP,
-	LINELIST
-};
 
 struct RenderItem
 {

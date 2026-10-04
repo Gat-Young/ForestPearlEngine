@@ -138,6 +138,12 @@ FPVector3 FPSceneComponent::GetComponentScale()
 	return WorldTransform.Scale;
 }
 
+FPSceneComponent* FPSceneComponent::GetAttachmentRoot()
+{
+	if (this->ParentComponent == nullptr) return this;
+	return this->ParentComponent->GetAttachmentRoot();
+}
+
 FTransform FPSceneComponent::GetSocketTransform(const std::string& SocketName) const
 {
 	//Socket을 사용하지 않거나 Socket이 없는 경우는 현재 컴포넌트의 Transform을 반환

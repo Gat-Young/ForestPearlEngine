@@ -2,6 +2,21 @@
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
 #include "ForestPearlEngine/Object/FPPawn.h"
 #include "ForestPearlEngine/Utility/FPGameplayStatics.h"
+
+//Fill / Cull阑 窍扁困秦 Fill , Cull阑 且 按眉甸
+#include "Player.h"
+#include "Tree.h"
+#include "TripleWindmillWing.h"
+#include "Windmill.h"
+#include "WindmillWing.h"
+#include "Terrain.h"
+#include "TripleWingWindmill.h"
+
+//UI 贸府
+#include "UI.h"
+#include "Axis.h"
+#include "Grid.h"
+
 #include <iostream>
 
 void GameController::Initialize()
@@ -36,20 +51,23 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_SetScaleWing", VK_OEM_PERIOD, ModifyInfoD);
 
 	// Axis : Game Pad 
-	GetInputComponent().AddMappingKey("IA_SetMoveTriangel", 0x100 , ModifyInfoD);
-	GetInputComponent().AddMappingKey("IA_SetMoveCamera", 0x101, ModifyInfoD);
+	GetInputComponent().AddMappingKey("IA_SetMoveTriangel", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_LSTICK), ModifyInfoD);
+	GetInputComponent().AddMappingKey("IA_SetMoveCamera", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_RSTICK), ModifyInfoD);
 
-	GetInputComponent().AddMappingKey("IA_SetMoveWindmill", 0x100, ModifyInfoD);
+	GetInputComponent().AddMappingKey("IA_SetMoveWindmill", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_LSTICK), ModifyInfoD);
 
-	GetInputComponent().AddMappingKey("IA_SetScaleWing", 0x106, ModifyInfoA);
-	GetInputComponent().AddMappingKey("IA_SetScaleWing", 0x107, ModifyInfoD);
+	GetInputComponent().AddMappingKey("IA_SetScaleWindmill", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_LEFT_TRIGER), ModifyInfoA);
+	GetInputComponent().AddMappingKey("IA_SetScaleWindmill", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_RIGHT_TRIGER), ModifyInfoD);
 
-	GetInputComponent().AddMappingKey("IA_SetRotateWindmill", 0x010E, ModifyInfoA);
-	GetInputComponent().AddMappingKey("IA_SetRotateWindmill", 0x010F, ModifyInfoD);
+	GetInputComponent().AddMappingKey("IA_SetScaleWing", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_LEFT_SHOULDER), ModifyInfoA);
+	GetInputComponent().AddMappingKey("IA_SetScaleWing", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_RIGHT_SHOULDER), ModifyInfoD);
+
+	GetInputComponent().AddMappingKey("IA_SetRotateWindmill", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_LEFT_THUMB), ModifyInfoA);
+	GetInputComponent().AddMappingKey("IA_SetRotateWindmill", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_RIGHT_THUMB), ModifyInfoD);
 
 	//Action Button : Game Pad
-	GetInputComponent().AddMappingKey("IA_AttachHead", 0x102, ModifyInfoTriger);
-	GetInputComponent().AddMappingKey("IA_AttachShield", 0x103, ModifyInfoTriger);
+	GetInputComponent().AddMappingKey("IA_AttachHead", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_A), ModifyInfoTriger);
+	GetInputComponent().AddMappingKey("IA_AttachShield", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_B), ModifyInfoTriger);
 
 	//Action Button : KeyBoard
 	GetInputComponent().AddMappingKey("IA_SetFillTriangel", VK_SPACE, ModifyInfoTriger);
@@ -65,13 +83,24 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_AttachShield", 'X', ModifyInfoTriger);
 
 	//D-PAD LEFT/RIGHT Posses 傈券
-	GetInputComponent().AddMappingKey("IA_NextActor", 0x10D, ModifyInfoTriger); //RIGHT
-	GetInputComponent().AddMappingKey("IA_PrevActor", 0x10C, ModifyInfoTriger); //LEFT
+	GetInputComponent().AddMappingKey("IA_NextActor", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_DPAD_RIGHT), ModifyInfoTriger); //RIGHT
+	GetInputComponent().AddMappingKey("IA_PrevActor", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_DPAD_LEFT), ModifyInfoTriger); //LEFT
 
 
 	//Posses 官牢爹
 	GetInputComponent().BindMethod("IA_NextActor", this, EKeyState::Down, &GameController::NextPawn);
 	GetInputComponent().BindMethod("IA_PrevActor", this, EKeyState::Down, &GameController::PrevPawn);
+
+	//Fill / Cull 官牢爹
+	GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &GameController::SetFillTriangel);
+	GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &GameController::SetCullTriangle);
+
+	//UI
+	GetInputComponent().BindMethod("IA_SetUITriangel", this, EKeyState::Down, &GameController::SetActiveViewHelp);
+	GetInputComponent().BindMethod("IA_SetDepthStencilBuffer", this, EKeyState::Down, &GameController::SetActiveDepthStencilBuffer);
+	GetInputComponent().BindMethod("IA_SetGrid", this, EKeyState::Down, &GameController::SetGridOn);
+	GetInputComponent().BindMethod("IA_SetAxis", this, EKeyState::Down, &GameController::SetAxisOn);
+
 
 	__super::Initialize();
 }
@@ -80,8 +109,15 @@ void GameController::BeginPlay()
 {
 	__super::BeginPlay();
 	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "Player")));
-	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "Windmill")));
-	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "TripleWindmillWing")));
+
+	std::vector<FPActor*> WindmillActor;
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Windmill", WindmillActor);
+	for (FPActor* Windmiill : WindmillActor)
+	{
+		ControllPawn.push_back(static_cast<FPPawn*>(Windmiill));
+	}
+	
+	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "TripleWingWindmill")));
 	ControllPawnSize = ControllPawn.size();
 }
 
@@ -105,4 +141,219 @@ void GameController::PrevPawn(FInputValue value)
 		ControllPawnIndex = ControllPawnSize - 1;
 	}
 	Possess(ControllPawn[ControllPawnIndex]);
+}
+
+void GameController::SetFillTriangel(FInputValue Value)
+{	
+	//Player 贸府
+	std::vector<FPActor*> ActorList;
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Player", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		Player* GamePlayer = static_cast<Player*>(Actor);
+		GamePlayer->SetFillTriangel(Value);
+	}
+	ActorList.clear();
+
+	//Windmill 贸府
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Windmill", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		Windmill* GameWindmill = static_cast<Windmill*>(Actor);
+		GameWindmill->SetFillTriangel(Value);
+	}
+	ActorList.clear();
+
+	//Windmill Wing 贸府
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "WindmillWing", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		WindmillWing* GameWindmillWing = static_cast<WindmillWing*>(Actor);
+		GameWindmillWing->SetFillTriangel(Value);
+	}
+	ActorList.clear();
+
+	//TripleWindmill Wing 贸府
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "TripleWindmillWing", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		TripleWindmillWing* GameTripleWindmillWing = static_cast<TripleWindmillWing*>(Actor);
+		GameTripleWindmillWing->SetFillTriangel(Value);
+	}
+	ActorList.clear();
+
+	//TripleWingWindmill 贸府
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "TripleWingWindmill", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		TripleWingWindmill* GameTripleWingWindmill = static_cast<TripleWingWindmill*>(Actor);
+		GameTripleWingWindmill->SetFillTriangel(Value);
+	}
+	ActorList.clear();
+
+	//Terrain 贸府
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Terrain", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		Terrain* GameTerrain = static_cast<Terrain*>(Actor);
+		GameTerrain->SetFillTriangel(Value);
+	}
+	ActorList.clear();
+
+	//Tree贸府
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Tree", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		Tree* GameTree = static_cast<Tree*>(Actor);
+		GameTree->SetFillTriangel(Value);
+	}
+	ActorList.clear();
+
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "UI", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		UI* GameUI = static_cast<UI*>(Actor);
+		GameUI->SetFill(Value);
+	}
+	ActorList.clear();
+}
+
+void GameController::SetCullTriangle(FInputValue Value)
+{
+	//Player 贸府
+	std::vector<FPActor*> ActorList;
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Player", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		Player* GamePlayer = static_cast<Player*>(Actor);
+		GamePlayer->SetCullTriangle(Value);
+	}
+	ActorList.clear();
+
+	//Windmill 贸府
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Windmill", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		Windmill* GameWindmill = static_cast<Windmill*>(Actor);
+		GameWindmill->SetCullTriangle(Value);
+	}
+	ActorList.clear();
+
+	//Windmill Wing 贸府
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "WindmillWing", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		WindmillWing* GameWindmillWing = static_cast<WindmillWing*>(Actor);
+		GameWindmillWing->SetCullTriangle(Value);
+	}
+	ActorList.clear();
+
+	//TripleWindmill Wing 贸府
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "TripleWindmillWing", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		TripleWindmillWing* GameTripleWindmillWing = static_cast<TripleWindmillWing*>(Actor);
+		GameTripleWindmillWing->SetCullTriangle(Value);
+	}
+	ActorList.clear();
+
+	//TripleWingWindmill 贸府
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "TripleWingWindmill", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		TripleWingWindmill* GameTripleWingWindmill = static_cast<TripleWingWindmill*>(Actor);
+		GameTripleWingWindmill->SetCullTriangle(Value);
+	}
+	ActorList.clear();
+
+
+	//Terrain 贸府
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Terrain", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		Terrain* GameTerrain = static_cast<Terrain*>(Actor);
+		GameTerrain->SetCullTriangle(Value);
+	}
+	ActorList.clear();
+
+	//Tree贸府
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Tree", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		Tree* GameTree = static_cast<Tree*>(Actor);
+		GameTree->SetCullTriangle(Value);
+	}
+	ActorList.clear();
+
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "UI", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		UI* GameUI = static_cast<UI*>(Actor);
+		GameUI->SetCull(Value);
+	}
+	ActorList.clear();
+}
+
+void GameController::SetActiveViewHelp(struct FInputValue Value)
+{
+	std::vector<FPActor*> ActorList;
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "UI", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		UI* GameUI = static_cast<UI*>(Actor);
+		GameUI->SetActiveViewHelp(Value);
+	}
+	ActorList.clear();
+}
+
+void GameController::SetActiveDepthStencilBuffer(struct FInputValue Value)
+{
+	std::vector<FPActor*> ActorList;
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "UI", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		UI* GameUI = static_cast<UI*>(Actor);
+		GameUI->SetActiveDepthStencilBuffer(Value);
+	}
+	ActorList.clear();
+}
+
+void GameController::SetGridOn(struct FInputValue Value)
+{
+	std::vector<FPActor*> ActorList;
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Grid", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		Grid* GameGrid = static_cast<Grid*>(Actor);
+		GameGrid->SetActiveViewHelp(Value);
+	}
+	ActorList.clear();
+
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "UI", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		UI* GameUI = static_cast<UI*>(Actor);
+		GameUI->SetGridOn(Value);
+	}
+	ActorList.clear();
+}
+
+void GameController::SetAxisOn(struct FInputValue Value)
+{
+	std::vector<FPActor*> ActorList;
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Axis", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		Axis* GameAxis = static_cast<Axis*>(Actor);
+		GameAxis->SetActiveViewHelp(Value);
+	}
+	ActorList.clear();
+
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "UI", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		UI* GameUI = static_cast<UI*>(Actor);
+		GameUI->SetAxisOn(Value);
+	}
+	ActorList.clear();
 }

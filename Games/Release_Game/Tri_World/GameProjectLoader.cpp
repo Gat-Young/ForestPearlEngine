@@ -10,6 +10,7 @@
 #include "Windmill.h"
 #include "WindmillWing.h"
 #include "TripleWindmillWing.h"
+#include "TripleWingWindmill.h"
 
 void RegistProjectName()
 {
@@ -40,6 +41,10 @@ void LoadClassRegist()
 	ClassRegistry->Register<Windmill>("Windmill");
 	ClassRegistry->Register<WindmillWing>("WindmillWing");
 	ClassRegistry->Register<TripleWindmillWing>("TripleWindmillWing");
+	ClassRegistry->Register<TripleWingWindmill>("TripleWingWindmill");
+
+
+	//Material Class µî·Ï
 }
 
 void LoadAssets()
@@ -51,6 +56,14 @@ void LoadAssets()
 	AssetLoader->LoadFbxData("Tree/Tree.fbx", AssetOwner::User);
 	AssetLoader->LoadFbxData("Windmill/Windmill_Body.fbx", AssetOwner::User);
 	AssetLoader->LoadFbxData("Windmill/Windmill_Wing.fbx", AssetOwner::User);
+
+	//Static_Mesh Load
+	AssetLoader->LoadStaticMesh("Terrain_StaticMesh", "Terrain_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLink_StaticMesh", "ToonLink_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLinkTriangle_StaticMesh", "ToonLinkTriangle_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("Tree_StaticMesh", "Tree_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("Windmill_Body_StaticMesh", "Windmill_Body_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("Windmill_Wing_StaticMesh", "Windmill_Wing_StaticMesh.json", AssetOwner::User);
 }
 
 std::string ReturnStartLevel()

@@ -122,6 +122,7 @@ FPMeshData FPAssetLoader::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node
 				&Node->node_to_world,
 				Position
 			);
+
 			//Normal
 			ufbx_vec3 Normal = { 0.0f, 0.0f, 0.0f };
 
@@ -151,6 +152,13 @@ FPMeshData FPAssetLoader::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node
 			Vertex.x = static_cast<float>(WorldPosition.x);
 			Vertex.y = static_cast<float>(WorldPosition.y);
 			Vertex.z = static_cast<float>(WorldPosition.z);
+
+			Vertex.nx = static_cast<float>(Normal.x);
+			Vertex.ny = static_cast<float>(Normal.y);
+			Vertex.nz = static_cast<float>(Normal.z);
+
+			Vertex.u = static_cast<float>(UV.x);
+			Vertex.v = static_cast<float>(UV.y);
 
 			Vertex.r = static_cast<float>(Color.x);
 			Vertex.g = static_cast<float>(Color.y);

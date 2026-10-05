@@ -279,6 +279,10 @@
       <Project>{874c49a3-fd56-4137-9cfa-a3bd1b70917e}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\StaticMesh\Cube.json" />
+    <None Include="Assets\StaticMesh\Sphere.json" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

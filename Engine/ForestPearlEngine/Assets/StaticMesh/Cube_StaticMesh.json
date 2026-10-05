@@ -1,0 +1,12 @@
+{
+  "MeshData": [
+    {
+      "Path": "Primitive_Model/Cube.fbx",
+      "Topology": "TRIANGLELIST"
+    }
+  ],
+
+  "Sockets": [],
+
+  "Material": ""
+}

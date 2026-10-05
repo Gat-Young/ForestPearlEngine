@@ -64,6 +64,9 @@
     <Filter Include="Component\Mesh">
       <UniqueIdentifier>{196c86d0-1c45-40e6-ac9b-7c7a677f5b4a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\StaticMesh">
+      <UniqueIdentifier>{4906799f-6d80-45bd-ac37-c23330258f04}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -352,5 +355,13 @@
     <FxCompile Include="Assets\Shader\DefaultShader.fx">
       <Filter>Assets\Shader</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\StaticMesh\Cube.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\Sphere.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
   </ItemGroup>
 </Project>

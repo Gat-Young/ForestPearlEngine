@@ -35,11 +35,11 @@ class Renderer
 		//폰트 해제
 		void FontRelease();
 
+		///////////////////////
+		// 
 		//RenderList
-
-		//ViewPort
-
-
+		//
+		
 		//Camera Item
 		std::vector<RenderingData::CameraItem> CameraList;
 

@@ -177,26 +177,27 @@ void Renderer::ObjectRendering()
 			Device.UpdateRSSetState(*RenderItem.isFill, *RenderItem.isCull);
 
 			//입력 레이아웃 설정
-			Device.IASetInputLayout(*(RenderItem.VBLayout));
+			Device.IASetInputLayout(*(RenderItem.VBLayout)); // <- Material 에서 가져오는 정보
 
 			//기하 위상 구조 설정
-			Device.IASetPrimitiveTopology(*RenderItem.Topo);
+			Device.IASetPrimitiveTopology(*RenderItem.Topo);	// <- Mesh 에서 가져오는 정보
 
 			//Shader 설정
-			Device.VSSetShader(*(RenderItem.VertexShader));
-			Device.PSSetShader(*(RenderItem.PixelShader));
+			Device.VSSetShader(*(RenderItem.VertexShader));		// <- Material 에서 가져오는 정보
+			Device.PSSetShader(*(RenderItem.PixelShader));		// <- Material 에서 가져오는 정보
 
 			//Shader ConstBuffer가 있다면 갱신
-			if (*(RenderItem.VertexConst) != nullptr) Device.UpdateVertexShaderSubresource(0, *(RenderItem.VertexConst), 0, 0);
-			if (*(RenderItem.PixelConst) != nullptr) Device.UpdatePixelShaderSubresource(0, *(RenderItem.PixelConst), 0, 0);
+			if (*(RenderItem.VertexConst) != nullptr) Device.UpdateVertexShaderSubresource(0, *(RenderItem.VertexConst), 0, 0);	// <- Material 에서 가져오는 정보
+			if (*(RenderItem.PixelConst) != nullptr) Device.UpdatePixelShaderSubresource(0, *(RenderItem.PixelConst), 0, 0);	// <- Material 에서 가져오는 정보
 
 			for (FPViewPort* CamViewPort : CamViewPorts)
 			{
 
 				Device.SetViewPort(CamViewPort->TopLeftX, CamViewPort->TopLeftY,
 					CamViewPort->Width, CamViewPort->Height,
-					CamViewPort->MinDepth, CamViewPort->MaxDepth);
+					CamViewPort->MinDepth, CamViewPort->MaxDepth);	// <- Cam 에서 가져오는 정보
 
+				//Mesh에서 가져오는 정보
 				//HLSL은 열벡터 기준이므로 HLSL에서는 연산을 반대로 할 것
 				MVPCB.WorldMatrix = ((*(RenderItem.Scale)) * (*(RenderItem.Rotation)) * (*(RenderItem.Location))).Matrix;
 				MVPCB.ViewMatrix = (*(CamItem.View)).Matrix;
@@ -210,8 +211,8 @@ void Renderer::ObjectRendering()
 
 
 				//ViewPort Shader ConstBuffer가 있다면 갱신
-				if ((CamViewPort->VertexConst) != nullptr) Device.UpdateVertexViewPortSubresource(0, CamViewPort->VertexConst, 0, 0);
-				if ((CamViewPort->PixelConst) != nullptr) Device.UpdatePixelViewPortSubresource(0, CamViewPort->PixelConst, 0, 0);
+				if ((CamViewPort->VertexConst) != nullptr) Device.UpdateVertexViewPortSubresource(0, CamViewPort->VertexConst, 0, 0);	// <- Cam에서 가져오는 정보
+				if ((CamViewPort->PixelConst) != nullptr) Device.UpdatePixelViewPortSubresource(0, CamViewPort->PixelConst, 0, 0);		// <- Cam에서 가져오는 정보
 
 				//정점 버퍼 설정
 				UINT stride = *RenderItem.Stride;
@@ -220,9 +221,9 @@ void Renderer::ObjectRendering()
 				int MeshSize = (RenderItem.VB)->size();
 				for (int i = 0; i < MeshSize; ++i)
 				{
-					Device.IASetVertexBuffers(0, 1, (RenderItem.VB)->at(i), &stride, &offset);
+					Device.IASetVertexBuffers(0, 1, (RenderItem.VB)->at(i), &stride, &offset);											//Mesh에서 가져오는 정보
 
-					Device.Draw((RenderItem.VertexSize)->at(i), 0);
+					Device.Draw((RenderItem.VertexSize)->at(i), 0);																		//Draw Call
 				}
 			}
 			RenderQueue.pop();

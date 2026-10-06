@@ -72,7 +72,7 @@ namespace RenderingData
 		int Priority;
 		bool Active;
 
-		//핸들 처리
+		//핸들 처리	<- AssetManager에서 값을 가져 올 수 있음
 		std::vector<void*>* VB = nullptr;
 		std::vector<int>* VertexSize = nullptr;
 		int Stride;
@@ -109,7 +109,8 @@ namespace RenderingData
 		float Height;
 		float MinDepth = 0.0f;
 		float MaxDepth = 1.0f;
-		//상수 버퍼용
+
+		//상수 버퍼용 <- 해당 정보도 핸들로 처리
 		void* VertexConst = nullptr;
 		void* PixelConst = nullptr;
 	};

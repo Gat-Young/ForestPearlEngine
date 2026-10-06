@@ -7,8 +7,8 @@ struct VERTEX
 {
 	float x, y, z;		//좌표 Position
 	float nx, ny, nz;	//노말 Normal
-	float u, v;			//좌표 UV
 	float r, g, b, a;	//색상 Diffuse Color	<- Material이 변경되고 나면 삭제 조치
+	float u, v;			//좌표 UV
 };
 
 //메시 데이터 구조체

@@ -4,7 +4,6 @@
 
 class Renderer
 {
-
 	private:
 		RenderingDevice& Device;
 
@@ -20,6 +19,19 @@ class Renderer
 
 		//폰트 해제
 		void FontRelease();
+
+		//RenderList
+
+		//ViewPort
+
+		//Camera Item
+
+		//Mesh Render Item
+
+		//Debug Render Item
+
+		//UI Render Item
+
 
 
 	public:

@@ -82,6 +82,10 @@ void ForestPearlEngine::GameLoop()
 {
     while (bEngineLoop)
     {
+        ///////////////////
+        //
+        //  Game Loop
+        //
         if (!MessagePump())
         {
             break;
@@ -89,7 +93,18 @@ void ForestPearlEngine::GameLoop()
 
         FPGameInstance::Get().Tick();
 
-        //Rendering
+        //
+        ///////////////////
+        
+        ///////////////////
+        // Make Render Queue
+        // Game 로직이 모두 종료된 후 Render 요소들을 각 Queue에 넣어 Render에 보내줌
+
+        ///////////////////
+        // Rendering
+        // Render Pass의 개념으로 동작
+        // 단, Pass 별 객체를 만들기 보다는 Render Class에서 각 Pass의 함수를 만들어 호출 하는 방식으로 동작
+        // Clear -> RenderPass 1 -> RenderPass 2 -> RenderPass 3 -> RenderPass N -> Preset 
         Render->ClearBackBuffer();
         Render->ObjectRendering();
         Render->UIRendering();

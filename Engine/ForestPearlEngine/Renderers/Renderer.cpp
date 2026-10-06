@@ -54,6 +54,7 @@ struct alignas(16) MVPConstBuffer
 	XMMATRIX WorldMatrix;
 	XMMATRIX ViewMatrix;
 	XMMATRIX ProjMatrix;
+	XMMATRIX WVMatrix;
 	XMMATRIX WVPMatrix;
 };
 
@@ -100,7 +101,7 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 	Device.RasterStateCreate();
 
 	//256B의 ConstBuffer 생성
-	Device.CreateObjectConstBuffer(256);
+	Device.CreateObjectConstBuffer(320);
 	Device.CreateVertexShaderConstBuffer(256);
 	Device.CreatePixelShaderConstBuffer(256);
 	Device.CreateVertexViewPortConstBuffer(256);
@@ -200,14 +201,9 @@ void Renderer::ObjectRendering()
 				MVPCB.WorldMatrix = ((*(RenderItem.Scale)) * (*(RenderItem.Rotation)) * (*(RenderItem.Location))).Matrix;
 				MVPCB.ViewMatrix = (*(CamItem.View)).Matrix;
 				MVPCB.ProjMatrix = (*(CamItem.Projection)).Matrix;
+				MVPCB.WVMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix;
 
 				MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
-
-				//MVPCB.WorldMatrix = DirectX::XMMatrixTranspose(MVPCB.WorldMatrix);
-				//MVPCB.ViewMatrix = DirectX::XMMatrixTranspose(MVPCB.ViewMatrix);
-				//MVPCB.ProjMatrix = DirectX::XMMatrixTranspose(MVPCB.ProjMatrix);
-				//MVPCB.WVPMatrix = DirectX::XMMatrixTranspose(MVPCB.WVPMatrix);
-
 
 				//Object 상수 버퍼 갱신
 				Device.UpdateObjectSubresource(0, &MVPCB, 0, 0);

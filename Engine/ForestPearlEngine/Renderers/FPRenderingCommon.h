@@ -101,6 +101,19 @@ namespace RenderingData
 		int Priority;
 	};
 
+	struct FPViewPort
+	{
+		float TopLeftX = 0.0f;
+		float TopLeftY = 0.0f;
+		float Width;
+		float Height;
+		float MinDepth = 0.0f;
+		float MaxDepth = 1.0f;
+		//상수 버퍼용
+		void* VertexConst = nullptr;
+		void* PixelConst = nullptr;
+	};
+
 	struct CameraItem
 	{
 		//카메라의 위치
@@ -111,8 +124,7 @@ namespace RenderingData
 		FPMatrix View;
 		FPMatrix Projection;
 
-		bool Active;			//카메라 사용 여부
-		bool TripleCam;
+		std::vector<FPViewPort> ViewPort;
 	};
 
 	struct UIContextItem

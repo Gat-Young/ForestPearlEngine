@@ -1,6 +1,7 @@
 #include "FPViewPortClient.h"
 #include "FPGameInstance.h"
 #include "FPGameProjectSetting.h"
+#include "Renderers/FPRenderingCommon.h"
 #include <iostream>
 
 FPViewPortClient::FPViewPortClient()

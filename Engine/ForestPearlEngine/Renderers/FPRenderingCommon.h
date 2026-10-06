@@ -42,9 +42,110 @@ struct CameraItem
 
 struct UIContextItem
 {
+	int* Priority;
 	bool** active;
 	int* x;
 	int* y;
 	FPVector4* color;
 	std::basic_string<TCHAR>* msg;
 };
+
+struct FPViewPort
+{
+	float TopLeftX = 0.0f;
+	float TopLeftY = 0.0f;
+	float Width;
+	float Height;
+	float MinDepth = 0.0f;
+	float MaxDepth = 1.0f;
+	//상수 버퍼용
+	void* VertexConst = nullptr;
+	void* PixelConst = nullptr;
+};
+
+
+namespace RenderingData
+{
+	struct MeshRenderItem
+	{
+		//윗단에서 처리
+		int Priority;
+		bool Active;
+
+		//핸들 처리
+		std::vector<void*>* VB = nullptr;
+		std::vector<int>* VertexSize = nullptr;
+		int Stride;
+		int Offset;
+
+		//Rendering Device 전체에서 처리
+		bool isFill;
+		bool isCull;
+
+		//주요 정보
+		FPMatrix Location;
+		FPMatrix Rotation;
+		FPMatrix Scale;
+		Topology Topo;
+
+		//Material에 대한 핸들 처리
+		void* VertexShader;
+		void* PixelShader;
+		void* VBLayout;
+		void* VertexConst;
+		void* PixelConst;
+	};
+
+	struct DebugRenderItem
+	{
+		int Priority;
+	};
+
+	struct CameraItem
+	{
+		//카메라의 위치
+		FPMatrix Location;
+		FPMatrix Rotation;
+		FPMatrix Scale;
+
+		FPMatrix View;
+		FPMatrix Projection;
+
+		bool Active;			//카메라 사용 여부
+		bool TripleCam;
+	};
+
+	struct UIContextItem
+	{
+		int Priority;
+		bool active;
+		int x;
+		int y;
+		FPVector4 color;
+		std::basic_string<TCHAR> msg;
+	};
+
+	struct MeshRenderItemCompare
+	{
+		bool operator() (const RenderingData::MeshRenderItem& Left, const RenderingData::MeshRenderItem& Right) const
+		{
+			return Left.Priority < Right.Priority;
+		};
+	};
+
+	struct DebugRenderItemCompare
+	{
+		bool operator() (const RenderingData::DebugRenderItem& Left, const RenderingData::DebugRenderItem& Right) const
+		{
+			return Left.Priority < Right.Priority;
+		};
+	};
+
+	struct UIRenderItemCompare
+	{
+		bool operator() (const RenderingData::UIContextItem& Left, const RenderingData::UIContextItem& Right) const
+		{
+			return Left.Priority < Right.Priority;
+		};
+	};
+}

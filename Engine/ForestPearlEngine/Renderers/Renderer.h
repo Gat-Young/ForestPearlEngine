@@ -1,6 +1,21 @@
 #pragma once
 #include "RenderingDevice.h"
 #include "../Shader/ShaderFactory.h"
+#include <vector>
+#include <queue>
+
+namespace RenderingData
+{
+	struct MeshRenderItem;
+	struct DebugRenderItem;
+	struct CameraItem;
+	struct UIContextItem;
+	struct MeshRenderItemCompare;
+	struct DebugRenderItemCompare;
+	struct UIRenderItemCompare;
+}
+
+
 
 class Renderer
 {
@@ -24,14 +39,18 @@ class Renderer
 
 		//ViewPort
 
+
 		//Camera Item
+		std::vector<RenderingData::CameraItem> CameraList;
 
 		//Mesh Render Item
+		std::priority_queue<RenderingData::MeshRenderItem, std::vector<RenderingData::MeshRenderItem>, RenderingData::MeshRenderItemCompare> MeshRenderQueue;
 
 		//Debug Render Item
+		std::priority_queue<RenderingData::DebugRenderItem, std::vector<RenderingData::DebugRenderItem>, RenderingData::DebugRenderItemCompare> DebugRenderQueue;
 
 		//UI Render Item
-
+		std::priority_queue<RenderingData::UIContextItem, std::vector<RenderingData::UIContextItem>, RenderingData::UIRenderItemCompare> UIRenderQueue;
 
 
 	public:

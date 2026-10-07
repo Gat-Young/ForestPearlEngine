@@ -20,6 +20,16 @@ void FPMaterial::SetPixelShader(std::string PixelShaderPath)
 	this->PixelShaderPath = PixelShaderPath;
 }
 
+std::string* FPMaterial::GetVertexShader()
+{
+	return &(this->VertexShaderPath);
+}
+
+std::string* FPMaterial::GetPixelShader()
+{
+	return &(this->PixelShaderPath);
+}
+
 FPConstantBufferRenderData* FPMaterial::GetVertexConstantBufferRenderData()
 {
 	return &VertexConstantBuffer;

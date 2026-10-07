@@ -99,6 +99,10 @@ void ForestPearlEngine::GameLoop()
         ///////////////////
         // Make Render Queue
         // Game 로직이 모두 종료된 후 Render 요소들을 각 Queue에 넣어 Render에 보내줌
+        Render->CreateCamList();
+        Render->CreateMeshRenderQueue();
+        Render->CreateDebugRenderQueue();
+        Render->CreateUIRenderQueue();
 
         ///////////////////
         // Rendering
@@ -106,8 +110,9 @@ void ForestPearlEngine::GameLoop()
         // 단, Pass 별 객체를 만들기 보다는 Render Class에서 각 Pass의 함수를 만들어 호출 하는 방식으로 동작
         // Clear -> RenderPass 1 -> RenderPass 2 -> RenderPass 3 -> RenderPass N -> Preset 
         Render->ClearBackBuffer();
-        Render->ObjectRendering();
-        Render->UIRendering();
+        Render->MeshRenderPass();
+        Render->DebugRenderPass();
+        Render->UIRenderPass();
         Render->RenderTargetPresent();
     }
 
@@ -314,4 +319,7 @@ const TCHAR* ForestPearlEngine::GetSrtFeatureLevel() { return Render->GetRenderi
 UINT ForestPearlEngine::GetWidth() { return Render->GetRenderingDevice().GetWidth(); };
 UINT ForestPearlEngine::GetHeight() { return Render->GetRenderingDevice().GetHeight(); };
 
+//렌더링 정보 설정
 void ForestPearlEngine::SetZEnable(bool State) { Render->SetZEnable(State); }
+void ForestPearlEngine::SetbFill(bool State) { Render->SetbFill(State); }
+void ForestPearlEngine::SetbCull(bool State) { Render->SetbCull(State); }

@@ -12,6 +12,8 @@ class FPMaterialInterface : public FPObject
 	public:
 		virtual void SetVertexShader(std::string VertexShaderPath) = 0;
 		virtual void SetPixelShader(std::string PixelShaderPath) = 0;
+		virtual std::string* GetVertexShader() = 0;
+		virtual std::string* GetPixelShader() = 0;
 		virtual FPConstantBufferRenderData* GetVertexConstantBufferRenderData() = 0;
 		virtual FPConstantBufferRenderData* GetPixelConstantBufferRenderData() = 0;
 

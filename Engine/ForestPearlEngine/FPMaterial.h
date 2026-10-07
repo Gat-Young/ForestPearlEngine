@@ -16,6 +16,9 @@ class FPMaterial : public FPMaterialInterface
 		FPMaterial();
 		void SetVertexShader(std::string VertexShaderPath) override;
 		void SetPixelShader(std::string PixelShaderPath) override;
+		std::string* GetVertexShader() override;
+		std::string* GetPixelShader() override;
+
 		FPConstantBufferRenderData* GetVertexConstantBufferRenderData() override;
 		FPConstantBufferRenderData* GetPixelConstantBufferRenderData() override;
 

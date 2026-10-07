@@ -65,6 +65,9 @@ class FPAssetManager : public FPGameInstanceSubSystem
 		void AddVertexShader(std::string ShaderPath, void* VertexShader, void* VSCode, void* VBLayout);
 		void AddPixelShader(std::string ShaderPath, void* PixelShader, void* PSCode);
 
+		//VertexShader , VSCode, VBLayout
 		std::tuple<void*, void*, void*> GetVertexShader(std::string ShaderPath);
+
+		//PixelShader, PSCode
 		std::pair<void*, void*> GetPixelShader(std::string ShaderPath);
 };

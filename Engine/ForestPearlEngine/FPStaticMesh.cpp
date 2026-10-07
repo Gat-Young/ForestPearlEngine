@@ -4,21 +4,8 @@
 #include "FPMaterial.h"
 #include <iostream>
 
-FPStaticMesh::FPStaticMesh(std::string StaticMeshPath, std::string Topo)
+FPStaticMesh::FPStaticMesh(std::string StaticMeshPath) : MeshPath(StaticMeshPath)
 {
-	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-	std::vector<FPVertexBufferData> MeshData = AssetManager->GetVertexBuffer(StaticMeshPath);
-
-	for (FPVertexBufferData Mesh : MeshData)
-	{
-		VB.push_back(Mesh.VertexBuffer);
-		VertexSize.push_back(Mesh.Size);
-		Stride = Mesh.Stride;
-		Offset = Mesh.Offset;
-	}
-	
-	this->Topo = StringToTopology(Topo);
-
 	if (Material == nullptr) { Material = new FPMaterial(); }
 }
 
@@ -34,6 +21,11 @@ void FPStaticMesh::AddSocketData(std::string SocketName, FTransform SocketTransf
 	}
 }
 
+std::string* FPStaticMesh::GetMeshPath()
+{
+	return &MeshPath;
+}
+
 bool FPStaticMesh::GetSocketTransform(std::string SocketName, FTransform& OutSocketTransform)
 {
 	if (Sockets.find(SocketName) != Sockets.end())
@@ -46,36 +38,6 @@ bool FPStaticMesh::GetSocketTransform(std::string SocketName, FTransform& OutSoc
 		//std::cout << "[StaticMesh] : 해당 이름의 Socket이 없습니다 : " << SocketName << "\n";
 		return false;
 	}
-}
-
-std::vector<void*>* FPStaticMesh::GetVBData()
-{
-	return &(this->VB);
-}
-
-std::vector<int>* FPStaticMesh::GetVertexSize()
-{
-	return &(this->VertexSize);
-}
-
-int* FPStaticMesh::GetStride()
-{
-	return &(this->Stride);
-}
-
-int* FPStaticMesh::GetOffset()
-{
-	return &(this->Offset);
-}
-
-void FPStaticMesh::SetTopo(std::string Topology)
-{
-	this->Topo = StringToTopology(Topology);
-}
-
-Topology* FPStaticMesh::GetTopo()
-{
-	return &(this->Topo);
 }
 
 FPMaterialInterface** FPStaticMesh::GetStaticMeshMaterial()

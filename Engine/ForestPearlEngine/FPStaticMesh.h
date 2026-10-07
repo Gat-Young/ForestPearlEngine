@@ -12,11 +12,7 @@ class FPStaticMesh : public FPStreamableRenderAsset
 {
 	private:
 		//Mesh Data 정보
-		std::vector<void*> VB;
-		std::vector<int> VertexSize;
-		int Stride;
-		int Offset;
-		Topology Topo = Topology::TRIANGLELIST;
+		std::string MeshPath;
 
 		//Mesh가 가지는 소켓 정보
 		std::map<std::string, FTransform> Sockets;
@@ -25,17 +21,12 @@ class FPStaticMesh : public FPStreamableRenderAsset
 		FPMaterialInterface* Material = nullptr;
 
 	public:
-		FPStaticMesh(std::string StaticMeshPath, std::string Topo);
+		FPStaticMesh(std::string StaticMeshPath);
 
 		void AddSocketData(std::string SocketName, FTransform SocketTransform);
 		void SetMaterial(FPMaterialInterface* Material);
-
-		bool GetSocketTransform(std::string SocketName, FTransform& OutSocketTransform);
-		std::vector<void*>* GetVBData();
-		std::vector<int>* GetVertexSize();
-		int* GetStride();
-		int* GetOffset();
-		void SetTopo(std::string Topology);
-		Topology* GetTopo();
 		FPMaterialInterface** GetStaticMeshMaterial();
+
+		std::string* GetMeshPath();
+		bool GetSocketTransform(std::string SocketName, FTransform& OutSocketTransform);
 };

@@ -51,7 +51,7 @@ std::vector<FPMeshData> FPAssetManager::GetMeshData(std::string FbxPath)
 FPStaticMesh* FPAssetManager::GetStaticMeshData(std::string StaticMeshName)
 {
 	FPStaticMeshData StaticMeshData = LoadedStaticMeshData[StaticMeshName];
-	FPStaticMesh* StaticMesh = new FPStaticMesh(StaticMeshData.MeshPath, StaticMeshData.MeshTopology);
+	FPStaticMesh* StaticMesh = new FPStaticMesh(StaticMeshData.MeshPath);
 
 	for (SOCKET_TRANSFORM& Socket : StaticMeshData.Sockets)
 	{

@@ -22,16 +22,13 @@ void FPStaticMeshComponent::SetRenderItemData()
 
 	RenderItem->Priority = &(this->Priority);
 	RenderItem->Active = &(this->isActive);
-	RenderItem->VB = StaticMesh->GetVBData();
-	RenderItem->isFill = &(this->isFill);
-	RenderItem->isCull = &(this->isCull);
-	RenderItem->VertexSize = StaticMesh->GetVertexSize();
-	RenderItem->Stride = StaticMesh->GetStride();
-	RenderItem->Offset = StaticMesh->GetOffset();
+
+	RenderItem->MeshPath = StaticMesh->GetMeshPath();
+
 	RenderItem->Location = &(this->WorldTransform.LocationMatrix);
 	RenderItem->Rotation = &(this->WorldTransform.RotationMatrix);
 	RenderItem->Scale = &(this->WorldTransform.ScaleMatrix);
-	RenderItem->Topo = StaticMesh->GetTopo();
+
 
 	FPMaterialInterface* SelectedMaterial = nullptr;
 
@@ -43,12 +40,12 @@ void FPStaticMeshComponent::SetRenderItemData()
 	{
 		SelectedMaterial = *(StaticMesh->GetStaticMeshMaterial());
 	}
+	
+	RenderItem->VertexShaderPath = SelectedMaterial->GetVertexShader();
+	RenderItem->PixelShaderPath = SelectedMaterial->GetPixelShader();
+	RenderItem->VertexConstBuffer = SelectedMaterial->GetVertexConstantBufferRenderData();
+	RenderItem->PixelConstBuffer = SelectedMaterial->GetPixelConstantBufferRenderData();
 
-	RenderItem->VertexShader = (SelectedMaterial->GetVertexShaderPointer());
-	RenderItem->PixelShader = (SelectedMaterial->GetPixelShaderPointer());
-	RenderItem->VBLayout = (SelectedMaterial->GetVBLayoutPointer());
-	RenderItem->VertexConst = (SelectedMaterial->GetVertexConstPointer());
-	RenderItem->PixelConst = (SelectedMaterial->GetPixelConstPointer());
 }
 
 FTransform FPStaticMeshComponent::GetSocketTransform(const std::string& SocketName) const
@@ -71,11 +68,6 @@ FTransform FPStaticMeshComponent::GetSocketTransform(const std::string& SocketNa
 		return SocketTransform;
 	}
 	return WorldTransform;
-}
-
-void FPStaticMeshComponent::SetTopology(std::string Topology)
-{
-	StaticMesh->SetTopo(Topology);
 }
 
 FPStaticMeshComponent::~FPStaticMeshComponent()

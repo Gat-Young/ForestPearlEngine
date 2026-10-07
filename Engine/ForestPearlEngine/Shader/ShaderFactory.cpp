@@ -12,7 +12,7 @@ ShaderFactory& ShaderFactory::GetShaderFactory()
 	return ShaderFactorySingleton;
 }
 
-HRESULT ShaderFactory::VertexShaderLoad(const TCHAR* Objectname, void** ppVS, void** ppCode)
+HRESULT ShaderFactory::VertexShaderLoad(const TCHAR* Objectname, void** ppVS, void** ppCode, void** ppVBLayout)
 {
 	ID3DBlob* pCode = nullptr;
 	
@@ -29,6 +29,7 @@ HRESULT ShaderFactory::VertexShaderLoad(const TCHAR* Objectname, void** ppVS, vo
 	*ppVS = pVS;
 	*ppCode = pCode;
 
+	CreateInputLayout(pVS, ppVBLayout);
 	return hr;
 }
 
@@ -62,7 +63,7 @@ HRESULT ShaderFactory::PixelShaderLoad(const TCHAR* Objectname, void** ppPS, voi
 // param[out]	ppCode		셰이더 코드 (컴파일된, 바이너리)
 // return	성공시 S_OK, 실패시 DX 에러코드
 //
-HRESULT ShaderFactory::VertexShaderLoad(const TCHAR* filename, const CHAR* entry, const CHAR* target, void** ppVS, void** ppCode)
+HRESULT ShaderFactory::VertexShaderLoad(const TCHAR* filename, const CHAR* entry, const CHAR* target, void** ppVS, void** ppCode, void** ppVBLayout)
 {
 	HRESULT hr = S_OK;
 
@@ -80,6 +81,7 @@ HRESULT ShaderFactory::VertexShaderLoad(const TCHAR* filename, const CHAR* entry
 	*ppVS = pVS;
 	*ppCode = pCode;
 
+	CreateInputLayout(pVS, ppVBLayout);
 	return hr;
 }
 

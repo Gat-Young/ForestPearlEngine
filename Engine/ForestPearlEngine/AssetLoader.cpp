@@ -261,12 +261,13 @@ void FPAssetLoader::LoadVertexShader(std::string ShaderObjPath, AssetOwner Engin
 
 	void* VertexShader = nullptr;
 	void* VSCode = nullptr;
+	void* VBLayout = nullptr;
 
-	ShaderFactory::GetShaderFactory().VertexShaderLoad(FilePath.c_str(), &VertexShader, &VSCode);
+	ShaderFactory::GetShaderFactory().VertexShaderLoad(FilePath.c_str(), &VertexShader, &VSCode, &VBLayout);
 
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
-	AssetManager->AddVertexShader(ShaderObjPath, VertexShader, VSCode);
+	AssetManager->AddVertexShader(ShaderObjPath, VertexShader, VSCode, VBLayout);
 }
 
 void FPAssetLoader::LoadPixelShader(std::string ShaderObjPath, AssetOwner EngineAsset)
@@ -291,12 +292,13 @@ void FPAssetLoader::LoadVertexShader(std::string ShaderPath, std::string VS_Main
 
 	void* VertexShader = nullptr;
 	void* VSCode = nullptr;
+	void* VBLayout = nullptr;
 
 	ShaderFactory::GetShaderFactory().VertexShaderLoad(FilePath.c_str(), VS_Main.c_str(), ShaderModel.c_str(), &VertexShader, &VSCode);
 
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
-	AssetManager->AddVertexShader(ShaderPath, VertexShader, VSCode);
+	AssetManager->AddVertexShader(ShaderPath, VertexShader, VSCode, VBLayout);
 }
 
 void FPAssetLoader::LoadPixelShader(std::string ShaderPath, std::string PS_Main, std::string ShaderModel, AssetOwner EngineAsset)

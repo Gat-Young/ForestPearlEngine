@@ -1,5 +1,6 @@
 #pragma once
 #include "Object/Object.h"
+#include "Renderers/FPConstantBufferCommon.h"
 
 ////////////////////////////////////////////////
 //
@@ -11,14 +12,8 @@ class FPMaterialInterface : public FPObject
 	public:
 		virtual void SetVertexShader(std::string VertexShaderPath) = 0;
 		virtual void SetPixelShader(std::string PixelShaderPath) = 0;
-
-		virtual void** GetVertexShaderPointer() = 0;
-		virtual void** GetPixelShaderPointer() = 0;
-
-		virtual void** GetVBLayoutPointer() = 0;
-
-		virtual void** GetVertexConstPointer() = 0;
-		virtual void** GetPixelConstPointer() = 0;
+		virtual FPConstantBufferRenderData* GetVertexConstantBufferRenderData() = 0;
+		virtual FPConstantBufferRenderData* GetPixelConstantBufferRenderData() = 0;
 
 		virtual void UpdateMaterial(float DeltaTime) {};
 };

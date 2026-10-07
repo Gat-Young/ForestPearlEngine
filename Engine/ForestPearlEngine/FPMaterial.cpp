@@ -6,63 +6,26 @@
 
 FPMaterial::FPMaterial()
 {
-	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-
-	//Default Shader ¼¼ÆÃ
-	std::pair<void*, void*> VShader = AssetManager->GetVertexShader("DefaultVertexShader.vso");
-	std::pair<void*, void*> PShader = AssetManager->GetPixelShader("DefaultPixelShader.pso");
-
-	VertexShader = VShader.first;
-	VSCode = VShader.second;
-
-	PixelShader = PShader.first;
-	PSCode = PShader.second;
-
-	ShaderFactory::GetShaderFactory().CreateInputLayout(VSCode, &VBLayout);
+	this->VertexShaderPath = "DefaultVertexShader.vso";
+	this->PixelShaderPath = "DefaultPixelShader.pso";
 }
 
 void FPMaterial::SetVertexShader(std::string VertexShaderPath)
 {
-	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-	std::pair<void*, void*> VShader = AssetManager->GetVertexShader(VertexShaderPath);
-
-	VertexShader = VShader.first;
-	VSCode = VShader.second;
-
-	ShaderFactory::GetShaderFactory().CreateInputLayout(VSCode, &VBLayout);
+	this->VertexShaderPath = VertexShaderPath;
 }
 
 void FPMaterial::SetPixelShader(std::string PixelShaderPath)
 {
-	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-	std::pair<void*, void*> PShader = AssetManager->GetPixelShader(PixelShaderPath);
-
-	PixelShader = PShader.first;
-	PSCode = PShader.second;
+	this->PixelShaderPath = PixelShaderPath;
 }
 
-void** FPMaterial::GetVertexShaderPointer()
+FPConstantBufferRenderData* FPMaterial::GetVertexConstantBufferRenderData()
 {
-	return &VertexShader;
+	return &VertexConstantBuffer;
 }
 
-void** FPMaterial::GetPixelShaderPointer()
+FPConstantBufferRenderData* FPMaterial::GetPixelConstantBufferRenderData()
 {
-	return &PixelShader;
+	return &PixelConstantBuffer;
 }
-
-void** FPMaterial::GetVBLayoutPointer()
-{
-	return &VBLayout;
-}
-
-void** FPMaterial::GetVertexConstPointer()
-{
-	return &VertextConst;
-}
-
-void** FPMaterial::GetPixelConstPointer()
-{
-	return &PixelConst;
-}
-

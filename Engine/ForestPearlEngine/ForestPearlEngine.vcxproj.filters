@@ -225,6 +225,9 @@
     <ClInclude Include="FPStaticMeshComponent.h">
       <Filter>Component\Mesh</Filter>
     </ClInclude>
+    <ClInclude Include="FPConstantBufferCommon.h">
+      <Filter>Renderers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">

@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="FPConstantBufferCommon.h" />
     <ClInclude Include="Define\FPDataDefine.h" />
     <ClInclude Include="EngineLoader.h" />
     <ClInclude Include="FPAssetLoader.h" />

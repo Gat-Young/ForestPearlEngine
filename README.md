@@ -14,6 +14,8 @@
 [아키텍처](#-아키텍처) ·
 [메인 루프](#-엔진-메인-루프) ·
 [렌더링](#-렌더링-구조) ·
+[RenderPass](#render-pass) ·
+[상수 버퍼](#상수-버퍼) ·
 [입력](#-input-시스템) ·
 [에셋](#-assets-구조) ·
 [빌드](#-build-시스템) ·
@@ -34,7 +36,7 @@
 | | 핵심 기능 | 설명 |
 |:-:|---|---|
 | 🧩 | **Actor / Component 프레임워크** | `FPObject → FPActor → FPPawn / FPAController / FPAGameMode`, 계층형 `FPSceneComponent` 트랜스폼 |
-| 🎨 | **DX11 렌더러** | `Renderer`(프레임 흐름) + `RenderingDevice`(D3D11 래퍼) 2계층, MSAA x4, Priority 기반 드로우, 멀티 뷰포트 |
+| 🎨 | **DX11 렌더러** | `Renderer`(프레임 흐름) + `RenderingDevice`(D3D11 래퍼) 2계층, **Render List → Render Pass(Mesh / Gizmo / UI)** 구조, 슬롯 규약이 있는 **상수 버퍼 바인딩**, MSAA x4, Priority 정렬, 멀티 뷰포트 |
 | 🎮 | **Input 시스템** | Raw Input(키보드·마우스) + XInput(게임패드) → Input Mapping Context → Input Action → 멤버 함수 바인딩 |
 | 🕹️ | **Possess** | 컨트롤러가 Pawn을 빙의(Possess)하며, 빙의된 Pawn의 바인딩만 입력을 받음 |
 | 🔩 | **Socket Attach** | StaticMesh JSON에 정의한 Socket에 컴포넌트/액터를 부착 |
@@ -61,7 +63,7 @@ ForestPearlEngine/
 ├── Games/
 │   ├── Release_Game/              # 엔진 현재 버전과 연결되는 게임 프로젝트
 │   │   ├── Tri_World/             #   ★ Demo 프로젝트 (솔루션에 포함)
-│   │   ├── ShaderCode_Triangle/   #   커스텀 Material / 상수 버퍼 샘플
+│   │   ├── ShaderCode_Triangle/   #   커스텀 Material / 상수 버퍼 샘플 (이전 API 기준)
 │   │   ├── Geometry_ModelSpace/
 │   │   ├── SolarSystem_Ver02/
 │   │   └── DX11_SetUp_Font/
@@ -99,6 +101,7 @@ Engine/ForestPearlEngine/
 ├── FPAssetLoader.h / AssetLoader.cpp # [SubSystem] FBX · JSON · Shader 로딩
 ├── FPAssetManager.h / .cpp           # [SubSystem] 로딩된 에셋 보관소
 ├── FPMeshRenderList.h / .cpp         # [SubSystem] 메시 RenderItem 목록
+├── FPGizmoRenderList.h / .cpp        # [SubSystem] 기즈모 GizmoRenderItem 목록
 ├── FPTextRenderList.h / .cpp         # [SubSystem] 텍스트 UIContextItem 목록
 ├── FPCameraList.h / .cpp             # [SubSystem] CameraItem 목록
 ├── FPViewPortClient.h / .cpp         # [SubSystem] 뷰포트 관리
@@ -124,7 +127,9 @@ Engine/ForestPearlEngine/
 ├── FPStaticMeshComponent.h / .cpp    # StaticMesh 렌더 + Socket Transform
 ├── FPCameraComponent.h / .cpp        # View / Projection 계산
 ├── FPSpringArmComponent.h / .cpp     # 스프링 암 (EndPoint Socket)
-├── GizmoComponent.h / .cpp           # Grid / Axis 라인 메시
+├── GizmoComponent.h / .cpp           # 기즈모 베이스 (GizmoRenderItem 등록, Priority / Active)
+├── GizmoGridComponent.h / .cpp       # Grid 라인 메시
+├── GizmoAxisComponent.h / .cpp       # Axis 라인 메시
 ├── FPTextComponent.h / .cpp          # 2D 텍스트
 ├── FPMovementComponent.h / .cpp      # 이동 컴포넌트 (골격만 존재)
 ├── FPMovementCompoent.cpp            #   └ 빈 파일
@@ -144,9 +149,10 @@ Engine/ForestPearlEngine/
 ├── Shader/
 │   └── ShaderFactory.h / .cpp        # 셰이더 로드/컴파일, InputLayout
 ├── Renderers/
-│   ├── Renderer.h / .cpp             # 프레임 렌더링 흐름
+│   ├── Renderer.h / .cpp             # Render List 생성 + Render Pass (Mesh / Gizmo / UI)
 │   ├── RenderingDevice.h / .cpp      # D3D11 Device 래퍼
-│   ├── FPRenderingCommon.h           # RenderItem / CameraItem / UIContextItem
+│   ├── FPRenderingCommon.h           # RenderItem / GizmoRenderItem / CameraItem / UIContextItem / FPViewPort + RenderingData 값 복사본
+│   ├── FPConstantBufferCommon.h      # 상수 버퍼 데이터 + AddConstantBuffer / UpdateConstantBuffer
 │   └── Legacy/                       # 이전 세대 렌더러 (솔루션 미포함)
 │       ├── Legacy_Renderer.h / .cpp  #   FPRHI 기반 렌더러
 │       ├── FPRHI/                    #   RHI 추상 인터페이스
@@ -254,6 +260,8 @@ classDiagram
     FPPrimitiveComponent <|-- FPCameraComponent
     FPPrimitiveComponent <|-- GizmoComponent
     FPMeshComponent <|-- FPStaticMeshComponent
+    GizmoComponent <|-- GizmoGridComponent
+    GizmoComponent <|-- GizmoAxisComponent
     FPMaterialInterface <|-- FPMaterial
     FPStreamableRenderAsset <|-- FPStaticMesh
 ```
@@ -263,7 +271,7 @@ classDiagram
 
 ### GameInstance SubSystem
 
-`FPGameInstance`는 싱글톤이며, 게임 실행 중 하나만 존재해야 하는 시스템 10개를 배열로 보관합니다.
+`FPGameInstance`는 싱글톤이며, 게임 실행 중 하나만 존재해야 하는 시스템 11개를 배열로 보관합니다.
 접근 방법은 모두 같습니다.
 
 ```cpp
@@ -279,6 +287,7 @@ FPAssetLoader* AssetLoader =
 | `FPAssetManager` | `GetAssetManager()` | Mesh · VertexBuffer · StaticMesh · Level · GameMode · Shader 저장소 |
 | `FPAssetLoader` | `GetAssetLoader()` | FBX / Level JSON / StaticMesh JSON / Shader 로딩 |
 | `FPMeshRenderList` | `GetMeshRenderList()` | 메시 `RenderItem` 등록/해제 |
+| `FPGizmoRenderList` | `GetGizmoRenderList()` | 기즈모 `GizmoRenderItem` 등록/해제 |
 | `FPTextRenderList` | `GetTextRenderList()` | 텍스트 `UIContextItem` 등록/해제 |
 | `FPCameraList` | `GetCameraList()` | `CameraItem` 등록/해제 |
 | `FPGameProjectSetting` | `GetGameProjectSetting()` | 윈도우 클래스/타이틀, 창 크기(기본 960×600), 클라이언트 영역 크기, Aspect |
@@ -354,7 +363,7 @@ sequenceDiagram
     participant Ren as Renderer
 
     Run->>Eng: PreInitialize()
-    Eng->>GI: Get() - SubSystem 10개 생성
+    Eng->>GI: Get() - SubSystem 11개 생성
     Eng->>Game: RegistProjectName()
     Note over Eng: CreateFPEWindow()<br/>ViewPort 생성<br/>Raw Input 등록
     Eng->>Ren: InitializeRenderer(hwnd)
@@ -394,9 +403,15 @@ void ForestPearlEngine::GameLoop()
 
         FPGameInstance::Get().Tick();   // ② 게임 로직
 
-        Render->ClearBackBuffer();      // ③ 렌더링
-        Render->ObjectRendering();
-        Render->UIRendering();
+        Render->CreateCamList();        // ③ Render List 생성
+        Render->CreateMeshRenderList();
+        Render->CreateGizmoRenderList();
+        Render->CreateUIRenderList();
+
+        Render->ClearBackBuffer();      // ④ Render Pass
+        Render->MeshRenderPass();
+        Render->GizmoRenderPass();
+        Render->UIRenderPass();
         Render->RenderTargetPresent();
     }
 }
@@ -411,9 +426,11 @@ flowchart TD
     B2 --> B3["World::Tick"]
     B3 --> B4["GameMode::Tick → Controller::Tick<br/>입력 큐 처리, ControlRotation 적용"]
     B4 --> B5["모든 Actor::Tick<br/>RootComponent::Tick 재귀 - 행렬 갱신"]
-    B5 --> C["③ ClearBackBuffer"]
-    C --> D["ObjectRendering"]
-    D --> E["UIRendering"]
+    B5 --> R["③ Render List 생성<br/>Cam · Mesh · Gizmo · UI"]
+    R --> C["④ ClearBackBuffer"]
+    C --> D["MeshRenderPass"]
+    D --> G["GizmoRenderPass"]
+    G --> E["UIRenderPass"]
     E --> F["RenderTargetPresent - VSync"]
     F --> A
 ```
@@ -430,7 +447,7 @@ flowchart TD
 
 **② 게임 로직** — 입력 → 시간 → 월드 순서로 갱신합니다. Controller가 Actor보다 먼저 Tick 되므로, 입력에 의한 이동이 같은 프레임의 행렬 계산에 반영됩니다.
 
-**③ 렌더링** — 컴포넌트가 등록해 둔 목록을 읽어 그립니다 (다음 절 참고).
+**③ Render List 생성 · ④ Render Pass** — 게임 로직이 끝난 뒤 컴포넌트가 등록해 둔 목록을 값으로 복사하고, Pass 순서대로 그립니다 ([Render Pass](#render-pass) 참고).
 
 > [!IMPORTANT]
 > `FPActor::Tick()`이 `RootComponent->Tick()`을 호출해 트랜스폼 행렬을 계산합니다.
@@ -447,25 +464,29 @@ flowchart TD
 ```mermaid
 flowchart LR
     subgraph GAMESIDE["게임 로직 계층"]
-        SM["FPStaticMeshComponent<br/>GizmoComponent"]
+        SM["FPStaticMeshComponent"]
+        GZ["GizmoGridComponent<br/>GizmoAxisComponent"]
         CAM["FPCameraComponent"]
         TXT["FPTextComponent"]
     end
-    subgraph LISTS["GameInstance SubSystem"]
+    subgraph LISTS["GameInstance SubSystem - 포인터 목록"]
         ML["FPMeshRenderList<br/>RenderItem"]
+        GL["FPGizmoRenderList<br/>GizmoRenderItem"]
         CL["FPCameraList<br/>CameraItem"]
         TL["FPTextRenderList<br/>UIContextItem"]
         VP["FPViewPortClient"]
     end
     subgraph RENDER["렌더링 계층"]
-        RD["Renderer"]
+        RD["Renderer<br/>Create*List / *RenderPass"]
         DEV["RenderingDevice"]
         SF["ShaderFactory"]
     end
     SM -->|"등록"| ML
+    GZ -->|"등록"| GL
     CAM -->|"등록"| CL
     TXT -->|"등록"| TL
     ML -->|"조회"| RD
+    GL -->|"조회"| RD
     CL -->|"조회"| RD
     TL -->|"조회"| RD
     VP -->|"조회"| RD
@@ -474,47 +495,118 @@ flowchart LR
     DEV --> D3D["Direct3D 11 / DXGI"]
 ```
 
-- `ForestPearlEngine`이 `Renderer`와 `RenderingDevice`(싱글톤)를 소유하고, 매 프레임 `Clear → Object → UI → Present`를 호출합니다.
+- `ForestPearlEngine`이 `Renderer`와 `RenderingDevice`(싱글톤)를 소유하고, 매 프레임 **Render List 생성 → Render Pass → Present** 순서로 호출합니다.
 - **게임 코드는 D3D를 직접 호출하지 않습니다.** 컴포넌트가 생성될 때 자신의 데이터를 가리키는 **포인터 묶음**(`RenderItem` 등)을 목록에 등록하고, 소멸될 때 해제합니다.
 - 등록된 항목은 컴포넌트 멤버의 **주소**를 담고 있으므로, 컴포넌트가 값을 바꾸면 별도 제출 과정 없이 다음 프레임에 반영됩니다.
+- `Renderer`는 프레임마다 이 포인터 목록을 읽어 **값 복사본(스냅샷)** 인 Render List를 만들고, Render Pass는 그 복사본만 사용합니다.
 - VertexBuffer, Shader, InputLayout 같은 GPU 리소스는 엔진 계층에서 `void*`로 다루고, `RenderingDevice` 내부에서만 D3D 타입으로 캐스팅합니다.
 
 | 계층 | 클래스 | 책임 |
 |---|---|---|
-| 프레임 흐름 | `Renderer` | 초기화 순서, 정렬, 카메라/뷰포트 순회, 상수 버퍼 채우기, 폰트 출력, 리사이즈 |
-| 디바이스 | `RenderingDevice` | Device / Context / SwapChain / RTV / DSV / State / Buffer 생성과 바인딩, 하드웨어 정보 |
+| 프레임 흐름 | `Renderer` | 초기화 순서, Render List 생성(스냅샷 · 정렬), Render Pass 실행, 상수 버퍼 갱신 호출, 폰트 출력, 리사이즈 |
+| 디바이스 | `RenderingDevice` | Device / Context / SwapChain / RTV / DSV / State / Buffer 생성과 바인딩, 상수 버퍼 `Map` 갱신, 하드웨어 정보 |
 | 셰이더 | `ShaderFactory` | `.vso` / `.pso` 로드, 런타임 컴파일, InputLayout 생성 |
+
+### Render Pass
+
+한 프레임의 렌더링은 **Render List 생성 → Clear → Render Pass 1 … N → Present** 로 구성됩니다.
+Render Pass는 별도 클래스가 아니라 `Renderer`의 멤버 함수이며, **하나의 Pass는 하나의 Render List만 읽어 그립니다.**
+
+```cpp
+// Engine/ForestPearlEngine/ForestPearlEngine.cpp
+void ForestPearlEngine::GameLoop()
+{
+    while (bEngineLoop)
+    {
+        if (!MessagePump()) break;          // ① Windows 메시지
+        FPGameInstance::Get().Tick();       // ② 게임 로직
+
+        Render->CreateCamList();            // ③ Render List 생성 (게임 로직이 끝난 뒤의 스냅샷)
+        Render->CreateMeshRenderList();
+        Render->CreateGizmoRenderList();
+        Render->CreateUIRenderList();
+
+        Render->ClearBackBuffer();          // ④ Render Pass
+        Render->MeshRenderPass();
+        Render->GizmoRenderPass();
+        Render->UIRenderPass();
+        Render->RenderTargetPresent();
+    }
+}
+```
+
+```mermaid
+flowchart LR
+    T["Tick<br/>게임 로직"] --> L["Render List 생성<br/>Cam · Mesh · Gizmo · UI"]
+    L --> C["ClearBackBuffer"]
+    C --> P1["MeshRenderPass"]
+    P1 --> P2["GizmoRenderPass"]
+    P2 --> P3["UIRenderPass"]
+    P3 --> PR["RenderTargetPresent"]
+```
+
+| Pass | 읽는 목록 | Topology | 반복 단위 | 상수 버퍼 | 정렬 |
+|---|---|---|---|---|---|
+| `MeshRenderPass` | `MeshRenderList` | `TRIANGLELIST` | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · Material | `Priority` 오름차순 |
+| `GizmoRenderPass` | `GizmoRenderList` | `LINELIST` | 카메라 → 기즈모 → 뷰포트 → 서브 메시 | Object · ViewPort · Material | `Priority` 오름차순 |
+| `UIRenderPass` | `UIRenderList` | (SpriteBatch) | 텍스트 → `UIViewPort` | 사용 안 함 | `Priority` 오름차순 |
+
+- 모든 Pass는 시작할 때 VS / PS 상수 버퍼 14개를 바인딩합니다 ([상수 버퍼](#상수-버퍼)).
+- `MeshRenderPass`와 `GizmoRenderPass`는 시작할 때 Depth Stencil State(`SetZEnable`), Rasterizer State(`SetbFill` / `SetbCull`), Topology를 지정합니다.
+- Render List 생성 단계에서 **비활성(`Active = false`) 항목은 제외**됩니다. 따라서 Pass 안에서는 활성 여부를 다시 검사하지 않습니다.
+- Render List는 **게임 로직(`Tick`)이 모두 끝난 시점의 값**을 복사합니다. 그려지는 값은 항상 그 프레임 `Tick`의 결과입니다.
+
+| Render List 생성 함수 | 하는 일 |
+|---|---|
+| `CreateCamList` | `Active`인 카메라만 복사. `TripleCam`이면 `TripleWaySplitViewPort`, 아니면 `MainGameViewPort`를 카메라에 붙이고 ViewPort의 상수 버퍼 데이터도 함께 복사 |
+| `CreateMeshRenderList` | `Active`인 `RenderItem`을 값으로 복사(Transform · 셰이더 이름 · 상수 버퍼 데이터)하고 `Priority` 오름차순 정렬 |
+| `CreateGizmoRenderList` | `GizmoRenderItem`에 대해 동일 |
+| `CreateUIRenderList` | `active`인 텍스트만 복사하고 `UIViewPort`를 붙인 뒤 `Priority` 오름차순 정렬 |
+
+#### 새 Render Pass 추가 순서
+
+1. `Renderers/FPRenderingCommon.h`에 게임 쪽 포인터 Item, `RenderingData::` 값 Item, 정렬 비교자를 추가합니다.
+2. Item을 담을 목록 SubSystem을 추가합니다 (예: `FPGizmoRenderList`).
+3. `Renderer`에 `CreateXxxRenderList()`와 `XxxRenderPass()`를 추가합니다.
+4. `GameLoop()`에서 원하는 순서에 호출합니다. 먼저 호출된 Pass가 먼저 그려집니다.
 
 ### 렌더러에 전달되는 데이터
 
 ```cpp
-// Renderers/FPRenderingCommon.h
-struct RenderItem        // 메시 1개
+// Renderers/FPRenderingCommon.h  ── 게임 → 렌더러 (포인터 묶음)
+struct RenderItem            // GizmoRenderItem도 같은 구조
 {
     int*  Priority;   bool* Active;
-    std::vector<void*>* VB;          // 서브 메시별 VertexBuffer
-    std::vector<int>*   VertexSize;  // 서브 메시별 정점 수
-    int*  Stride;     int*  Offset;
-    bool* isFill;     bool* isCull;
+    std::string* MeshPath;                              // AssetManager의 VertexBuffer 키
     FPMatrix* Location; FPMatrix* Rotation; FPMatrix* Scale;
-    Topology* Topo;
-    void** VertexShader; void** PixelShader; void** VBLayout;
-    void** VertexConst;  void** PixelConst;  // Material 상수 버퍼 데이터
+    std::string* VertexShaderPath; std::string* PixelShaderPath;   // Material의 셰이더 이름
+    FPConstantBufferRenderData* VertexConstBuffer;      // Material의 상수 버퍼 데이터
+    FPConstantBufferRenderData* PixelConstBuffer;
 };
 
-struct CameraItem        // 카메라 1개
+struct CameraItem            // 카메라 1개
 {
     FPMatrix* Location; FPMatrix* Rotation; FPMatrix* Scale;
     FPMatrix* View;     FPMatrix* Projection;
     bool* Active;       bool* TripleCam;
 };
 
-struct UIContextItem     // 텍스트 1줄
+struct UIContextItem         // 텍스트 1줄
 {
-    bool** active; int* x; int* y; FPVector4* color;
+    int* Priority; bool** active; int* x; int* y; FPVector4* color;
     std::basic_string<TCHAR>* msg;
 };
+
+struct FPViewPort            // 뷰포트 1개
+{
+    float TopLeftX, TopLeftY, Width, Height, MinDepth, MaxDepth;
+    FPConstantBufferRenderData* VertexConstBuffer;      // 뷰포트 상수 버퍼 데이터
+    FPConstantBufferRenderData* PixelConstBuffer;
+};
 ```
+
+렌더러는 위 항목을 `RenderingData::MeshRenderItem` · `GizmoRenderItem` · `CameraItem` · `UIContextItem` · `FPViewPort`로 **값 복사**해 Render List에 보관합니다.
+메시 / 기즈모는 `MeshPath`로 `FPAssetManager`에서 VertexBuffer 목록을, 셰이더 이름으로 VS · PS · InputLayout을 찾아 사용합니다.
 
 ### 초기화 (`Renderer::InitializeRenderer`)
 
@@ -531,42 +623,98 @@ struct UIContextItem     // 텍스트 1줄
 | 9 | `CreateSpriteBatch / CreateSpriteFont` | DirectXTK. 게임 에셋의 `Font/굴림9k.sfont` 사용 |
 | 10 | `CreateDepthStencilStateCreate` | `DEPTH_ON` / `DEPTH_OFF` / `DEPTH_WRITE_OFF` |
 | 11 | `RasterStateCreate` | `SOLID` / `WIREFRAME` / `CULLBACK` / `WIRECULLBACK` (CCW가 앞면) |
-| 12 | `Create*ConstBuffer(256)` | 256 byte 상수 버퍼 5개 |
+| 12 | `CreateVertexShaderConstBuffer(320)`<br/>`CreatePixelShaderConstBuffer(320)` | 320 byte 상수 버퍼를 **VS 14개 · PS 14개** 생성 후 `b0 ~ b13`에 바인딩 |
 
-### 상수 버퍼 슬롯
+### 상수 버퍼
 
-| 셰이더 | 슬롯 | 버퍼 | 내용 | 갱신 단위 |
+#### 구조
+
+| 항목 | 내용 |
+|---|---|
+| 개수 | VS용 14개 + PS용 14개 (`b0 ~ b13`). VS와 PS의 번호 체계는 **서로 독립** |
+| 크기 | 버퍼 1개당 **320 byte** 고정 (`D3D11_USAGE_DYNAMIC`, CPU Write) |
+| 바인딩 | 초기화 때, 그리고 **모든 Render Pass 시작 때** 14개 전부 VS / PS에 바인딩 |
+| 갱신 | `Map(WRITE_DISCARD)` → `memcpy(Buffer + Offset, Size)` → `Unmap` |
+| 데이터 보관 | `FPConstantBufferRenderData` — 바이트 배열 `Buffer` + 슬롯 목록 `ConstantBuffers[]` (`{ Slot, Offset, Size }`) |
+
+```cpp
+// Renderers/FPConstantBufferCommon.h
+struct FPConstantBufferInfo       { unsigned int Slot; size_t Offset; size_t Size; };
+struct FPConstantBufferRenderData { std::vector<uint8_t> Buffer; std::vector<FPConstantBufferInfo> ConstantBuffers; };
+
+namespace FPConstantBufferRenderDataUtil
+{
+    template<typename T> void AddConstantBuffer   (FPConstantBufferRenderData&, unsigned int Slot, const T& Data);  // 생성자에서 등록
+    template<typename T> void UpdateConstantBuffer(FPConstantBufferRenderData&, unsigned int Index, const T& Data); // 값 갱신
+}
+```
+
+- **Material**(`FPMaterial`)은 `VertexConstantBuffer` / `PixelConstantBuffer`를 멤버로 가지며, 메시 · 기즈모 컴포넌트가 이 주소를 `RenderItem`에 연결합니다.
+- **ViewPort**(`FPViewPortClient`)도 같은 형식의 상수 버퍼 데이터를 가집니다.
+- 상수 버퍼는 구조체의 **바이트 복사본**을 보관합니다. `Add`는 등록 시점의 값을, `Update`는 호출 시점의 값을 복사합니다.
+
+#### 슬롯 규약
+
+| 셰이더 | 레지스터 | 소유 | 내용 | 갱신 단위 |
 |:-:|:-:|---|---|---|
-| VS | `b0` | Object | `World`, `View`, `Proj`, `WVP` | 오브젝트 × 뷰포트 |
-| VS | `b1` | VertexShader | Material의 Vertex 상수 | 오브젝트 |
-| VS | `b2` | VertexViewPort | ViewPort의 Vertex 상수 | 뷰포트 |
-| PS | `b0` | PixelShader | Material의 Pixel 상수 | 오브젝트 |
-| PS | `b1` | PixelViewPort | ViewPort의 Pixel 상수 | 뷰포트 |
+| VS | `b0` | **엔진 예약** (Object) | `World`, `View`, `Proj`, `WV`, `WVP` (5 × 64 = 320 byte) | 오브젝트 × 뷰포트 |
+| VS | `b1` | **엔진 예약** (ViewPort) | 뷰포트의 Vertex 상수. 기본 구조체 `VertexConst { AniOn, BlendOn }` | 뷰포트 |
+| VS | `b2 ~ b13` | **Material** | Material의 Vertex 상수. 등록 슬롯 `k` → `b(2 + k)` | 오브젝트 |
+| PS | `b0` | **엔진 예약** (ViewPort) | 뷰포트의 Pixel 상수 (`Slot k` → `b(k)`). 현재 엔진 기본 뷰포트는 사용하지 않음 | 뷰포트 |
+| PS | `b1 ~ b13` | **Material** | Material의 Pixel 상수. 등록 슬롯 `k` → `b(1 + k)` | 오브젝트 |
 
-`World = Scale × Rotation × Location`, `WVP = World × View × Proj` 로 CPU에서 계산해 전달합니다.
+Material이 `AddConstantBuffer`로 등록하는 `Slot`은 셰이더 레지스터 번호가 **아니라** 위 표의 "Material 영역 안에서의 상대 번호"입니다.
 
-### 오브젝트 렌더링 (`Renderer::ObjectRendering`)
+| Material 등록 슬롯 | 0 | 1 | 2 | … | `k` | 최댓값 |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|
+| VS 레지스터 | `b2` | `b3` | `b4` | … | `b(2+k)` | `k = 11` → `b13` |
+| PS 레지스터 | `b1` | `b2` | `b3` | … | `b(1+k)` | `k = 12` → `b13` |
+
+> [!NOTE]
+> ViewPort용 PS 상수 버퍼는 `MeshRenderPass`와 `GizmoRenderPass` 모두 `b(Slot)`으로 갱신됩니다. 따라서 PS `b0`은 ViewPort가, `b1`부터는 Material이 사용해 서로 겹치지 않습니다.
+> 뷰포트 상수 버퍼는 엔진 영역이므로 게임 코드에서 추가하지 마세요. 현재 엔진 기본 뷰포트는 VS `b1`만 사용하고 PS 상수 버퍼는 등록하지 않습니다.
+
+`World = Scale × Rotation × Location`, `WVP = World × View × Proj` 로 CPU에서 계산해 `b0`에 전달합니다. 행렬은 전치 없이 전달되므로 셰이더에서는 `mul(mWVP, pos)` 순서로 사용합니다 ([`DefaultVertexShader.vsh`](Engine/ForestPearlEngine/Assets/Shader/DefaultVertexShader.vsh) 참고).
+
+#### 갱신 흐름
 
 ```mermaid
 flowchart TD
-    S["DepthStencil State 설정<br/>상수 버퍼 5개 바인딩"] --> Q["RenderList를 Priority Queue에 삽입<br/>Priority 값이 큰 항목부터"]
-    Q --> C{"활성 카메라"}
-    C --> V["ViewPort 선택<br/>Main 또는 TripleWaySplit"]
-    V --> I{"RenderItem"}
-    I -->|"Active = false"| I
-    I --> ST["Rasterizer State - Fill / Cull<br/>InputLayout · Topology<br/>VS / PS 설정<br/>Material 상수 버퍼 갱신"]
-    ST --> VPL{"ViewPort마다"}
-    VPL --> MVP["SetViewPort<br/>Object 상수 버퍼 갱신<br/>ViewPort 상수 버퍼 갱신"]
+    A["Actor::Tick<br/>Material::UpdateMaterial"] --> B["UpdateConstantBuffer<br/>Material의 RenderData.Buffer에 memcpy"]
+    B --> C["CreateMeshRenderList / CreateGizmoRenderList<br/>RenderData를 값으로 복사 - 스냅샷"]
+    C --> D["RenderPass - 항목마다<br/>Material 상수 버퍼 Map/memcpy<br/>VS b2+k · PS b1+k"]
+    D --> E["RenderPass - 뷰포트마다<br/>Object WVP → VS b0<br/>ViewPort 상수 → VS b1"]
+    E --> F["Draw"]
+```
+
+> [!NOTE]
+> 엔진은 `UpdateMaterial()`을 **자동으로 호출하지 않습니다.** 값이 매 프레임 바뀌는 Material은 액터의 `Tick()`에서 직접 호출해야 합니다.
+
+콘텐츠 프로그래머가 Material에서 상수 버퍼를 다룰 때의 규칙은 [커스텀 Material과 상수 버퍼](#8-커스텀-material과-상수-버퍼)를 참고하세요.
+
+### 메시 · 기즈모 렌더링 (`MeshRenderPass` / `GizmoRenderPass`)
+
+두 Pass는 Topology(`TRIANGLELIST` / `LINELIST`)와 읽는 목록만 다르고 구조가 같습니다.
+
+```mermaid
+flowchart TD
+    S["Pass 시작<br/>상수 버퍼 14개 바인딩<br/>DepthStencil · Rasterizer State · Topology"] --> C{"CameraList<br/>활성 카메라마다"}
+    C --> I{"RenderList<br/>Priority 오름차순"}
+    I --> ST["InputLayout · VS / PS 설정<br/>Material 상수 버퍼 갱신"]
+    ST --> VPL{"카메라의 ViewPort마다"}
+    VPL --> MVP["SetViewPort<br/>Object 상수 버퍼 b0 갱신<br/>ViewPort 상수 버퍼 갱신"]
     MVP --> DR["서브 메시마다<br/>IASetVertexBuffers → Draw"]
     DR --> VPL
     VPL --> I
+    I --> C
 ```
 
-- **정렬** — `FPMeshComponent::SetPriority(int)` 값이 큰 메시가 먼저 그려집니다.
-- **Fill / Cull** — `SetMeshFill(bool)`, `SetMeshCull(bool)` 조합으로 4개의 Rasterizer State 중 하나가 선택됩니다.
+- **정렬** — `Priority` **값이 작은 항목부터** 그려집니다 (`std::sort` 오름차순). 메시 · 기즈모 컴포넌트의 `SetPriority(int)`로 지정합니다.
+- **Fill / Cull** — 컴포넌트별 설정이 아니라 **Pass 전체에 적용되는 전역 값**입니다. `ForestPearlEngine::SetbFill(bool)`, `SetbCull(bool)` 조합으로 4개의 Rasterizer State 중 하나가 선택됩니다.
 - **Draw** — 인덱스 버퍼 없이 `Draw(VertexCount, 0)`로 그립니다. FBX 로딩 시 삼각형 코너마다 정점을 복제합니다.
 - **깊이 테스트** — `ForestPearlEngine::SetZEnable(bool)`로 전역 On/Off.
-- **카메라** — 렌더 큐는 한 번 소비되므로 현재는 활성 카메라 1대를 기준으로 그려집니다.
+- **카메라** — 활성 카메라를 모두 순회하며, 카메라마다 Render List 전체를 다시 그립니다.
+- **Material 상수 버퍼는 항목당 한 번**, **Object · ViewPort 상수 버퍼는 뷰포트마다** 갱신됩니다.
 
 ### 뷰포트 (`FPViewPortClient`)
 
@@ -574,13 +722,13 @@ flowchart TD
 |---|:-:|---|
 | `MainGameViewPort` | 1 | 기본 게임 화면 |
 | `UIViewPort` | 1 | 텍스트 UI. 항상 클라이언트 영역 전체 |
-| `TripleWaySplitViewPort` | 3 | 3분할 화면. `FPCameraComponent::OnTripleCam()`으로 전환. 뷰포트마다 다른 상수(`AniOn`, `BlendOn`) 전달 |
+| `TripleWaySplitViewPort` | 3 | 3분할 화면. `FPCameraComponent::OnTripleCam()`으로 전환. 뷰포트마다 다른 상수(`AniOn`, `BlendOn`)를 VS `b1`로 전달 |
 
 게임 뷰포트는 기준 화면비(960:600)를 유지하도록 계산되며, 창의 긴 축 방향으로 분할·중앙 정렬됩니다.
 
-### UI 렌더링 (`Renderer::UIRendering`)
+### UI 렌더링 (`Renderer::UIRenderPass`)
 
-`UIViewPort`를 설정한 뒤 `SpriteBatch::Begin()` → 활성화된 `UIContextItem`마다 `SpriteFont::DrawString()` → `End()` 순으로 출력합니다.
+`UIRenderList`의 텍스트마다 `SpriteBatch::Begin()` → `UIViewPort`를 설정하고 `SpriteFont::DrawString()` → `End()` 순으로 출력합니다. 상수 버퍼는 사용하지 않습니다.
 
 ### 리사이즈 (`Renderer::ResizeRenderTarget`)
 
@@ -591,11 +739,13 @@ flowchart TD
 | 항목 | 내용 |
 |---|---|
 | 입력 레이아웃 | `POSITION`(float3, offset 0), `COLOR`(float4, offset 12) |
-| 기본 셰이더 | `DefaultVertexShader.vso`(WVP 변환), `DefaultPixelShader.pso`(정점 색 출력) |
+| 기본 셰이더 | `DefaultVertexShader.vso`(WVP 변환, `b0`만 사용), `DefaultPixelShader.pso`(정점 색 출력, 상수 버퍼 없음) |
 | 로드 방식 1 | 사전 컴파일된 오브젝트 로드 — `LoadVertexShader("X.vso", owner)` |
 | 로드 방식 2 | 런타임 컴파일 — `LoadVertexShader("X.fx", "VS_Main", "vs_5_0", owner)` (행 우선 행렬 패킹) |
-| `FPMaterialInterface` | `SetVertexShader / SetPixelShader`, 각 포인터 Getter, `UpdateMaterial(DeltaTime)` |
-| `FPMaterial` | 생성 시 기본 셰이더 + InputLayout 설정. `VertextConst / PixelConst`에 상수 구조체를 연결하면 `b1` / `b0`으로 전달 |
+| `FPMaterialInterface` | `SetVertexShader / SetPixelShader`, 셰이더 이름 Getter, `Get{Vertex,Pixel}ConstantBufferRenderData()`, `UpdateMaterial(DeltaTime)` |
+| `FPMaterial` | 생성 시 기본 셰이더 이름 설정. 보호 멤버 `VertexConstantBuffer` / `PixelConstantBuffer`에 `AddConstantBuffer`로 상수 버퍼를 등록 |
+
+Material은 셰이더를 **파일 이름**(`"Demo.vso"`)으로 가리키고, 렌더러가 Pass 안에서 `FPAssetManager`에서 실제 셰이더를 찾습니다. 따라서 `LoadAssets()`에서 먼저 로드해 두어야 합니다.
 
 Material 선택 우선순위: **컴포넌트에 `SetMaterial`로 지정한 Material** → StaticMesh JSON의 `"Material"` 클래스 → 기본 `FPMaterial`
 
@@ -1180,7 +1330,6 @@ void Player::Initialize()
     // 메시를 Root로
     Mesh = new FPStaticMeshComponent(this, "ToonLinkTriangle_StaticMesh");
     SetRootComponent(Mesh);
-    Mesh->SetMeshCull(false);
 
     // 자식 컴포넌트
     ShieldPivot = new FPSceneComponent(this);
@@ -1250,14 +1399,14 @@ auto* Body = new FPStaticMeshComponent(this, "Windmill_Body_StaticMesh");  // Lo
 
 | 함수 | 설명 |
 |---|---|
-| `SetMeshFill(bool)` | `true` Solid / `false` Wireframe |
-| `SetMeshCull(bool)` | 뒷면 제거 |
-| `SetActive(bool)` | 렌더링 On/Off |
-| `SetPriority(int)` | 큰 값이 먼저 그려짐 |
-| `SetMaterial(FPMaterialInterface*)` | Material 교체 |
-| `SetTopology("TRIANGLELIST")` | Topology 변경 |
+| `SetActive(bool)` | 렌더링 On/Off. `false`면 Render List 생성 단계에서 제외됨 |
+| `SetPriority(int)` | 값이 **작은** 항목부터 그려짐 |
+| `SetMaterial(FPMaterialInterface*)` | Material 교체 ([상수 버퍼 운용 시 유의사항](#8-커스텀-material과-상수-버퍼)) |
 | `SetStaticMesh(name)` | 메시 교체. 현재는 이전 메시의 렌더 항목이 남아 함께 그려짐 ([알려진 문제](#-알려진-문제--소멸-처리)) |
 | `GetSocketTransform(name)` | Socket의 월드 Transform |
+
+> Fill(Solid / Wireframe) · Cull(뒷면 제거)은 컴포넌트별이 아니라 렌더러 전역 설정입니다.
+> `ForestPearlEngine::GetGameEngine().SetbFill(bool)` / `SetbCull(bool)`로 바꾸며, `MeshRenderPass`와 `GizmoRenderPass`에 모두 적용됩니다.
 
 #### `FPCameraComponent` — 카메라
 
@@ -1280,20 +1429,20 @@ auto* Body = new FPStaticMeshComponent(this, "Windmill_Body_StaticMesh");  // Lo
 
 Pawn에서 `AddControllerYawInput(v)`, `AddControllerPitchInput(v)`를 호출하면 카메라가 회전합니다.
 
-#### `GizmoComponent` — Grid / Axis
+#### `GizmoGridComponent` · `GizmoAxisComponent` — Grid / Axis
 
 ```cpp
-GridComponent = new GizmoComponent(this);
-GRIDINFO Info;  Info.width = 128;  Info.height = 128;    // scale(간격), r, g, b, a 지정 가능
-GridComponent->MakeGrid(&Info);
+// Grid::Initialize()
+GridComponent = new GizmoGridComponent(this, "Grid");        // 두 번째 인자 = 기즈모 메시 이름 (VertexBuffer 키, 기즈모마다 고유하게)
 SetRootComponent((FPSceneComponent*)GridComponent);
 
-AxisComponent = new GizmoComponent(this);
-GIZMO_AXISINFO Axis;                                     // length = 5, scale = 1
-AxisComponent->MakeAxis(&Axis);                          // X 빨강 / Y 초록 / Z 파랑
+// Axis::Initialize()
+AxisComponent = new GizmoAxisComponent(this, "Axis");        // X 빨강 / Y 초록 / Z 파랑
+SetRootComponent((FPSceneComponent*)AxisComponent);
 ```
 
-`LINELIST`로 그려지며 `SetActive`, `SetPriority`, `SetMeshFill`, `SetMeshCull`, `SetTopology`를 제공합니다.
+생성자가 기본값(`GIZMO_GRIDINFO` / `GIZMO_AXISINFO`)으로 라인 메시를 만들어 `FPGizmoRenderList`에 등록합니다.
+기즈모는 `GizmoRenderPass`에서 `LINELIST`로 그려지며, 메시와 같은 Material · 상수 버퍼 규칙을 따릅니다. `SetActive`, `SetPriority`를 제공합니다.
 
 #### `FPTextComponent` — 화면 텍스트
 
@@ -1354,32 +1503,133 @@ ForestPearlEngine::GetGameEngine().GetAdapterDescription(0);       // GPU 이름
 ForestPearlEngine::GetGameEngine().StopEngine();                   // 종료
 ```
 
-### 8. 커스텀 Material (선택)
+### 8. 커스텀 Material과 상수 버퍼
 
-`Games/Release_Game/ShaderCode_Triangle`의 `CB2Material`이 예시입니다.
+셰이더에 게임 데이터(색, 시간, 비율 등)를 넘기려면 `FPMaterial`을 상속해 **상수 버퍼를 등록**합니다.
+슬롯 번호와 레지스터의 대응은 [상수 버퍼 슬롯 규약](#슬롯-규약)을 따릅니다.
+
+#### 작성 순서
 
 ```cpp
-class CB2Material : public FPMaterial
-{
-    struct alignas(16) VSConstBuffer { float r, g, b, a; float per; float x; };
-    VSConstBuffer* Vscb;
-public:
-    CB2Material()
-    {
-        Vscb = new VSConstBuffer;
-        VertextConst = Vscb;                 // VS b1 슬롯으로 전달됨
-    }
-    void UpdateMaterial(float DeltaTime) override { /* Vscb 값 갱신 */ }
-};
+#include "ForestPearlEngine/FPMaterial.h"
+#include <cmath>
 
-// 사용
-MyMaterial = new CB2Material();
-MyMaterial->SetVertexShader("Demo.vso");     // LoadAssets()에서 미리 로드
-MyMaterial->SetPixelShader("Demo.pso");
-Mesh->SetMaterial(MyMaterial);
+class PulseMaterial : public FPMaterial
+{
+    // ① 상수 버퍼용 구조체: 16 byte 배수, 멤버 순서 = HLSL cbuffer 선언 순서
+    struct alignas(16) VSParams { float Scale; float Pad[3]; };         // 16 byte  → VS 등록 슬롯 0 = b2
+    struct alignas(16) PSParams { float R, G, B, A; };                  // 16 byte  → PS 등록 슬롯 0 = b1
+
+    VSParams VSData{ 1.0f, {} };
+    PSParams PSData{ 1.0f, 1.0f, 0.0f, 1.0f };
+    float    Time = 0.0f;
+
+public:
+    PulseMaterial()
+    {
+        // ② 생성자에서 등록. 등록 순서가 곧 인덱스이므로 0번부터 빈틈없이
+        FPConstantBufferRenderDataUtil::AddConstantBuffer(VertexConstantBuffer, 0, VSData);
+        FPConstantBufferRenderDataUtil::AddConstantBuffer(PixelConstantBuffer,  0, PSData);
+    }
+
+    void UpdateMaterial(float DeltaTime) override
+    {
+        Time += DeltaTime;
+        VSData.Scale = 1.0f + 0.2f * sinf(Time);
+        PSData.G     = 0.5f + 0.5f * sinf(Time);
+
+        // ③ 멤버만 바꿔서는 반영되지 않음. 바뀐 값을 다시 복사해 넣어야 함
+        FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, VSData);
+        FPConstantBufferRenderDataUtil::UpdateConstantBuffer(PixelConstantBuffer,  0, PSData);
+    }
+};
 ```
 
-셰이더에서는 [상수 버퍼 슬롯](#상수-버퍼-슬롯) 표에 맞춰 `cbuffer`를 선언합니다.
+```hlsl
+// Pulse.vsh — Object(b0)는 기본 셰이더와 같은 순서로 선언
+cbuffer ObejctConstBuffer : register(b0) { matrix mWorld; matrix mView; matrix mProj; matrix mWV; matrix mWVP; };
+cbuffer PulseVS           : register(b2) { float gScale; float3 _pad; };   // VS Material 슬롯 0
+
+// Pulse.psh
+cbuffer PulsePS           : register(b1) { float4 gColor; };               // PS Material 슬롯 0
+```
+
+```cpp
+// 사용: 셰이더는 LoadAssets()에서 미리 로드해 둔다
+PulseMat = new PulseMaterial();
+PulseMat->SetVertexShader("Pulse.vso");
+PulseMat->SetPixelShader("Pulse.pso");
+Mesh->SetMaterial(PulseMat);               // 메시 컴포넌트를 만든 직후에 호출 ([알려진 문제] 참고)
+
+void MyActor::Tick()
+{
+    PulseMat->UpdateMaterial(GetWorld()->GetGameTimer()->DeltaTime());   // 엔진이 자동 호출하지 않음
+    __super::Tick();
+}
+```
+
+StaticMesh JSON의 `"Material"`로 지정하려면 `Registry->Register<PulseMaterial>("PulseMaterial")`로 등록합니다 ([클래스 등록 규칙](#클래스-등록-규칙)).
+
+#### ⚠️ 상수 버퍼 운용 시 유의사항
+
+> [!IMPORTANT]
+> 상수 버퍼는 **컴파일러와 런타임이 거의 검사해 주지 않는 영역**입니다. 규칙을 어기면 오류 메시지 없이 색이 이상하거나, 다른 Material 값이 섞이거나, 메모리가 손상됩니다.
+
+**① 크기 · 레이아웃**
+
+| 규칙 | 이유 / 어기면 |
+|---|---|
+| **구조체 1개의 크기는 320 byte 이하** | 슬롯의 GPU 버퍼가 320 byte 고정입니다. 크기 검사가 없어 더 큰 구조체는 `Map`된 메모리를 넘어 `memcpy`합니다 (메모리 손상). 큰 데이터는 구조체를 나눠 슬롯 여러 개로 등록하세요 |
+| **구조체에 `alignas(16)`을 붙이고 크기를 16 byte 배수로** | HLSL `cbuffer`는 16 byte 단위로 패킹됩니다. 모자라는 부분은 `float Pad[n]`으로 명시해 두면 C++ · HLSL 레이아웃을 맞추기 쉽습니다 |
+| **멤버 순서 · 타입을 HLSL `cbuffer`와 완전히 일치** | 컴파일러가 둘을 대조하지 않습니다. 순서가 다르면 값이 엉뚱한 변수로 들어갑니다 |
+| **하나의 `float4`(16 byte) 경계를 넘는 멤버를 두지 않는다** | `float3` 뒤에는 `float`이 같은 16 byte 안으로 들어가고, `float2` 다음 `float3`은 다음 16 byte로 넘어갑니다. 헷갈리면 모두 `float4` 단위로 설계하세요 |
+| **`bool`을 쓰지 않는다. `float` / `int` / `uint`를 사용** | C++ `bool`은 1 byte, HLSL `bool`은 4 byte입니다 |
+| **배열은 요소마다 16 byte** | HLSL `float arr[4]`는 16 × 4 = 64 byte로 패킹됩니다. 배열이 필요하면 `float4` 배열로 선언하세요 |
+| **`std::string` · `std::vector` · 포인터 · 가상 함수가 있는 타입은 담지 않는다** | `memcpy`로 복사되므로 `std::is_trivially_copyable`이어야 합니다. 어기면 컴파일 단계에서 `static_assert`로 막히거나, 포인터를 넣으면 주소값이 GPU로 갑니다 |
+
+**② 슬롯 · 등록**
+
+| 규칙 | 이유 / 어기면 |
+|---|---|
+| **Material 슬롯 `k`는 VS `b(2+k)`, PS `b(1+k)`** | `register(b#)`를 이 표대로 선언해야 합니다. VS의 `b0`(Object), `b1`(ViewPort)은 엔진 예약이라 **Material이 쓸 수 없습니다.** PS `b0`도 ViewPort 예약입니다 |
+| **슬롯은 VS 최대 `k = 11`, PS 최대 `k = 12`** | 상수 버퍼는 `b13`까지입니다. 범위를 검사하지 않아 넘어가면 배열 범위 밖 접근으로 종료됩니다 |
+| **`AddConstantBuffer`는 0번부터 순서대로, 빈틈 · 중복 없이** | `UpdateConstantBuffer`의 두 번째 인자는 셰이더 슬롯이 아니라 **등록 순서 인덱스**입니다. 번호를 건너뛰거나 순서가 달라지면 엉뚱한 항목을 덮어씁니다 |
+| **VS와 PS는 각각 등록한다** | VS `b2`와 PS `b2`는 서로 다른 버퍼입니다. 같은 값을 양쪽에서 쓰려면 `VertexConstantBuffer`와 `PixelConstantBuffer`에 따로 등록하세요 |
+| **셰이더가 선언한 `cbuffer` 수 = Material이 등록한 수** | 28개 버퍼는 **모든 오브젝트가 돌려 씁니다.** Material이 등록하지 않은 슬롯을 셰이더가 읽으면 *직전에 그려진 다른 Material의 값*(처음에는 0 / 쓰레기)이 보입니다 |
+| **기본 셰이더(`Default*.vso/.pso`)를 쓰면 등록하지 않는다** | 기본 셰이더는 `b0`만 사용합니다 |
+| **뷰포트 상수 버퍼(`b1`)를 다른 용도로 선언하지 않는다** | VS `b1`에는 매 뷰포트마다 엔진이 `VertexConst { AniOn, BlendOn }`을 씁니다 |
+
+**③ 값 갱신**
+
+| 규칙 | 이유 / 어기면 |
+|---|---|
+| **구조체를 바꾼 뒤 `UpdateConstantBuffer`를 호출** | `Add` / `Update`는 호출 시점의 값을 **복사**합니다. 구조체 멤버만 수정하면 셰이더는 등록 당시의 값을 계속 봅니다 |
+| **`Update`에는 `Add`와 같은 타입을 넘긴다** | 크기 일치 검사(`assert`)는 **Debug에서만** 동작합니다. Release에서는 다른 크기를 조용히 복사합니다 |
+| **구조체는 값(또는 참조)으로 넘기고, 포인터를 넘기지 않는다** | `Add(…, 0, ptr)`처럼 포인터를 넘기면 `T`가 포인터 타입으로 추론되어 **포인터 값 8 byte가 복사**됩니다 (오류 없이 컴파일됨). 항상 `Add(…, 0, *ptr)` 또는 값 변수를 넘기세요 |
+| **`UpdateMaterial()`을 `Tick()`에서 직접 호출** | 엔진은 호출하지 않습니다. Render List는 `Tick`이 끝난 뒤 복사되므로 `Tick` 안에서 갱신하면 같은 프레임에 반영됩니다 |
+| **값이 바뀌지 않으면 `Update`를 생략한다** | 등록해 둔 값은 유지됩니다. `Update`는 `memcpy`만 하지만, 상수 버퍼 데이터는 프레임마다 Render List로 통째로 복사되고 GPU 쓰기(`Map`)는 *오브젝트 × 카메라*마다 일어나므로 작게 유지하는 편이 좋습니다 |
+
+**④ 소유 · 수명**
+
+| 규칙 | 이유 / 어기면 |
+|---|---|
+| **상수 버퍼 데이터는 Material 인스턴스가 소유한다** | 같은 Material 포인터를 공유하는 메시는 값도 공유합니다. 메시마다 다른 값이 필요하면 Material을 `new`로 각각 만드세요 |
+| **Material을 `delete`하지 않는다** | 렌더 항목이 Material의 상수 버퍼 데이터 **주소**를 들고 있어 Dangling이 됩니다 ([알려진 문제](#-알려진-문제--소멸-처리)) |
+| **`SetMaterial()`은 메시 컴포넌트를 만든 직후에 호출** | 렌더 항목 포인터가 무효화될 수 있습니다 ([사용 규칙](#4-현재-버전에서-지켜야-할-사용-규칙)) |
+| **`b0`의 행렬은 `mul(mWVP, pos)` 순서로 사용** | CPU 행렬이 전치 없이 전달됩니다. 직접 행렬을 상수 버퍼로 넘길 때도 같은 규칙을 따르세요 |
+
+**⑤ 체크리스트**
+
+- [ ] 구조체가 `alignas(16)`이고 `sizeof`가 16의 배수이며 320 이하인가?
+- [ ] 멤버 순서 · 타입이 HLSL `cbuffer`와 같은가? (`bool`, 배열, `float3` 패킹 확인)
+- [ ] `AddConstantBuffer`를 0번부터 빈틈없이 등록했고, `register(b#)`가 VS `b(2+k)` / PS `b(1+k)`와 맞는가?
+- [ ] 셰이더가 선언한 `cbuffer`를 전부 Material이 등록했는가?
+- [ ] 값을 바꾼 뒤 `UpdateConstantBuffer`를 호출하고, 그 호출이 `Tick()`에서 일어나는가?
+- [ ] 포인터가 아니라 구조체를 `Add` / `Update`에 넘겼는가?
+- [ ] 메시마다 값이 달라야 한다면 Material 인스턴스를 따로 만들었는가?
+
+> [!NOTE]
+> `Games/Release_Game/ShaderCode_Triangle`의 `CB2Material` 등 기존 샘플은 이전 방식(`VertextConst = 포인터`)과 이전 슬롯 규약(PS `b0`)을 사용하므로 **현재 엔진에서 그대로 빌드 · 동작하지 않습니다.** 위 방식으로 옮겨서 사용하세요.
 
 ---
 
@@ -1503,7 +1753,7 @@ Tri_World처럼 *레벨 하나를 열어 종료할 때까지 유지*하는 흐�
 
 | 소유자 | 해제되지 않는 대상 | 현재 소멸자 |
 |---|---|---|
-| `FPGameInstance` | 생성자에서 `new`한 SubSystem 10개 | `= default` |
+| `FPGameInstance` | 생성자에서 `new`한 SubSystem 11개 | `= default` |
 | `FPWorld` | `GameActorList`의 모든 액터 | `= default`. `Finalize()` / `UnLoadData()`를 직접 호출해야만 삭제됨 |
 | `FPGameInstance::OpenLevel` | 이전 World의 액터 전부 | `World.reset()`만 호출하고 `Finalize()`를 호출하지 않음 |
 | `FPAGameMode` | `GameController`의 Controller들 | `= default` |
@@ -1515,7 +1765,7 @@ Tri_World처럼 *레벨 하나를 열어 종료할 때까지 유지*하는 흐�
 | `GizmoComponent` | `Material`, 직접 만든 VertexBuffer | 렌더 목록 해제만 수행 |
 | `FPViewPortClient` | `FPViewPort` 5개, `VertexConst` 4개 | `= default` |
 | `FPAssetManager` | `void*`로 보관하는 VertexBuffer, Shader 객체, Shader 바이트코드 | `= default` |
-| `RenderingDevice` | 상수 버퍼 5개, DepthStencilState 3개, 열거한 `IDXGIAdapter1`, `IDXGIAdapter4` | 없음 |
+| `RenderingDevice` | 상수 버퍼 28개(VS 14 · PS 14), DepthStencilState 3개, 열거한 `IDXGIAdapter1`, `IDXGIAdapter4` | 없음 |
 | `ForestPearlEngine` | `Renderer` | `Finalize()`만 호출 |
 | `FPGameplayStatics::GetActorOfClass` · `GetAllActorsOfClass` | 타입 비교용 임시 인스턴스의 `RootComponent` — **호출할 때마다** 1개 | — |
 | `FPWorld::CreateClassInstnce<T>` | `dynamic_cast`가 실패한 객체 (`release()` 후 버려짐) | — |

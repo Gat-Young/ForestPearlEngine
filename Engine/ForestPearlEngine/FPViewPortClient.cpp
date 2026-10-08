@@ -53,22 +53,22 @@ void FPViewPortClient::CreateViewPort()
 	TripleWaySplitViewPort.resize(3);
 	TripleWaySplitViewPort[0] = new FPViewPort();
 
-	VertexConst* Cam1VertexConst = new VertexConst();
-	Cam1VertexConst->AniOn = 0.0f;
-	Cam1VertexConst->BlendOn = 0.0f;
+	VertexConst Cam1VertexConst;
+	Cam1VertexConst.AniOn = 0.0f;
+	Cam1VertexConst.BlendOn = 0.0f;
 	TripleWaySplitViewPort[0]->VertexConstBuffer = new FPConstantBufferRenderData();
 	FPConstantBufferRenderDataUtil::AddConstantBuffer(*(TripleWaySplitViewPort[0]->VertexConstBuffer), 0, Cam1VertexConst);
 
-	VertexConst* Cam2VertexConst = new VertexConst();
-	Cam2VertexConst->AniOn = 1.0f;
-	Cam2VertexConst->BlendOn = 0.0f;
+	VertexConst Cam2VertexConst;
+	Cam2VertexConst.AniOn = 1.0f;
+	Cam2VertexConst.BlendOn = 0.0f;
 	TripleWaySplitViewPort[1] = new FPViewPort();
 	TripleWaySplitViewPort[1]->VertexConstBuffer = new FPConstantBufferRenderData();
 	FPConstantBufferRenderDataUtil::AddConstantBuffer(*(TripleWaySplitViewPort[1]->VertexConstBuffer), 0, Cam2VertexConst);
 
 	TripleWaySplitViewPort[2] = new FPViewPort();
 
-	VertexConst* Cam3VertexConst = new VertexConst();
+	VertexConst Cam3VertexConst;
 	TripleWaySplitViewPort[2]->VertexConstBuffer = new FPConstantBufferRenderData();
 	FPConstantBufferRenderDataUtil::AddConstantBuffer(*(TripleWaySplitViewPort[2]->VertexConstBuffer), 0, Cam3VertexConst);
 

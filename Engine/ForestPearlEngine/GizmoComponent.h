@@ -40,15 +40,9 @@ class GizmoComponent : FPPrimitiveComponent
 
 		//값이 클수록 먼저 그려짐(작을 수록 앞으로 그려짐)
 		int Priority = 0;
-		std::vector<void*> VB;
-		std::vector<int> VertexSize;
-		int Stride;
-		int Offest;
-		bool isFill = false;
-		bool isCull = false;
 		bool isActive = true;
-		Topology Topo = Topology::LINELIST;
-		FPMaterial* Material = nullptr;
+
+		FPMaterialInterface* Material = nullptr;
 
 		RenderItem* RenderItem = nullptr;
 		

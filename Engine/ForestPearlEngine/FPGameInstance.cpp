@@ -10,6 +10,7 @@
 #include "FPAssetLoader.h"
 #include "FPGameProjectSetting.h"
 #include "FPViewPortClient.h"
+#include "FPGizmoRenderList.h"
 
 
 auto Cast_SizeT = [](GameInstanceSubSystemName Name) -> size_t {return static_cast<size_t>(Name); };
@@ -23,6 +24,7 @@ FPGameInstance::FPGameInstance()
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::AssetLoader)] = new FPAssetLoader();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::MeshRenderList)] = new FPMeshRenderList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::TextRenderList)] = new FPTextRenderList();
+	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::GizmoRenderList)] = new FPGizmoRenderList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::CameraList)] = new FPCameraList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::GameProjectSetting)] = new FPGameProjectSetting();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::ViewPortClient)] = new FPViewPortClient();
@@ -130,4 +132,9 @@ FPGameInstanceSubSystem* FPGameInstance::GetGameProjectSetting()
 FPGameInstanceSubSystem* FPGameInstance::GetViewPortClient()
 {
 	return GetInstanceSubSystem(GameInstanceSubSystemName::ViewPortClient);
+}
+
+FPGameInstanceSubSystem* FPGameInstance::GetGizmoRenderList()
+{
+	return GetInstanceSubSystem(GameInstanceSubSystemName::GizmoRenderList);
 }

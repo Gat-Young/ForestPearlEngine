@@ -53,7 +53,7 @@ class Renderer
 		std::vector<RenderingData::MeshRenderItem> MeshRenderList;
 
 		//Debug Render Item
-		std::vector<RenderingData::DebugRenderItem> DebugRenderList;
+		std::vector<RenderingData::GizmoRenderItem> GizmoRenderList;
 
 		//UI Render Item
 		std::vector<RenderingData::UIContextItem> UIRenderList;
@@ -64,9 +64,9 @@ class Renderer
 
 		//Render List 생성 함수
 		void CreateCamList();
-		void CreateMeshRenderQueue();
-		void CreateDebugRenderQueue();
-		void CreateUIRenderQueue();
+		void CreateMeshRenderList();
+		void CreateGizmoRenderList();
+		void CreateUIRenderList();
 
 		//RenderPass 함수
 		void ClearBackBuffer();
@@ -77,7 +77,7 @@ class Renderer
 
 		void MeshRenderPass();
 
-		void DebugRenderPass();
+		void GizmoRenderPass();
 
 		void UIRenderPass();
 

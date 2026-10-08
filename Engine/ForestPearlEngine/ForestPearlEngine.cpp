@@ -100,9 +100,9 @@ void ForestPearlEngine::GameLoop()
         // Make Render Queue
         // Game 로직이 모두 종료된 후 Render 요소들을 각 Queue에 넣어 Render에 보내줌
         Render->CreateCamList();
-        Render->CreateMeshRenderQueue();
-        Render->CreateDebugRenderQueue();
-        Render->CreateUIRenderQueue();
+        Render->CreateMeshRenderList();
+        Render->CreateGizmoRenderList();
+        Render->CreateUIRenderList();
 
         ///////////////////
         // Rendering
@@ -111,7 +111,7 @@ void ForestPearlEngine::GameLoop()
         // Clear -> RenderPass 1 -> RenderPass 2 -> RenderPass 3 -> RenderPass N -> Preset 
         Render->ClearBackBuffer();
         Render->MeshRenderPass();
-        Render->DebugRenderPass();
+        Render->GizmoRenderPass();
         Render->UIRenderPass();
         Render->RenderTargetPresent();
     }

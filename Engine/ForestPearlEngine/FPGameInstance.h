@@ -15,6 +15,7 @@ enum class GameInstanceSubSystemName : size_t
 	AssetLoader,
 	MeshRenderList,
 	TextRenderList,
+	GizmoRenderList,
 	CameraList,
 	GameProjectSetting,
 	ViewPortClient,
@@ -65,6 +66,7 @@ class FPGameInstance : public FPObject
 		FPGameInstanceSubSystem* GetMeshRenderList();
 		FPGameInstanceSubSystem* GetGameProjectSetting();
 		FPGameInstanceSubSystem* GetViewPortClient();
+		FPGameInstanceSubSystem* GetGizmoRenderList();
 	
 
 		void Initialize();

@@ -11,6 +11,7 @@
 #include "../FPTextRenderList.h"
 #include "../FPMeshRenderList.h"
 #include "../FPCameraList.h"
+#include "../FPGizmoRenderList.h"
 #include "FPRenderingCommon.h"
 #include "../FPViewPortClient.h"
 
@@ -120,7 +121,7 @@ void Renderer::CreateCamList()
 
 }
 
-void Renderer::CreateMeshRenderQueue()
+void Renderer::CreateMeshRenderList()
 {
 	//비어 있지 않다면 비우기
 	while (!MeshRenderList.empty()) { MeshRenderList.clear();};
@@ -156,11 +157,43 @@ void Renderer::CreateMeshRenderQueue()
 
 }
 
-void Renderer::CreateDebugRenderQueue()
+void Renderer::CreateGizmoRenderList()
 {
+	//비어 있지 않다면 비우기
+	while (!GizmoRenderList.empty()) { GizmoRenderList.clear(); };
+
+	//Gizmo Render List
+	FPGizmoRenderList* GizmoRenderList = static_cast<FPGizmoRenderList*>(FPGameInstance::Get().GetGizmoRenderList());
+	std::vector<GizmoRenderItem> RenderList = GizmoRenderList->GetRenderList();
+
+	for (GizmoRenderItem RenderItemData : RenderList)
+	{
+		//활성화된 객체가 아니라면 넘어감
+		if (!(*(RenderItemData.Active)))
+		{
+			continue;
+		}
+
+		RenderingData::GizmoRenderItem GizmoRenderData;
+		GizmoRenderData.Priority = *(RenderItemData.Priority);
+		GizmoRenderData.MeshPath = *(RenderItemData.MeshPath);
+		GizmoRenderData.Location = *(RenderItemData.Location);
+		GizmoRenderData.Rotation = *(RenderItemData.Rotation);
+		GizmoRenderData.Scale = *(RenderItemData.Scale);
+		GizmoRenderData.VertexShaderPath = *(RenderItemData.VertexShaderPath);
+		GizmoRenderData.PixelShaderPath = *(RenderItemData.PixelShaderPath);
+
+		if (RenderItemData.VertexConstBuffer != nullptr) GizmoRenderData.VertexConstBuffer = *(RenderItemData.VertexConstBuffer);
+		if (RenderItemData.PixelConstBuffer != nullptr) GizmoRenderData.PixelConstBuffer = *(RenderItemData.PixelConstBuffer);
+
+		this->GizmoRenderList.push_back(GizmoRenderData);
+	}
+
+	std::sort(this->GizmoRenderList.begin(), this->GizmoRenderList.end(), RenderingData::GizmoRenderItemCompare{});
+
 }
 
-void Renderer::CreateUIRenderQueue()
+void Renderer::CreateUIRenderList()
 {
 	//비어 있지 않다면 비우기
 	while (!UIRenderList.empty()) { UIRenderList.clear(); };
@@ -382,9 +415,124 @@ void Renderer::MeshRenderPass()
 }
 
 
-void Renderer::DebugRenderPass()
+void Renderer::GizmoRenderPass()
 {
+	//Depth Dtencill 상태 설정
+	Device.OMSetDepthStencilState(ZEnable);
 
+	//렌더링 모드 전환
+	Device.UpdateRSSetState(bFill, bCull);
+
+	//기하 위상 구조 설정
+	Device.IASetPrimitiveTopology(Topology::LINELIST);
+
+	//상수 버퍼 설정
+	//Vertex Shader
+	//MeshRenderPass에서 0번은 WVP, 1번은 ViewPort용 슬롯 임
+	unsigned int VertexShaderConstantBufferSlotOffset = 2;
+
+	//PixelShader
+	//MeshRenderPass에서 0번은 ViewPort용 슬롯
+	unsigned int PixelShaderConstantBufferSlotOffset = 1;
+
+
+	MVPConstBuffer MVPCB;
+
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	int SetVertexBufferSize = 0;
+	int SetPixelBufferSize = 0;
+
+	for (RenderingData::CameraItem& CamItem : CameraList)
+	{
+		for (const RenderingData::GizmoRenderItem& RenderItem : GizmoRenderList)
+		{
+			std::tuple<void*, void*, void*> VertexShaderData = AssetManager->GetVertexShader(RenderItem.VertexShaderPath);
+			std::pair<void*, void*> PixelShaderData = AssetManager->GetPixelShader(RenderItem.PixelShaderPath);
+
+			//입력 레이아웃 설정
+			Device.IASetInputLayout(std::get<2>(VertexShaderData));
+
+			//Shader 설정
+			Device.VSSetShader(std::get<0>(VertexShaderData));
+			Device.PSSetShader(std::get<0>(PixelShaderData));
+
+			//Shader ConstBuffer 갱신
+
+			//vertex
+			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.VertexConstBuffer.ConstantBuffers)
+			{
+				unsigned int Slot = VertexShaderConstantBufferSlotOffset + ConstantBufferInfo.Slot;
+				size_t Offset = ConstantBufferInfo.Offset;
+				size_t Size = ConstantBufferInfo.Size;
+
+				Device.UpdateVertexShaderSubresource(Slot, RenderItem.VertexConstBuffer.Buffer.data(), Offset, Size);
+			}
+
+			//Pixel
+			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.PixelConstBuffer.ConstantBuffers)
+			{
+				unsigned int Slot = PixelShaderConstantBufferSlotOffset + ConstantBufferInfo.Slot;
+				size_t Offset = ConstantBufferInfo.Offset;
+				size_t Size = ConstantBufferInfo.Size;
+
+				Device.UpdatePixelShaderSubresource(Slot, RenderItem.PixelConstBuffer.Buffer.data(), Offset, Size);
+			}
+
+			for (RenderingData::FPViewPort CamViewPort : CamItem.ViewPort)
+			{
+
+				Device.SetViewPort(CamViewPort.TopLeftX, CamViewPort.TopLeftY,
+					CamViewPort.Width, CamViewPort.Height,
+					CamViewPort.MinDepth, CamViewPort.MaxDepth);
+
+				//HLSL은 열벡터 기준이므로 HLSL에서는 연산을 반대로 할 것
+				MVPCB.WorldMatrix = ((RenderItem.Scale) * (RenderItem.Rotation) * (RenderItem.Location)).Matrix;
+				MVPCB.ViewMatrix = (CamItem.View).Matrix;
+				MVPCB.ProjMatrix = (CamItem.Projection).Matrix;
+				MVPCB.WVMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix;
+
+				MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
+
+				//Object 상수 버퍼 갱신
+				Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 320);
+
+
+				//ViewPort Shader ConstBuffer가 있다면 갱신
+				//vertex
+				for (FPConstantBufferInfo ConstantBufferInfo : CamViewPort.VertexConstBuffer.ConstantBuffers)
+				{
+					unsigned int Slot = 1 + ConstantBufferInfo.Slot;
+					size_t Offset = ConstantBufferInfo.Offset;
+					size_t Size = ConstantBufferInfo.Size;
+
+					Device.UpdateVertexShaderSubresource(Slot, CamViewPort.VertexConstBuffer.Buffer.data(), Offset, Size);
+				}
+
+				//Pixel
+				for (FPConstantBufferInfo ConstantBufferInfo : CamViewPort.PixelConstBuffer.ConstantBuffers)
+				{
+					unsigned int Slot = 1 + ConstantBufferInfo.Slot;
+					size_t Offset = ConstantBufferInfo.Offset;
+					size_t Size = ConstantBufferInfo.Size;
+
+					Device.UpdatePixelShaderSubresource(Slot, CamViewPort.PixelConstBuffer.Buffer.data(), Offset, Size);
+				}
+
+				std::vector<FPVertexBufferData> VB = AssetManager->GetVertexBuffer(RenderItem.MeshPath);
+
+				int MeshSize = VB.size();
+				for (int i = 0; i < MeshSize; ++i)
+				{
+					UINT Stride = VB[i].Stride;
+					UINT Offset = VB[i].Offset;
+					Device.IASetVertexBuffers(0, 1, VB[i].VertexBuffer, &Stride, &Offset);
+
+					Device.Draw(VB[i].Size, 0);																		//Draw Call
+				}
+			}
+		}
+	}
 }
 
 void Renderer::UIRenderPass()

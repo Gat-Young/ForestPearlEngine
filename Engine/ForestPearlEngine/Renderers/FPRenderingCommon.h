@@ -27,6 +27,27 @@ struct RenderItem
 	FPConstantBufferRenderData* PixelConstBuffer = nullptr;
 };
 
+struct GizmoRenderItem
+{
+	int* Priority = nullptr;
+	bool* Active = nullptr;
+
+	std::string* MeshPath = nullptr;
+
+	//핵심 데이터
+	FPMatrix* Location = nullptr;
+	FPMatrix* Rotation = nullptr;
+	FPMatrix* Scale = nullptr;
+
+
+	std::string* VertexShaderPath = nullptr;
+	std::string* PixelShaderPath = nullptr;
+
+	//상수 버퍼용
+	FPConstantBufferRenderData* VertexConstBuffer = nullptr;
+	FPConstantBufferRenderData* PixelConstBuffer = nullptr;
+};
+
 struct CameraItem
 {
 	//카메라의 위치
@@ -85,9 +106,22 @@ namespace RenderingData
 		FPConstantBufferRenderData PixelConstBuffer;
 	};
 
-	struct DebugRenderItem
+	struct GizmoRenderItem
 	{
 		int Priority;
+
+		std::string MeshPath;
+
+		//주요 정보
+		FPMatrix Location;
+		FPMatrix Rotation;
+		FPMatrix Scale;
+
+		std::string VertexShaderPath;
+		std::string PixelShaderPath;
+
+		FPConstantBufferRenderData VertexConstBuffer;
+		FPConstantBufferRenderData PixelConstBuffer;
 	};
 
 	struct FPViewPort
@@ -136,9 +170,9 @@ namespace RenderingData
 		};
 	};
 
-	struct DebugRenderItemCompare
+	struct GizmoRenderItemCompare
 	{
-		bool operator() (const RenderingData::DebugRenderItem& Left, const RenderingData::DebugRenderItem& Right) const
+		bool operator() (const RenderingData::GizmoRenderItem& Left, const RenderingData::GizmoRenderItem& Right) const
 		{
 			return Left.Priority < Right.Priority;
 		};

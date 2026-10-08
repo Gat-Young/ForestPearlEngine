@@ -7,11 +7,11 @@
 namespace RenderingData
 {
 	struct MeshRenderItem;
-	struct DebugRenderItem;
+	struct GizmoRenderItem;
 	struct CameraItem;
 	struct UIContextItem;
 	struct MeshRenderItemCompare;
-	struct DebugRenderItemCompare;
+	struct GizmoRenderItemCompare;
 	struct UIRenderItemCompare;
 }
 

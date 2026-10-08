@@ -10,9 +10,34 @@
 
 using json = nlohmann::json;
 
-void* FPAssetLoader::MakeVertexBuffer(std::vector<VERTEX> Mesh)
+void FPAssetLoader::MakeGizmoVertexBuffer(std::vector<struct VERTEX>& Mesh, const std::string& GizemoMeshPath)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	if (AssetManager->HasStaticMeshData(GizemoMeshPath))
+	{
+		std::cout << "이미 존재 하는 메시 데이터 입니다!" << "\n";
+		return;
+	}
+
+	FPMeshData MeshData;
+	MeshData.Name = GizemoMeshPath;
+	MeshData.Vertices = Mesh;
+
+	//Gizmo Mesh 정보를 저장
+	AssetManager->AddMeshData(GizemoMeshPath, &MeshData);
+
+	void* VB = MakeVertexBuffer(Mesh);
+
+	int VBSize = Mesh.size();
+
+	//정점버퍼 생성 후 Map에 정보 등록
+	AssetManager->AddVertexBuffer(GizemoMeshPath, VB, VBSize, sizeof(VERTEX), 0);
+}
+
+void* FPAssetLoader::MakeVertexBuffer(std::vector<VERTEX>& Mesh)
 {
 	return RenderingDevice::GetRenderingDevice().CreateVertexBuffer(Mesh.data(), Mesh.size(), sizeof(VERTEX));
+
 }
 
 void FPAssetLoader::LoadFbxData(std::string FbxPath, AssetOwner EngineAsset)
@@ -122,6 +147,7 @@ FPMeshData FPAssetLoader::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node
 				&Node->node_to_world,
 				Position
 			);
+
 			//Normal
 			ufbx_vec3 Normal = { 0.0f, 0.0f, 0.0f };
 
@@ -151,6 +177,13 @@ FPMeshData FPAssetLoader::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node
 			Vertex.x = static_cast<float>(WorldPosition.x);
 			Vertex.y = static_cast<float>(WorldPosition.y);
 			Vertex.z = static_cast<float>(WorldPosition.z);
+
+			Vertex.nx = static_cast<float>(Normal.x);
+			Vertex.ny = static_cast<float>(Normal.y);
+			Vertex.nz = static_cast<float>(Normal.z);
+
+			Vertex.u = static_cast<float>(UV.x);
+			Vertex.v = static_cast<float>(UV.y);
 
 			Vertex.r = static_cast<float>(Color.x);
 			Vertex.g = static_cast<float>(Color.y);
@@ -253,12 +286,13 @@ void FPAssetLoader::LoadVertexShader(std::string ShaderObjPath, AssetOwner Engin
 
 	void* VertexShader = nullptr;
 	void* VSCode = nullptr;
+	void* VBLayout = nullptr;
 
-	ShaderFactory::GetShaderFactory().VertexShaderLoad(FilePath.c_str(), &VertexShader, &VSCode);
+	ShaderFactory::GetShaderFactory().VertexShaderLoad(FilePath.c_str(), &VertexShader, &VSCode, &VBLayout);
 
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
-	AssetManager->AddVertexShader(ShaderObjPath, VertexShader, VSCode);
+	AssetManager->AddVertexShader(ShaderObjPath, VertexShader, VSCode, VBLayout);
 }
 
 void FPAssetLoader::LoadPixelShader(std::string ShaderObjPath, AssetOwner EngineAsset)
@@ -283,12 +317,13 @@ void FPAssetLoader::LoadVertexShader(std::string ShaderPath, std::string VS_Main
 
 	void* VertexShader = nullptr;
 	void* VSCode = nullptr;
+	void* VBLayout = nullptr;
 
 	ShaderFactory::GetShaderFactory().VertexShaderLoad(FilePath.c_str(), VS_Main.c_str(), ShaderModel.c_str(), &VertexShader, &VSCode);
 
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
-	AssetManager->AddVertexShader(ShaderPath, VertexShader, VSCode);
+	AssetManager->AddVertexShader(ShaderPath, VertexShader, VSCode, VBLayout);
 }
 
 void FPAssetLoader::LoadPixelShader(std::string ShaderPath, std::string PS_Main, std::string ShaderModel, AssetOwner EngineAsset)

@@ -9,4 +9,12 @@ void LoadEngineAssets()
 	//Default Vertex/Pixel Shader
 	AssetLoader->LoadVertexShader("DefaultVertexShader.vso", AssetOwner::Engine);
 	AssetLoader->LoadPixelShader("DefaultPixelShader.pso", AssetOwner::Engine);
+
+	//Primitive Model
+	AssetLoader->LoadFbxData("Primitive_Model/Cube.fbx", AssetOwner::Engine);
+	AssetLoader->LoadFbxData("Primitive_Model/Sphere.fbx", AssetOwner::Engine);
+
+	//StaticMesh Load
+	AssetLoader->LoadStaticMesh("Cube_StaticMesh", "Cube_StaticMesh.json", AssetOwner::Engine);
+	AssetLoader->LoadStaticMesh("Sphere_StaticMesh", "Sphere_StaticMesh.json", AssetOwner::Engine);
 };

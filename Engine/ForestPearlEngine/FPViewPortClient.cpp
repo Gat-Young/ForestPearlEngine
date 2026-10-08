@@ -1,6 +1,7 @@
 #include "FPViewPortClient.h"
 #include "FPGameInstance.h"
 #include "FPGameProjectSetting.h"
+#include "Renderers/FPRenderingCommon.h"
 #include <iostream>
 
 FPViewPortClient::FPViewPortClient()
@@ -27,7 +28,10 @@ void FPViewPortClient::CreateViewPort()
 	std::vector<FPViewPort*> MainGame;
 	MainGame.resize(1);
 	MainGame[0] = new FPViewPort();
-	MainGame[0]->VertexConst = new VertexConst();
+
+	VertexConst View1Const;
+	MainGame[0]->VertexConstBuffer = new FPConstantBufferRenderData();
+	FPConstantBufferRenderDataUtil::AddConstantBuffer(*(MainGame[0]->VertexConstBuffer), 0,View1Const);
 
 	CalculateViewPortSize(MainGame, DisplayWidth, DisplayHeight, Aspect);
 
@@ -52,16 +56,21 @@ void FPViewPortClient::CreateViewPort()
 	VertexConst* Cam1VertexConst = new VertexConst();
 	Cam1VertexConst->AniOn = 0.0f;
 	Cam1VertexConst->BlendOn = 0.0f;
-	TripleWaySplitViewPort[0]->VertexConst = Cam1VertexConst;
+	TripleWaySplitViewPort[0]->VertexConstBuffer = new FPConstantBufferRenderData();
+	FPConstantBufferRenderDataUtil::AddConstantBuffer(*(TripleWaySplitViewPort[0]->VertexConstBuffer), 0, Cam1VertexConst);
 
 	VertexConst* Cam2VertexConst = new VertexConst();
 	Cam2VertexConst->AniOn = 1.0f;
 	Cam2VertexConst->BlendOn = 0.0f;
 	TripleWaySplitViewPort[1] = new FPViewPort();
-	TripleWaySplitViewPort[1]->VertexConst = Cam2VertexConst;
+	TripleWaySplitViewPort[1]->VertexConstBuffer = new FPConstantBufferRenderData();
+	FPConstantBufferRenderDataUtil::AddConstantBuffer(*(TripleWaySplitViewPort[1]->VertexConstBuffer), 0, Cam2VertexConst);
 
 	TripleWaySplitViewPort[2] = new FPViewPort();
-	TripleWaySplitViewPort[2]->VertexConst = new VertexConst();
+
+	VertexConst* Cam3VertexConst = new VertexConst();
+	TripleWaySplitViewPort[2]->VertexConstBuffer = new FPConstantBufferRenderData();
+	FPConstantBufferRenderDataUtil::AddConstantBuffer(*(TripleWaySplitViewPort[2]->VertexConstBuffer), 0, Cam3VertexConst);
 
 	CalculateViewPortSize(TripleWaySplitViewPort, DisplayWidth, DisplayHeight, Aspect);
 	ViewPortArray[static_cast<size_t>(FPViewPortName::TripleWaySplitViewPort)] = std::move(TripleWaySplitViewPort);

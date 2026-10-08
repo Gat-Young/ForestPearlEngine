@@ -12,7 +12,6 @@
 void WindmillWing::Initialize()
 {
 	Wing = new FPStaticMeshComponent(this, "Windmill_Wing_StaticMesh");
-	Wing->SetMeshCull(false);
 	SetRootComponent(Wing);
 
 	FPAController* Controller = GetWorld()->GetController(0);
@@ -115,16 +114,4 @@ void WindmillWing::SetScaleWing(FInputValue Value)
 	}
 
 	Wing->SetWorldScale3D(Wing->GetComponentScale() + FPVector3{ move_x, move_x, move_x });
-}
-
-void WindmillWing::SetFillTriangel(FInputValue Value)
-{
-	isFill = !isFill;
-	Wing->SetMeshFill(isFill);
-}
-
-void WindmillWing::SetCullTriangle(FInputValue Value)
-{
-	isCull = !isCull;
-	Wing->SetMeshCull(isCull);
 }

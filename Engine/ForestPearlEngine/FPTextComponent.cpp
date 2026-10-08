@@ -11,6 +11,7 @@ void FPTextComponent::RegistTextRenderList()
 	FPTextRenderList* TextRenderList = static_cast<FPTextRenderList*>(FPGameInstance::Get().GetTextRenderList());
 	RenderItem = TextRenderList->RegistRenderList();
 
+	RenderItem->Priority = &(this->priority);
 	RenderItem->active = &(this->active);
 	RenderItem->x = &(this->x);
 	RenderItem->y = &(this->y);

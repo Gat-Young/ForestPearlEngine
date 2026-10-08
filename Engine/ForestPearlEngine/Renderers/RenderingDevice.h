@@ -22,6 +22,7 @@ class RenderingDevice
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 	private:
+		RenderingDevice();
 		//D3D Factory
 		ComPtr<IDXGIFactory2> Factory = NULL;
 
@@ -100,12 +101,9 @@ class RenderingDevice
 		std::vector<DEVICEINFO> DevInfo;				//다중 GPU를 위한 배열 처리
 
 		//ConstBuffer
-		ID3D11Buffer* ObjectConstBuffer;
-		ID3D11Buffer* VertexShaderConstBuffer;
-		ID3D11Buffer* PixelShaderConstBuffer;
-
-		ID3D11Buffer* VertexViewPortConstBuffer;
-		ID3D11Buffer* PixelViewPortConstBuffer;
+		DWORD MAX_BufferSize = 14;
+		std::vector<ID3D11Buffer*> VertexShaderConstBuffer;
+		std::vector<ID3D11Buffer*> PixelShaderConstBuffer;
 
 		//VSync 여부
 		bool IsVSync = true;
@@ -151,26 +149,17 @@ class RenderingDevice
 		void* CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride);
 
 		//CB 만들기
-		HRESULT CreateObjectConstBuffer(UINT Size);
 		HRESULT CreateVertexShaderConstBuffer(UINT Size);
 		HRESULT CreatePixelShaderConstBuffer(UINT Size);
-		HRESULT CreateVertexViewPortConstBuffer(UINT Size);
-		HRESULT CreatePixelViewPortConstBuffer(UINT Size);
 		int CreateConstBuffer(UINT Size, ID3D11Buffer** ReturnConstBuffer);
 
 		//CB 등록
-		HRESULT ObjectSetConstantBuffers(UINT StartSlot, UINT NumBuffers);
 		HRESULT VSSetConstantBuffers(UINT StartSlot, UINT NumBuffers);
 		HRESULT PSSetConstantBuffers(UINT StartSlot, UINT NumBuffers);
-		HRESULT VVPSetConstantBuffers(UINT StartSlot, UINT NumBuffers);
-		HRESULT PVPSetConstantBuffers(UINT StartSlot, UINT NumBuffers);
 
 		//CB 업데이트
-		HRESULT UpdateObjectSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch);
-		HRESULT UpdateVertexShaderSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch);
-		HRESULT UpdatePixelShaderSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch);
-		HRESULT UpdateVertexViewPortSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch);
-		HRESULT UpdatePixelViewPortSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch);
+		HRESULT UpdateVertexShaderSubresource(UINT Slot, const uint8_t* pSrcData, UINT Offset, UINT Size);
+		HRESULT UpdatePixelShaderSubresource(UINT Slot, const uint8_t* pSrcData, UINT Offset, UINT Size);
 
 		//입력 레이아웃 생성
 		HRESULT CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, ID3DBlob* InVSCode, ID3D11InputLayout** ReturnLayout);

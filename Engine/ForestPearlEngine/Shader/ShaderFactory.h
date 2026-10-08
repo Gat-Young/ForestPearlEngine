@@ -23,11 +23,11 @@ class ShaderFactory
 		static ShaderFactory& GetShaderFactory();
 
 		//목적 파일 로드
-		HRESULT VertexShaderLoad(const TCHAR* Objectname, void** ppVS, void** ppCode = NULL);
+		HRESULT VertexShaderLoad(const TCHAR* Objectname, void** ppVS, void** ppCode = NULL, void** ppVBLayout = NULL);
 		HRESULT PixelShaderLoad(const TCHAR* Objectname, void** ppPS, void** ppCode = NULL);
 		
 		//D3D Compiler 사용
-		HRESULT VertexShaderLoad(const TCHAR* filename, const CHAR* entry, const CHAR* target, void** ppVS, void** ppCode = NULL);
+		HRESULT VertexShaderLoad(const TCHAR* filename, const CHAR* entry, const CHAR* target, void** ppVS, void** ppCode = NULL, void** ppVBLayout = NULL);
 		HRESULT PixelShaderLoad(const TCHAR* filename, const CHAR* entry, const CHAR* target, void** ppPS, void** ppCode = NULL);
 
 

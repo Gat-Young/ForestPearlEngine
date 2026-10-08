@@ -145,6 +145,7 @@
     <ClInclude Include="FPGameInstance.h" />
     <ClInclude Include="FPGameInstanceSubSystem.h" />
     <ClInclude Include="FPGameProjectSetting.h" />
+    <ClInclude Include="FPGizmoRenderList.h" />
     <ClInclude Include="FPMaterial.h" />
     <ClInclude Include="FPMaterialInterface.h" />
     <ClInclude Include="FPMovementComponent.h" />
@@ -160,7 +161,11 @@
     <ClInclude Include="FPGameProjectClassRegistry.h" />
     <ClInclude Include="GameProjectLoader.h" />
     <ClInclude Include="FPGameTimer.h" />
+    <ClInclude Include="GizmoAxisComponent.h" />
     <ClInclude Include="GizmoComponent.h" />
+    <ClInclude Include="GizmoFrontLineComponent.h" />
+    <ClInclude Include="GizmoGridComponent.h" />
+    <ClInclude Include="GizmoNormalLineComponent.h" />
     <ClInclude Include="Libraries\nlohmann\json.hpp" />
     <ClInclude Include="Libraries\Ufbx\ufbx.h" />
     <ClInclude Include="MCLOG.h" />
@@ -172,6 +177,7 @@
     <ClInclude Include="Object\Components\InputMappingContext.h" />
     <ClInclude Include="Object\FPPawn.h" />
     <ClInclude Include="Object\Object.h" />
+    <ClInclude Include="Renderers\FPConstantBufferCommon.h" />
     <ClInclude Include="Renderers\FPRenderingCommon.h" />
     <ClInclude Include="Renderers\RenderingDevice.h" />
     <ClInclude Include="Renderers\Renderer.h" />
@@ -196,6 +202,7 @@
     <ClCompile Include="FPAGameMode.cpp" />
     <ClCompile Include="FPGameInstance.cpp" />
     <ClCompile Include="FPGameProjectSetting.cpp" />
+    <ClCompile Include="FPGizmoRenderList.cpp" />
     <ClCompile Include="FPMaterial.cpp" />
     <ClCompile Include="FPMovementCompoent.cpp" />
     <ClCompile Include="FPMovementComponent.cpp" />
@@ -207,7 +214,9 @@
     <ClCompile Include="FPStaticMeshComponent.cpp" />
     <ClCompile Include="FPViewPortClient.cpp" />
     <ClCompile Include="FPWorld.cpp" />
+    <ClCompile Include="GizmoAxisComponent.cpp" />
     <ClCompile Include="GizmoComponent.cpp" />
+    <ClCompile Include="GizmoGridComponent.cpp" />
     <ClCompile Include="Libraries\Ufbx\ufbx.c" />
     <ClCompile Include="FPMeshComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -278,6 +287,10 @@
     <ProjectReference Include="..\..\Games\Release_Game\Tri_World\Tri_World.vcxproj">
       <Project>{874c49a3-fd56-4137-9cfa-a3bd1b70917e}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\StaticMesh\Cube.json" />
+    <None Include="Assets\StaticMesh\Sphere.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

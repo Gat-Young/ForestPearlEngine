@@ -17,8 +17,6 @@ private:
 	FPStaticMeshComponent* Wing3;
 
 	float ScaleOffset = 1.0f;
-	bool isFill = true;
-	bool isCull = false;
 
 	float Wing1Speed = 30.0f;
 	float Wing2Speed = 180.0f;
@@ -33,7 +31,5 @@ public:
 	void Move(FInputValue Value);
 	void Rotate(FInputValue Value);
 	void Scaling(FInputValue Value);
-	void SetFillTriangel(FInputValue Value);
-	void SetCullTriangle(FInputValue Value);
 
 };

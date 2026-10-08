@@ -14,17 +14,10 @@ private:
 	FPStaticMeshComponent* Mesh;
 
 
-	bool isFill = true;
-	bool isCull = false;
-
-
 
 public:
 	Tree() = default;
 	virtual void Initialize() override;
 	virtual void BeginPlay() override;
 	virtual void Tick() override;
-
-	void SetFillTriangel(FInputValue Value);
-	void SetCullTriangle(FInputValue Value);
 };

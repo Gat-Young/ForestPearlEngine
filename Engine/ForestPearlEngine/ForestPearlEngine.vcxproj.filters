@@ -64,6 +64,12 @@
     <Filter Include="Component\Mesh">
       <UniqueIdentifier>{196c86d0-1c45-40e6-ac9b-7c7a677f5b4a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\StaticMesh">
+      <UniqueIdentifier>{4906799f-6d80-45bd-ac37-c23330258f04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component\Gizmo">
+      <UniqueIdentifier>{55e4d34f-029a-402f-ae34-a6b19769b3ce}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -140,9 +146,6 @@
     </ClInclude>
     <ClInclude Include="Renderers\FPRenderingCommon.h">
       <Filter>Renderers</Filter>
-    </ClInclude>
-    <ClInclude Include="GizmoComponent.h">
-      <Filter>Component</Filter>
     </ClInclude>
     <ClInclude Include="Libraries\nlohmann\json.hpp">
       <Filter>Libraries\nlohmann</Filter>
@@ -222,6 +225,27 @@
     <ClInclude Include="FPStaticMeshComponent.h">
       <Filter>Component\Mesh</Filter>
     </ClInclude>
+    <ClInclude Include="Renderers\FPConstantBufferCommon.h">
+      <Filter>Renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="FPGizmoRenderList.h">
+      <Filter>FPGameInstance\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GizmoComponent.h">
+      <Filter>Component\Gizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="GizmoAxisComponent.h">
+      <Filter>Component\Gizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="GizmoGridComponent.h">
+      <Filter>Component\Gizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="GizmoNormalLineComponent.h">
+      <Filter>Component\Gizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="GizmoFrontLineComponent.h">
+      <Filter>Component\Gizmo</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
@@ -274,9 +298,6 @@
     </ClCompile>
     <ClCompile Include="Libraries\Ufbx\ufbx.c">
       <Filter>Libraries\Ufbx</Filter>
-    </ClCompile>
-    <ClCompile Include="GizmoComponent.cpp">
-      <Filter>Component</Filter>
     </ClCompile>
     <ClCompile Include="FPWorld.cpp">
       <Filter>Source Files</Filter>
@@ -341,6 +362,18 @@
     <ClCompile Include="Define\FPDataDefine.cpp">
       <Filter>Define</Filter>
     </ClCompile>
+    <ClCompile Include="FPGizmoRenderList.cpp">
+      <Filter>FPGameInstance\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GizmoComponent.cpp">
+      <Filter>Component\Gizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="GizmoAxisComponent.cpp">
+      <Filter>Component\Gizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="GizmoGridComponent.cpp">
+      <Filter>Component\Gizmo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shader\DefaultPixelShader.psh">
@@ -352,5 +385,13 @@
     <FxCompile Include="Assets\Shader\DefaultShader.fx">
       <Filter>Assets\Shader</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\StaticMesh\Cube.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\Sphere.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -21,6 +21,4 @@ class FPStaticMeshComponent : public FPMeshComponent
 		//Socket Transform 가져오기
 		FTransform GetSocketTransform(const std::string& SocketName) const override;
 
-		//Topology 설정
-		void SetTopology(std::string Topology) override;
 };

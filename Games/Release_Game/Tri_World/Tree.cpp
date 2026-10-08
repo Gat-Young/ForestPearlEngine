@@ -10,7 +10,6 @@ void Tree::Initialize()
 	Mesh = new FPStaticMeshComponent(this, "Tree_StaticMesh");
 
 	SetRootComponent((FPSceneComponent*)Mesh);
-	Mesh->SetMeshCull(false);
 }
 
 void Tree::BeginPlay()
@@ -21,16 +20,4 @@ void Tree::BeginPlay()
 void Tree::Tick()
 {
 	__super::Tick();
-}
-
-void Tree::SetFillTriangel(FInputValue Value)
-{
-	isFill = !isFill;
-	Mesh->SetMeshFill(isFill);
-}
-
-void Tree::SetCullTriangle(FInputValue Value)
-{
-	isCull = !isCull;
-	Mesh->SetMeshCull(isCull);
 }

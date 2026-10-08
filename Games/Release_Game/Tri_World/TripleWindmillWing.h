@@ -17,8 +17,6 @@ private:
 	FPActor* Body;
 
 	float ScaleOffset = 1.0f;
-	bool isFill = true;
-	bool isCull = false;
 
 	bool isHead = false;
 	bool isShield = false;
@@ -30,6 +28,4 @@ public:
 	virtual void Tick() override;
 
 	void SetScaleWing(FInputValue Value);
-	void SetFillTriangel(FInputValue Value);
-	void SetCullTriangle(FInputValue Value);
 };

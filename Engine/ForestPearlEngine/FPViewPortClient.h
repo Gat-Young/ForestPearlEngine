@@ -2,18 +2,7 @@
 #include "FPGameInstanceSubSystem.h"
 #include <vector>
 
-struct FPViewPort
-{
-	float TopLeftX = 0.0f;
-	float TopLeftY = 0.0f;
-	float Width;
-	float Height;
-	float MinDepth = 0.0f;
-	float MaxDepth = 1.0f;
-	//상수 버퍼용
-	void* VertexConst = nullptr;
-	void* PixelConst = nullptr;
-};
+struct FPViewPort;
 
 struct alignas(16) VertexConst
 {

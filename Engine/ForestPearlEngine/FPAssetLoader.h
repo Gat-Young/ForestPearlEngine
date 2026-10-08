@@ -21,7 +21,8 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 		FPAssetLoader() = default;
 		~FPAssetLoader() = default;
 
-		void* MakeVertexBuffer(std::vector<struct VERTEX> Mesh);
+		void MakeGizmoVertexBuffer(std::vector<struct VERTEX>& Mesh, const std::string& GizemoMeshPath);
+		void* MakeVertexBuffer(std::vector<struct VERTEX>& Mesh);
 
 		void LoadFbxData(std::string FbxPath, AssetOwner EngineAsset);
 

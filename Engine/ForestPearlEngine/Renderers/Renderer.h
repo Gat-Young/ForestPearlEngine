@@ -1,10 +1,24 @@
 #pragma once
 #include "RenderingDevice.h"
 #include "../Shader/ShaderFactory.h"
+#include <vector>
+#include <queue>
+
+namespace RenderingData
+{
+	struct MeshRenderItem;
+	struct GizmoRenderItem;
+	struct CameraItem;
+	struct UIContextItem;
+	struct MeshRenderItemCompare;
+	struct GizmoRenderItemCompare;
+	struct UIRenderItemCompare;
+}
+
+
 
 class Renderer
 {
-
 	private:
 		RenderingDevice& Device;
 
@@ -18,22 +32,54 @@ class Renderer
 		//깊이 연산 모드 전환 값
 		bool ZEnable = true;
 
+		//Fill
+		bool bFill = true;
+
+		//Cull
+		bool bCull = true;
+
 		//폰트 해제
 		void FontRelease();
+
+		////////////////////////////////////
+		// 
+		//RenderList
+		//
+		
+		//Camera Item
+		std::vector<RenderingData::CameraItem> CameraList;
+
+		//Mesh Render Item
+		std::vector<RenderingData::MeshRenderItem> MeshRenderList;
+
+		//Debug Render Item
+		std::vector<RenderingData::GizmoRenderItem> GizmoRenderList;
+
+		//UI Render Item
+		std::vector<RenderingData::UIContextItem> UIRenderList;
 
 
 	public:
 		Renderer(RenderingDevice& Device);
 
+		//Render List 생성 함수
+		void CreateCamList();
+		void CreateMeshRenderList();
+		void CreateGizmoRenderList();
+		void CreateUIRenderList();
+
+		//RenderPass 함수
 		void ClearBackBuffer();
 
 		void RenderTargetPresent();
 
 		HRESULT InitializeRenderer(HWND hwnd);
 
-		void ObjectRendering();
+		void MeshRenderPass();
 
-		void UIRendering();
+		void GizmoRenderPass();
+
+		void UIRenderPass();
 
 		HRESULT Finalize();
 
@@ -44,4 +90,6 @@ class Renderer
 
 		//렌더링 속성 변경
 		void SetZEnable(bool State) { ZEnable = State; };
+		void SetbFill(bool State) { bFill = State; };
+		void SetbCull(bool State) { bCull = State; };
 };

@@ -20,7 +20,6 @@ void Player::Initialize()
 	//Mesh = new FPStaticMeshComponent(this, "ToonLink_StaticMesh");
 
 	SetRootComponent((FPSceneComponent*)Mesh);
-	Mesh->SetMeshCull(false);
 
 	ShieldPivot = new FPSceneComponent(this);
 	ShieldPivot->SetupAttachment(Mesh);
@@ -94,18 +93,6 @@ void Player::CameraMove(FInputValue value)
 
 	AddControllerYawInput(-move_x);
 	AddControllerPitchInput(move_y);
-}
-
-void Player::SetFillTriangel(FInputValue Value)
-{
-	isFill = !isFill;
-	Mesh->SetMeshFill(isFill);
-}
-
-void Player::SetCullTriangle(FInputValue Value)
-{
-	isCull = !isCull;
-	Mesh->SetMeshCull(isCull);
 }
 
 void Player::SetScaleWing(FInputValue Value)

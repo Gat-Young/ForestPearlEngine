@@ -51,7 +51,7 @@ std::vector<FPMeshData> FPAssetManager::GetMeshData(std::string FbxPath)
 FPStaticMesh* FPAssetManager::GetStaticMeshData(std::string StaticMeshName)
 {
 	FPStaticMeshData StaticMeshData = LoadedStaticMeshData[StaticMeshName];
-	FPStaticMesh* StaticMesh = new FPStaticMesh(StaticMeshData.MeshPath, StaticMeshData.MeshTopology);
+	FPStaticMesh* StaticMesh = new FPStaticMesh(StaticMeshData.MeshPath);
 
 	for (SOCKET_TRANSFORM& Socket : StaticMeshData.Sockets)
 	{
@@ -170,9 +170,9 @@ bool FPAssetManager::HasPixelShader(std::string ShaderPath)
 	return false;
 }
 
-void FPAssetManager::AddVertexShader(std::string ShaderPath, void* VertexShader, void* VSCode)
+void FPAssetManager::AddVertexShader(std::string ShaderPath, void* VertexShader, void* VSCode, void* VBLayout)
 {
-	VertexShaderData[ShaderPath] = { VertexShader, VSCode };
+	VertexShaderData[ShaderPath] = { VertexShader, VSCode, VBLayout };
 }
 
 void FPAssetManager::AddPixelShader(std::string ShaderPath, void* PixelShader, void* PSCode)
@@ -180,7 +180,7 @@ void FPAssetManager::AddPixelShader(std::string ShaderPath, void* PixelShader, v
 	PixelShaderData[ShaderPath] = { PixelShader, PSCode };
 }
 
-std::pair<void*, void*> FPAssetManager::GetVertexShader(std::string ShaderPath)
+std::tuple<void*, void*, void*> FPAssetManager::GetVertexShader(std::string ShaderPath)
 {
 	if (VertexShaderData.count(ShaderPath) <= 0)
 	{

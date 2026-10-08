@@ -4,6 +4,7 @@
 class FPTextComponent
 {
 	private:
+		int priority = 0;
 		bool* active;
 		int x;
 		int y;

@@ -18,9 +18,6 @@ private:
 
 	float ScaleOffset = 1.0f;
 
-	bool isFill = true;
-	bool isCull = false;
-
 	bool isHead = false;
 	bool isShield = false;
 
@@ -33,6 +30,4 @@ public:
 	void AttachHead(FInputValue Value);
 	void AttachShield(FInputValue Value);
 	void SetScaleWing(FInputValue Value);
-	void SetFillTriangel(FInputValue Value);
-	void SetCullTriangle(FInputValue Value);
 };

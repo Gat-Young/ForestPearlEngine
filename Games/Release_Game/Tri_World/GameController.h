@@ -14,6 +14,9 @@ class GameController : public FPAController
 		std::vector<FPPawn*> ControllPawn;
 		int ControllPawnIndex = 0;
 		int ControllPawnSize = 0;
+		
+		bool bisFill = true;
+		bool bisCull = true;
 
 	public :
 		virtual void Initialize() override;

@@ -22,9 +22,6 @@ class Player : public FPPawn
 		WindmillWing* OneWindmillWing;
 		TripleWindmillWing* TripleWing;
 
-		bool isFill = true;
-		bool isCull = false;
-
 		float angle = 0;
 
 		float AngleSpeed = 0.25f;
@@ -40,8 +37,6 @@ class Player : public FPPawn
 
 		void Move(FInputValue value);
 		void CameraMove(FInputValue value);
-		void SetFillTriangel(FInputValue Value);
-		void SetCullTriangle(FInputValue Value);
 		void SetScaleWing(FInputValue Value);
 		void AttachHead(FInputValue Value);
 		void AttachShield(FInputValue Value);

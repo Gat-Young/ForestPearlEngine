@@ -21,7 +21,7 @@ class FPAssetManager : public FPGameInstanceSubSystem
 
 		std::unordered_map<std::string, std::string> GameModeData;
 
-		std::unordered_map<std::string, std::pair<void*, void*> > VertexShaderData;
+		std::unordered_map<std::string, std::tuple<void*, void*, void*> > VertexShaderData;
 		std::unordered_map<std::string, std::pair<void*, void*> > PixelShaderData;
 
 	public:
@@ -62,9 +62,12 @@ class FPAssetManager : public FPGameInstanceSubSystem
 		bool HasVertexShader(std::string ShaderPath);
 		bool HasPixelShader(std::string ShaderPath);
 
-		void AddVertexShader(std::string ShaderPath, void* VertexShader, void* VSCode);
+		void AddVertexShader(std::string ShaderPath, void* VertexShader, void* VSCode, void* VBLayout);
 		void AddPixelShader(std::string ShaderPath, void* PixelShader, void* PSCode);
 
-		std::pair<void*, void*> GetVertexShader(std::string ShaderPath);
+		//VertexShader , VSCode, VBLayout
+		std::tuple<void*, void*, void*> GetVertexShader(std::string ShaderPath);
+
+		//PixelShader, PSCode
 		std::pair<void*, void*> GetPixelShader(std::string ShaderPath);
 };

@@ -3,7 +3,10 @@
 #include "ForestPearlEngine/Object/FPPawn.h"
 #include "ForestPearlEngine/Utility/FPGameplayStatics.h"
 
-//Fill / Cull阑 窍扁困秦 Fill , Cull阑 且 按眉甸
+//Fill/ Cull阑 困秦 浚柳阑 啊廉柯
+#include "ForestPearlEngine/ForestPearlEngine.h"
+
+//按眉甸 <- 隔扼档 登变窃
 #include "Player.h"
 #include "Tree.h"
 #include "TripleWindmillWing.h"
@@ -145,70 +148,10 @@ void GameController::PrevPawn(FInputValue value)
 
 void GameController::SetFillTriangel(FInputValue Value)
 {	
-	//Player 贸府
+	bisFill = !bisFill;
+	std::cout << "Controller" << bisFill << "\n";
+	ForestPearlEngine::GetGameEngine().SetbFill(bisFill);
 	std::vector<FPActor*> ActorList;
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Player", ActorList);
-	for (FPActor* Actor : ActorList)
-	{
-		Player* GamePlayer = static_cast<Player*>(Actor);
-		GamePlayer->SetFillTriangel(Value);
-	}
-	ActorList.clear();
-
-	//Windmill 贸府
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Windmill", ActorList);
-	for (FPActor* Actor : ActorList)
-	{
-		Windmill* GameWindmill = static_cast<Windmill*>(Actor);
-		GameWindmill->SetFillTriangel(Value);
-	}
-	ActorList.clear();
-
-	//Windmill Wing 贸府
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "WindmillWing", ActorList);
-	for (FPActor* Actor : ActorList)
-	{
-		WindmillWing* GameWindmillWing = static_cast<WindmillWing*>(Actor);
-		GameWindmillWing->SetFillTriangel(Value);
-	}
-	ActorList.clear();
-
-	//TripleWindmill Wing 贸府
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "TripleWindmillWing", ActorList);
-	for (FPActor* Actor : ActorList)
-	{
-		TripleWindmillWing* GameTripleWindmillWing = static_cast<TripleWindmillWing*>(Actor);
-		GameTripleWindmillWing->SetFillTriangel(Value);
-	}
-	ActorList.clear();
-
-	//TripleWingWindmill 贸府
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "TripleWingWindmill", ActorList);
-	for (FPActor* Actor : ActorList)
-	{
-		TripleWingWindmill* GameTripleWingWindmill = static_cast<TripleWingWindmill*>(Actor);
-		GameTripleWingWindmill->SetFillTriangel(Value);
-	}
-	ActorList.clear();
-
-	//Terrain 贸府
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Terrain", ActorList);
-	for (FPActor* Actor : ActorList)
-	{
-		Terrain* GameTerrain = static_cast<Terrain*>(Actor);
-		GameTerrain->SetFillTriangel(Value);
-	}
-	ActorList.clear();
-
-	//Tree贸府
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Tree", ActorList);
-	for (FPActor* Actor : ActorList)
-	{
-		Tree* GameTree = static_cast<Tree*>(Actor);
-		GameTree->SetFillTriangel(Value);
-	}
-	ActorList.clear();
-
 	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "UI", ActorList);
 	for (FPActor* Actor : ActorList)
 	{
@@ -220,71 +163,9 @@ void GameController::SetFillTriangel(FInputValue Value)
 
 void GameController::SetCullTriangle(FInputValue Value)
 {
-	//Player 贸府
+	bisCull = !bisCull;
+	ForestPearlEngine::GetGameEngine().SetbCull(bisCull);
 	std::vector<FPActor*> ActorList;
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Player", ActorList);
-	for (FPActor* Actor : ActorList)
-	{
-		Player* GamePlayer = static_cast<Player*>(Actor);
-		GamePlayer->SetCullTriangle(Value);
-	}
-	ActorList.clear();
-
-	//Windmill 贸府
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Windmill", ActorList);
-	for (FPActor* Actor : ActorList)
-	{
-		Windmill* GameWindmill = static_cast<Windmill*>(Actor);
-		GameWindmill->SetCullTriangle(Value);
-	}
-	ActorList.clear();
-
-	//Windmill Wing 贸府
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "WindmillWing", ActorList);
-	for (FPActor* Actor : ActorList)
-	{
-		WindmillWing* GameWindmillWing = static_cast<WindmillWing*>(Actor);
-		GameWindmillWing->SetCullTriangle(Value);
-	}
-	ActorList.clear();
-
-	//TripleWindmill Wing 贸府
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "TripleWindmillWing", ActorList);
-	for (FPActor* Actor : ActorList)
-	{
-		TripleWindmillWing* GameTripleWindmillWing = static_cast<TripleWindmillWing*>(Actor);
-		GameTripleWindmillWing->SetCullTriangle(Value);
-	}
-	ActorList.clear();
-
-	//TripleWingWindmill 贸府
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "TripleWingWindmill", ActorList);
-	for (FPActor* Actor : ActorList)
-	{
-		TripleWingWindmill* GameTripleWingWindmill = static_cast<TripleWingWindmill*>(Actor);
-		GameTripleWingWindmill->SetCullTriangle(Value);
-	}
-	ActorList.clear();
-
-
-	//Terrain 贸府
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Terrain", ActorList);
-	for (FPActor* Actor : ActorList)
-	{
-		Terrain* GameTerrain = static_cast<Terrain*>(Actor);
-		GameTerrain->SetCullTriangle(Value);
-	}
-	ActorList.clear();
-
-	//Tree贸府
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Tree", ActorList);
-	for (FPActor* Actor : ActorList)
-	{
-		Tree* GameTree = static_cast<Tree*>(Actor);
-		GameTree->SetCullTriangle(Value);
-	}
-	ActorList.clear();
-
 	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "UI", ActorList);
 	for (FPActor* Actor : ActorList)
 	{

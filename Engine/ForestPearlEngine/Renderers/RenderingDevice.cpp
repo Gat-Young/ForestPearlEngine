@@ -25,6 +25,14 @@ template<typename T> void _SafeDelArray(T*& ptr)
 #define SafeDelArray	_SafeDelArray
 #endif
 
+//생성자
+RenderingDevice::RenderingDevice()
+{
+	//상수 버퍼를 담을 공간의 크기를 MAX_BufferSize로 설정
+	VertexShaderConstBuffer.resize(MAX_BufferSize);
+	PixelShaderConstBuffer.resize(MAX_BufferSize);
+}
+
 //싱글톤 렌더링 디바이스 객체 가져오기
 RenderingDevice& RenderingDevice::GetRenderingDevice()
 {
@@ -348,38 +356,24 @@ void* RenderingDevice::CreateVertexBuffer(void* VertexData, UINT Size, UINT Stri
 // 14개 등록 가능. 다른 셰이더와 혼용 가능.
 // 셰이더 소스에 임의 지정 가능. register(b#)으로 지정, 약어 b = 상수버퍼
 //
-HRESULT RenderingDevice::CreateObjectConstBuffer(UINT Size)
-{
-	HRESULT hr = S_OK;
-	hr = CreateConstBuffer(Size, &ObjectConstBuffer);
-	return hr;
-}
 
 HRESULT RenderingDevice::CreateVertexShaderConstBuffer(UINT Size)
 {
 	HRESULT hr = S_OK;
-	hr = CreateConstBuffer(Size, &VertexShaderConstBuffer);
+	for (ID3D11Buffer*& ConstBuffer : VertexShaderConstBuffer)
+	{
+		hr = CreateConstBuffer(Size, &ConstBuffer);
+	}
 	return hr;
 }
 
 HRESULT RenderingDevice::CreatePixelShaderConstBuffer(UINT Size)
 {
 	HRESULT hr = S_OK;
-	hr = CreateConstBuffer(Size, &PixelShaderConstBuffer);
-	return hr;
-}
-
-HRESULT RenderingDevice::CreateVertexViewPortConstBuffer(UINT Size)
-{
-	HRESULT hr = S_OK;
-	hr = CreateConstBuffer(Size, &VertexViewPortConstBuffer);
-	return hr;
-}
-
-HRESULT RenderingDevice::CreatePixelViewPortConstBuffer(UINT Size)
-{
-	HRESULT hr = S_OK;
-	hr = CreateConstBuffer(Size, &PixelViewPortConstBuffer);
+	for (ID3D11Buffer*& ConstBuffer : PixelShaderConstBuffer)
+	{
+		hr = CreateConstBuffer(Size, &ConstBuffer);
+	}
 	return hr;
 }
 
@@ -389,9 +383,10 @@ int RenderingDevice::CreateConstBuffer(UINT Size, ID3D11Buffer** ReturnConstBuff
 
 	D3D11_BUFFER_DESC BufferDesc = {};
 	ZeroMemory(&BufferDesc, sizeof(BufferDesc));
-	BufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	BufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	BufferDesc.ByteWidth = Size;
 	BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	BufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 	//상수 버퍼 생성
 	ID3D11Buffer* pConstBuffer = nullptr;
@@ -405,73 +400,70 @@ int RenderingDevice::CreateConstBuffer(UINT Size, ID3D11Buffer** ReturnConstBuff
 	return 0;
 }
 
-HRESULT RenderingDevice::ObjectSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
-{
-	HRESULT hr = S_OK;
-	DeviceContext->VSSetConstantBuffers(StartSlot, NumBuffers, &ObjectConstBuffer);
-	return hr;
-}
-
 HRESULT RenderingDevice::VSSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
 {
 	HRESULT hr = S_OK;
-	DeviceContext->VSSetConstantBuffers(StartSlot, NumBuffers, &VertexShaderConstBuffer);
+	DeviceContext->VSSetConstantBuffers(StartSlot, NumBuffers, &VertexShaderConstBuffer[StartSlot]);
 	return hr;
 }
 
 HRESULT RenderingDevice::PSSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
 {
 	HRESULT hr = S_OK;
-	DeviceContext->PSSetConstantBuffers(StartSlot, NumBuffers, &PixelShaderConstBuffer);
+	DeviceContext->PSSetConstantBuffers(StartSlot, NumBuffers, &PixelShaderConstBuffer[StartSlot]);
 	return hr;
 }
 
-HRESULT RenderingDevice::VVPSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
+HRESULT RenderingDevice::UpdateVertexShaderSubresource(UINT Slot, const uint8_t* pSrcData, UINT Offset, UINT Size)
 {
+	assert(pSrcData != nullptr);
+	assert(VertexShaderConstBuffer[Slot] != nullptr);
+
 	HRESULT hr = S_OK;
-	DeviceContext->VSSetConstantBuffers(StartSlot, NumBuffers, &VertexViewPortConstBuffer);
+	//memcpy 형식으로 변경 (고정 크기 상수 버퍼에 대해서 상수 버퍼보다 크기가 작은 가변 크기 사용자 상수 버퍼를 대응하기 위해)
+	D3D11_MAPPED_SUBRESOURCE Mapped{};
+	
+	hr = DeviceContext->Map(VertexShaderConstBuffer[Slot], 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	assert(Mapped.pData != nullptr);
+
+	memcpy( Mapped.pData, (pSrcData+Offset), Size);
+
+	DeviceContext->Unmap(VertexShaderConstBuffer[Slot], 0);
+
+	//DeviceContext->UpdateSubresource(VertexShaderConstBuffer[Slot], DstSubresource, nullptr, pSrcData, SrcRowPitch, SrcDepthPitch);
+
 	return hr;
 }
 
-HRESULT RenderingDevice::PVPSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
+HRESULT RenderingDevice::UpdatePixelShaderSubresource(UINT Slot, const uint8_t* pSrcData, UINT Offset, UINT Size)
 {
-	HRESULT hr = S_OK;
-	DeviceContext->PSSetConstantBuffers(StartSlot, NumBuffers, &PixelViewPortConstBuffer);
-	return hr;
-}
+	assert(pSrcData != nullptr);
+	assert(PixelShaderConstBuffer[Slot] != nullptr);
 
-HRESULT RenderingDevice::UpdateObjectSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
-{
 	HRESULT hr = S_OK;
-	DeviceContext->UpdateSubresource(ObjectConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
-	return hr;
-}
+	//memcpy 형식으로 변경 (고정 크기 상수 버퍼에 대해서 상수 버퍼보다 크기가 작은 가변 크기 사용자 상수 버퍼를 대응하기 위해)
+	D3D11_MAPPED_SUBRESOURCE Mapped{};
 
-HRESULT RenderingDevice::UpdateVertexShaderSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
-{
-	HRESULT hr = S_OK;
-	DeviceContext->UpdateSubresource(VertexShaderConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
-	return hr;
-}
+	hr = DeviceContext->Map(PixelShaderConstBuffer[Slot], 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
 
-HRESULT RenderingDevice::UpdatePixelShaderSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
-{
-	HRESULT hr = S_OK;
-	DeviceContext->UpdateSubresource(PixelShaderConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
-	return hr;
-}
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 
-HRESULT RenderingDevice::UpdateVertexViewPortSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
-{
-	HRESULT hr = S_OK;
-	DeviceContext->UpdateSubresource(VertexViewPortConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
-	return hr;
-}
+	assert(Mapped.pData != nullptr);
 
-HRESULT RenderingDevice::UpdatePixelViewPortSubresource(UINT DstSubresource, void* pSrcData, UINT SrcRowPitch, UINT SrcDepthPitch)
-{
-	HRESULT hr = S_OK;
-	DeviceContext->UpdateSubresource(PixelViewPortConstBuffer, DstSubresource, nullptr, pSrcData, 0, 0);
+	memcpy(Mapped.pData, (pSrcData + Offset), Size);
+
+	DeviceContext->Unmap(PixelShaderConstBuffer[Slot], 0);
+
+	//DeviceContext->UpdateSubresource(PixelShaderConstBuffer[Slot], DstSubresource, nullptr, pSrcData, SrcRowPitch, SrcDepthPitch);
 	return hr;
 }
 

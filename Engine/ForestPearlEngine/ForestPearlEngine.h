@@ -60,6 +60,10 @@ class ForestPearlEngine
 
 		//깊이 스텐실 버퍼 설정
 		void SetZEnable(bool State);
+		
+		//렌더링 설정
+		void SetbFill(bool State);
+		void SetbCull(bool State);
 
 
 	private:

@@ -660,7 +660,7 @@ namespace FPConstantBufferRenderDataUtil
 | VS | `b0` | **엔진 예약** (Object) | `World`, `View`, `Proj`, `WV`, `WVP` (5 × 64 = 320 byte) | 오브젝트 × 뷰포트 |
 | VS | `b1` | **엔진 예약** (ViewPort) | 뷰포트의 Vertex 상수. 기본 구조체 `VertexConst { AniOn, BlendOn }` | 뷰포트 |
 | VS | `b2 ~ b13` | **Material** | Material의 Vertex 상수. 등록 슬롯 `k` → `b(2 + k)` | 오브젝트 |
-| PS | `b0` | **엔진 예약** (ViewPort) | 뷰포트의 Pixel 상수 (현재 엔진 기본 뷰포트는 사용하지 않음) | 뷰포트 |
+| PS | `b0` | **엔진 예약** (ViewPort) | 뷰포트의 Pixel 상수 (`Slot k` → `b(k)`). 현재 엔진 기본 뷰포트는 사용하지 않음 | 뷰포트 |
 | PS | `b1 ~ b13` | **Material** | Material의 Pixel 상수. 등록 슬롯 `k` → `b(1 + k)` | 오브젝트 |
 
 Material이 `AddConstantBuffer`로 등록하는 `Slot`은 셰이더 레지스터 번호가 **아니라** 위 표의 "Material 영역 안에서의 상대 번호"입니다.
@@ -670,9 +670,9 @@ Material이 `AddConstantBuffer`로 등록하는 `Slot`은 셰이더 레지스터
 | VS 레지스터 | `b2` | `b3` | `b4` | … | `b(2+k)` | `k = 11` → `b13` |
 | PS 레지스터 | `b1` | `b2` | `b3` | … | `b(1+k)` | `k = 12` → `b13` |
 
-> [!WARNING]
-> ViewPort용 PS 상수 버퍼는 구현상 `MeshRenderPass`에서 `b(1 + Slot)`, `GizmoRenderPass`에서 `b(Slot)`으로 갱신되어 두 Pass의 규칙이 다르고, `MeshRenderPass`에서는 Material의 PS 슬롯과 겹칩니다.
-> 엔진 기본 뷰포트는 PS 상수 버퍼를 등록하지 않으므로 지금은 문제가 되지 않습니다. **게임 코드에서 뷰포트에 상수 버퍼를 추가하지 마세요.**
+> [!NOTE]
+> ViewPort용 PS 상수 버퍼는 `MeshRenderPass`와 `GizmoRenderPass` 모두 `b(Slot)`으로 갱신됩니다. 따라서 PS `b0`은 ViewPort가, `b1`부터는 Material이 사용해 서로 겹치지 않습니다.
+> 뷰포트 상수 버퍼는 엔진 영역이므로 게임 코드에서 추가하지 마세요. 현재 엔진 기본 뷰포트는 VS `b1`만 사용하고 PS 상수 버퍼는 등록하지 않습니다.
 
 `World = Scale × Rotation × Location`, `WVP = World × View × Proj` 로 CPU에서 계산해 `b0`에 전달합니다. 행렬은 전치 없이 전달되므로 셰이더에서는 `mul(mWVP, pos)` 순서로 사용합니다 ([`DefaultVertexShader.vsh`](Engine/ForestPearlEngine/Assets/Shader/DefaultVertexShader.vsh) 참고).
 

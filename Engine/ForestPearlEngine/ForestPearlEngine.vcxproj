@@ -145,6 +145,7 @@
     <ClInclude Include="FPGameInstance.h" />
     <ClInclude Include="FPGameInstanceSubSystem.h" />
     <ClInclude Include="FPGameProjectSetting.h" />
+    <ClInclude Include="FPGizmoRenderList.h" />
     <ClInclude Include="FPMaterial.h" />
     <ClInclude Include="FPMaterialInterface.h" />
     <ClInclude Include="FPMovementComponent.h" />
@@ -160,7 +161,11 @@
     <ClInclude Include="FPGameProjectClassRegistry.h" />
     <ClInclude Include="GameProjectLoader.h" />
     <ClInclude Include="FPGameTimer.h" />
+    <ClInclude Include="GizmoAxisComponent.h" />
     <ClInclude Include="GizmoComponent.h" />
+    <ClInclude Include="GizmoFrontLineComponent.h" />
+    <ClInclude Include="GizmoGridComponent.h" />
+    <ClInclude Include="GizmoNormalLineComponent.h" />
     <ClInclude Include="Libraries\nlohmann\json.hpp" />
     <ClInclude Include="Libraries\Ufbx\ufbx.h" />
     <ClInclude Include="MCLOG.h" />
@@ -197,6 +202,7 @@
     <ClCompile Include="FPAGameMode.cpp" />
     <ClCompile Include="FPGameInstance.cpp" />
     <ClCompile Include="FPGameProjectSetting.cpp" />
+    <ClCompile Include="FPGizmoRenderList.cpp" />
     <ClCompile Include="FPMaterial.cpp" />
     <ClCompile Include="FPMovementCompoent.cpp" />
     <ClCompile Include="FPMovementComponent.cpp" />
@@ -208,7 +214,9 @@
     <ClCompile Include="FPStaticMeshComponent.cpp" />
     <ClCompile Include="FPViewPortClient.cpp" />
     <ClCompile Include="FPWorld.cpp" />
+    <ClCompile Include="GizmoAxisComponent.cpp" />
     <ClCompile Include="GizmoComponent.cpp" />
+    <ClCompile Include="GizmoGridComponent.cpp" />
     <ClCompile Include="Libraries\Ufbx\ufbx.c" />
     <ClCompile Include="FPMeshComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>

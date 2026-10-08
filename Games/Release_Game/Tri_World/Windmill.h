@@ -19,8 +19,6 @@ class Windmill : public FPPawn
 		TripleWindmillWing* TripleWing;
 
 		float ScaleOffset = 1.0f;
-		bool isFill = true;
-		bool isCull = false;
 
 	public:
 		Windmill() = default;
@@ -34,7 +32,5 @@ class Windmill : public FPPawn
 		void Move(FInputValue Value);
 		void Rotate(FInputValue Value);
 		void Scaling(FInputValue Value);
-		void SetFillTriangel(FInputValue Value);
-		void SetCullTriangle(FInputValue Value);
 		void SetScaleWing(FInputValue Value);
 };

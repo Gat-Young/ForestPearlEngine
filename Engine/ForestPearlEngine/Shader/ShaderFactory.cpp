@@ -29,7 +29,7 @@ HRESULT ShaderFactory::VertexShaderLoad(const TCHAR* Objectname, void** ppVS, vo
 	*ppVS = pVS;
 	*ppCode = pCode;
 
-	CreateInputLayout(pVS, ppVBLayout);
+	CreateInputLayout(pCode, ppVBLayout);
 	return hr;
 }
 

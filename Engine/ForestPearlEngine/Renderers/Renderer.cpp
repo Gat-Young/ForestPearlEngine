@@ -115,6 +115,7 @@ void Renderer::CreateCamList()
 
 			RenderCamItem.ViewPort.push_back(RenderingViewPortData);
 		}
+		this->CameraList.push_back(RenderCamItem);
 	}
 
 
@@ -295,6 +296,13 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 void Renderer::MeshRenderPass()
 {
+	//상수 버퍼 14개씩 Set
+	for (int i = 0; i < 14; ++i)
+	{
+		Device.VSSetConstantBuffers(i, 1);
+		Device.PSSetConstantBuffers(i, 1);
+	}
+
 	//Depth Dtencill 상태 설정
 	Device.OMSetDepthStencilState(ZEnable);
 
@@ -318,8 +326,7 @@ void Renderer::MeshRenderPass()
 
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
-	int SetVertexBufferSize = 0;
-	int SetPixelBufferSize = 0;
+	//std::cout << CameraList.size() << " : " << MeshRenderList.size() << "\n";
 
 	for (RenderingData::CameraItem& CamItem : CameraList)
 	{
@@ -357,7 +364,10 @@ void Renderer::MeshRenderPass()
 				Device.UpdatePixelShaderSubresource(Slot, RenderItem.PixelConstBuffer.Buffer.data(), Offset, Size);
 			}
 
-			for (RenderingData::FPViewPort CamViewPort : CamItem.ViewPort)
+
+			std::vector<FPVertexBufferData> VB = AssetManager->GetVertexBuffer(RenderItem.MeshPath);
+
+			for (RenderingData::FPViewPort& CamViewPort : CamItem.ViewPort)
 			{
 
 				Device.SetViewPort(CamViewPort.TopLeftX, CamViewPort.TopLeftY,
@@ -398,8 +408,6 @@ void Renderer::MeshRenderPass()
 					Device.UpdatePixelShaderSubresource(Slot, CamViewPort.PixelConstBuffer.Buffer.data(), Offset, Size);
 				}
 
-				std::vector<FPVertexBufferData> VB = AssetManager->GetVertexBuffer(RenderItem.MeshPath);
-
 				int MeshSize = VB.size();
 				for (int i = 0; i < MeshSize; ++i)
 				{
@@ -417,6 +425,13 @@ void Renderer::MeshRenderPass()
 
 void Renderer::GizmoRenderPass()
 {
+	//상수 버퍼 14개씩 Set
+	for (int i = 0; i < 14; ++i)
+	{
+		Device.VSSetConstantBuffers(i, 1);
+		Device.PSSetConstantBuffers(i, 1);
+	}
+
 	//Depth Dtencill 상태 설정
 	Device.OMSetDepthStencilState(ZEnable);
 
@@ -439,9 +454,6 @@ void Renderer::GizmoRenderPass()
 	MVPConstBuffer MVPCB;
 
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-
-	int SetVertexBufferSize = 0;
-	int SetPixelBufferSize = 0;
 
 	for (RenderingData::CameraItem& CamItem : CameraList)
 	{
@@ -479,7 +491,9 @@ void Renderer::GizmoRenderPass()
 				Device.UpdatePixelShaderSubresource(Slot, RenderItem.PixelConstBuffer.Buffer.data(), Offset, Size);
 			}
 
-			for (RenderingData::FPViewPort CamViewPort : CamItem.ViewPort)
+			std::vector<FPVertexBufferData> VB = AssetManager->GetVertexBuffer(RenderItem.MeshPath);
+
+			for (RenderingData::FPViewPort& CamViewPort : CamItem.ViewPort)
 			{
 
 				Device.SetViewPort(CamViewPort.TopLeftX, CamViewPort.TopLeftY,
@@ -512,14 +526,12 @@ void Renderer::GizmoRenderPass()
 				//Pixel
 				for (FPConstantBufferInfo ConstantBufferInfo : CamViewPort.PixelConstBuffer.ConstantBuffers)
 				{
-					unsigned int Slot = 1 + ConstantBufferInfo.Slot;
+					unsigned int Slot = ConstantBufferInfo.Slot;
 					size_t Offset = ConstantBufferInfo.Offset;
 					size_t Size = ConstantBufferInfo.Size;
 
 					Device.UpdatePixelShaderSubresource(Slot, CamViewPort.PixelConstBuffer.Buffer.data(), Offset, Size);
 				}
-
-				std::vector<FPVertexBufferData> VB = AssetManager->GetVertexBuffer(RenderItem.MeshPath);
 
 				int MeshSize = VB.size();
 				for (int i = 0; i < MeshSize; ++i)
@@ -537,9 +549,16 @@ void Renderer::GizmoRenderPass()
 
 void Renderer::UIRenderPass()
 {
+	//상수 버퍼 14개씩 Set
+	for (int i = 0; i < 14; ++i)
+	{
+		Device.VSSetConstantBuffers(i, 1);
+		Device.PSSetConstantBuffers(i, 1);
+	}
 
 	for (const RenderingData::UIContextItem& UIData : UIRenderList)
 	{
+		FontBatch->Begin();
 		for (RenderingData::FPViewPort CamViewPort : UIData.ViewPort)
 		{
 			Device.SetViewPort(CamViewPort.TopLeftX, CamViewPort.TopLeftY,
@@ -550,9 +569,9 @@ void Renderer::UIRenderPass()
 			XMFLOAT2 Position = { (float)((UIData.x)), (float)((UIData.y)) };
 			Font->DrawString(FontBatch, UIData.msg.c_str(), Position, XMLoadFloat4(&Color));
 		}
-
 		FontBatch->End();
 	}
+
 }
 
 

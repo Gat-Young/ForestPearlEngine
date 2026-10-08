@@ -4,18 +4,11 @@
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
 #include "ForestPearlEngine/FPGameTimer.h"
 #include "ForestPearlEngine/FPWorld.h"
+#include "ForestPearlEngine/GizmoGridComponent.h"
 
 void Grid::Initialize()
 {
-	GridComponets = new GizmoComponent(this);
-
-	//Grid ¸¸µé±â
-	GRIDINFO grid;
-	grid.width = 128;
-	grid.height = 128;
-
-	GridComponets->MakeGrid(&grid);
-
+	GridComponets = new GizmoGridComponent(this, "Grid");
 	SetRootComponent((FPSceneComponent*)GridComponets);
 }
 

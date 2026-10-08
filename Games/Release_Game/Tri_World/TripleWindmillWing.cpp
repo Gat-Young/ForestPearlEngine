@@ -11,16 +11,13 @@
 void TripleWindmillWing::Initialize()
 {
 	Wing = new FPStaticMeshComponent(this, "Windmill_Wing_StaticMesh");
-	Wing->SetMeshCull(false);
 	SetRootComponent(Wing);
 
 	Wing1 = new FPStaticMeshComponent(this, "Windmill_Wing_StaticMesh");
-	Wing1->SetMeshCull(false);
 	Wing1->SetupAttachment(Wing, "WingPoint1");
 	Wing1->SetWorldScale3D({ 1.0f, 1.0f, 1.0f });
 
 	Wing2 = new FPStaticMeshComponent(this, "Windmill_Wing_StaticMesh");
-	Wing2->SetMeshCull(false);
 	Wing2->SetupAttachment(Wing1, "WingPoint1");
 	Wing2->SetWorldScale3D({ 0.5f, 0.5f, 0.5f });
 
@@ -78,20 +75,4 @@ void TripleWindmillWing::SetScaleWing(FInputValue Value)
 
 		Wing->SetWorldScale3D(Wing->GetComponentScale() + FPVector3{ move_x, move_x, move_x });
 	}
-}
-
-void TripleWindmillWing::SetFillTriangel(FInputValue Value)
-{
-	isFill = !isFill;
-	Wing->SetMeshFill(isFill);
-	Wing1->SetMeshFill(isFill);
-	Wing2->SetMeshFill(isFill);
-}
-
-void TripleWindmillWing::SetCullTriangle(FInputValue Value)
-{
-	isCull = !isCull;
-	Wing->SetMeshCull(isCull);
-	Wing1->SetMeshCull(isCull);
-	Wing2->SetMeshCull(isCull);
 }

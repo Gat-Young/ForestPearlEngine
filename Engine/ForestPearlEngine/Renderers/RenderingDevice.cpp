@@ -360,7 +360,7 @@ void* RenderingDevice::CreateVertexBuffer(void* VertexData, UINT Size, UINT Stri
 HRESULT RenderingDevice::CreateVertexShaderConstBuffer(UINT Size)
 {
 	HRESULT hr = S_OK;
-	for (ID3D11Buffer* ConstBuffer : VertexShaderConstBuffer)
+	for (ID3D11Buffer*& ConstBuffer : VertexShaderConstBuffer)
 	{
 		hr = CreateConstBuffer(Size, &ConstBuffer);
 	}
@@ -370,7 +370,7 @@ HRESULT RenderingDevice::CreateVertexShaderConstBuffer(UINT Size)
 HRESULT RenderingDevice::CreatePixelShaderConstBuffer(UINT Size)
 {
 	HRESULT hr = S_OK;
-	for (ID3D11Buffer* ConstBuffer : PixelShaderConstBuffer)
+	for (ID3D11Buffer*& ConstBuffer : PixelShaderConstBuffer)
 	{
 		hr = CreateConstBuffer(Size, &ConstBuffer);
 	}
@@ -383,9 +383,10 @@ int RenderingDevice::CreateConstBuffer(UINT Size, ID3D11Buffer** ReturnConstBuff
 
 	D3D11_BUFFER_DESC BufferDesc = {};
 	ZeroMemory(&BufferDesc, sizeof(BufferDesc));
-	BufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	BufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	BufferDesc.ByteWidth = Size;
 	BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	BufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 	//상수 버퍼 생성
 	ID3D11Buffer* pConstBuffer = nullptr;
@@ -415,11 +416,21 @@ HRESULT RenderingDevice::PSSetConstantBuffers(UINT StartSlot, UINT NumBuffers)
 
 HRESULT RenderingDevice::UpdateVertexShaderSubresource(UINT Slot, const uint8_t* pSrcData, UINT Offset, UINT Size)
 {
+	assert(pSrcData != nullptr);
+	assert(VertexShaderConstBuffer[Slot] != nullptr);
+
 	HRESULT hr = S_OK;
 	//memcpy 형식으로 변경 (고정 크기 상수 버퍼에 대해서 상수 버퍼보다 크기가 작은 가변 크기 사용자 상수 버퍼를 대응하기 위해)
 	D3D11_MAPPED_SUBRESOURCE Mapped{};
 	
-	DeviceContext->Map(VertexShaderConstBuffer[Slot], 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
+	hr = DeviceContext->Map(VertexShaderConstBuffer[Slot], 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	assert(Mapped.pData != nullptr);
 
 	memcpy( Mapped.pData, (pSrcData+Offset), Size);
 
@@ -432,11 +443,21 @@ HRESULT RenderingDevice::UpdateVertexShaderSubresource(UINT Slot, const uint8_t*
 
 HRESULT RenderingDevice::UpdatePixelShaderSubresource(UINT Slot, const uint8_t* pSrcData, UINT Offset, UINT Size)
 {
+	assert(pSrcData != nullptr);
+	assert(PixelShaderConstBuffer[Slot] != nullptr);
+
 	HRESULT hr = S_OK;
 	//memcpy 형식으로 변경 (고정 크기 상수 버퍼에 대해서 상수 버퍼보다 크기가 작은 가변 크기 사용자 상수 버퍼를 대응하기 위해)
 	D3D11_MAPPED_SUBRESOURCE Mapped{};
 
-	DeviceContext->Map(PixelShaderConstBuffer[Slot], 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
+	hr = DeviceContext->Map(PixelShaderConstBuffer[Slot], 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	assert(Mapped.pData != nullptr);
 
 	memcpy(Mapped.pData, (pSrcData + Offset), Size);
 

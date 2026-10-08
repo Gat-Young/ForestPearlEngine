@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <cassert>
 
 struct FPConstantBufferInfo
 {
@@ -45,10 +46,10 @@ namespace FPConstantBufferRenderDataUtil
 		const size_t Size = RenderData.ConstantBuffers[Slot].Size;
 
 		// 등록된 CB 크기와 실제 구조체 크기가 같은지 확인
-		static_assert(Size == sizeof(T));
+		assert(Size == sizeof(T));
 
 		// Buffer 범위 확인
-		static_assert(Offset + Size <= RenderData.Buffer.size());
+		assert(Offset + Size <= RenderData.Buffer.size());
 
 		std::memcpy(RenderData.Buffer.data() + Offset, &Data, Size);
 	}

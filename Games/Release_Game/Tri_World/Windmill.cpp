@@ -14,7 +14,6 @@ void Windmill::Initialize()
 {
 	Body = new FPStaticMeshComponent(this, "Windmill_Body_StaticMesh");
 	SetRootComponent((FPSceneComponent*)Body);
-	Body->SetMeshCull(false);
  
 	FPAController* Controller = GetWorld()->GetController(0);
 	Controller->GetInputComponent().BindMethod("IA_SetMoveTriangel", this, EKeyState::Pressed, &Windmill::Move);
@@ -64,18 +63,6 @@ void Windmill::Scaling(FInputValue Value)
 	float mov =1.0f;
 	float move_x = Value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
 	RootComponent->SetWorldScale3D(RootComponent->GetComponentScale() + FPVector3{move_x, move_x, move_x});
-}
-
-void Windmill::SetFillTriangel(FInputValue Value)
-{
-	isFill = !isFill;
-	Body->SetMeshFill(isFill);
-}
-
-void Windmill::SetCullTriangle(FInputValue Value)
-{
-	isCull = !isCull;
-	Body->SetMeshCull(isCull);
 }
 
 void Windmill::SetScaleWing(FInputValue Value)

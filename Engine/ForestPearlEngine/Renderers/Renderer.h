@@ -36,7 +36,7 @@ class Renderer
 		bool bFill = true;
 
 		//Cull
-		bool bCull = false;
+		bool bCull = true;
 
 		//폰트 해제
 		void FontRelease();

@@ -10,9 +10,34 @@
 
 using json = nlohmann::json;
 
-void* FPAssetLoader::MakeVertexBuffer(std::vector<VERTEX> Mesh)
+void FPAssetLoader::MakeGizmoVertexBuffer(std::vector<struct VERTEX>& Mesh, const std::string& GizemoMeshPath)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	if (AssetManager->HasStaticMeshData(GizemoMeshPath))
+	{
+		std::cout << "이미 존재 하는 메시 데이터 입니다!" << "\n";
+		return;
+	}
+
+	FPMeshData MeshData;
+	MeshData.Name = GizemoMeshPath;
+	MeshData.Vertices = Mesh;
+
+	//Gizmo Mesh 정보를 저장
+	AssetManager->AddMeshData(GizemoMeshPath, &MeshData);
+
+	void* VB = MakeVertexBuffer(Mesh);
+
+	int VBSize = Mesh.size();
+
+	//정점버퍼 생성 후 Map에 정보 등록
+	AssetManager->AddVertexBuffer(GizemoMeshPath, VB, VBSize, sizeof(VERTEX), 0);
+}
+
+void* FPAssetLoader::MakeVertexBuffer(std::vector<VERTEX>& Mesh)
 {
 	return RenderingDevice::GetRenderingDevice().CreateVertexBuffer(Mesh.data(), Mesh.size(), sizeof(VERTEX));
+
 }
 
 void FPAssetLoader::LoadFbxData(std::string FbxPath, AssetOwner EngineAsset)

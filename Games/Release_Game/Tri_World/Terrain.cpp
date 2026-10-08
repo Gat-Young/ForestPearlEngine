@@ -8,11 +8,8 @@
 void Terrain::Initialize()
 {
 	Mesh = new FPStaticMeshComponent(this, "Terrain_StaticMesh");
-	Mesh->SetTopology("TRIANGLELIST"); // <- Topology를 변경할 수 있음
-
 	SetRootComponent((FPSceneComponent*)Mesh);
 
-	Mesh->SetMeshCull(false);
 
 }
 
@@ -24,16 +21,4 @@ void Terrain::BeginPlay()
 void Terrain::Tick()
 {
 	__super::Tick();
-}
-
-void Terrain::SetFillTriangel(FInputValue Value)
-{
-	isFill = !isFill;
-	Mesh->SetMeshFill(isFill);
-}
-
-void Terrain::SetCullTriangle(FInputValue Value)
-{
-	isCull = !isCull;
-	Mesh->SetMeshCull(isCull);
 }

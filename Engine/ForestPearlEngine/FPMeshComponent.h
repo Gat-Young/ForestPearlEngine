@@ -11,8 +11,6 @@ class FPMeshComponent : public FPPrimitiveComponent
 		std::string MeshName;
 
 		int Priority = 0;
-		bool isFill = true;
-		bool isCull = true;
 		bool isActive = true;
 		FPMaterialInterface* Material = nullptr;
 
@@ -26,8 +24,6 @@ class FPMeshComponent : public FPPrimitiveComponent
 
 		~FPMeshComponent();
 
-		void SetMeshFill(bool State) { isFill = State; };
-		void SetMeshCull(bool State) { isCull = State; };
 		void SetActive(bool Active) { this->isActive = Active; }
 		void SetPriority(int Prio) { Priority = Prio; };
 		void SetMaterial(FPMaterialInterface* Material);

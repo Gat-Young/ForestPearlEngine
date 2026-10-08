@@ -1,15 +1,15 @@
 #pragma once
 #include "ForestPearlEngine/Object/Actor.h"
-#include "ForestPearlEngine/GizmoComponent.h"
 #include "ForestPearlEngine/Systems/KeyStateEnum.h"
 #include "ForestPearlEngine/Define/FPMath.h"
 
+class GizmoGridComponent;
 
 class Grid : public FPActor
 {
 private:
 
-	GizmoComponent* GridComponets;
+	GizmoGridComponent* GridComponets;
 	bool bShow = true;
 
 public:

@@ -123,7 +123,7 @@ void Renderer::CreateCamList()
 void Renderer::CreateMeshRenderQueue()
 {
 	//비어 있지 않다면 비우기
-	while (!MeshRenderQueue.empty()) { MeshRenderQueue.pop();};
+	while (!MeshRenderList.empty()) { MeshRenderList.clear();};
 
 	//Mesh Render List
 	FPMeshRenderList* MeshRenderList = static_cast<FPMeshRenderList*>(FPGameInstance::Get().GetMeshRenderList());
@@ -149,8 +149,11 @@ void Renderer::CreateMeshRenderQueue()
 		if(RenderItemData.VertexConstBuffer != nullptr) MeshRenderData.VertexConstBuffer = *(RenderItemData.VertexConstBuffer);
 		if(RenderItemData.PixelConstBuffer != nullptr) MeshRenderData.PixelConstBuffer = *(RenderItemData.PixelConstBuffer);
 
-		MeshRenderQueue.push(MeshRenderData);
+		this->MeshRenderList.push_back(MeshRenderData);
 	}
+
+	std::sort(this->MeshRenderList.begin(), this->MeshRenderList.end(), RenderingData::MeshRenderItemCompare{});
+
 }
 
 void Renderer::CreateDebugRenderQueue()
@@ -160,7 +163,7 @@ void Renderer::CreateDebugRenderQueue()
 void Renderer::CreateUIRenderQueue()
 {
 	//비어 있지 않다면 비우기
-	while (!UIRenderQueue.empty()) { UIRenderQueue.pop(); };
+	while (!UIRenderList.empty()) { UIRenderList.clear(); };
 
 	//Text Render List
 	FPTextRenderList* TextRenderList = static_cast<FPTextRenderList*>(FPGameInstance::Get().GetTextRenderList());
@@ -196,12 +199,16 @@ void Renderer::CreateUIRenderQueue()
 			RenderingViewPortData.MinDepth = ViewPort->MinDepth;
 			RenderingViewPortData.MaxDepth = ViewPort->MaxDepth;
 
-			if(ViewPort->VertexConstBuffer != nullptr) RenderingViewPortData.VertexConstBuffer = *(ViewPort->VertexConstBuffer);
-			if(ViewPort->PixelConstBuffer != nullptr) RenderingViewPortData.PixelConstBuffer = *(ViewPort->PixelConstBuffer);
+			if (ViewPort->VertexConstBuffer != nullptr) RenderingViewPortData.VertexConstBuffer = *(ViewPort->VertexConstBuffer);
+			if (ViewPort->PixelConstBuffer != nullptr) RenderingViewPortData.PixelConstBuffer = *(ViewPort->PixelConstBuffer);
 
 			UIRenderingData.ViewPort.push_back(RenderingViewPortData);
 		}
+
+		UIRenderList.push_back(UIRenderingData);
 	}
+
+	std::sort(UIRenderList.begin(), UIRenderList.end(), RenderingData::UIRenderItemCompare{});
 }
 
 HRESULT Renderer::InitializeRenderer(HWND hwnd)
@@ -283,11 +290,8 @@ void Renderer::MeshRenderPass()
 
 	for (RenderingData::CameraItem& CamItem : CameraList)
 	{
-		while (!MeshRenderQueue.empty())
+		for(const RenderingData::MeshRenderItem& RenderItem : MeshRenderList)
 		{
-			const RenderingData::MeshRenderItem& RenderItem = MeshRenderQueue.top();
-			
-
 			std::tuple<void*, void*, void*> VertexShaderData = AssetManager->GetVertexShader(RenderItem.VertexShaderPath);
 			std::pair<void*, void*> PixelShaderData = AssetManager->GetPixelShader(RenderItem.PixelShaderPath);
 
@@ -373,43 +377,35 @@ void Renderer::MeshRenderPass()
 					Device.Draw(VB[i].Size, 0);																		//Draw Call
 				}
 			}
-			MeshRenderQueue.pop();
 		}
 	}
 }
 
-void Renderer::UIRendering()
+
+void Renderer::DebugRenderPass()
 {
-	FPTextRenderList* TextRenderList = static_cast<FPTextRenderList*>(FPGameInstance::Get().GetTextRenderList());
-	std::vector<UIContextItem> RenderList = TextRenderList->GetRenderList();
 
-	std::vector<FPViewPort*> CamViewPorts;
+}
 
-	FPViewPortClient* ViewPortClient = static_cast<FPViewPortClient*>(FPGameInstance::Get().GetViewPortClient());
+void Renderer::UIRenderPass()
+{
 
-	CamViewPorts = ViewPortClient->GetViewPort(FPViewPortName::UIViewPort);
-
-	for (FPViewPort* CamViewPort : CamViewPorts)
+	for (const RenderingData::UIContextItem& UIData : UIRenderList)
 	{
-		Device.SetViewPort(CamViewPort->TopLeftX, CamViewPort->TopLeftY,
-			CamViewPort->Width, CamViewPort->Height,
-			CamViewPort->MinDepth, CamViewPort->MaxDepth);
-		FontBatch->Begin();
-
-		for (UIContextItem UI : RenderList)
+		for (RenderingData::FPViewPort CamViewPort : UIData.ViewPort)
 		{
-			if (!(*(*(UI.active))))
-			{
-				continue;
-			}
-			XMFLOAT4 Color = { (UI.color->x), (UI.color->y), (UI.color->z), (UI.color->w) };
-			XMFLOAT2 Position = { (float)(*(UI.x)), (float)(*(UI.y)) };
-			Font->DrawString(FontBatch, UI.msg->c_str(), Position, XMLoadFloat4(&Color));
+			Device.SetViewPort(CamViewPort.TopLeftX, CamViewPort.TopLeftY,
+				CamViewPort.Width, CamViewPort.Height,
+				CamViewPort.MinDepth, CamViewPort.MaxDepth);
+
+			XMFLOAT4 Color = { (UIData.color.x), (UIData.color.y), (UIData.color.z), (UIData.color.w) };
+			XMFLOAT2 Position = { (float)((UIData.x)), (float)((UIData.y)) };
+			Font->DrawString(FontBatch, UIData.msg.c_str(), Position, XMLoadFloat4(&Color));
 		}
 
 		FontBatch->End();
 	}
-};
+}
 
 
 HRESULT Renderer::Finalize()

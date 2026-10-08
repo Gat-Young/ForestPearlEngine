@@ -50,13 +50,13 @@ class Renderer
 		std::vector<RenderingData::CameraItem> CameraList;
 
 		//Mesh Render Item
-		std::priority_queue<RenderingData::MeshRenderItem, std::vector<RenderingData::MeshRenderItem>, RenderingData::MeshRenderItemCompare> MeshRenderQueue;
+		std::vector<RenderingData::MeshRenderItem> MeshRenderList;
 
 		//Debug Render Item
-		std::priority_queue<RenderingData::DebugRenderItem, std::vector<RenderingData::DebugRenderItem>, RenderingData::DebugRenderItemCompare> DebugRenderQueue;
+		std::vector<RenderingData::DebugRenderItem> DebugRenderList;
 
 		//UI Render Item
-		std::priority_queue<RenderingData::UIContextItem, std::vector<RenderingData::UIContextItem>, RenderingData::UIRenderItemCompare> UIRenderQueue;
+		std::vector<RenderingData::UIContextItem> UIRenderList;
 
 
 	public:

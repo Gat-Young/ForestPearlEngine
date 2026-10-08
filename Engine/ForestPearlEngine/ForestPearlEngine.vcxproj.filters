@@ -225,7 +225,7 @@
     <ClInclude Include="FPStaticMeshComponent.h">
       <Filter>Component\Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="FPConstantBufferCommon.h">
+    <ClInclude Include="Renderers\FPConstantBufferCommon.h">
       <Filter>Renderers</Filter>
     </ClInclude>
   </ItemGroup>

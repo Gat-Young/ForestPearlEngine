@@ -31,7 +31,7 @@ void FPViewPortClient::CreateViewPort()
 
 	VertexConst View1Const;
 	MainGame[0]->VertexConstBuffer = new FPConstantBufferRenderData();
-	FPConstantBufferRenderDataUtil::AddConstantBuffer(*(MainGame[0]->VertexConstBuffer), sizeof(View1Const),View1Const);
+	FPConstantBufferRenderDataUtil::AddConstantBuffer(*(MainGame[0]->VertexConstBuffer), 0,View1Const);
 
 	CalculateViewPortSize(MainGame, DisplayWidth, DisplayHeight, Aspect);
 
@@ -57,20 +57,20 @@ void FPViewPortClient::CreateViewPort()
 	Cam1VertexConst->AniOn = 0.0f;
 	Cam1VertexConst->BlendOn = 0.0f;
 	TripleWaySplitViewPort[0]->VertexConstBuffer = new FPConstantBufferRenderData();
-	FPConstantBufferRenderDataUtil::AddConstantBuffer(*(MainGame[0]->VertexConstBuffer), sizeof(Cam1VertexConst), Cam1VertexConst);
+	FPConstantBufferRenderDataUtil::AddConstantBuffer(*(MainGame[0]->VertexConstBuffer), 0, Cam1VertexConst);
 
 	VertexConst* Cam2VertexConst = new VertexConst();
 	Cam2VertexConst->AniOn = 1.0f;
 	Cam2VertexConst->BlendOn = 0.0f;
 	TripleWaySplitViewPort[1] = new FPViewPort();
 	TripleWaySplitViewPort[1]->VertexConstBuffer = new FPConstantBufferRenderData();
-	FPConstantBufferRenderDataUtil::AddConstantBuffer(*(MainGame[0]->VertexConstBuffer), sizeof(Cam2VertexConst), Cam2VertexConst);
+	FPConstantBufferRenderDataUtil::AddConstantBuffer(*(MainGame[0]->VertexConstBuffer), 0, Cam2VertexConst);
 
 	TripleWaySplitViewPort[2] = new FPViewPort();
 
 	VertexConst* Cam3VertexConst = new VertexConst();
 	TripleWaySplitViewPort[2]->VertexConstBuffer = new FPConstantBufferRenderData();
-	FPConstantBufferRenderDataUtil::AddConstantBuffer(*(MainGame[0]->VertexConstBuffer), sizeof(Cam3VertexConst), Cam3VertexConst);
+	FPConstantBufferRenderDataUtil::AddConstantBuffer(*(MainGame[0]->VertexConstBuffer), 0, Cam3VertexConst);
 
 	CalculateViewPortSize(TripleWaySplitViewPort, DisplayWidth, DisplayHeight, Aspect);
 	ViewPortArray[static_cast<size_t>(FPViewPortName::TripleWaySplitViewPort)] = std::move(TripleWaySplitViewPort);

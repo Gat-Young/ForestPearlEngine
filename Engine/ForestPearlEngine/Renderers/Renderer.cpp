@@ -230,7 +230,7 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 	Device.OMSetRenderTargets();
 
 	Device.GetDeviceInfo();
-	
+
 	FontBatch = Device.CreateSpriteBatch();
 	Font = Device.CreateSpriteFont();
 
@@ -240,13 +240,16 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 	Device.RasterStateCreate();
 
-	//256B의 ConstBuffer 생성
-	Device.CreateObjectConstBuffer(320);
-	Device.CreateVertexShaderConstBuffer(256);
-	Device.CreatePixelShaderConstBuffer(256);
-	Device.CreateVertexViewPortConstBuffer(256);
-	Device.CreatePixelViewPortConstBuffer(256);
+	//320B의 ConstBuffer 생성
+	Device.CreateVertexShaderConstBuffer(320);
+	Device.CreatePixelShaderConstBuffer(320);
 
+	//상수 버퍼 14개씩 Set
+	for (int i = 0; i < 14; ++i)
+	{
+		Device.VSSetConstantBuffers(i, 1);
+		Device.PSSetConstantBuffers(i, 1);
+	}
 	return hr;
 }
 
@@ -254,7 +257,6 @@ void Renderer::MeshRenderPass()
 {
 	//Depth Dtencill 상태 설정
 	Device.OMSetDepthStencilState(ZEnable);
-
 
 	//렌더링 모드 전환
 	Device.UpdateRSSetState(bFill, bCull);
@@ -264,17 +266,20 @@ void Renderer::MeshRenderPass()
 
 	//상수 버퍼 설정
 	//Vertex Shader
-	Device.ObjectSetConstantBuffers(0, 1);
-	Device.VSSetConstantBuffers(1, 1);
-	Device.VVPSetConstantBuffers(2, 1);
+	//MeshRenderPass에서 0번은 WVP, 1번은 ViewPort용 슬롯 임
+	unsigned int VertexShaderConstantBufferSlotOffset = 2;
 
 	//PixelShader
-	Device.PSSetConstantBuffers(0, 1);
-	Device.PVPSetConstantBuffers(1, 1);
+	//MeshRenderPass에서 0번은 ViewPort용 슬롯
+	unsigned int PixelShaderConstantBufferSlotOffset = 1;
+
 
 	MVPConstBuffer MVPCB;
 
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	int SetVertexBufferSize = 0;
+	int SetPixelBufferSize = 0;
 
 	for (RenderingData::CameraItem& CamItem : CameraList)
 	{
@@ -294,43 +299,78 @@ void Renderer::MeshRenderPass()
 			Device.PSSetShader(std::get<0>(PixelShaderData));
 
 			//Shader ConstBuffer 갱신
-			Device.UpdateVertexShaderSubresource(0, *(RenderItem.VertexConst), 0, 0);
-			Device.UpdatePixelShaderSubresource(0, *(RenderItem.PixelConst), 0, 0);
+			
+			//vertex
+			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.VertexConstBuffer.ConstantBuffers)
+			{
+				unsigned int Slot = VertexShaderConstantBufferSlotOffset + ConstantBufferInfo.Slot;
+				size_t Offset = ConstantBufferInfo.Offset;
+				size_t Size = ConstantBufferInfo.Size;
 
-			for (FPViewPort* CamViewPort : CamViewPorts)
+				Device.UpdateVertexShaderSubresource(Slot, RenderItem.VertexConstBuffer.Buffer.data(), Offset, Size);
+			}
+
+			//Pixel
+			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.PixelConstBuffer.ConstantBuffers)
+			{
+				unsigned int Slot = PixelShaderConstantBufferSlotOffset + ConstantBufferInfo.Slot;
+				size_t Offset = ConstantBufferInfo.Offset;
+				size_t Size = ConstantBufferInfo.Size;
+
+				Device.UpdatePixelShaderSubresource(Slot, RenderItem.PixelConstBuffer.Buffer.data(), Offset, Size);
+			}
+
+			for (RenderingData::FPViewPort CamViewPort : CamItem.ViewPort)
 			{
 
-				Device.SetViewPort(CamViewPort->TopLeftX, CamViewPort->TopLeftY,
-					CamViewPort->Width, CamViewPort->Height,
-					CamViewPort->MinDepth, CamViewPort->MaxDepth);	// <- Cam 에서 가져오는 정보
+				Device.SetViewPort(CamViewPort.TopLeftX, CamViewPort.TopLeftY,
+					CamViewPort.Width, CamViewPort.Height,
+					CamViewPort.MinDepth, CamViewPort.MaxDepth);
 
 				//Mesh에서 가져오는 정보
 				//HLSL은 열벡터 기준이므로 HLSL에서는 연산을 반대로 할 것
-				MVPCB.WorldMatrix = ((*(RenderItem.Scale)) * (*(RenderItem.Rotation)) * (*(RenderItem.Location))).Matrix;
-				MVPCB.ViewMatrix = (*(CamItem.View)).Matrix;
-				MVPCB.ProjMatrix = (*(CamItem.Projection)).Matrix;
+				MVPCB.WorldMatrix = ((RenderItem.Scale) * (RenderItem.Rotation) * (RenderItem.Location)).Matrix;
+				MVPCB.ViewMatrix = (CamItem.View).Matrix;
+				MVPCB.ProjMatrix = (CamItem.Projection).Matrix;
 				MVPCB.WVMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix;
 
 				MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
 
 				//Object 상수 버퍼 갱신
-				Device.UpdateObjectSubresource(0, &MVPCB, 0, 0);
+				Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 320);
 
 
 				//ViewPort Shader ConstBuffer가 있다면 갱신
-				if ((CamViewPort->VertexConst) != nullptr) Device.UpdateVertexViewPortSubresource(0, CamViewPort->VertexConst, 0, 0);	// <- Cam에서 가져오는 정보
-				if ((CamViewPort->PixelConst) != nullptr) Device.UpdatePixelViewPortSubresource(0, CamViewPort->PixelConst, 0, 0);		// <- Cam에서 가져오는 정보
+				//vertex
+				for (FPConstantBufferInfo ConstantBufferInfo : CamViewPort.VertexConstBuffer.ConstantBuffers)
+				{
+					unsigned int Slot = 1 + ConstantBufferInfo.Slot;
+					size_t Offset = ConstantBufferInfo.Offset;
+					size_t Size = ConstantBufferInfo.Size;
 
-				//정점 버퍼 설정
-				UINT stride = *RenderItem.Stride;
-				UINT offset = *RenderItem.Offset;
+					Device.UpdateVertexShaderSubresource(Slot, CamViewPort.VertexConstBuffer.Buffer.data(), Offset, Size);
+				}
 
-				int MeshSize = (RenderItem.VB)->size();
+				//Pixel
+				for (FPConstantBufferInfo ConstantBufferInfo : CamViewPort.PixelConstBuffer.ConstantBuffers)
+				{
+					unsigned int Slot = 1 + ConstantBufferInfo.Slot;
+					size_t Offset = ConstantBufferInfo.Offset;
+					size_t Size = ConstantBufferInfo.Size;
+
+					Device.UpdatePixelShaderSubresource(Slot, CamViewPort.PixelConstBuffer.Buffer.data(), Offset, Size);
+				}
+
+				std::vector<FPVertexBufferData> VB = AssetManager->GetVertexBuffer(RenderItem.MeshPath);
+
+				int MeshSize = VB.size();
 				for (int i = 0; i < MeshSize; ++i)
 				{
-					Device.IASetVertexBuffers(0, 1, (RenderItem.VB)->at(i), &stride, &offset);											//Mesh에서 가져오는 정보
+					UINT Stride = VB[i].Stride;
+					UINT Offset = VB[i].Offset;
+					Device.IASetVertexBuffers(0, 1, VB[i].VertexBuffer, &Stride, &Offset);									
 
-					Device.Draw((RenderItem.VertexSize)->at(i), 0);																		//Draw Call
+					Device.Draw(VB[i].Size, 0);																		//Draw Call
 				}
 			}
 			MeshRenderQueue.pop();

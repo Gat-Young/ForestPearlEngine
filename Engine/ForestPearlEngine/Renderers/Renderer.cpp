@@ -401,7 +401,7 @@ void Renderer::MeshRenderPass()
 				//Pixel
 				for (FPConstantBufferInfo ConstantBufferInfo : CamViewPort.PixelConstBuffer.ConstantBuffers)
 				{
-					unsigned int Slot = 1 + ConstantBufferInfo.Slot;
+					unsigned int Slot = ConstantBufferInfo.Slot;
 					size_t Offset = ConstantBufferInfo.Offset;
 					size_t Size = ConstantBufferInfo.Size;
 

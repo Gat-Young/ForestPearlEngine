@@ -23,6 +23,8 @@ class Cube : public FPPawn
 
 		float AngleSpeed = 0.25f;
 
+		bool bRotate = true;
+
 	public:
 		Cube() = default;
 		virtual void Initialize() override;
@@ -32,4 +34,6 @@ class Cube : public FPPawn
 		void Move(FInputValue value);
 		void CameraMove(FInputValue value);
 		void ScaleUp(FInputValue Value);
+		void RotateCube(FInputValue value);
+		void SetFreeRotate(FInputValue value);
 };

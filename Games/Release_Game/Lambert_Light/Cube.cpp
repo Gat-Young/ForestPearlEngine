@@ -35,9 +35,11 @@ void Cube::Initialize()
 	if (Controller == nullptr)
 		return;
 
-	Controller->GetInputComponent().BindMethod("IA_SetMoveTriangel", this, EKeyState::Pressed, &Cube::Move);
+	Controller->GetInputComponent().BindMethod("IA_SetMoveCube", this, EKeyState::Pressed, &Cube::Move);
 	Controller->GetInputComponent().BindMethod("IA_SetMoveCamera", this, EKeyState::Pressed, &Cube::CameraMove);
-	Controller->GetInputComponent().BindMethod("IA_SetScaleWing", this, EKeyState::Pressed, &Cube::ScaleUp);
+	Controller->GetInputComponent().BindMethod("IA_SetScaleCube", this, EKeyState::Pressed, &Cube::ScaleUp);
+	Controller->GetInputComponent().BindMethod("IA_FreeRotateCube", this, EKeyState::Down, &Cube::SetFreeRotate);
+	Controller->GetInputComponent().BindMethod("IA_SetRotateCube", this, EKeyState::Pressed, &Cube::RotateCube);
 	Controller->Possess(this);
 
 }
@@ -49,10 +51,11 @@ void Cube::BeginPlay()
 
 void Cube::Tick()
 {
-	float mov = 90.0f * GetWorld()->GetGameTimer()->DeltaTime();
-	RootComponent->AddLocalRotation(FPVector3{ 0.0f, -mov, 0.0f });
-
-
+	if (bRotate)
+	{
+		float mov = 90.0f * GetWorld()->GetGameTimer()->DeltaTime();
+		RootComponent->AddLocalRotation(FPVector3{ 0.0f, -mov, 0.0f });
+	}
 
 	__super::Tick();
 }
@@ -89,5 +92,15 @@ void Cube::ScaleUp(FInputValue Value)
 	float move_x = Value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
 
 	RootComponent->SetWorldScale3D(RootComponent->GetComponentScale() + FPVector3{ move_x, move_x, move_x });
+}
+
+void Cube::RotateCube(FInputValue value)
+{
+}
+
+void Cube::SetFreeRotate(FInputValue value)
+{
+	std::cout << bRotate << " : SetFreeRotate" << "\n";
+	bRotate = !(bRotate);
 }
 

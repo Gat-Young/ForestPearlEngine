@@ -47,8 +47,11 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_SetScaleCube", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_LEFT_SHOULDER), ModifyInfoA);
 	GetInputComponent().AddMappingKey("IA_SetScaleCube", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_RIGHT_SHOULDER), ModifyInfoD);
 
-	GetInputComponent().AddMappingKey("IA_SetRotateCube", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_DPAD_RIGHT), ModifyInfoA); //RIGHT
-	GetInputComponent().AddMappingKey("IA_SetRotateCube", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_DPAD_LEFT), ModifyInfoD); //LEFT
+	GetInputComponent().AddMappingKey("IA_SetRotateCube", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_DPAD_LEFT), ModifyInfoA); //LEFT
+	GetInputComponent().AddMappingKey("IA_SetRotateCube", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_DPAD_RIGHT), ModifyInfoD); //RIGHT
+
+	GetInputComponent().AddMappingKey("IA_SetRotateCube", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_DPAD_UP), ModifyInfoW); //LEFT
+	GetInputComponent().AddMappingKey("IA_SetRotateCube", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_DPAD_DOWN), ModifyInfoS); //LEFT
 
 	//Action Button : Game Pad
 	GetInputComponent().AddMappingKey("IA_FreeRotateCube", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_A), ModifyInfoTriger);

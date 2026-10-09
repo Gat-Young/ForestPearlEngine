@@ -22,7 +22,7 @@ void Cube::Initialize()
 	//카메라 설정
 	SpringArm = new FPSpringArmComponent(this);
 	SpringArm->SetupAttachment(RootComponent);
-	SpringArm->TargetArmLength = 20.0f;
+	SpringArm->TargetArmLength = 5.0f;
 	SpringArm->SetRelativeRotation({ 30.0f, 0.0f, 0.0f });
 	SpringArm->bUsePawnControlRotation = true;
 
@@ -54,7 +54,7 @@ void Cube::Tick()
 	if (bRotate)
 	{
 		float mov = 90.0f * GetWorld()->GetGameTimer()->DeltaTime();
-		RootComponent->AddLocalRotation(FPVector3{ 0.0f, -mov, 0.0f });
+		RootComponent->AddWorldRotation(FPVector3{ 0.0f, -mov, 0.0f });
 	}
 
 	__super::Tick();
@@ -96,6 +96,11 @@ void Cube::ScaleUp(FInputValue Value)
 
 void Cube::RotateCube(FInputValue value)
 {
+	float mov = 180.0f;
+	float move_x = value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
+	float move_y = value.Y * mov * (GetWorld()->GetGameTimer()->DeltaTime());
+
+	RootComponent->AddWorldRotation(FPVector3{ move_y, -move_x, 0.0f });
 }
 
 void Cube::SetFreeRotate(FInputValue value)

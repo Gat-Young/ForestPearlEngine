@@ -1,6 +1,7 @@
 #include "FPGizmoNormalLineComponent.h"
 #include "FPGameInstance.h"
 #include "FPAssetManager.h"
+#include <iostream>
 
 FPGizmoNormalLineComponent::FPGizmoNormalLineComponent(FPActor* Owner, std::string& StaticMeshPath) : FPGizmoComponent(Owner,"FPGizmoNormalLineComponent", StaticMeshPath + "_NormalLine")
 {
@@ -37,6 +38,7 @@ void FPGizmoNormalLineComponent::MakeNormalLine(const std::string& StaticMeshPat
 	{
 		for (VERTEX& Vertex : InMeshData.Vertices)
 		{
+
 			FPGIZMO_VERTEX StartPoint;
 			StartPoint.x = Vertex.x;
 			StartPoint.y = Vertex.y;

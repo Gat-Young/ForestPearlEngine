@@ -153,7 +153,30 @@ FPMeshData FPAssetLoader::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node
 
 			if (Mesh->vertex_normal.exists)
 			{
-				Normal = ufbx_get_vertex_vec3(&Mesh->vertex_normal, CornerIndex);
+				const ufbx_vec3 LocalNormal =
+					ufbx_get_vertex_vec3(
+						&Mesh->vertex_normal,
+						CornerIndex
+					);
+
+				Normal = ufbx_transform_direction(
+					&Node->node_to_world,
+					LocalNormal
+				);
+
+				// Normalize
+				const double Length = std::sqrt(
+					Normal.x * Normal.x +
+					Normal.y * Normal.y +
+					Normal.z * Normal.z
+				);
+
+				if (Length > 0.0)
+				{
+					Normal.x /= Length;
+					Normal.y /= Length;
+					Normal.z /= Length;
+				}
 			}
 
 			//UV

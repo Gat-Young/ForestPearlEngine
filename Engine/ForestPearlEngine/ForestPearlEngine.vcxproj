@@ -285,13 +285,13 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Games\Release_Game\Tri_World\Tri_World.vcxproj">
-      <Project>{874c49a3-fd56-4137-9cfa-a3bd1b70917e}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Assets\StaticMesh\Cube_StaticMesh.json" />
     <None Include="Assets\StaticMesh\Sphere_StaticMesh.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Games\Release_Game\Lambert_Light\Lambert_Light.vcxproj">
+      <Project>{b440c986-a2a9-4bb2-8866-75ab5bfd7fc3}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

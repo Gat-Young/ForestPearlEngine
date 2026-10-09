@@ -543,7 +543,7 @@ SpriteFont* RenderingDevice::CreateSpriteFont()
 	//DirectX Toolkit : Sprite Font 객체 생성
 	//ASCII 0 ~ 255 + 특수문자'■' + Unicode 한글 완성형 총 11,440 글자, 크기:9	
 	//exe 실행파일 기준의 경로
-	std::wstring WidePath = std::filesystem::path(FPPathManager::Get().GetAssetPath("Font/굴림9k.sfont").c_str()).wstring();
+	std::wstring WidePath = std::filesystem::path(FPPathManager::Get().GetEngineAssetPath("Font/굴림9k.sfont").c_str()).wstring();
 	const TCHAR* Filename = WidePath.c_str();
 
 	SpriteFont* Font = nullptr;

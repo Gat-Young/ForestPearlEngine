@@ -6,16 +6,6 @@
 //Fill/ Cull을 위해 엔진을 가져온
 #include "ForestPearlEngine/ForestPearlEngine.h"
 
-
-//객체들 <- 몰라도 되긴함
-#include "Player.h"
-#include "Tree.h"
-#include "TripleWindmillWing.h"
-#include "Windmill.h"
-#include "WindmillWing.h"
-#include "Terrain.h"
-#include "TripleWingWindmill.h"
-
 //UI 처리
 #include "UI.h"
 #include "Axis.h"
@@ -114,16 +104,8 @@ void GameController::Initialize()
 void GameController::BeginPlay()
 {
 	__super::BeginPlay();
-	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "Player")));
+	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "Cube")));
 
-	std::vector<FPActor*> WindmillActor;
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Windmill", WindmillActor);
-	for (FPActor* Windmiill : WindmillActor)
-	{
-		ControllPawn.push_back(static_cast<FPPawn*>(Windmiill));
-	}
-	
-	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "TripleWingWindmill")));
 	ControllPawnSize = ControllPawn.size();
 }
 

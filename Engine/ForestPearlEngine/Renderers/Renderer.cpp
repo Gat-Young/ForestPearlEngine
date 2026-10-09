@@ -3,6 +3,7 @@
 #include <queue>
 #include <assert.h>
 #include <iostream>
+#include <algorithm>
 
 #include "../FPGameInstance.h"
 #include "../FPAssetManager.h"
@@ -169,6 +170,9 @@ void Renderer::CreateGizmoRenderList()
 
 	for (GizmoRenderItem RenderItemData : RenderList)
 	{
+		//Normal 정보를 표시하지 않는 다면 NormalComponent에 대해서는 Skip
+		if (!bNormal && (*(RenderItemData.ClassName) == "FPGizmoNormalLineComponent")) continue;
+
 		//활성화된 객체가 아니라면 넘어감
 		if (!(*(RenderItemData.Active)))
 		{

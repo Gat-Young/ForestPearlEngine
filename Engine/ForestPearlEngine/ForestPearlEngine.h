@@ -64,6 +64,7 @@ class ForestPearlEngine
 		//·»´õ¸µ ¼³Á¤
 		void SetbFill(bool State);
 		void SetbCull(bool State);
+		void SetbNormal(bool State);
 
 
 	private:

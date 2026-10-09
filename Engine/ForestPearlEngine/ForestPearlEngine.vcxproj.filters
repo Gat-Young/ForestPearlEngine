@@ -231,19 +231,19 @@
     <ClInclude Include="FPGizmoRenderList.h">
       <Filter>FPGameInstance\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GizmoComponent.h">
+    <ClInclude Include="FPGizmoComponent.h">
       <Filter>Component\Gizmo</Filter>
     </ClInclude>
-    <ClInclude Include="GizmoAxisComponent.h">
+    <ClInclude Include="FPGizmoAxisComponent.h">
       <Filter>Component\Gizmo</Filter>
     </ClInclude>
-    <ClInclude Include="GizmoGridComponent.h">
+    <ClInclude Include="FPGizmoGridComponent.h">
       <Filter>Component\Gizmo</Filter>
     </ClInclude>
-    <ClInclude Include="GizmoNormalLineComponent.h">
+    <ClInclude Include="FPGizmoNormalLineComponent.h">
       <Filter>Component\Gizmo</Filter>
     </ClInclude>
-    <ClInclude Include="GizmoFrontLineComponent.h">
+    <ClInclude Include="FPGizmoFrontLineComponent.h">
       <Filter>Component\Gizmo</Filter>
     </ClInclude>
   </ItemGroup>
@@ -365,13 +365,16 @@
     <ClCompile Include="FPGizmoRenderList.cpp">
       <Filter>FPGameInstance\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GizmoComponent.cpp">
+    <ClCompile Include="FPGizmoComponent.cpp">
       <Filter>Component\Gizmo</Filter>
     </ClCompile>
-    <ClCompile Include="GizmoAxisComponent.cpp">
+    <ClCompile Include="FPGizmoAxisComponent.cpp">
       <Filter>Component\Gizmo</Filter>
     </ClCompile>
-    <ClCompile Include="GizmoGridComponent.cpp">
+    <ClCompile Include="FPGizmoGridComponent.cpp">
+      <Filter>Component\Gizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="FPGizmoNormalLineComponent.cpp">
       <Filter>Component\Gizmo</Filter>
     </ClCompile>
   </ItemGroup>
@@ -387,10 +390,10 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\StaticMesh\Cube.json">
+    <None Include="Assets\StaticMesh\Cube_StaticMesh.json">
       <Filter>Assets\StaticMesh</Filter>
     </None>
-    <None Include="Assets\StaticMesh\Sphere.json">
+    <None Include="Assets\StaticMesh\Sphere_StaticMesh.json">
       <Filter>Assets\StaticMesh</Filter>
     </None>
   </ItemGroup>

@@ -161,11 +161,11 @@
     <ClInclude Include="FPGameProjectClassRegistry.h" />
     <ClInclude Include="GameProjectLoader.h" />
     <ClInclude Include="FPGameTimer.h" />
-    <ClInclude Include="GizmoAxisComponent.h" />
-    <ClInclude Include="GizmoComponent.h" />
-    <ClInclude Include="GizmoFrontLineComponent.h" />
-    <ClInclude Include="GizmoGridComponent.h" />
-    <ClInclude Include="GizmoNormalLineComponent.h" />
+    <ClInclude Include="FPGizmoAxisComponent.h" />
+    <ClInclude Include="FPGizmoComponent.h" />
+    <ClInclude Include="FPGizmoFrontLineComponent.h" />
+    <ClInclude Include="FPGizmoGridComponent.h" />
+    <ClInclude Include="FPGizmoNormalLineComponent.h" />
     <ClInclude Include="Libraries\nlohmann\json.hpp" />
     <ClInclude Include="Libraries\Ufbx\ufbx.h" />
     <ClInclude Include="MCLOG.h" />
@@ -202,6 +202,7 @@
     <ClCompile Include="FPAGameMode.cpp" />
     <ClCompile Include="FPGameInstance.cpp" />
     <ClCompile Include="FPGameProjectSetting.cpp" />
+    <ClCompile Include="FPGizmoNormalLineComponent.cpp" />
     <ClCompile Include="FPGizmoRenderList.cpp" />
     <ClCompile Include="FPMaterial.cpp" />
     <ClCompile Include="FPMovementCompoent.cpp" />
@@ -214,9 +215,9 @@
     <ClCompile Include="FPStaticMeshComponent.cpp" />
     <ClCompile Include="FPViewPortClient.cpp" />
     <ClCompile Include="FPWorld.cpp" />
-    <ClCompile Include="GizmoAxisComponent.cpp" />
-    <ClCompile Include="GizmoComponent.cpp" />
-    <ClCompile Include="GizmoGridComponent.cpp" />
+    <ClCompile Include="FPGizmoAxisComponent.cpp" />
+    <ClCompile Include="FPGizmoComponent.cpp" />
+    <ClCompile Include="FPGizmoGridComponent.cpp" />
     <ClCompile Include="Libraries\Ufbx\ufbx.c" />
     <ClCompile Include="FPMeshComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -289,8 +290,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\StaticMesh\Cube.json" />
-    <None Include="Assets\StaticMesh\Sphere.json" />
+    <None Include="Assets\StaticMesh\Cube_StaticMesh.json" />
+    <None Include="Assets\StaticMesh\Sphere_StaticMesh.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

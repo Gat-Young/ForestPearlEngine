@@ -42,11 +42,14 @@ class UI : public FPActor
 		FPTextComponent* DepthText;
 		FPTextComponent* FillText;
 
+		FPTextComponent* NormalText;
+
 		bool GridOn = true;
 		bool AxisOn = true;
 		bool ZEnable = true;
 		bool isCull = true;
 		bool isFill = true;
+		bool bNormal = false;
 
 	public:
 		virtual void Initialize() override;
@@ -62,6 +65,8 @@ class UI : public FPActor
 		void SetActiveDepthStencilBuffer(struct FInputValue Value);
 		void SetGridOn(struct FInputValue Value);
 		void SetAxisOn(struct FInputValue Value);
+
 		void SetCull(struct FInputValue Value);
 		void SetFill(struct FInputValue Value);
+		void SetNormalLine(struct FInputValue Value);
 };

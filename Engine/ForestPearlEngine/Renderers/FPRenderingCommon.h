@@ -29,6 +29,8 @@ struct RenderItem
 
 struct GizmoRenderItem
 {
+	std::string* ClassName = nullptr;
+
 	int* Priority = nullptr;
 	bool* Active = nullptr;
 

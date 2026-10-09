@@ -323,3 +323,4 @@ UINT ForestPearlEngine::GetHeight() { return Render->GetRenderingDevice().GetHei
 void ForestPearlEngine::SetZEnable(bool State) { Render->SetZEnable(State); }
 void ForestPearlEngine::SetbFill(bool State) { Render->SetbFill(State); }
 void ForestPearlEngine::SetbCull(bool State) { Render->SetbCull(State); }
+void ForestPearlEngine::SetbNormal(bool State) { Render->SetbNormal(State); }

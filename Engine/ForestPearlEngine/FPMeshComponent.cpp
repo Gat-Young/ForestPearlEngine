@@ -6,6 +6,7 @@
 
 FPMeshComponent::FPMeshComponent(FPActor* Owner, std::string MeshName) : FPPrimitiveComponent(Owner), MeshName(MeshName)
 {
+
 }
 
 void FPMeshComponent::RegistMeshRenderList()

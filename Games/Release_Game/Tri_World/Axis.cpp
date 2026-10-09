@@ -4,13 +4,13 @@
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
 #include "ForestPearlEngine/FPGameTimer.h"
 #include "ForestPearlEngine/FPWorld.h"
-#include "ForestPearlEngine/GizmoAxisComponent.h"
+#include "ForestPearlEngine/FPGizmoAxisComponent.h"
 
 void Axis::Initialize()
 {
 
 
-	AxisComponets = new GizmoAxisComponent(this, "Axis");
+	AxisComponets = new FPGizmoAxisComponent(this, "Axis");
 
 
 	SetRootComponent((FPSceneComponent*)AxisComponets);

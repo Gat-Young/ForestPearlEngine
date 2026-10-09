@@ -37,6 +37,8 @@ class FPAssetManager : public FPGameInstanceSubSystem
 
 		std::vector<FPMeshData> GetMeshData(std::string FbxPath);
 
+		bool HasVertexBuffer(std::string MeshPath);
+
 		//StaticMesh
 		FPStaticMesh* GetStaticMeshData(std::string StaticMeshName);
 

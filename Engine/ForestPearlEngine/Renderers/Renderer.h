@@ -38,6 +38,9 @@ class Renderer
 		//Cull
 		bool bCull = true;
 
+		//Normal Line Draw
+		bool bNormal = false;
+
 		//폰트 해제
 		void FontRelease();
 
@@ -92,4 +95,5 @@ class Renderer
 		void SetZEnable(bool State) { ZEnable = State; };
 		void SetbFill(bool State) { bFill = State; };
 		void SetbCull(bool State) { bCull = State; };
+		void SetbNormal(bool State) { bNormal = State; };
 };

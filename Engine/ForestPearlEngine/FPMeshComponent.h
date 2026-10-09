@@ -24,7 +24,7 @@ class FPMeshComponent : public FPPrimitiveComponent
 
 		~FPMeshComponent();
 
-		void SetActive(bool Active) { this->isActive = Active; }
-		void SetPriority(int Prio) { Priority = Prio; };
+		virtual void SetActive(bool Active) { this->isActive = Active; }
+		virtual void SetPriority(int Prio) { Priority = Prio; };
 		void SetMaterial(FPMaterialInterface* Material);
 };

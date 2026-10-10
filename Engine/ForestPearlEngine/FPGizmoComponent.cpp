@@ -30,7 +30,7 @@ void FPGizmoComponent::RegistGizmoRenderList()
 	FPGizmoRenderList* GizmoRenderList = static_cast<FPGizmoRenderList*>(FPGameInstance::Get().GetGizmoRenderList());
 	RenderItem = GizmoRenderList->RegistRenderList();
 
-	if (RenderItem == nullptr) { std::cout << "[GizmoComponent] : 등록 받은 렌더 아이템이 없습니다." << "\n"; }
+	if (RenderItem == nullptr) { std::cout << "[GizmoComponent] : 등록 받은 렌더 아이템이 없습니다." << "\n"; return; }
 
 	RenderItem->Priority = &(this->Priority);
 	RenderItem->Active = &(this->isActive);
@@ -54,6 +54,8 @@ void FPGizmoComponent::RegistGizmoRenderList()
 FPGizmoComponent::FPGizmoComponent(FPActor* Owner,const std::string& GizmoClass ,const std::string& GizmoMeshPath) : GizmoMeshPath(GizmoMeshPath), FPPrimitiveComponent(Owner), GizmoClass(GizmoClass)
 {
 	if (Material == nullptr) { Material = new FPMaterial(); }
+	Material->SetVertexShader("DefaultGizmoVertexShader.vso");
+	Material->SetPixelShader("DefaultGizmoPixelShader.vso");
 }
 
 FPGizmoComponent::~FPGizmoComponent()

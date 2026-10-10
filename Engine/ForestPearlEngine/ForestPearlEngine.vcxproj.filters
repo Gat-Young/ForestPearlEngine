@@ -70,6 +70,9 @@
     <Filter Include="Component\Gizmo">
       <UniqueIdentifier>{55e4d34f-029a-402f-ae34-a6b19769b3ce}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Component\Light">
+      <UniqueIdentifier>{e3ec462d-966a-4937-aedf-981294353844}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -246,6 +249,33 @@
     <ClInclude Include="FPGizmoFrontLineComponent.h">
       <Filter>Component\Gizmo</Filter>
     </ClInclude>
+    <ClInclude Include="FPLightComponentBase.h">
+      <Filter>Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="FPLightComponent.h">
+      <Filter>Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="FPSkyLightComponent.h">
+      <Filter>Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="FPDirectionalLightComponent.h">
+      <Filter>Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="FPLocalLightComponent.h">
+      <Filter>Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="FPRectLightComponent.h">
+      <Filter>Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="FPPointLightComponent.h">
+      <Filter>Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="FPSpotLightComponent.h">
+      <Filter>Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="FPLightRenderList.h">
+      <Filter>FPGameInstance\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
@@ -377,6 +407,18 @@
     <ClCompile Include="FPGizmoNormalLineComponent.cpp">
       <Filter>Component\Gizmo</Filter>
     </ClCompile>
+    <ClCompile Include="FPLightRenderList.cpp">
+      <Filter>FPGameInstance\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FPLightComponentBase.cpp">
+      <Filter>Component\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="FPLightComponent.cpp">
+      <Filter>Component\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="FPDirectionalLightComponent.cpp">
+      <Filter>Component\Light</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shader\DefaultPixelShader.psh">
@@ -386,6 +428,12 @@
       <Filter>Assets\Shader</Filter>
     </FxCompile>
     <FxCompile Include="Assets\Shader\DefaultShader.fx">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shader\DefaultGizmoPixelShader.psh">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shader\DefaultGizmoVertexShader.vsh">
       <Filter>Assets\Shader</Filter>
     </FxCompile>
   </ItemGroup>

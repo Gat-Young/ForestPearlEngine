@@ -6,8 +6,6 @@
 #include "tchar.h"
 #include <vector>
 
-
-
 struct RenderItem
 {
 	int* Priority = nullptr;
@@ -87,6 +85,21 @@ struct FPViewPort
 	FPConstantBufferRenderData* PixelConstBuffer = nullptr;
 };
 
+struct FPLightRenderItem
+{
+	bool* Active = nullptr;
+
+	FPVector3* Direction = nullptr;
+	float* Range = nullptr;
+
+	FPMatrix* Location = nullptr;
+	FPMatrix* Rotation = nullptr;
+	FPMatrix* Scale = nullptr;
+
+	//상수 버퍼용
+	FPConstantBufferRenderData* VertexConstBuffer = nullptr;
+	FPConstantBufferRenderData* PixelConstBuffer = nullptr;
+};
 
 namespace RenderingData
 {
@@ -162,6 +175,20 @@ namespace RenderingData
 		std::basic_string<TCHAR> msg;
 
 		std::vector<FPViewPort> ViewPort;
+	};
+
+	struct LightRenderItem
+	{
+		FPVector3 Direction;
+		float Range;
+
+		FPMatrix Location;
+		FPMatrix Rotation;
+		FPMatrix Scale;
+
+		//상수 버퍼용
+		FPConstantBufferRenderData VertexConstBuffer;
+		FPConstantBufferRenderData PixelConstBuffer;
 	};
 
 	struct MeshRenderItemCompare

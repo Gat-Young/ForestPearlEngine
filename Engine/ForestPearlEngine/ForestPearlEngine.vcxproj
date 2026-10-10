@@ -142,15 +142,24 @@
     <ClInclude Include="FPAController.h" />
     <ClInclude Include="FPActorComponent.h" />
     <ClInclude Include="FPAGameMode.h" />
+    <ClInclude Include="FPDirectionalLightComponent.h" />
     <ClInclude Include="FPGameInstance.h" />
     <ClInclude Include="FPGameInstanceSubSystem.h" />
     <ClInclude Include="FPGameProjectSetting.h" />
     <ClInclude Include="FPGizmoRenderList.h" />
+    <ClInclude Include="FPLightComponent.h" />
+    <ClInclude Include="FPLightComponentBase.h" />
+    <ClInclude Include="FPLightRenderList.h" />
+    <ClInclude Include="FPLocalLightComponent.h" />
     <ClInclude Include="FPMaterial.h" />
     <ClInclude Include="FPMaterialInterface.h" />
     <ClInclude Include="FPMovementComponent.h" />
+    <ClInclude Include="FPPointLightComponent.h" />
     <ClInclude Include="FPPrimitiveComponent.h" />
+    <ClInclude Include="FPRectLightComponent.h" />
     <ClInclude Include="FPSceneComponent.h" />
+    <ClInclude Include="FPSkyLightComponent.h" />
+    <ClInclude Include="FPSpotLightComponent.h" />
     <ClInclude Include="FPSpringArmComponent.h" />
     <ClInclude Include="FPStaticMesh.h" />
     <ClInclude Include="FPStaticMeshComponent.h" />
@@ -200,10 +209,14 @@
     <ClCompile Include="ForestPearlEngine.cpp" />
     <ClCompile Include="FPAController.cpp" />
     <ClCompile Include="FPAGameMode.cpp" />
+    <ClCompile Include="FPDirectionalLightComponent.cpp" />
     <ClCompile Include="FPGameInstance.cpp" />
     <ClCompile Include="FPGameProjectSetting.cpp" />
     <ClCompile Include="FPGizmoNormalLineComponent.cpp" />
     <ClCompile Include="FPGizmoRenderList.cpp" />
+    <ClCompile Include="FPLightComponent.cpp" />
+    <ClCompile Include="FPLightComponentBase.cpp" />
+    <ClCompile Include="FPLightRenderList.cpp" />
     <ClCompile Include="FPMaterial.cpp" />
     <ClCompile Include="FPMovementCompoent.cpp" />
     <ClCompile Include="FPMovementComponent.cpp" />
@@ -241,6 +254,8 @@
     <ClCompile Include="Utility\FPPathManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Assets\Shader\DefaultGizmoPixelShader.psh" />
+    <FxCompile Include="Assets\Shader\DefaultGizmoVertexShader.vsh" />
     <FxCompile Include="Assets\Shader\DefaultPixelShader.psh">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PS_Main</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>

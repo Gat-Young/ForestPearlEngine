@@ -38,7 +38,6 @@ void FPGizmoNormalLineComponent::MakeNormalLine(const std::string& StaticMeshPat
 	{
 		for (VERTEX& Vertex : InMeshData.Vertices)
 		{
-
 			FPGIZMO_VERTEX StartPoint;
 			StartPoint.x = Vertex.x;
 			StartPoint.y = Vertex.y;

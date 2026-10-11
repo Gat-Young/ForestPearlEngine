@@ -19,19 +19,29 @@ cbuffer ViewPortConstBuffer : register(b1)
 
 };
 
+struct LIGHT
+{
+    float3 Direction;
+    float Range;
+    float4 Diffuse;
+    float4 Ambient;
+};
+
 cbuffer DirectionLightConstBuffer : register(b2)
 {
-    float3 LightDirection;
-    float LightRange;
-    float4 LightDiffuse;
-    float4 LightAmbient;
+    LIGHT Light;
+};
+
+struct MATERIAL
+{
+    float4 BaseColor;
+    float4 Diffuse;
+    float4 Ambient;
 };
 
 cbuffer MaterialConstBuffer : register(b3)
 {
-    float4 MaterialBaseColor;
-    float4 MaterialDiffuse;
-    float4 MaterialAmbient;
+    MATERIAL Material;
 };
 
 //VS 출력 구조체
@@ -68,15 +78,15 @@ VSOutput VS_Main(
     N = mul(mWV, N);
     N = normalize(N);
     
-    float4 L = float4(LightDirection, 0);
+    float4 L = float4(Light.Direction, 0);
     L = mul(mView, L);
     L = normalize(L);
     
     
-    Diff = LambertLight(N, L, LightDiffuse, LightAmbient, MaterialDiffuse, MaterialAmbient);
+    Diff = LambertLight(N, L, Light.Diffuse, Light.Ambient, Material.Diffuse, Material.Ambient);
     
     o.pos = pos;
-    o.col = MaterialBaseColor * Diff;
+    o.col = Material.BaseColor * Diff;
     
     return o;
 }

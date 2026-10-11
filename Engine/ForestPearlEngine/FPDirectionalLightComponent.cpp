@@ -36,7 +36,7 @@ FPDirectionalLightComponent::~FPDirectionalLightComponent()
 void FPDirectionalLightComponent::SetDirection(FPVector3& Dir)
 {
 	//방향은 Normalize 음? 이건 근데 Forward 줘도 되는 부분이 아닌가? 뭐 다르게 가져가면 그건 그거 대로 좋은 걸 지도?
-	DirectionalLightConstantBuffer.Direction = Dir.Normalize();
+	DirectionalLightConstantBuffer.Direction = -Dir.Normalize();
 	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, DirectionalLightConstantBuffer);
 }
 

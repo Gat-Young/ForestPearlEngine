@@ -7,7 +7,7 @@ class FPDirectionalLightComponent : public FPLightComponent
 
 		struct alignas(16) FPDirectionalLightConstantBuffer
 		{
-			FPVector3 Direction = {0.0f, -1.0f, 0.0f};
+			FPVector3 Direction = {0.0f, 1.0f, 0.0f};
 			float Range = 1000.0f;
 			FPVector4 Diffuse = {1.0f, 1.0f, 1.0f, 1.0f};
 			FPVector4 Ambient = {0.2f, 0.2f, 0.2f, 1.0f};

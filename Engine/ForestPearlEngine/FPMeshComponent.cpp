@@ -23,6 +23,11 @@ void FPMeshComponent::SetMaterial(FPMaterialInterface* Material)
 	SetRenderItemData();
 }
 
+FPMaterialInterface& FPMeshComponent::GetMaterial()
+{
+	return *(this->Material);
+}
+
 FPMeshComponent::~FPMeshComponent()
 {
 	FPMeshRenderList* MeshRenderList = static_cast<FPMeshRenderList*>(FPGameInstance::Get().GetMeshRenderList());

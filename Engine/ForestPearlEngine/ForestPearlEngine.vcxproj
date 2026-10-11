@@ -334,6 +334,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Shader\LambertLight.hlsli" />
     <None Include="Assets\StaticMesh\Cube_StaticMesh.json" />
     <None Include="Assets\StaticMesh\Sphere_StaticMesh.json" />
   </ItemGroup>

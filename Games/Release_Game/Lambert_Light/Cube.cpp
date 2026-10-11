@@ -14,9 +14,6 @@ void Cube::Initialize()
 {
 	Mesh = new FPStaticMeshComponent(this, "Cube_StaticMesh");
 
-	//real Model
-	//Mesh = new FPStaticMeshComponent(this, "ToonLink_StaticMesh");
-
 	SetRootComponent((FPSceneComponent*)Mesh);
 
 	//카메라 설정

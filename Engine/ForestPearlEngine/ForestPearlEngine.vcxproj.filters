@@ -73,6 +73,18 @@
     <Filter Include="Component\Light">
       <UniqueIdentifier>{e3ec462d-966a-4937-aedf-981294353844}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\Shader\Common">
+      <UniqueIdentifier>{3d47e776-836d-42a1-b658-3c1e8fc9e6ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Shader\Common\Lighting">
+      <UniqueIdentifier>{6c01d566-f9fc-4c9e-8784-003a5fe87d0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Shader\VS">
+      <UniqueIdentifier>{68ee037b-214a-496d-86b0-f668d37bf5f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Shader\PS">
+      <UniqueIdentifier>{6a1799ab-975c-4226-bbf8-77558d01c16a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -421,20 +433,20 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Assets\Shader\DefaultPixelShader.psh">
-      <Filter>Assets\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Assets\Shader\DefaultVertexShader.vsh">
-      <Filter>Assets\Shader</Filter>
-    </FxCompile>
     <FxCompile Include="Assets\Shader\DefaultShader.fx">
       <Filter>Assets\Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Assets\Shader\DefaultGizmoPixelShader.psh">
-      <Filter>Assets\Shader</Filter>
-    </FxCompile>
     <FxCompile Include="Assets\Shader\DefaultGizmoVertexShader.vsh">
-      <Filter>Assets\Shader</Filter>
+      <Filter>Assets\Shader\VS</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shader\DefaultVertexShader.vsh">
+      <Filter>Assets\Shader\VS</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shader\DefaultGizmoPixelShader.psh">
+      <Filter>Assets\Shader\PS</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shader\DefaultPixelShader.psh">
+      <Filter>Assets\Shader\PS</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -443,6 +455,9 @@
     </None>
     <None Include="Assets\StaticMesh\Sphere_StaticMesh.json">
       <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\Shader\LambertLight.hlsli">
+      <Filter>Assets\Shader\Common\Lighting</Filter>
     </None>
   </ItemGroup>
 </Project>

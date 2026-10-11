@@ -103,23 +103,6 @@ struct FPLightRenderItem
 
 namespace RenderingData
 {
-	struct MeshRenderItem
-	{
-		int Priority;
-
-		std::string MeshPath;
-
-		//주요 정보
-		FPMatrix Location;
-		FPMatrix Rotation;
-		FPMatrix Scale;
-
-		std::string VertexShaderPath;
-		std::string PixelShaderPath;
-
-		FPConstantBufferRenderData VertexConstBuffer;
-		FPConstantBufferRenderData PixelConstBuffer;
-	};
 
 	struct GizmoRenderItem
 	{
@@ -187,6 +170,24 @@ namespace RenderingData
 		FPMatrix Scale;
 
 		//상수 버퍼용
+		FPConstantBufferRenderData VertexConstBuffer;
+		FPConstantBufferRenderData PixelConstBuffer;
+	};
+
+	struct MeshRenderItem
+	{
+		int Priority;
+
+		std::string MeshPath;
+
+		//주요 정보
+		FPMatrix Location;
+		FPMatrix Rotation;
+		FPMatrix Scale;
+
+		std::string VertexShaderPath;
+		std::string PixelShaderPath;
+
 		FPConstantBufferRenderData VertexConstBuffer;
 		FPConstantBufferRenderData PixelConstBuffer;
 	};

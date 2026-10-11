@@ -15,6 +15,7 @@
 #include "../FPGizmoRenderList.h"
 #include "FPRenderingCommon.h"
 #include "../FPViewPortClient.h"
+#include "../FPLightRenderList.h"
 
 
 //객체 해제/제거 매크로()
@@ -70,7 +71,7 @@ Renderer::Renderer(RenderingDevice& Device) : Device(Device)
 void Renderer::CreateCamList()
 {
 	//List에 값이 있다면 우선 비운
-	if (!CameraList.empty()) CameraList.clear();
+	CameraList.clear();
 
 	//Camera List
 	FPCameraList* CameraList = static_cast<FPCameraList*>(FPGameInstance::Get().GetCameraList());
@@ -126,7 +127,7 @@ void Renderer::CreateCamList()
 void Renderer::CreateMeshRenderList()
 {
 	//비어 있지 않다면 비우기
-	while (!MeshRenderList.empty()) { MeshRenderList.clear();};
+	MeshRenderList.clear();
 
 	//Mesh Render List
 	FPMeshRenderList* MeshRenderList = static_cast<FPMeshRenderList*>(FPGameInstance::Get().GetMeshRenderList());
@@ -162,7 +163,7 @@ void Renderer::CreateMeshRenderList()
 void Renderer::CreateGizmoRenderList()
 {
 	//비어 있지 않다면 비우기
-	while (!GizmoRenderList.empty()) { GizmoRenderList.clear(); };
+	GizmoRenderList.clear();
 
 	//Gizmo Render List
 	FPGizmoRenderList* GizmoRenderList = static_cast<FPGizmoRenderList*>(FPGameInstance::Get().GetGizmoRenderList());
@@ -201,7 +202,7 @@ void Renderer::CreateGizmoRenderList()
 void Renderer::CreateUIRenderList()
 {
 	//비어 있지 않다면 비우기
-	while (!UIRenderList.empty()) { UIRenderList.clear(); };
+	UIRenderList.clear();
 
 	//Text Render List
 	FPTextRenderList* TextRenderList = static_cast<FPTextRenderList*>(FPGameInstance::Get().GetTextRenderList());
@@ -247,6 +248,36 @@ void Renderer::CreateUIRenderList()
 	}
 
 	std::sort(UIRenderList.begin(), UIRenderList.end(), RenderingData::UIRenderItemCompare{});
+}
+
+void Renderer::CreateLightRenderList()
+{
+	LightRenderList.clear();
+
+	FPLightRenderList* LightRenderList = static_cast<FPLightRenderList*>(FPGameInstance::Get().GetLightRenderList());
+	std::vector<FPLightRenderItem> RenderList = LightRenderList->GetRenderList();
+
+	for (FPLightRenderItem LightItem : RenderList)
+	{
+		//활성 상태가 아니라면 넘어감
+		if (!*(LightItem.Active))
+		{
+			continue;
+		}
+
+		RenderingData::LightRenderItem LightRenderingData;
+		LightRenderingData.Direction = *(LightItem.Direction);
+		LightRenderingData.Range = *(LightItem.Range);
+
+		LightRenderingData.Location = *(LightItem.Location);
+		LightRenderingData.Rotation = *(LightItem.Rotation);
+		LightRenderingData.Scale = *(LightItem.Scale);
+
+		LightRenderingData.VertexConstBuffer = *(LightItem.VertexConstBuffer);
+		LightRenderingData.PixelConstBuffer = *(LightItem.PixelConstBuffer);
+
+		this->LightRenderList.push_back(LightRenderingData);
+	}
 }
 
 HRESULT Renderer::InitializeRenderer(HWND hwnd)
@@ -318,8 +349,8 @@ void Renderer::MeshRenderPass()
 
 	//상수 버퍼 설정
 	//Vertex Shader
-	//MeshRenderPass에서 0번은 WVP, 1번은 ViewPort용 슬롯 임
-	unsigned int VertexShaderConstantBufferSlotOffset = 2;
+	//MeshRenderPass에서 0번은 WVP, 1번은 ViewPort용 슬롯, 2번은 Light용 슬롯(임시) 임
+	unsigned int VertexShaderConstantBufferSlotOffset = 3;
 
 	//PixelShader
 	//MeshRenderPass에서 0번은 ViewPort용 슬롯
@@ -336,6 +367,33 @@ void Renderer::MeshRenderPass()
 	{
 		for(const RenderingData::MeshRenderItem& RenderItem : MeshRenderList)
 		{
+			//Light ConstantBuffer Setting (우선은 1개니까?)
+			for (const RenderingData::LightRenderItem& LightRenderingItem : LightRenderList)
+			{
+				//vertex
+				for (FPConstantBufferInfo ConstantBufferInfo : LightRenderingItem.VertexConstBuffer.ConstantBuffers)
+				{
+					unsigned int Slot = 2 + ConstantBufferInfo.Slot;
+					size_t Offset = ConstantBufferInfo.Offset;
+					size_t Size = ConstantBufferInfo.Size;
+
+					Device.UpdateVertexShaderSubresource(Slot, LightRenderingItem.VertexConstBuffer.Buffer.data(), Offset, Size);
+				}
+
+				//Pixel
+				for (FPConstantBufferInfo ConstantBufferInfo : LightRenderingItem.PixelConstBuffer.ConstantBuffers)
+				{
+					unsigned int Slot = 2 + ConstantBufferInfo.Slot;
+					size_t Offset = ConstantBufferInfo.Offset;
+					size_t Size = ConstantBufferInfo.Size;
+
+					Device.UpdatePixelShaderSubresource(Slot, LightRenderingItem.PixelConstBuffer.Buffer.data(), Offset, Size);
+				}
+
+			}
+
+			// Light Setting End
+
 			std::tuple<void*, void*, void*> VertexShaderData = AssetManager->GetVertexShader(RenderItem.VertexShaderPath);
 			std::pair<void*, void*> PixelShaderData = AssetManager->GetPixelShader(RenderItem.PixelShaderPath);
 

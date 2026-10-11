@@ -13,6 +13,7 @@ namespace RenderingData
 	struct MeshRenderItemCompare;
 	struct GizmoRenderItemCompare;
 	struct UIRenderItemCompare;
+	struct LightRenderItem;
 }
 
 
@@ -61,6 +62,9 @@ class Renderer
 		//UI Render Item
 		std::vector<RenderingData::UIContextItem> UIRenderList;
 
+		//Light Render Item
+		std::vector<RenderingData::LightRenderItem> LightRenderList;
+
 
 	public:
 		Renderer(RenderingDevice& Device);
@@ -70,6 +74,7 @@ class Renderer
 		void CreateMeshRenderList();
 		void CreateGizmoRenderList();
 		void CreateUIRenderList();
+		void CreateLightRenderList();
 
 		//RenderPass ÇÔ¼ö
 		void ClearBackBuffer();

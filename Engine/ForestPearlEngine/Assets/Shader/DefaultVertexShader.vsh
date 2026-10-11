@@ -11,6 +11,21 @@ cbuffer ObejctConstBuffer : register(b0)
     matrix mWVP;
 };
 
+cbuffer ViewPortConstBuffer : register(b1)
+{
+
+};
+
+cbuffer DirectionLightConstBuffer : register(b2)
+{
+
+};
+
+cbuffer MaterialConstBuffer : register(b3)
+{
+    
+};
+
 //VS 출력 구조체
 struct VSOutput
 {

@@ -6,16 +6,6 @@
 //Fill/ Cull을 위해 엔진을 가져온
 #include "ForestPearlEngine/ForestPearlEngine.h"
 
-
-//객체들 <- 몰라도 되긴함
-#include "Player.h"
-#include "Tree.h"
-#include "TripleWindmillWing.h"
-#include "Windmill.h"
-#include "WindmillWing.h"
-#include "Terrain.h"
-#include "TripleWingWindmill.h"
-
 //UI 처리
 #include "UI.h"
 #include "Axis.h"
@@ -241,6 +231,7 @@ void GameController::SetAxisOn(struct FInputValue Value)
 	}
 	ActorList.clear();
 }
+
 
 void GameController::SetNormalLine(FInputValue Value)
 {

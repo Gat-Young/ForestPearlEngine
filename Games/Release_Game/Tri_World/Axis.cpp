@@ -12,7 +12,6 @@ void Axis::Initialize()
 
 	AxisComponets = new FPGizmoAxisComponent(this, "Axis");
 
-
 	SetRootComponent((FPSceneComponent*)AxisComponets);
 }
 

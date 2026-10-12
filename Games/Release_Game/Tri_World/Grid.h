@@ -3,13 +3,13 @@
 #include "ForestPearlEngine/Systems/KeyStateEnum.h"
 #include "ForestPearlEngine/Define/FPMath.h"
 
-class GizmoGridComponent;
+class FPGizmoGridComponent;
 
 class Grid : public FPActor
 {
 private:
 
-	GizmoGridComponent* GridComponets;
+	FPGizmoGridComponent* GridComponets;
 	bool bShow = true;
 
 public:

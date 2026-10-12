@@ -14,7 +14,6 @@ private:
 	FPStaticMeshComponent* Mesh;
 
 
-
 public:
 	Tree() = default;
 	virtual void Initialize() override;

@@ -10,6 +10,7 @@
 #include "ForestPearlEngine/FPSpringArmComponent.h"
 #include "WindmillWing.h"
 #include "TripleWindmillWing.h"
+#include "ForestPearlEngine/FPMaterialInterface.h"
 #include <iostream>
 
 void Player::Initialize()
@@ -18,6 +19,9 @@ void Player::Initialize()
 
 	//real Model
 	//Mesh = new FPStaticMeshComponent(this, "ToonLink_StaticMesh");
+
+	FPVector4 Color = { 0.529f, 0.808f, 0.980f, 1.0f };
+	Mesh->GetMaterial().SetBaseColor(Color);
 
 	SetRootComponent((FPSceneComponent*)Mesh);
 

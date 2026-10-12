@@ -8,11 +8,13 @@ namespace RenderingData
 {
 	struct MeshRenderItem;
 	struct GizmoRenderItem;
+	struct NormalRenderItem;
 	struct CameraItem;
 	struct UIContextItem;
 	struct MeshRenderItemCompare;
 	struct GizmoRenderItemCompare;
 	struct UIRenderItemCompare;
+	struct LightRenderItem;
 }
 
 
@@ -38,6 +40,9 @@ class Renderer
 		//Cull
 		bool bCull = true;
 
+		//Normal Line Draw
+		bool bNormal = false;
+
 		//폰트 해제
 		void FontRelease();
 
@@ -55,8 +60,14 @@ class Renderer
 		//Debug Render Item
 		std::vector<RenderingData::GizmoRenderItem> GizmoRenderList;
 
+		//Normal Render Item
+		std::vector<RenderingData::NormalRenderItem> NormalRenderList;
+
 		//UI Render Item
 		std::vector<RenderingData::UIContextItem> UIRenderList;
+
+		//Light Render Item
+		std::vector<RenderingData::LightRenderItem> LightRenderList;
 
 
 	public:
@@ -67,6 +78,8 @@ class Renderer
 		void CreateMeshRenderList();
 		void CreateGizmoRenderList();
 		void CreateUIRenderList();
+		void CreateLightRenderList();
+		void CreateNormalRenderList();
 
 		//RenderPass 함수
 		void ClearBackBuffer();
@@ -78,6 +91,8 @@ class Renderer
 		void MeshRenderPass();
 
 		void GizmoRenderPass();
+
+		void NormalRenderPass();
 
 		void UIRenderPass();
 
@@ -92,4 +107,5 @@ class Renderer
 		void SetZEnable(bool State) { ZEnable = State; };
 		void SetbFill(bool State) { bFill = State; };
 		void SetbCull(bool State) { bCull = State; };
+		void SetbNormal(bool State) { bNormal = State; };
 };

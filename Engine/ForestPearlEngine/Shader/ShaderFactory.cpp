@@ -33,6 +33,27 @@ HRESULT ShaderFactory::VertexShaderLoad(const TCHAR* Objectname, void** ppVS, vo
 	return hr;
 }
 
+HRESULT ShaderFactory::NormalVertexShaderLoad(const TCHAR* Objectname, void** ppVS, void** ppCode, void** ppVBLayout)
+{
+	ID3DBlob* pCode = nullptr;
+
+	//정점 셰이더 파일 로드
+	HRESULT hr = D3DReadFileToBlob(Objectname, &pCode);
+	assert(SUCCEEDED(hr) && "정점 셰이더 로딩 실패");
+
+	//정점 셰이더 객체 생성
+	ID3D11VertexShader* pVS = nullptr;
+	hr = RenderingDevice::GetRenderingDevice().GetDXDevice()->CreateVertexShader(pCode->GetBufferPointer(), pCode->GetBufferSize(), nullptr, &pVS);
+	assert(SUCCEEDED(hr) && "정점 셰이더 객체 생성 실패");
+
+	//완료후 외부 리턴
+	*ppVS = pVS;
+	*ppCode = pCode;
+
+	CreateNormalInputLayout(pCode, ppVBLayout);
+	return hr;
+}
+
 HRESULT ShaderFactory::PixelShaderLoad(const TCHAR* Objectname, void** ppPS, void** ppCode)
 {
 	ID3DBlob* pCode = nullptr;
@@ -187,6 +208,38 @@ HRESULT ShaderFactory::CreateInputLayout(void* InVSCode, void** ReturnLayout)
 		{ "NORMAL"	, 0, DXGI_FORMAT_R32G32B32_FLOAT,		0,	12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0,	24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,			0,  40, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	hr = RenderingDevice::GetRenderingDevice().CreateInputLayout(layout, ARRAYSIZE(layout), VScode, &Layout);
+
+	*ReturnLayout = Layout;
+	return hr;
+}
+
+HRESULT ShaderFactory::CreateNormalInputLayout(void* InVSCode, void** ReturnLayout)
+{
+	HRESULT hr = S_OK;
+
+	//정점 입력구조 객체 생성
+	//함께 사용될 셰이더(컴파일된 바이너리 코드)가 필요
+	ID3D11InputLayout* Layout = nullptr;
+	ID3DBlob* VScode = static_cast<ID3DBlob*>(InVSCode);
+
+	// 정점 입력 구조 
+	// GPU에 공급될 기하데이터 - 개별 정점의 데이터 구조와 용도등의 정보를 구성
+	//
+	// 일반적인 환경하에서 올바른 렌더링 결과를 기대한다면 아래의 조건이 동일 또는 호환
+	// 1.정점 버퍼 데이터.  Vertex Buffer Data
+	// 2.정점 구조 Vertex Format (Input Layout)
+	// 3.셰이더 (함수) 입력구조.  Vertex Shader (Input Layout)
+	// 4.셰이더 (함수) 입출력 시멘틱 (Semantics)
+	// 5.각종 변환 처리 Vertex Transform
+	// 
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		//  Sementic          format                       offset         classification             
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,		0,  0,	D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "NORMAL"	, 0, DXGI_FORMAT_R32G32B32_FLOAT,		0,	12, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
 	};
 
 	hr = RenderingDevice::GetRenderingDevice().CreateInputLayout(layout, ARRAYSIZE(layout), VScode, &Layout);

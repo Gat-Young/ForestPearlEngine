@@ -12,7 +12,7 @@
 //
 std::vector<FPVertexBufferData> FPAssetManager::GetVertexBuffer(std::string MeshPath)
 {
-	if (MeshVertexBuffer.count(MeshPath) <= 0)
+	if (!HasVertexBuffer(MeshPath))
 	{
 		std::cout << MeshPath << "의 VB 데이터가 없습니다." << "\n";
 
@@ -41,6 +41,15 @@ void FPAssetManager::AddVertexBuffer(std::string FbxPath, void* VertexBuffer, in
 std::vector<FPMeshData> FPAssetManager::GetMeshData(std::string FbxPath)
 {
 	return LoadedMeshData[FbxPath];
+}
+
+bool FPAssetManager::HasVertexBuffer(std::string MeshPath)
+{
+	if (MeshVertexBuffer.count(MeshPath) <= 0)
+	{
+		return false;
+	}
+	return true;
 }
 
 

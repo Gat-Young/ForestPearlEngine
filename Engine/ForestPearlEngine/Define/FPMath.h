@@ -88,6 +88,7 @@ struct FPVector3
 
 };
 
+
 struct FPVector4
 {
 	float x = 0;
@@ -104,6 +105,14 @@ struct FPVector4
 		ret.w = w * rhs;
 		return ret;
 	}
+
+	FPVector4 operator*(const struct FPMatrix& rhs) const;
+
+	float LengthSq() const;
+
+	float Length() const;
+
+	FPVector4 Normalize() const;
 
 };
 

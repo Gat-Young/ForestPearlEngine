@@ -4,11 +4,11 @@
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
 #include "ForestPearlEngine/FPGameTimer.h"
 #include "ForestPearlEngine/FPWorld.h"
-#include "ForestPearlEngine/GizmoGridComponent.h"
+#include "ForestPearlEngine/FPGizmoGridComponent.h"
 
 void Grid::Initialize()
 {
-	GridComponets = new GizmoGridComponent(this, "Grid");
+	GridComponets = new FPGizmoGridComponent(this, "Grid");
 	SetRootComponent((FPSceneComponent*)GridComponets);
 }
 

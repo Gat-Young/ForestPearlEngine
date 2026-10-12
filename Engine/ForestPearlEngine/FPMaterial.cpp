@@ -40,16 +40,19 @@ std::string* FPMaterial::GetPixelShader()
 void FPMaterial::SetBaseColor(FPVector4& BaseColor)
 {
 	MaterialVertexConstantBuffer.BaseColor = BaseColor;
+	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, MaterialVertexConstantBuffer);
 }
 
 void FPMaterial::SetDiffuse(FPVector4& Diffuse)
 {
 	MaterialVertexConstantBuffer.Diffuse = Diffuse;
+	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, MaterialVertexConstantBuffer);
 }
 
 void FPMaterial::SetAmbient(FPVector4& Ambient)
 {
 	MaterialVertexConstantBuffer.Ambient = Ambient;
+	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, MaterialVertexConstantBuffer);
 }
 
 FPConstantBufferRenderData* FPMaterial::GetVertexConstantBufferRenderData()
@@ -64,5 +67,5 @@ FPConstantBufferRenderData* FPMaterial::GetPixelConstantBufferRenderData()
 
 void FPMaterial::UpdateMaterial(float DeltaTime)
 {
-	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 2, MaterialVertexConstantBuffer);
+	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, MaterialVertexConstantBuffer);
 }

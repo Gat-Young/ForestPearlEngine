@@ -8,6 +8,7 @@
 #include "ForestPearlEngine/FPGameTimer.h"
 #include "ForestPearlEngine/FPCameraComponent.h"
 #include "ForestPearlEngine/FPSpringArmComponent.h"
+#include "ForestPearlEngine/FPMaterialInterface.h"
 #include <iostream>
 
 void Cube::Initialize()
@@ -26,6 +27,8 @@ void Cube::Initialize()
 	PlayerCamera = new FPCameraComponent(this);
 	PlayerCamera->SetupAttachment(SpringArm);
 
+	RootComponent->SetWorldScale3D({ 0.5f, 0.5f, 0.5f });
+
 
 	FPAController* Controller = GetWorld()->GetController(0);
 
@@ -37,13 +40,24 @@ void Cube::Initialize()
 	Controller->GetInputComponent().BindMethod("IA_SetScaleCube", this, EKeyState::Pressed, &Cube::ScaleUp);
 	Controller->GetInputComponent().BindMethod("IA_FreeRotateCube", this, EKeyState::Down, &Cube::SetFreeRotate);
 	Controller->GetInputComponent().BindMethod("IA_SetRotateCube", this, EKeyState::Pressed, &Cube::RotateCube);
-	Controller->Possess(this);
+
+	if (this->GetName() == "Cube1") { Controller->Possess(this); }
+	else { bRotate = false;  PlayerCamera->Active = false; }
 
 }
 
 void Cube::BeginPlay()
 {
+	std::cout << this->GetName() << "\n";
+	FPMaterialInterface& Material = Mesh->GetMaterial();
+	FPVector4 CubeColor;
+	if (this->GetName() == "Cube1") { CubeColor = { 1.0f, 1.0f, 1.0f, 1.0f }; }
+	if (this->GetName() == "Cube2") { CubeColor = { 1.0f, 0.0f, 0.0f, 1.0f }; }
+	if (this->GetName() == "Cube3") { CubeColor = { 0.0f, 1.0f, 1.0f, 1.0f }; }
+	if (this->GetName() == "Cube4") { CubeColor = { 1.0f, 1.0f, 0.0f, 1.0f }; }
+	if (this->GetName() == "Cube5") { CubeColor = { 0.0f, 1.0f, 0.0f, 1.0f }; }
 
+	Material.SetBaseColor(CubeColor);
 }
 
 void Cube::Tick()
@@ -51,7 +65,7 @@ void Cube::Tick()
 	if (bRotate)
 	{
 		float mov = 90.0f * GetWorld()->GetGameTimer()->DeltaTime();
-		RootComponent->AddWorldRotation(FPVector3{ 0.0f, -mov, 0.0f });
+		RootComponent->AddWorldRotation(FPVector3{ 0.0f, mov, 0.0f });
 	}
 
 	__super::Tick();

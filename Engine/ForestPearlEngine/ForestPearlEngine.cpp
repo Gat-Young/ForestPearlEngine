@@ -103,6 +103,7 @@ void ForestPearlEngine::GameLoop()
         Render->CreateLightRenderList();
         Render->CreateMeshRenderList();
         Render->CreateGizmoRenderList();
+        Render->CreateNormalRenderList();
         Render->CreateUIRenderList();
 
         ///////////////////
@@ -113,6 +114,7 @@ void ForestPearlEngine::GameLoop()
         Render->ClearBackBuffer();
         Render->MeshRenderPass();
         Render->GizmoRenderPass();
+        Render->NormalRenderPass();
         Render->UIRenderPass();
         Render->RenderTargetPresent();
     }

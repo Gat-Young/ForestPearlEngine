@@ -8,6 +8,7 @@ namespace RenderingData
 {
 	struct MeshRenderItem;
 	struct GizmoRenderItem;
+	struct NormalRenderItem;
 	struct CameraItem;
 	struct UIContextItem;
 	struct MeshRenderItemCompare;
@@ -59,6 +60,9 @@ class Renderer
 		//Debug Render Item
 		std::vector<RenderingData::GizmoRenderItem> GizmoRenderList;
 
+		//Normal Render Item
+		std::vector<RenderingData::NormalRenderItem> NormalRenderList;
+
 		//UI Render Item
 		std::vector<RenderingData::UIContextItem> UIRenderList;
 
@@ -75,6 +79,7 @@ class Renderer
 		void CreateGizmoRenderList();
 		void CreateUIRenderList();
 		void CreateLightRenderList();
+		void CreateNormalRenderList();
 
 		//RenderPass ÇÔ¼ö
 		void ClearBackBuffer();
@@ -86,6 +91,8 @@ class Renderer
 		void MeshRenderPass();
 
 		void GizmoRenderPass();
+
+		void NormalRenderPass();
 
 		void UIRenderPass();
 

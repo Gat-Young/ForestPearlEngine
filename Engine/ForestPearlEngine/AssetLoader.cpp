@@ -318,6 +318,22 @@ void FPAssetLoader::LoadVertexShader(std::string ShaderObjPath, AssetOwner Engin
 	AssetManager->AddVertexShader(ShaderObjPath, VertexShader, VSCode, VBLayout);
 }
 
+void FPAssetLoader::LoadNormalDebugVertexShader(std::string ShaderObjPath, AssetOwner EngineAsset)
+{
+	std::wstring FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetAssetShaderPath(ShaderObjPath)));
+	if (EngineAsset == AssetOwner::Engine) FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetEngineAssetShaderPath(ShaderObjPath)));
+
+	void* VertexShader = nullptr;
+	void* VSCode = nullptr;
+	void* VBLayout = nullptr;
+
+	ShaderFactory::GetShaderFactory().NormalVertexShaderLoad(FilePath.c_str(), &VertexShader, &VSCode, &VBLayout);
+
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	AssetManager->AddVertexShader(ShaderObjPath, VertexShader, VSCode, VBLayout);
+}
+
 void FPAssetLoader::LoadPixelShader(std::string ShaderObjPath, AssetOwner EngineAsset)
 {
 	std::wstring FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetAssetShaderPath(ShaderObjPath)));

@@ -825,6 +825,12 @@ HRESULT RenderingDevice::Draw(UINT VertexCount, UINT StartVertexLocation)
 	return S_OK;
 }
 
+HRESULT RenderingDevice::DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation)
+{
+	DeviceContext->DrawInstanced(VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
+	return S_OK;
+}
+
 
 
 //RenderTargetView, Depth 관련 객체 해제

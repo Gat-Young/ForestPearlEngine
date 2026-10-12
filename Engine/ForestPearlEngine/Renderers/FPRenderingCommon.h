@@ -31,8 +31,6 @@ struct RenderItem
 
 struct GizmoRenderItem
 {
-	std::string* ClassName = nullptr;
-
 	int* Priority = nullptr;
 	bool* Active = nullptr;
 
@@ -50,6 +48,21 @@ struct GizmoRenderItem
 	//상수 버퍼용
 	FPConstantBufferRenderData* VertexConstBuffer = nullptr;
 	FPConstantBufferRenderData* PixelConstBuffer = nullptr;
+};
+
+struct NormalRenderItem
+{
+	bool* Active = nullptr;
+	std::string* MeshPath = nullptr;
+	float* NormalLength = nullptr;
+
+	//핵심 데이터
+	FPMatrix* Location = nullptr;
+	FPMatrix* Rotation = nullptr;
+	FPMatrix* Scale = nullptr;
+
+	std::string* VertexShaderPath = nullptr;
+	std::string* PixelShaderPath = nullptr;
 };
 
 struct CameraItem
@@ -124,6 +137,32 @@ namespace RenderingData
 		std::string VertexShaderPath;
 		std::string PixelShaderPath;
 
+		FPConstantBufferRenderData VertexConstBuffer;
+		FPConstantBufferRenderData PixelConstBuffer;
+	};
+
+	struct alignas(16) NormalDebugItem
+	{
+		FPMatrix NormalMatrix;
+		float NormalLength = 1.0f;
+		float Padding[3] = {};
+	};
+
+	struct NormalRenderItem
+	{
+		std::string MeshPath;
+		float NormalLength;
+
+		//핵심 데이터
+		FPMatrix Location;
+		FPMatrix Rotation;
+		FPMatrix Scale;
+
+		std::string VertexShaderPath;
+		std::string PixelShaderPath;
+
+
+		//상수 버퍼용
 		FPConstantBufferRenderData VertexConstBuffer;
 		FPConstantBufferRenderData PixelConstBuffer;
 	};

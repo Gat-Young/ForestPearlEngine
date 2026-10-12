@@ -1,0 +1,11 @@
+//
+// Normal Draw 용
+
+// Pixel Shader
+float4 PS_Main(
+                float4 pos : SV_POSITION, //[입력] 정점좌표. Vertex Position(Model Space, 3D) 
+                float4 col : COLOR0 //[입력] 정점색. Vertex Color : "Diffuse" 
+                ) : SV_TARGET
+{
+    return col;
+}

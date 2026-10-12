@@ -1,6 +1,6 @@
 #include "FPGizmoGridComponent.h"
 
-FPGizmoGridComponent::FPGizmoGridComponent(FPActor* Owner, std::string GizmoMeshPath) : FPGizmoComponent(Owner,"FPGizmoGridComponent", GizmoMeshPath)
+FPGizmoGridComponent::FPGizmoGridComponent(FPActor* Owner, std::string GizmoMeshPath) : FPGizmoComponent(Owner, GizmoMeshPath)
 {
 	FPGIZMO_GRIDINFO axis;
 	MakeGrid(&axis);

@@ -34,8 +34,6 @@ void FPGizmoComponent::RegistGizmoRenderList()
 
 	RenderItem->Priority = &(this->Priority);
 	RenderItem->Active = &(this->isActive);
-
-	RenderItem->ClassName = &(this->GizmoClass);
 	RenderItem->MeshPath = &(GizmoMeshPath);
 
 	RenderItem->Location = &(this->WorldTransform.LocationMatrix);
@@ -51,7 +49,7 @@ void FPGizmoComponent::RegistGizmoRenderList()
 
 }
 
-FPGizmoComponent::FPGizmoComponent(FPActor* Owner, const std::string& GizmoClass, const std::string& GizmoMeshPath) : GizmoMeshPath(GizmoMeshPath), FPPrimitiveComponent(Owner), GizmoClass(GizmoClass)
+FPGizmoComponent::FPGizmoComponent(FPActor* Owner, const std::string& GizmoMeshPath) : GizmoMeshPath(GizmoMeshPath), FPPrimitiveComponent(Owner)
 {
 	if (Material == nullptr) { Material = new FPMaterial(); }
 	Material->SetVertexShader("DefaultGizmoVertexShader.vso");

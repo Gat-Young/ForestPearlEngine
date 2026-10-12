@@ -145,6 +145,9 @@ class RenderingDevice
 
 		HRESULT Draw(UINT VertexCount, UINT StartVertexLocation);
 
+		//Normal용
+		HRESULT DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation);
+
 		//VB 만들기
 		void* CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride);
 

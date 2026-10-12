@@ -93,7 +93,6 @@ void FPStaticMeshComponent::SetActive(bool Active)
 void FPStaticMeshComponent::SetPriority(int Prio)
 {
 	this->Priority = Prio;
-	GizmoNormalLine->SetPriority(Prio);
 }
 
 void FPStaticMeshComponent::SetStaticMesh(std::string StaticMeshName)
@@ -101,6 +100,6 @@ void FPStaticMeshComponent::SetStaticMesh(std::string StaticMeshName)
 	//AssetManager로 부터 MeshPath의 StaticMesh_Json 파일을 읽고 Static_Mesh 객체를 반환 받아 저장.
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 	StaticMesh = AssetManager->GetStaticMeshData(StaticMeshName);
-	GizmoNormalLine->SetGizmoMeshPath(*(StaticMesh->GetMeshPath()));
+	GizmoNormalLine->SetMeshPath(*(StaticMesh->GetMeshPath()));
 	RegistMeshRenderList();
 }

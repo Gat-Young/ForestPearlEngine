@@ -24,6 +24,7 @@ class ShaderFactory
 
 		//목적 파일 로드
 		HRESULT VertexShaderLoad(const TCHAR* Objectname, void** ppVS, void** ppCode = NULL, void** ppVBLayout = NULL);
+		HRESULT NormalVertexShaderLoad(const TCHAR* Objectname, void** ppVS, void** ppCode = NULL, void** ppVBLayout = NULL);
 		HRESULT PixelShaderLoad(const TCHAR* Objectname, void** ppPS, void** ppCode = NULL);
 		
 		//D3D Compiler 사용
@@ -32,4 +33,5 @@ class ShaderFactory
 
 
 		HRESULT CreateInputLayout(void* InVSCode, void** ReturnLayout);
+		HRESULT CreateNormalInputLayout(void* InVSCode, void** ReturnLayout);
 };

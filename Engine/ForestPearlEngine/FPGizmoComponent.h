@@ -13,7 +13,6 @@ struct FPGIZMO_VERTEX {
 class FPGizmoComponent : public FPPrimitiveComponent
 {
 	protected:
-		std::string GizmoClass;
 		std::string GizmoMeshPath;
 
 		//값이 클수록 먼저 그려짐(작을 수록 앞으로 그려짐)
@@ -28,7 +27,7 @@ class FPGizmoComponent : public FPPrimitiveComponent
 		void RegistGizmoRenderList();
 
 	public:
-		FPGizmoComponent(FPActor* Owner, const std::string& GizmoClass ,const std::string& GizmoMeshPath);
+		FPGizmoComponent(FPActor* Owner ,const std::string& GizmoMeshPath);
 		~FPGizmoComponent();
 
 		virtual void SetGizmoMeshPath(const std::string& GizmoMeshPath) { this->GizmoMeshPath = GizmoMeshPath; }

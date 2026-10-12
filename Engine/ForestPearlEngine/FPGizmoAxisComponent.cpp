@@ -1,6 +1,6 @@
 #include "FPGizmoAxisComponent.h"
 
-FPGizmoAxisComponent::FPGizmoAxisComponent(FPActor* Owner, std::string GizmoMeshPath) : FPGizmoComponent(Owner,"FPGizmoAxisComponent", GizmoMeshPath)
+FPGizmoAxisComponent::FPGizmoAxisComponent(FPActor* Owner, std::string GizmoMeshPath) : FPGizmoComponent(Owner, GizmoMeshPath)
 {
 	FPGIZMO_AXISINFO axis;
 	MakeAxis(&axis);

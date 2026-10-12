@@ -48,6 +48,11 @@ void FPStaticMeshComponent::SetRenderItemData()
 	
 	RenderItem->VertexShaderPath = SelectedMaterial->GetVertexShader();
 	RenderItem->PixelShaderPath = SelectedMaterial->GetPixelShader();
+
+	RenderItem->BaseColor = SelectedMaterial->GetBaseColor();
+	RenderItem->Diffuse = SelectedMaterial->GetDiffuse();
+	RenderItem->Ambient = SelectedMaterial->GetAmbient();
+
 	RenderItem->VertexConstBuffer = SelectedMaterial->GetVertexConstantBufferRenderData();
 	RenderItem->PixelConstBuffer = SelectedMaterial->GetPixelConstantBufferRenderData();
 

@@ -20,6 +20,10 @@ struct RenderItem
 	std::string* VertexShaderPath = nullptr;
 	std::string* PixelShaderPath = nullptr;
 
+	FPVector4* BaseColor = nullptr;
+	FPVector4* Diffuse = nullptr;
+	FPVector4* Ambient = nullptr;
+
 	//상수 버퍼용
 	FPConstantBufferRenderData* VertexConstBuffer = nullptr;
 	FPConstantBufferRenderData* PixelConstBuffer = nullptr;
@@ -91,6 +95,8 @@ struct FPLightRenderItem
 
 	FPVector3* Direction = nullptr;
 	float* Range = nullptr;
+	FPVector4* Diffuse = nullptr;
+	FPVector4* Ambient = nullptr;
 
 	FPMatrix* Location = nullptr;
 	FPMatrix* Rotation = nullptr;
@@ -160,10 +166,38 @@ namespace RenderingData
 		std::vector<FPViewPort> ViewPort;
 	};
 
+	struct alignas(16) DirectionLightItem
+	{
+		FPVector4 Direction;
+		float Range;
+		float padding[3];
+		FPVector4 Diffuse;
+		FPVector4 Ambient;
+	};
+
+	struct alignas(16) MaterialItem
+	{
+		FPVector4 BaseColor;
+		FPVector4 Diffuse;
+		FPVector4 Ambient;
+	};
+
+	//상수 버퍼용 구조체 : 셰이더 내부 연산에 사용될 데이터들
+	struct alignas(16) MVPConstBuffer
+	{
+		DirectX::XMMATRIX WorldMatrix;
+		DirectX::XMMATRIX ViewMatrix;
+		DirectX::XMMATRIX ProjMatrix;
+		DirectX::XMMATRIX WVMatrix;
+		DirectX::XMMATRIX WVPMatrix;
+	};
+
 	struct LightRenderItem
 	{
 		FPVector3 Direction;
 		float Range;
+		FPVector4 Diffuse;
+		FPVector4 Ambient;
 
 		FPMatrix Location;
 		FPMatrix Rotation;

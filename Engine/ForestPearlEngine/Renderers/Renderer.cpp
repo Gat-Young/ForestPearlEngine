@@ -52,17 +52,6 @@ template<typename T> void _SafeDelArray(T*& ptr)
 // XMFLOAT4		<색상,	4성분 (r, g, b, a)	[실수형 0 ~ 1.0]
 // 
 
-//상수 버퍼용 구조체 : 셰이더 내부 연산에 사용될 데이터들
-struct alignas(16) MVPConstBuffer
-{
-	XMMATRIX WorldMatrix;
-	XMMATRIX ViewMatrix;
-	XMMATRIX ProjMatrix;
-	XMMATRIX WVMatrix;
-	XMMATRIX WVPMatrix;
-};
-
-
 
 Renderer::Renderer(RenderingDevice& Device) : Device(Device)
 {
@@ -147,12 +136,42 @@ void Renderer::CreateMeshRenderList()
 		MeshRenderData.Location = *(RenderItemData.Location);
 		MeshRenderData.Rotation = *(RenderItemData.Rotation);
 		MeshRenderData.Scale = *(RenderItemData.Scale);
+
+		//모델링 행렬 계산
+		FPMatrix WorldMatrix = ((MeshRenderData.Scale) * (MeshRenderData.Rotation) * (MeshRenderData.Location));
+	
+
+		int MAX_LIGHT = 8;
+		int LightRenderLoopSize = min(MAX_LIGHT, LightRenderList.size());
+		int LightCount = 0;
+
+		//Light 정보
+		for (LightCount =0; LightCount < LightRenderLoopSize; ++LightCount)
+		{
+			RenderingData::DirectionLightItem DirLight;
+			FPVector4 LightDir = { LightRenderList[LightCount].Direction.x, LightRenderList[LightCount].Direction.y, LightRenderList[LightCount].Direction.z, 0.0f };
+			DirLight.Direction = (LightDir.Normalize() * WorldMatrix.MatrixInverse()).Normalize(); //Local로 변환
+			
+			DirLight.Range = LightRenderList[LightCount].Range;
+			DirLight.Diffuse = LightRenderList[LightCount].Diffuse;
+
+			DirLight.Ambient = LightRenderList[LightCount].Ambient;
+
+
+			//VertexBuffer에 등록
+			FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, LightCount, DirLight);
+		}
+
+		//Material 처리
 		MeshRenderData.VertexShaderPath = *(RenderItemData.VertexShaderPath);
 		MeshRenderData.PixelShaderPath = *(RenderItemData.PixelShaderPath);
+		
+		RenderingData::MaterialItem Material;
+		Material.BaseColor = *(RenderItemData.BaseColor);
+		Material.Diffuse = *(RenderItemData.Diffuse);
+		Material.Ambient = *(RenderItemData.Ambient);
 
-		if(RenderItemData.VertexConstBuffer != nullptr) MeshRenderData.VertexConstBuffer = *(RenderItemData.VertexConstBuffer);
-		if(RenderItemData.PixelConstBuffer != nullptr) MeshRenderData.PixelConstBuffer = *(RenderItemData.PixelConstBuffer);
-
+		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, LightCount, Material);
 		this->MeshRenderList.push_back(MeshRenderData);
 	}
 
@@ -268,6 +287,8 @@ void Renderer::CreateLightRenderList()
 		RenderingData::LightRenderItem LightRenderingData;
 		LightRenderingData.Direction = *(LightItem.Direction);
 		LightRenderingData.Range = *(LightItem.Range);
+		LightRenderingData.Diffuse = *(LightItem.Diffuse);
+		LightRenderingData.Ambient = *(LightItem.Ambient);
 
 		LightRenderingData.Location = *(LightItem.Location);
 		LightRenderingData.Rotation = *(LightItem.Rotation);
@@ -278,6 +299,8 @@ void Renderer::CreateLightRenderList()
 
 		this->LightRenderList.push_back(LightRenderingData);
 	}
+
+
 }
 
 HRESULT Renderer::InitializeRenderer(HWND hwnd)
@@ -350,14 +373,14 @@ void Renderer::MeshRenderPass()
 	//상수 버퍼 설정
 	//Vertex Shader
 	//MeshRenderPass에서 0번은 WVP, 1번은 ViewPort용 슬롯, 2번은 Light용 슬롯(임시) 임
-	unsigned int VertexShaderConstantBufferSlotOffset = 3;
+	unsigned int VertexShaderConstantBufferSlotOffset = 2;
 
 	//PixelShader
 	//MeshRenderPass에서 0번은 ViewPort용 슬롯
 	unsigned int PixelShaderConstantBufferSlotOffset = 1;
 
 
-	MVPConstBuffer MVPCB;
+	RenderingData::MVPConstBuffer MVPCB;
 
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
@@ -367,33 +390,6 @@ void Renderer::MeshRenderPass()
 	{
 		for(const RenderingData::MeshRenderItem& RenderItem : MeshRenderList)
 		{
-			//Light ConstantBuffer Setting (우선은 1개니까?)
-			for (const RenderingData::LightRenderItem& LightRenderingItem : LightRenderList)
-			{
-				//vertex
-				for (FPConstantBufferInfo ConstantBufferInfo : LightRenderingItem.VertexConstBuffer.ConstantBuffers)
-				{
-					unsigned int Slot = 2 + ConstantBufferInfo.Slot;
-					size_t Offset = ConstantBufferInfo.Offset;
-					size_t Size = ConstantBufferInfo.Size;
-
-					Device.UpdateVertexShaderSubresource(Slot, LightRenderingItem.VertexConstBuffer.Buffer.data(), Offset, Size);
-				}
-
-				//Pixel
-				for (FPConstantBufferInfo ConstantBufferInfo : LightRenderingItem.PixelConstBuffer.ConstantBuffers)
-				{
-					unsigned int Slot = 2 + ConstantBufferInfo.Slot;
-					size_t Offset = ConstantBufferInfo.Offset;
-					size_t Size = ConstantBufferInfo.Size;
-
-					Device.UpdatePixelShaderSubresource(Slot, LightRenderingItem.PixelConstBuffer.Buffer.data(), Offset, Size);
-				}
-
-			}
-
-			// Light Setting End
-
 			std::tuple<void*, void*, void*> VertexShaderData = AssetManager->GetVertexShader(RenderItem.VertexShaderPath);
 			std::pair<void*, void*> PixelShaderData = AssetManager->GetPixelShader(RenderItem.PixelShaderPath);
 
@@ -513,7 +509,7 @@ void Renderer::GizmoRenderPass()
 	unsigned int PixelShaderConstantBufferSlotOffset = 1;
 
 
-	MVPConstBuffer MVPCB;
+	RenderingData::MVPConstBuffer MVPCB;
 
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 

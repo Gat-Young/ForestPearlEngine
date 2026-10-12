@@ -40,6 +40,44 @@ FPVector3 FPVector3::Normalize() const
 	return FPVector3{ x / len , y / len, z / len };
 }
 
+///////////////////////////////////////////////////////////////////////
+//
+// FPVector4 수학함수
+//
+
+FPVector4 FPVector4::operator*(const FPMatrix& rhs) const
+{
+	using namespace DirectX;
+
+	XMVECTOR Vector = XMVectorSet(x, y, z, w);
+
+	XMVECTOR Result = XMVector4Transform(Vector, rhs.Matrix);
+
+	return {
+		XMVectorGetX(Result),
+		XMVectorGetY(Result),
+		XMVectorGetZ(Result),
+		XMVectorGetW(Result)
+	};
+}
+
+float FPVector4::LengthSq() const
+{
+	return x * x + y * y + z * z + w * w;
+}
+
+float FPVector4::Length() const
+{
+	return std::sqrt(this->LengthSq());
+}
+
+FPVector4 FPVector4::Normalize() const
+{
+	float len = this->Length();
+
+	if (len <= 0.000001f) return FPVector4{ 0, 0, 0 ,0};
+	return FPVector4{ x / len , y / len, z / len, w /len };
+}
 
 ///////////////////////////////////////////////////////////////////////
 //

@@ -33,6 +33,10 @@ class FPMaterial : public FPMaterialInterface
 		void SetDiffuse(FPVector4& Diffuse) override;
 		void SetAmbient(FPVector4& Ambient) override;
 
+		FPVector4* GetBaseColor() override;
+		FPVector4* GetDiffuse() override;
+		FPVector4* GetAmbient() override;
+
 		FPConstantBufferRenderData* GetVertexConstantBufferRenderData() override;
 		FPConstantBufferRenderData* GetPixelConstantBufferRenderData() override;
 

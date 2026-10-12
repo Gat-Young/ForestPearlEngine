@@ -55,6 +55,21 @@ void FPMaterial::SetAmbient(FPVector4& Ambient)
 	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, MaterialVertexConstantBuffer);
 }
 
+FPVector4* FPMaterial::GetBaseColor()
+{
+	return &MaterialVertexConstantBuffer.BaseColor;
+}
+
+FPVector4* FPMaterial::GetDiffuse()
+{
+	return &MaterialVertexConstantBuffer.Diffuse;
+}
+
+FPVector4* FPMaterial::GetAmbient()
+{
+	return &MaterialVertexConstantBuffer.Ambient;
+}
+
 FPConstantBufferRenderData* FPMaterial::GetVertexConstantBufferRenderData()
 {
 	return &VertexConstantBuffer;

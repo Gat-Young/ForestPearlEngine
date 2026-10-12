@@ -22,5 +22,9 @@ class FPMaterialInterface : public FPObject
 		virtual void SetDiffuse(FPVector4& Diffuse) = 0;
 		virtual void SetAmbient(FPVector4& Ambient) = 0;
 
+		virtual FPVector4* GetBaseColor() = 0;
+		virtual FPVector4* GetDiffuse() = 0;
+		virtual FPVector4* GetAmbient() = 0;
+
 		virtual void UpdateMaterial(float DeltaTime) {};
 };

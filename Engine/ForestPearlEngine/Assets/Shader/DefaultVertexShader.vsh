@@ -21,7 +21,7 @@ cbuffer ViewPortConstBuffer : register(b1)
 
 struct LIGHT
 {
-    float3 Direction;
+    float4 Direction;
     float Range;
     float4 Diffuse;
     float4 Ambient;
@@ -73,14 +73,8 @@ VSOutput VS_Main(
 
     float4 Diff = 1;
     
-    float4 N = nrm;
-    N.w = 0;
-    N = mul(mWV, N);
-    N = normalize(N);
-    
-    float4 L = float4(Light.Direction, 0);
-    L = mul(mView, L);
-    L = normalize(L);
+    float4 N = nrm; 
+    float4 L = Light.Direction;
     
     
     Diff = LambertLight(N, L, Light.Diffuse, Light.Ambient, Material.Diffuse, Material.Ambient);

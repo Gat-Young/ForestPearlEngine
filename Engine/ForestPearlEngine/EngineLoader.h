@@ -17,4 +17,5 @@ void LoadEngineAssets()
 	//StaticMesh Load
 	AssetLoader->LoadStaticMesh("Cube_StaticMesh", "Cube_StaticMesh.json", AssetOwner::Engine);
 	AssetLoader->LoadStaticMesh("Sphere_StaticMesh", "Sphere_StaticMesh.json", AssetOwner::Engine);
+	AssetLoader->LoadStaticMesh("Plane_StaticMesh", "Plane_StaticMesh.json", AssetOwner::Engine);
 };

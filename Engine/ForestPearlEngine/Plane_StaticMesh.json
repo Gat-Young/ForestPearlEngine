@@ -1,0 +1,12 @@
+{
+  "MeshData": [
+    {
+      "Path": "Primitive_Model/Plane.fbx",
+      "Topology": "TRIANGLELIST"
+    }
+  ],
+
+  "Sockets": [],
+
+  "Material": ""
+}

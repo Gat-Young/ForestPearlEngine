@@ -387,10 +387,13 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\StaticMesh\Cube.json">
+    <None Include="Plane_StaticMesh.json">
       <Filter>Assets\StaticMesh</Filter>
     </None>
-    <None Include="Assets\StaticMesh\Sphere.json">
+    <None Include="Assets\StaticMesh\Cube_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\Sphere_StaticMesh.json">
       <Filter>Assets\StaticMesh</Filter>
     </None>
   </ItemGroup>

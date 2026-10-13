@@ -3,13 +3,13 @@
 #include "ForestPearlEngine/Systems/KeyStateEnum.h"
 #include "ForestPearlEngine/Define/FPMath.h"
 
-class GizmoAxisComponent;
+class FPGizmoAxisComponent;
 
 class Axis : public FPActor
 {
 private:
 
-	GizmoAxisComponent* AxisComponets;
+	FPGizmoAxisComponent* AxisComponets;
 	bool bShow = true;
 
 public:

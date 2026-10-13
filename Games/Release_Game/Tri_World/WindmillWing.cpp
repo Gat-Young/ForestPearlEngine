@@ -7,12 +7,16 @@
 #include "ForestPearlEngine/FPGameInstance.h"
 #include "ForestPearlEngine/FPGameTimer.h"
 #include "ForestPearlEngine/Utility/FPGameplayStatics.h"
+#include "ForestPearlEngine/FPMaterialInterface.h"
 #include "Player.h"
 
 void WindmillWing::Initialize()
 {
 	Wing = new FPStaticMeshComponent(this, "Windmill_Wing_StaticMesh");
 	SetRootComponent(Wing);
+
+	FPVector4 Color = { 1.000f, 0.843f, 0.000f, 1.0f };
+	Wing->GetMaterial().SetBaseColor(Color);
 
 	FPAController* Controller = GetWorld()->GetController(0);
 	Controller->GetInputComponent().BindMethod("IA_SetScaleWing", this, EKeyState::Pressed, &WindmillWing::SetScaleWing);

@@ -6,6 +6,7 @@
 
 FPMeshComponent::FPMeshComponent(FPActor* Owner, std::string MeshName) : FPPrimitiveComponent(Owner), MeshName(MeshName)
 {
+
 }
 
 void FPMeshComponent::RegistMeshRenderList()
@@ -20,6 +21,11 @@ void FPMeshComponent::SetMaterial(FPMaterialInterface* Material)
 {
 	this->Material = Material;
 	SetRenderItemData();
+}
+
+FPMaterialInterface& FPMeshComponent::GetMaterial()
+{
+	return *(this->Material);
 }
 
 FPMeshComponent::~FPMeshComponent()

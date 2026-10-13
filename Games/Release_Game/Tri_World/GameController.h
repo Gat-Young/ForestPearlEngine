@@ -14,9 +14,10 @@ class GameController : public FPAController
 		std::vector<FPPawn*> ControllPawn;
 		int ControllPawnIndex = 0;
 		int ControllPawnSize = 0;
-		
+
 		bool bisFill = true;
 		bool bisCull = true;
+		bool bNormal = false;
 
 	public :
 		virtual void Initialize() override;
@@ -28,6 +29,8 @@ class GameController : public FPAController
 
 		void SetFillTriangel(FInputValue Value);
 		void SetCullTriangle(FInputValue Value);
+		void SetNormalLine(FInputValue Value);
+
 		void SetActiveViewHelp(struct FInputValue Value);
 		void SetActiveDepthStencilBuffer(struct FInputValue Value);
 		void SetGridOn(struct FInputValue Value);

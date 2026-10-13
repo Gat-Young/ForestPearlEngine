@@ -70,6 +70,33 @@
     <Filter Include="Component\Gizmo">
       <UniqueIdentifier>{55e4d34f-029a-402f-ae34-a6b19769b3ce}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Component\Light">
+      <UniqueIdentifier>{e3ec462d-966a-4937-aedf-981294353844}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Shader\Common">
+      <UniqueIdentifier>{3d47e776-836d-42a1-b658-3c1e8fc9e6ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Shader\Common\Lighting">
+      <UniqueIdentifier>{6c01d566-f9fc-4c9e-8784-003a5fe87d0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Shader\VS">
+      <UniqueIdentifier>{68ee037b-214a-496d-86b0-f668d37bf5f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Shader\PS">
+      <UniqueIdentifier>{6a1799ab-975c-4226-bbf8-77558d01c16a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FPGameInstance\RenderList">
+      <UniqueIdentifier>{cdc845c4-251c-4198-bdf5-4d90fb98e8a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FPGameInstance\RenderList\Header">
+      <UniqueIdentifier>{635832ac-e45d-405c-9f93-1717de74beb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FPGameInstance\RenderList\Source">
+      <UniqueIdentifier>{2bf95da7-78c5-41cd-b824-8eed22857f23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Shader\Common\Normal">
+      <UniqueIdentifier>{d3870e15-d0f1-444c-bd17-1544b6bb10c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -183,12 +210,6 @@
     <ClInclude Include="FPGameTimer.h">
       <Filter>FPGameInstance\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FPMeshRenderList.h">
-      <Filter>FPGameInstance\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FPTextRenderList.h">
-      <Filter>FPGameInstance\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Systems\InputSystem.h">
       <Filter>FPGameInstance\Header Files</Filter>
     </ClInclude>
@@ -197,9 +218,6 @@
     </ClInclude>
     <ClInclude Include="FTransform.h">
       <Filter>Define</Filter>
-    </ClInclude>
-    <ClInclude Include="FPViewPortClient.h">
-      <Filter>FPGameInstance\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FPSpringArmComponent.h">
       <Filter>Component</Filter>
@@ -228,23 +246,62 @@
     <ClInclude Include="Renderers\FPConstantBufferCommon.h">
       <Filter>Renderers</Filter>
     </ClInclude>
+    <ClInclude Include="FPGizmoComponent.h">
+      <Filter>Component\Gizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="FPGizmoAxisComponent.h">
+      <Filter>Component\Gizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="FPGizmoGridComponent.h">
+      <Filter>Component\Gizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="FPGizmoNormalLineComponent.h">
+      <Filter>Component\Gizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="FPGizmoFrontLineComponent.h">
+      <Filter>Component\Gizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="FPLightComponentBase.h">
+      <Filter>Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="FPLightComponent.h">
+      <Filter>Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="FPSkyLightComponent.h">
+      <Filter>Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="FPDirectionalLightComponent.h">
+      <Filter>Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="FPLocalLightComponent.h">
+      <Filter>Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="FPRectLightComponent.h">
+      <Filter>Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="FPPointLightComponent.h">
+      <Filter>Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="FPSpotLightComponent.h">
+      <Filter>Component\Light</Filter>
+    </ClInclude>
     <ClInclude Include="FPGizmoRenderList.h">
+      <Filter>FPGameInstance\RenderList\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="FPLightRenderList.h">
+      <Filter>FPGameInstance\RenderList\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="FPMeshRenderList.h">
+      <Filter>FPGameInstance\RenderList\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="FPTextRenderList.h">
+      <Filter>FPGameInstance\RenderList\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="FPViewPortClient.h">
       <Filter>FPGameInstance\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GizmoComponent.h">
-      <Filter>Component\Gizmo</Filter>
-    </ClInclude>
-    <ClInclude Include="GizmoAxisComponent.h">
-      <Filter>Component\Gizmo</Filter>
-    </ClInclude>
-    <ClInclude Include="GizmoGridComponent.h">
-      <Filter>Component\Gizmo</Filter>
-    </ClInclude>
-    <ClInclude Include="GizmoNormalLineComponent.h">
-      <Filter>Component\Gizmo</Filter>
-    </ClInclude>
-    <ClInclude Include="GizmoFrontLineComponent.h">
-      <Filter>Component\Gizmo</Filter>
+    <ClInclude Include="FPMeshNormalRenderList.h">
+      <Filter>FPGameInstance\RenderList\Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -323,12 +380,6 @@
     <ClCompile Include="FPGameTimer.cpp">
       <Filter>FPGameInstance\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FPMeshRenderList.cpp">
-      <Filter>FPGameInstance\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FPTextRenderList.cpp">
-      <Filter>FPGameInstance\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Systems\InputSystem.cpp">
       <Filter>FPGameInstance\Source Files</Filter>
     </ClCompile>
@@ -362,39 +413,78 @@
     <ClCompile Include="Define\FPDataDefine.cpp">
       <Filter>Define</Filter>
     </ClCompile>
+    <ClCompile Include="FPGizmoComponent.cpp">
+      <Filter>Component\Gizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="FPGizmoAxisComponent.cpp">
+      <Filter>Component\Gizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="FPGizmoGridComponent.cpp">
+      <Filter>Component\Gizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="FPGizmoNormalLineComponent.cpp">
+      <Filter>Component\Gizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="FPLightComponentBase.cpp">
+      <Filter>Component\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="FPLightComponent.cpp">
+      <Filter>Component\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="FPDirectionalLightComponent.cpp">
+      <Filter>Component\Light</Filter>
+    </ClCompile>
     <ClCompile Include="FPGizmoRenderList.cpp">
-      <Filter>FPGameInstance\Source Files</Filter>
+      <Filter>FPGameInstance\RenderList\Source</Filter>
     </ClCompile>
-    <ClCompile Include="GizmoComponent.cpp">
-      <Filter>Component\Gizmo</Filter>
+    <ClCompile Include="FPLightRenderList.cpp">
+      <Filter>FPGameInstance\RenderList\Source</Filter>
     </ClCompile>
-    <ClCompile Include="GizmoAxisComponent.cpp">
-      <Filter>Component\Gizmo</Filter>
+    <ClCompile Include="FPMeshRenderList.cpp">
+      <Filter>FPGameInstance\RenderList\Source</Filter>
     </ClCompile>
-    <ClCompile Include="GizmoGridComponent.cpp">
-      <Filter>Component\Gizmo</Filter>
+    <ClCompile Include="FPTextRenderList.cpp">
+      <Filter>FPGameInstance\RenderList\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="FPMeshNormalRenderList.cpp">
+      <Filter>FPGameInstance\RenderList\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Assets\Shader\DefaultPixelShader.psh">
-      <Filter>Assets\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Assets\Shader\DefaultVertexShader.vsh">
-      <Filter>Assets\Shader</Filter>
-    </FxCompile>
     <FxCompile Include="Assets\Shader\DefaultShader.fx">
       <Filter>Assets\Shader</Filter>
     </FxCompile>
+    <FxCompile Include="Assets\Shader\DefaultGizmoVertexShader.vsh">
+      <Filter>Assets\Shader\VS</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shader\DefaultVertexShader.vsh">
+      <Filter>Assets\Shader\VS</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shader\DefaultGizmoPixelShader.psh">
+      <Filter>Assets\Shader\PS</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shader\DefaultPixelShader.psh">
+      <Filter>Assets\Shader\PS</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shader\NormalDebugVertexShader.vsh">
+      <Filter>Assets\Shader\VS</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\Shader\NormalDebugPixelShader.psh">
+      <Filter>Assets\Shader\PS</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Plane_StaticMesh.json">
-      <Filter>Assets\StaticMesh</Filter>
-    </None>
     <None Include="Assets\StaticMesh\Cube_StaticMesh.json">
       <Filter>Assets\StaticMesh</Filter>
     </None>
     <None Include="Assets\StaticMesh\Sphere_StaticMesh.json">
       <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\Shader\LambertLight.hlsli">
+      <Filter>Assets\Shader\Common\Lighting</Filter>
+    </None>
+    <None Include="Assets\Shader\NormalCalculate.hlsli">
+      <Filter>Assets\Shader\Common\Normal</Filter>
     </None>
   </ItemGroup>
 </Project>

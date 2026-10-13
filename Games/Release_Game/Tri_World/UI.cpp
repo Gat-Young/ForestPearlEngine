@@ -66,6 +66,9 @@ void UI::Initialize()
 
 	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
 	FillText = TextComponets.back();
+
+	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
+	NormalText = TextComponets.back();
 }
 
 
@@ -135,6 +138,9 @@ void UI::SystemInfo(int x, int y, FPVector4 col)
 	_stprintf_s(text, _T("Ã¤¿ì±â:SPACE (%s)"), ((isFill == true) ? _T("SOLID") : _T("WIRE")));
 	FillText->SetTextData(&bShow, x, y += 14, col, text);
 
+	_stprintf_s(text, _T("Normal:F6 (%s)"), ((bNormal == true) ? _T("ON") : _T("OFF")));
+	NormalText->SetTextData(&bShow, x, y += 14, col, text);
+
 }
 
 void UI::AdapterInfo(int index, int x, int& y, FPVector4 col)
@@ -201,4 +207,9 @@ void UI::SetCull(struct FInputValue Value)
 void UI::SetFill(struct FInputValue Value)
 {
 	isFill = !(isFill);
+}
+
+void UI::SetNormalLine(FInputValue Value)
+{
+	bNormal = !(bNormal);
 }

@@ -9,6 +9,10 @@ void LoadEngineAssets()
 	//Default Vertex/Pixel Shader
 	AssetLoader->LoadVertexShader("DefaultVertexShader.vso", AssetOwner::Engine);
 	AssetLoader->LoadPixelShader("DefaultPixelShader.pso", AssetOwner::Engine);
+	AssetLoader->LoadVertexShader("DefaultGizmoVertexShader.vso", AssetOwner::Engine);
+	AssetLoader->LoadPixelShader("DefaultGizmoPixelShader.pso", AssetOwner::Engine);
+	AssetLoader->LoadNormalDebugVertexShader("NormalDebugVertexShader.vso", AssetOwner::Engine);
+	AssetLoader->LoadPixelShader("NormalDebugPixelShader.pso", AssetOwner::Engine);
 
 	//Primitive Model
 	AssetLoader->LoadFbxData("Primitive_Model/Cube.fbx", AssetOwner::Engine);

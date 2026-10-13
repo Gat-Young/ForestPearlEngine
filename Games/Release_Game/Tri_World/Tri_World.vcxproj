@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ADirectionalLight.h" />
     <ClInclude Include="Axis.h" />
     <ClInclude Include="GameController.h" />
     <ClInclude Include="GameMode.h" />
@@ -33,6 +34,7 @@
     <ClInclude Include="WindmillWing.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ADirectionalLight.cpp" />
     <ClCompile Include="Axis.cpp" />
     <ClCompile Include="GameController.cpp" />
     <ClCompile Include="GameMode.cpp" />

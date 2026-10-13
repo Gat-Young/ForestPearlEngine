@@ -6,15 +6,6 @@
 //Fill/ Cull을 위해 엔진을 가져온
 #include "ForestPearlEngine/ForestPearlEngine.h"
 
-//객체들 <- 몰라도 되긴함
-#include "Player.h"
-#include "Tree.h"
-#include "TripleWindmillWing.h"
-#include "Windmill.h"
-#include "WindmillWing.h"
-#include "Terrain.h"
-#include "TripleWingWindmill.h"
-
 //UI 처리
 #include "UI.h"
 #include "Axis.h"
@@ -81,6 +72,7 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_SetAxis", VK_F3, ModifyInfoTriger);
 
 	GetInputComponent().AddMappingKey("IA_SetDepthStencilBuffer", VK_F5, ModifyInfoTriger);
+	GetInputComponent().AddMappingKey("IA_SetNormalLine", VK_F6, ModifyInfoTriger);
 
 	GetInputComponent().AddMappingKey("IA_AttachHead", 'Z', ModifyInfoTriger);
 	GetInputComponent().AddMappingKey("IA_AttachShield", 'X', ModifyInfoTriger);
@@ -103,6 +95,7 @@ void GameController::Initialize()
 	GetInputComponent().BindMethod("IA_SetDepthStencilBuffer", this, EKeyState::Down, &GameController::SetActiveDepthStencilBuffer);
 	GetInputComponent().BindMethod("IA_SetGrid", this, EKeyState::Down, &GameController::SetGridOn);
 	GetInputComponent().BindMethod("IA_SetAxis", this, EKeyState::Down, &GameController::SetAxisOn);
+	GetInputComponent().BindMethod("IA_SetNormalLine", this, EKeyState::Down, &GameController::SetNormalLine);
 
 
 	__super::Initialize();
@@ -235,6 +228,21 @@ void GameController::SetAxisOn(struct FInputValue Value)
 	{
 		UI* GameUI = static_cast<UI*>(Actor);
 		GameUI->SetAxisOn(Value);
+	}
+	ActorList.clear();
+}
+
+
+void GameController::SetNormalLine(FInputValue Value)
+{
+	bNormal = !bNormal;
+	ForestPearlEngine::GetGameEngine().SetbNormal(bNormal);
+	std::vector<FPActor*> ActorList;
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "UI", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		UI* GameUI = static_cast<UI*>(Actor);
+		GameUI->SetNormalLine(Value);
 	}
 	ActorList.clear();
 }

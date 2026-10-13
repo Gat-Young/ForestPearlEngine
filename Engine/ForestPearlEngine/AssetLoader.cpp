@@ -153,7 +153,30 @@ FPMeshData FPAssetLoader::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node
 
 			if (Mesh->vertex_normal.exists)
 			{
-				Normal = ufbx_get_vertex_vec3(&Mesh->vertex_normal, CornerIndex);
+				const ufbx_vec3 LocalNormal =
+					ufbx_get_vertex_vec3(
+						&Mesh->vertex_normal,
+						CornerIndex
+					);
+
+				Normal = ufbx_transform_direction(
+					&Node->node_to_world,
+					LocalNormal
+				);
+
+				// Normalize
+				const double Length = std::sqrt(
+					Normal.x * Normal.x +
+					Normal.y * Normal.y +
+					Normal.z * Normal.z
+				);
+
+				if (Length > 0.0)
+				{
+					Normal.x /= Length;
+					Normal.y /= Length;
+					Normal.z /= Length;
+				}
 			}
 
 			//UV
@@ -289,6 +312,22 @@ void FPAssetLoader::LoadVertexShader(std::string ShaderObjPath, AssetOwner Engin
 	void* VBLayout = nullptr;
 
 	ShaderFactory::GetShaderFactory().VertexShaderLoad(FilePath.c_str(), &VertexShader, &VSCode, &VBLayout);
+
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	AssetManager->AddVertexShader(ShaderObjPath, VertexShader, VSCode, VBLayout);
+}
+
+void FPAssetLoader::LoadNormalDebugVertexShader(std::string ShaderObjPath, AssetOwner EngineAsset)
+{
+	std::wstring FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetAssetShaderPath(ShaderObjPath)));
+	if (EngineAsset == AssetOwner::Engine) FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetEngineAssetShaderPath(ShaderObjPath)));
+
+	void* VertexShader = nullptr;
+	void* VSCode = nullptr;
+	void* VBLayout = nullptr;
+
+	ShaderFactory::GetShaderFactory().NormalVertexShaderLoad(FilePath.c_str(), &VertexShader, &VSCode, &VBLayout);
 
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 

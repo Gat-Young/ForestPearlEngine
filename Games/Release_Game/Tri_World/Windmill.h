@@ -20,6 +20,7 @@ class Windmill : public FPPawn
 
 		float ScaleOffset = 1.0f;
 
+
 	public:
 		Windmill() = default;
 		virtual void Initialize() override;

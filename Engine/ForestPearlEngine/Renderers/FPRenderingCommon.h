@@ -6,8 +6,6 @@
 #include "tchar.h"
 #include <vector>
 
-
-
 struct RenderItem
 {
 	int* Priority = nullptr;
@@ -21,6 +19,10 @@ struct RenderItem
 
 	std::string* VertexShaderPath = nullptr;
 	std::string* PixelShaderPath = nullptr;
+
+	FPVector4* BaseColor = nullptr;
+	FPVector4* Diffuse = nullptr;
+	FPVector4* Ambient = nullptr;
 
 	//상수 버퍼용
 	FPConstantBufferRenderData* VertexConstBuffer = nullptr;
@@ -46,6 +48,21 @@ struct GizmoRenderItem
 	//상수 버퍼용
 	FPConstantBufferRenderData* VertexConstBuffer = nullptr;
 	FPConstantBufferRenderData* PixelConstBuffer = nullptr;
+};
+
+struct NormalRenderItem
+{
+	bool* Active = nullptr;
+	std::string* MeshPath = nullptr;
+	float* NormalLength = nullptr;
+
+	//핵심 데이터
+	FPMatrix* Location = nullptr;
+	FPMatrix* Rotation = nullptr;
+	FPMatrix* Scale = nullptr;
+
+	std::string* VertexShaderPath = nullptr;
+	std::string* PixelShaderPath = nullptr;
 };
 
 struct CameraItem
@@ -85,10 +102,28 @@ struct FPViewPort
 	FPConstantBufferRenderData* PixelConstBuffer = nullptr;
 };
 
+struct FPLightRenderItem
+{
+	bool* Active = nullptr;
+
+	FPVector3* Direction = nullptr;
+	float* Range = nullptr;
+	FPVector4* Diffuse = nullptr;
+	FPVector4* Ambient = nullptr;
+
+	FPMatrix* Location = nullptr;
+	FPMatrix* Rotation = nullptr;
+	FPMatrix* Scale = nullptr;
+
+	//상수 버퍼용
+	FPConstantBufferRenderData* VertexConstBuffer = nullptr;
+	FPConstantBufferRenderData* PixelConstBuffer = nullptr;
+};
 
 namespace RenderingData
 {
-	struct MeshRenderItem
+
+	struct GizmoRenderItem
 	{
 		int Priority;
 
@@ -106,13 +141,19 @@ namespace RenderingData
 		FPConstantBufferRenderData PixelConstBuffer;
 	};
 
-	struct GizmoRenderItem
+	struct alignas(16) NormalDebugItem
 	{
-		int Priority;
+		FPMatrix NormalMatrix;
+		float NormalLength = 1.0f;
+		float Padding[3] = {};
+	};
 
+	struct NormalRenderItem
+	{
 		std::string MeshPath;
+		float NormalLength;
 
-		//주요 정보
+		//핵심 데이터
 		FPMatrix Location;
 		FPMatrix Rotation;
 		FPMatrix Scale;
@@ -120,6 +161,8 @@ namespace RenderingData
 		std::string VertexShaderPath;
 		std::string PixelShaderPath;
 
+
+		//상수 버퍼용
 		FPConstantBufferRenderData VertexConstBuffer;
 		FPConstantBufferRenderData PixelConstBuffer;
 	};
@@ -160,6 +203,66 @@ namespace RenderingData
 		std::basic_string<TCHAR> msg;
 
 		std::vector<FPViewPort> ViewPort;
+	};
+
+	struct alignas(16) DirectionLightItem
+	{
+		FPVector4 Direction;
+		float Range;
+		float padding[3];
+		FPVector4 Diffuse;
+		FPVector4 Ambient;
+	};
+
+	struct alignas(16) MaterialItem
+	{
+		FPVector4 BaseColor;
+		FPVector4 Diffuse;
+		FPVector4 Ambient;
+	};
+
+	//상수 버퍼용 구조체 : 셰이더 내부 연산에 사용될 데이터들
+	struct alignas(16) MVPConstBuffer
+	{
+		DirectX::XMMATRIX WorldMatrix;
+		DirectX::XMMATRIX ViewMatrix;
+		DirectX::XMMATRIX ProjMatrix;
+		DirectX::XMMATRIX WVMatrix;
+		DirectX::XMMATRIX WVPMatrix;
+	};
+
+	struct LightRenderItem
+	{
+		FPVector3 Direction;
+		float Range;
+		FPVector4 Diffuse;
+		FPVector4 Ambient;
+
+		FPMatrix Location;
+		FPMatrix Rotation;
+		FPMatrix Scale;
+
+		//상수 버퍼용
+		FPConstantBufferRenderData VertexConstBuffer;
+		FPConstantBufferRenderData PixelConstBuffer;
+	};
+
+	struct MeshRenderItem
+	{
+		int Priority;
+
+		std::string MeshPath;
+
+		//주요 정보
+		FPMatrix Location;
+		FPMatrix Rotation;
+		FPMatrix Scale;
+
+		std::string VertexShaderPath;
+		std::string PixelShaderPath;
+
+		FPConstantBufferRenderData VertexConstBuffer;
+		FPConstantBufferRenderData PixelConstBuffer;
 	};
 
 	struct MeshRenderItemCompare

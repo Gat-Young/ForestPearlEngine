@@ -1,6 +1,9 @@
 //
 // 기본 VertexShader 소스
 
+//Lambert Light
+#include "LambertLight.hlsli"
+
 //상수 버퍼
 cbuffer ObejctConstBuffer : register(b0)
 {
@@ -9,6 +12,36 @@ cbuffer ObejctConstBuffer : register(b0)
     matrix mProj;
     matrix mWV;
     matrix mWVP;
+};
+
+cbuffer ViewPortConstBuffer : register(b1)
+{
+
+};
+
+struct LIGHT
+{
+    float4 Direction;
+    float Range;
+    float4 Diffuse;
+    float4 Ambient;
+};
+
+cbuffer DirectionLightConstBuffer : register(b2)
+{
+    LIGHT Light;
+};
+
+struct MATERIAL
+{
+    float4 BaseColor;
+    float4 Diffuse;
+    float4 Ambient;
+};
+
+cbuffer MaterialConstBuffer : register(b3)
+{
+    MATERIAL Material;
 };
 
 //VS 출력 구조체
@@ -36,17 +69,18 @@ VSOutput VS_Main(
     VSOutput o = (VSOutput) 0;
 
     //변환
-    //pos = mul(pos, mWVP);
-    
-    //matrix m = mWorld * mView * mProj;
-    //pos = mul(pos, mWorld);
-    //pos = mul(pos, m);
     pos = mul(mWVP, pos);
-    //pos = mul(pos, mWVP);
+
+    float4 Diff = 1;
     
-    //pos = mul(pos, m);
+    float4 N = nrm; 
+    float4 L = Light.Direction;
+    
+    
+    Diff = LambertLight(N, L, Light.Diffuse, Light.Ambient, Material.Diffuse, Material.Ambient);
+    
     o.pos = pos;
-    o.col = col;
+    o.col = Material.BaseColor * Diff;
     
     return o;
 }

@@ -13,9 +13,6 @@ class Terrain : public FPActor
 	private:
 		FPStaticMeshComponent* Mesh;
 
-		bool isFill = true;
-		bool isCull = false;
-
 
 	public:
 		Terrain() = default;
@@ -23,7 +20,4 @@ class Terrain : public FPActor
 		virtual void Initialize() override;
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
-
-		void SetFillTriangel(FInputValue Value);
-		void SetCullTriangle(FInputValue Value);
 };

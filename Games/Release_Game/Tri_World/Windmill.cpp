@@ -9,12 +9,16 @@
 #include "ForestPearlEngine/FPGameTimer.h"
 #include "WindmillWing.h"
 #include "TripleWindmillWing.h"
+#include "ForestPearlEngine/FPMaterialInterface.h"
 
 void Windmill::Initialize()
 {
 	Body = new FPStaticMeshComponent(this, "Windmill_Body_StaticMesh");
 	SetRootComponent((FPSceneComponent*)Body);
- 
+	
+	FPVector4 Color = { 1.000f, 0.412f, 0.706f, 1.0f };
+	Body->GetMaterial().SetBaseColor(Color);
+
 	FPAController* Controller = GetWorld()->GetController(0);
 	Controller->GetInputComponent().BindMethod("IA_SetMoveTriangel", this, EKeyState::Pressed, &Windmill::Move);
 	Controller->GetInputComponent().BindMethod("IA_SetRotateWindmill", this, EKeyState::Pressed, &Windmill::Rotate);
@@ -64,6 +68,7 @@ void Windmill::Scaling(FInputValue Value)
 	float move_x = Value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
 	RootComponent->SetWorldScale3D(RootComponent->GetComponentScale() + FPVector3{move_x, move_x, move_x});
 }
+
 
 void Windmill::SetScaleWing(FInputValue Value)
 {

@@ -3,6 +3,7 @@
 #include "FPAssetManager.h"
 #include "FPStaticMesh.h"
 #include "FPMaterial.h"
+#include "FPGizmoNormalLineComponent.h"
 #include <iostream>
 
 FPStaticMeshComponent::FPStaticMeshComponent(FPActor* Owner, std::string StaticMeshName) : FPMeshComponent(Owner, StaticMeshName)
@@ -10,6 +11,10 @@ FPStaticMeshComponent::FPStaticMeshComponent(FPActor* Owner, std::string StaticM
 	//AssetManager로 부터 MeshPath의 StaticMesh_Json 파일을 읽고 Static_Mesh 객체를 반환 받아 저장.
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 	StaticMesh = AssetManager->GetStaticMeshData(StaticMeshName);
+
+	GizmoNormalLine = new FPGizmoNormalLineComponent(this->GetOwner(), *(StaticMesh->GetMeshPath()));
+
+	GizmoNormalLine->SetupAttachment(this);
 
 	FPMaterialInterface* StaticMeshMaterial = *(StaticMesh->GetStaticMeshMaterial());
 	if (StaticMeshMaterial == nullptr) { Material = new FPMaterial(); }
@@ -43,6 +48,11 @@ void FPStaticMeshComponent::SetRenderItemData()
 	
 	RenderItem->VertexShaderPath = SelectedMaterial->GetVertexShader();
 	RenderItem->PixelShaderPath = SelectedMaterial->GetPixelShader();
+
+	RenderItem->BaseColor = SelectedMaterial->GetBaseColor();
+	RenderItem->Diffuse = SelectedMaterial->GetDiffuse();
+	RenderItem->Ambient = SelectedMaterial->GetAmbient();
+
 	RenderItem->VertexConstBuffer = SelectedMaterial->GetVertexConstantBufferRenderData();
 	RenderItem->PixelConstBuffer = SelectedMaterial->GetPixelConstantBufferRenderData();
 
@@ -74,10 +84,22 @@ FPStaticMeshComponent::~FPStaticMeshComponent()
 {
 }
 
+void FPStaticMeshComponent::SetActive(bool Active)
+{
+	this->isActive = Active;
+	GizmoNormalLine->SetActive(Active);
+}
+
+void FPStaticMeshComponent::SetPriority(int Prio)
+{
+	this->Priority = Prio;
+}
+
 void FPStaticMeshComponent::SetStaticMesh(std::string StaticMeshName)
 {
 	//AssetManager로 부터 MeshPath의 StaticMesh_Json 파일을 읽고 Static_Mesh 객체를 반환 받아 저장.
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 	StaticMesh = AssetManager->GetStaticMeshData(StaticMeshName);
+	GizmoNormalLine->SetMeshPath(*(StaticMesh->GetMeshPath()));
 	RegistMeshRenderList();
 }

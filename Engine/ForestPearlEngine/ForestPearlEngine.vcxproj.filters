@@ -486,5 +486,8 @@
     <None Include="Assets\Shader\NormalCalculate.hlsli">
       <Filter>Assets\Shader\Common\Normal</Filter>
     </None>
+    <None Include="Assets\StaticMesh\Plane_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
   </ItemGroup>
 </Project>

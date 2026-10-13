@@ -375,10 +375,11 @@
     <None Include="Assets\Shader\LambertLight.hlsli" />
     <None Include="Assets\Shader\NormalCalculate.hlsli" />
     <None Include="Assets\StaticMesh\Cube_StaticMesh.json" />
+    <None Include="Assets\StaticMesh\Plane_StaticMesh.json" />
     <None Include="Assets\StaticMesh\Sphere_StaticMesh.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\GAME_DEV\ForestPearlEngine\Games\Release_Game\Tri_World\Tri_World.vcxproj">
+    <ProjectReference Include="..\..\Games\Release_Game\Tri_World\Tri_World.vcxproj">
       <Project>{874c49a3-fd56-4137-9cfa-a3bd1b70917e}</Project>
     </ProjectReference>
   </ItemGroup>

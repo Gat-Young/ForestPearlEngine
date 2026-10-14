@@ -11,6 +11,8 @@
 #pragma comment(lib, "dxgi.lib")
 #include <DirectXMath.h>
 using namespace DirectX;
+#include <WICTextureLoader.h>
+#include <DDSTextureLoader.h>
 #pragma comment(lib, "DirectXTK.lib")
 #include "SpriteFont.h"
 #include "SpriteBatch.h"
@@ -72,6 +74,9 @@ class RenderingDevice
 		};
 		//깊이/스텐실 버퍼 상태 객체
 		ID3D11DepthStencilState* DSState[DS_MAX_];
+
+		//샘플러 상태 객체
+		ID3D11SamplerState* SamplerState[Sampler_MAX_];
 
 		DXGI_MODE_DESC1 DisplayMode;
 
@@ -145,6 +150,12 @@ class RenderingDevice
 
 		HRESULT Draw(UINT VertexCount, UINT StartVertexLocation);
 
+		//Texture용
+		HRESULT CreateWICTextureFromFile(std::string& FilePath, void* TextureResourceView);
+		HRESULT CreateDDSTextureFromFile(std::string& FilePath, void* TextureResourceView);
+
+		HRESULT GetTextureDesc(void* TextureResourceView, void* Desc);
+
 		//Normal용
 		HRESULT DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation);
 
@@ -172,6 +183,11 @@ class RenderingDevice
 
 		//깊이 스텐실 버퍼 상태 설정
 		void OMSetDepthStencilState(bool State);
+
+		//Sampler 상태객체 생성
+		HRESULT CreateSamplers();
+
+		//Sampler 상태 설정
 
 		//GetDXDevice
 		ID3D11Device* GetDXDevice() { return Device.Get(); };

@@ -97,6 +97,9 @@
     <Filter Include="Assets\Shader\Common\Normal">
       <UniqueIdentifier>{d3870e15-d0f1-444c-bd17-1544b6bb10c4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\Texture">
+      <UniqueIdentifier>{4dfb6818-38eb-4819-910d-9d130b63ed0b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -488,6 +491,12 @@
     </None>
     <None Include="Assets\StaticMesh\Plane_StaticMesh.json">
       <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\Texture\Checker_bmp.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Checker_dds.json">
+      <Filter>Assets\Texture</Filter>
     </None>
   </ItemGroup>
 </Project>

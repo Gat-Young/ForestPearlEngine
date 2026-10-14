@@ -482,3 +482,72 @@ void FPAssetLoader::LoadStaticMesh(std::string StaticMeshName, std::string Stati
 
 	AssetManager->AddStaticMeshData(StaticMeshName, &Data);
 }
+
+void FPAssetLoader::LoadTexture(std::string TextureName, std::string TexturePath, AssetOwner EngineAsset)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	if (AssetManager->HasTextureData(TextureName))
+	{
+		std::cout << "같은 이름의 Texture가 존재합니다." << "\n";
+		return;
+	}
+
+	std::ifstream File(FPPathManager::Get().GetAssetPath("Texture/" + TexturePath));
+	if (EngineAsset == AssetOwner::Engine) File = std::ifstream(FPPathManager::Get().GetEngineAssetPath("Texture/" + TexturePath));
+
+	if (!File.is_open())
+	{
+		std::cerr << TextureName << ".json 파일 열기 실패\n";
+		return;
+	}
+
+	json JsonStaticMeshData;
+
+	try
+	{
+		File >> JsonStaticMeshData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPTextureData Data;
+	std::string TexturePath;
+	std::string TextureType;
+
+	for (const json& TextureData : JsonStaticMeshData["TextureData"])
+	{
+		TexturePath = TextureData["Path"];
+		TextureType = TextureData["Type"];
+	}
+
+	//이 시점에서 Texture를 만들어서 넘김
+
+	if (EngineAsset == AssetOwner::Engine)
+	{
+		TexturePath = FPPathManager::Get().GetEngineAssetPath("TextureResource/" + TexturePath);
+	}
+	else
+	{
+		TexturePath = FPPathManager::Get().GetAssetPath("TextureResource/" + TexturePath);
+	}
+
+	if (TextureType == "WIC")
+	{
+		RenderingDevice::GetRenderingDevice().CreateWICTextureFromFile(TexturePath, Data.TextureResource);
+	}
+
+	if (TextureType == "DDS")
+	{
+		RenderingDevice::GetRenderingDevice().CreateDDSTextureFromFile(TexturePath, Data.TextureResource);
+	}
+
+	RenderingDevice::GetRenderingDevice().GetTextureDesc(Data.TextureResource, Data.TextureDESC);
+
+	AssetManager->AddTextureData(TextureName, Data);
+}

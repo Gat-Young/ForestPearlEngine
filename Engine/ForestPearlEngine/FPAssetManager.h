@@ -10,66 +10,76 @@ class FPMaterialInterface;
 
 class FPAssetManager : public FPGameInstanceSubSystem
 {
-	private:
-		std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshVertexBuffer;
+private:
+	std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshVertexBuffer;
 
-		std::unordered_map<std::string, std::vector<FPMeshData> > LoadedMeshData;
-		
-		std::unordered_map<std::string, FPStaticMeshData> LoadedStaticMeshData;
+	std::unordered_map<std::string, std::vector<FPMeshData> > LoadedMeshData;
 
-		std::unordered_map<std::string, std::vector<FPActorData> > LevelData;
+	std::unordered_map<std::string, FPStaticMeshData> LoadedStaticMeshData;
 
-		std::unordered_map<std::string, std::string> GameModeData;
+	std::unordered_map<std::string, std::vector<FPActorData> > LevelData;
 
-		std::unordered_map<std::string, std::tuple<void*, void*, void*> > VertexShaderData;
-		std::unordered_map<std::string, std::pair<void*, void*> > PixelShaderData;
+	std::unordered_map<std::string, std::string> GameModeData;
 
-	public:
-		FPAssetManager() = default;
-		~FPAssetManager() = default;
+	std::unordered_map<std::string, std::tuple<void*, void*, void*> > VertexShaderData;
+	std::unordered_map<std::string, std::pair<void*, void*> > PixelShaderData;
 
-		//Mesh
-		void AddMeshData(std::string FbxPath, FPMeshData* MeshData);
+	std::unordered_map<std::string, FPTextureData> TextureData;
 
-		void AddVertexBuffer(std::string FbxPath, void* VertexBuffer, int VBSize, int Stride, int Offset);
+public:
+	FPAssetManager() = default;
+	~FPAssetManager() = default;
 
-		std::vector<FPVertexBufferData> GetVertexBuffer(std::string MeshPath);
+	//Mesh
+	void AddMeshData(std::string FbxPath, FPMeshData* MeshData);
 
-		std::vector<FPMeshData> GetMeshData(std::string FbxPath);
+	void AddVertexBuffer(std::string FbxPath, void* VertexBuffer, int VBSize, int Stride, int Offset);
 
-		bool HasVertexBuffer(std::string MeshPath);
+	std::vector<FPVertexBufferData> GetVertexBuffer(std::string MeshPath);
 
-		//StaticMesh
-		FPStaticMesh* GetStaticMeshData(std::string StaticMeshName);
+	std::vector<FPMeshData> GetMeshData(std::string FbxPath);
 
-		void AddStaticMeshData(std::string StaticMeshName, FPStaticMeshData* StaticMeshData);
+	bool HasVertexBuffer(std::string MeshPath);
 
-		bool HasStaticMeshData(std::string StaticMeshName);
+	//StaticMesh
+	FPStaticMesh* GetStaticMeshData(std::string StaticMeshName);
 
-		//Level
-		bool HasLevelData(std::string LevelName);
+	void AddStaticMeshData(std::string StaticMeshName, FPStaticMeshData* StaticMeshData);
 
-		void AddLevelData(std::string LevelName, FPActorData* ActorData);
+	bool HasStaticMeshData(std::string StaticMeshName);
 
-		std::vector<FPActorData>& GetLevelData(std::string LevelName);
 
-		//GameMode
-		void AddGameModeData(std::string LevelName, std::string GameModeName);
-		std::string GetGameModeData(std::string LevelName);
+	//Texture
+	FPTextureData& GetTextureData(std::string TextureName);
 
-		//Material
-		FPMaterialInterface* MakeMaterial(std::string MaterialName);
-		
-		//Shader
-		bool HasVertexShader(std::string ShaderPath);
-		bool HasPixelShader(std::string ShaderPath);
+	void AddTextureData(std::string TextureName, FPTextureData& TextureData);
 
-		void AddVertexShader(std::string ShaderPath, void* VertexShader, void* VSCode, void* VBLayout);
-		void AddPixelShader(std::string ShaderPath, void* PixelShader, void* PSCode);
+	bool HasTextureData(std::string TextureName);
 
-		//VertexShader , VSCode, VBLayout
-		std::tuple<void*, void*, void*> GetVertexShader(std::string ShaderPath);
+	//Level
+	bool HasLevelData(std::string LevelName);
 
-		//PixelShader, PSCode
-		std::pair<void*, void*> GetPixelShader(std::string ShaderPath);
+	void AddLevelData(std::string LevelName, FPActorData* ActorData);
+
+	std::vector<FPActorData>& GetLevelData(std::string LevelName);
+
+	//GameMode
+	void AddGameModeData(std::string LevelName, std::string GameModeName);
+	std::string GetGameModeData(std::string LevelName);
+
+	//Material
+	FPMaterialInterface* MakeMaterial(std::string MaterialName);
+
+	//Shader
+	bool HasVertexShader(std::string ShaderPath);
+	bool HasPixelShader(std::string ShaderPath);
+
+	void AddVertexShader(std::string ShaderPath, void* VertexShader, void* VSCode, void* VBLayout);
+	void AddPixelShader(std::string ShaderPath, void* PixelShader, void* PSCode);
+
+	//VertexShader , VSCode, VBLayout
+	std::tuple<void*, void*, void*> GetVertexShader(std::string ShaderPath);
+
+	//PixelShader, PSCode
+	std::pair<void*, void*> GetPixelShader(std::string ShaderPath);
 };

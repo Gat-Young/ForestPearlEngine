@@ -6,6 +6,19 @@
 #include "tchar.h"
 #include <vector>
 
+enum SamplerType
+{
+	Sampler_CLAMP,
+	Sampler_Wrap,
+	Sampler_Mirror,
+	Sampler_Mirror_Once,
+	Sampler_BorderColor_RED,
+	Sampler_BorderColor_BLUE,
+	Sampler_BorderColor_GREEN,
+	Sampler_BorderColor_MAGENTA,
+
+	Sampler_MAX_
+};
 struct RenderItem
 {
 	int* Priority = nullptr;

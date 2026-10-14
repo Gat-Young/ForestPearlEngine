@@ -164,6 +164,8 @@
     <ClInclude Include="FPStaticMesh.h" />
     <ClInclude Include="FPStaticMeshComponent.h" />
     <ClInclude Include="FPStreamableRenderAssetr.h" />
+    <ClInclude Include="FPTexture.h" />
+    <ClInclude Include="FPTexture2D.h" />
     <ClInclude Include="FPViewPortClient.h" />
     <ClInclude Include="FPWorld.h" />
     <ClInclude Include="framework.h" />
@@ -227,6 +229,7 @@
     <ClCompile Include="FPSpringArmComponent.cpp" />
     <ClCompile Include="FPStaticMesh.cpp" />
     <ClCompile Include="FPStaticMeshComponent.cpp" />
+    <ClCompile Include="FPTexture2D.cpp" />
     <ClCompile Include="FPViewPortClient.cpp" />
     <ClCompile Include="FPWorld.cpp" />
     <ClCompile Include="FPGizmoAxisComponent.cpp" />

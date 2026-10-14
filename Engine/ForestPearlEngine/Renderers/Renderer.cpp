@@ -172,6 +172,17 @@ void Renderer::CreateMeshRenderList()
 		Material.Diffuse = *(RenderItemData.Diffuse);
 		Material.Ambient = *(RenderItemData.Ambient);
 
+		//Texture에 대한 처리 진행
+		
+		//List 초기화
+		MeshRenderData.TextureList.clear();
+		MeshRenderData.SamplerList.clear();
+
+		for (FPTextureItem TextureItem : RenderItemData.TextureList)
+		{
+
+		}
+
 		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, LightCount, Material);
 		this->MeshRenderList.push_back(MeshRenderData);
 	}

@@ -6,7 +6,7 @@
 #include "tchar.h"
 #include <vector>
 
-enum SamplerType
+enum FPSamplerType
 {
 	Sampler_CLAMP,
 	Sampler_Wrap,
@@ -19,6 +19,13 @@ enum SamplerType
 
 	Sampler_MAX_
 };
+
+struct FPTextureItem
+{
+	std::string* TexturePath;
+	FPSamplerType* SamplerType;
+};
+
 struct RenderItem
 {
 	int* Priority = nullptr;
@@ -36,6 +43,8 @@ struct RenderItem
 	FPVector4* BaseColor = nullptr;
 	FPVector4* Diffuse = nullptr;
 	FPVector4* Ambient = nullptr;
+
+	std::vector<FPTextureItem> TextureList;
 
 	//상수 버퍼용
 	FPConstantBufferRenderData* VertexConstBuffer = nullptr;
@@ -260,6 +269,19 @@ namespace RenderingData
 		FPConstantBufferRenderData PixelConstBuffer;
 	};
 
+	struct FPTextureItem
+	{
+		int Slot;
+		std::string TexturePath;
+		FPSamplerType SamplerType;
+	};
+
+	struct FPSamplerItem
+	{
+		int Slot;
+		FPSamplerType SamplerType;
+	};
+
 	struct MeshRenderItem
 	{
 		int Priority;
@@ -273,6 +295,9 @@ namespace RenderingData
 
 		std::string VertexShaderPath;
 		std::string PixelShaderPath;
+
+		std::vector<RenderingData::FPTextureItem> TextureList;
+		std::vector<RenderingData::FPSamplerItem> SamplerList;
 
 		FPConstantBufferRenderData VertexConstBuffer;
 		FPConstantBufferRenderData PixelConstBuffer;

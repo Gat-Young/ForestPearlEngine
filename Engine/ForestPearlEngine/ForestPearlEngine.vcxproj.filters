@@ -306,6 +306,12 @@
     <ClInclude Include="FPMeshNormalRenderList.h">
       <Filter>FPGameInstance\RenderList\Header</Filter>
     </ClInclude>
+    <ClInclude Include="FPTexture.h">
+      <Filter>RenderAsset</Filter>
+    </ClInclude>
+    <ClInclude Include="FPTexture2D.h">
+      <Filter>RenderAsset</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
@@ -451,6 +457,9 @@
     </ClCompile>
     <ClCompile Include="FPMeshNormalRenderList.cpp">
       <Filter>FPGameInstance\RenderList\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="FPTexture2D.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

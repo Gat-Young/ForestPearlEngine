@@ -173,15 +173,54 @@ void Renderer::CreateMeshRenderList()
 		Material.Ambient = *(RenderItemData.Ambient);
 
 		//Texture에 대한 처리 진행
-		
 		//List 초기화
 		MeshRenderData.TextureList.clear();
 		MeshRenderData.SamplerList.clear();
 
+		int TextureSlot = 0;
+		int SelectedSampler[Sampler_MAX_] = { 0, };
+
 		for (FPTextureItem TextureItem : RenderItemData.TextureList)
 		{
+			std::string TexturePath = *(TextureItem.TexturePath);
+			FPSamplerType SamplerType = *(TextureItem.SamplerType);
 
+			//Texture가 할당되어 있다면
+			if (TexturePath != "N/A")
+			{
+				//Sampler 선택
+				SelectedSampler[SamplerType] = 1;
+
+				//Texture Data 생성
+				RenderingData::FPTextureItem RenderTextureItem;
+				RenderTextureItem.Slot = TextureSlot;
+				RenderTextureItem.TexturePath = TexturePath;
+				RenderTextureItem.SamplerType = SamplerType;
+
+				//Texture Item 추가
+				MeshRenderData.TextureList.push_back(RenderTextureItem);
+
+				//TextureSlot 증가
+				TextureSlot++;
+			}
 		}
+
+		//Sampler 등록
+		int SamplerSlot = 0;
+		for (int i = 0; i < Sampler_MAX_; ++i)
+		{
+			//해당 샘플러를 사용한다면
+			if (SelectedSampler[i] == 1)
+			{
+				RenderingData::FPSamplerItem RenderSamplerItem;
+				RenderSamplerItem.Slot = SamplerSlot;
+				RenderSamplerItem.SamplerType = static_cast<FPSamplerType>(i);
+
+				MeshRenderData.SamplerList.push_back(RenderSamplerItem);
+				SamplerSlot++;
+			}
+		}
+		//Texture 처리 End.
 
 		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, LightCount, Material);
 		this->MeshRenderList.push_back(MeshRenderData);

@@ -17,6 +17,7 @@ void LoadEngineAssets()
 	//Primitive Model
 	AssetLoader->LoadFbxData("Primitive_Model/Cube.fbx", AssetOwner::Engine);
 	AssetLoader->LoadFbxData("Primitive_Model/Sphere.fbx", AssetOwner::Engine);
+	AssetLoader->LoadFbxData("Primitive_Model/Plane.fbx", AssetOwner::Engine);
 
 	//StaticMesh Load
 	AssetLoader->LoadStaticMesh("Cube_StaticMesh", "Cube_StaticMesh.json", AssetOwner::Engine);

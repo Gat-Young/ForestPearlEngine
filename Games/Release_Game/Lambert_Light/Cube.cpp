@@ -52,13 +52,13 @@ void Cube::BeginPlay()
 	FPMaterialInterface& Material = Mesh->GetMaterial();
 	FPVector4 CubeColor;
 	std::string TextureName = "Checker_dds";
-	if (this->GetName() == "Cube1") { CubeColor = { 1.0f, 1.0f, 1.0f, 1.0f }; Material.SetTexture(0, TextureName); }
+	if (this->GetName() == "Cube1") { CubeColor = { 1.0f, 1.0f, 1.0f, 1.0f }; }
 	if (this->GetName() == "Cube2") { CubeColor = { 1.0f, 0.0f, 0.0f, 1.0f }; }
 	if (this->GetName() == "Cube3") { CubeColor = { 0.0f, 1.0f, 1.0f, 1.0f }; }
 	if (this->GetName() == "Cube4") { CubeColor = { 1.0f, 1.0f, 0.0f, 1.0f }; }
 	if (this->GetName() == "Cube5") { CubeColor = { 0.0f, 1.0f, 0.0f, 1.0f }; }
-
-	Material.SetBaseColor(CubeColor);
+	Material.SetTexture(0, TextureName);
+	//Material.SetBaseColor(CubeColor);
 }
 
 void Cube::Tick()

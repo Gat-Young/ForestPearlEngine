@@ -517,12 +517,12 @@ void FPAssetLoader::LoadTexture(std::string TextureName, std::string TexturePath
 	}
 
 	FPTextureData Data;
-	std::string TexturePath;
+	std::string TextureResourcePath;
 	std::string TextureType;
 
 	for (const json& TextureData : JsonStaticMeshData["TextureData"])
 	{
-		TexturePath = TextureData["Path"];
+		TextureResourcePath = TextureData["Path"];
 		TextureType = TextureData["Type"];
 	}
 
@@ -530,24 +530,24 @@ void FPAssetLoader::LoadTexture(std::string TextureName, std::string TexturePath
 
 	if (EngineAsset == AssetOwner::Engine)
 	{
-		TexturePath = FPPathManager::Get().GetEngineAssetPath("TextureResource/" + TexturePath);
+		TextureResourcePath = FPPathManager::Get().GetEngineAssetPath("TextureResource/" + TextureResourcePath);
 	}
 	else
 	{
-		TexturePath = FPPathManager::Get().GetAssetPath("TextureResource/" + TexturePath);
+		TextureResourcePath = FPPathManager::Get().GetAssetPath("TextureResource/" + TextureResourcePath);
 	}
 
 	if (TextureType == "WIC")
 	{
-		RenderingDevice::GetRenderingDevice().CreateWICTextureFromFile(TexturePath, Data.TextureResource);
+		RenderingDevice::GetRenderingDevice().CreateWICTextureFromFile(TextureResourcePath, &Data.TextureResource);
 	}
 
 	if (TextureType == "DDS")
 	{
-		RenderingDevice::GetRenderingDevice().CreateDDSTextureFromFile(TexturePath, Data.TextureResource);
+		RenderingDevice::GetRenderingDevice().CreateDDSTextureFromFile(TextureResourcePath, &Data.TextureResource);
 	}
 
-	RenderingDevice::GetRenderingDevice().GetTextureDesc(Data.TextureResource, Data.TextureDESC);
+	RenderingDevice::GetRenderingDevice().GetTextureDesc(Data.TextureResource, &Data.TextureDESC);
 
 	AssetManager->AddTextureData(TextureName, Data);
 }

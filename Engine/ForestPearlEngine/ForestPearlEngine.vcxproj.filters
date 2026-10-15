@@ -507,5 +507,8 @@
     <None Include="Assets\Texture\Checker_dds.json">
       <Filter>Assets\Texture</Filter>
     </None>
+    <None Include="Assets\Texture\Default_Texture512.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -40,8 +40,8 @@ struct FPStaticMeshData
 //Textue 데이터 구조체
 struct FPTextureData
 {
-	void* TextureResource;
-	void* TextureDESC;
+	void* TextureResource = nullptr;
+	void* TextureDESC = nullptr;
 };
 
 //VertexBuffer Topology

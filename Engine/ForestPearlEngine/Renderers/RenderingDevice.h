@@ -18,6 +18,8 @@ using namespace DirectX;
 #include "SpriteBatch.h"
 using namespace DirectX;
 
+#include "FPRenderingCommon.h"
+
 class RenderingDevice
 {
 	template<typename T>
@@ -151,10 +153,12 @@ class RenderingDevice
 		HRESULT Draw(UINT VertexCount, UINT StartVertexLocation);
 
 		//Texture용
-		HRESULT CreateWICTextureFromFile(std::string& FilePath, void* TextureResourceView);
-		HRESULT CreateDDSTextureFromFile(std::string& FilePath, void* TextureResourceView);
+		HRESULT CreateWICTextureFromFile(std::string& FilePath, void** TextureResourceView);
+		HRESULT CreateDDSTextureFromFile(std::string& FilePath, void** TextureResourceView);
 
-		HRESULT GetTextureDesc(void* TextureResourceView, void* Desc);
+		HRESULT GetTextureDesc(void* TextureResourceView, void** Desc);
+
+		HRESULT PSSetShaderResources(UINT Slot, UINT NumViews, void* ShaderResourceView);
 
 		//Normal용
 		HRESULT DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation);
@@ -188,6 +192,7 @@ class RenderingDevice
 		HRESULT CreateSamplers();
 
 		//Sampler 상태 설정
+		HRESULT PSSetSamplers(UINT Slot, UINT NumSamplers, FPSamplerType SamplerType);
 
 		//GetDXDevice
 		ID3D11Device* GetDXDevice() { return Device.Get(); };

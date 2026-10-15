@@ -382,6 +382,7 @@
     <None Include="Assets\StaticMesh\Sphere_StaticMesh.json" />
     <None Include="Assets\Texture\Checker_bmp.json" />
     <None Include="Assets\Texture\Checker_dds.json" />
+    <None Include="Assets\Texture\Default_Texture512.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Games\Release_Game\Lambert_Light\Lambert_Light.vcxproj">

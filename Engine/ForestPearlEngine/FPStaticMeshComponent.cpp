@@ -57,6 +57,7 @@ void FPStaticMeshComponent::SetRenderItemData()
 	RenderItem->PixelConstBuffer = SelectedMaterial->GetPixelConstantBufferRenderData();
 
 	SelectedMaterial->GetTextureList(RenderItem->TextureList);
+
 }
 
 FTransform FPStaticMeshComponent::GetSocketTransform(const std::string& SocketName) const

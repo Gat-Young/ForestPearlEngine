@@ -1,5 +1,4 @@
 #include "RenderingDevice.h"
-#include "FPRenderingCommon.h"
 #include "../Utility/FPPathManager.h"
 #include <assert.h>
 #include <iostream>
@@ -624,6 +623,12 @@ HRESULT RenderingDevice::CreateSamplers()
 	return hr;
 }
 
+HRESULT RenderingDevice::PSSetSamplers(UINT Slot, UINT NumSamplers, FPSamplerType SamplerType)
+{
+	DeviceContext->PSSetSamplers(Slot, NumSamplers, &SamplerState[SamplerType]);
+	return S_OK;
+}
+
 
 
 //Font Create
@@ -921,7 +926,7 @@ HRESULT RenderingDevice::Draw(UINT VertexCount, UINT StartVertexLocation)
 }
 
 //WIC Texture Load
-HRESULT RenderingDevice::CreateWICTextureFromFile(std::string& FilePath, void* TextureResourceView)
+HRESULT RenderingDevice::CreateWICTextureFromFile(std::string& FilePath, void** TextureResourceView)
 {
 	HRESULT hr = S_OK;
 	ID3D11Device* DevicePointer = Device.Get();
@@ -934,12 +939,12 @@ HRESULT RenderingDevice::CreateWICTextureFromFile(std::string& FilePath, void* T
 		std::cout << FilePath << " 텍스처 로드 실패" << "\n";
 		return hr;
 	}
-	TextureResourceView = TextureRV;
+	*TextureResourceView = TextureRV;
 	return hr;
 }
 
 //DDS Texture Load
-HRESULT RenderingDevice::CreateDDSTextureFromFile(std::string& FilePath, void* TextureResourceView)
+HRESULT RenderingDevice::CreateDDSTextureFromFile(std::string& FilePath, void** TextureResourceView)
 {
 	HRESULT hr = S_OK;
 	ID3D11Device* DevicePointer = Device.Get();
@@ -952,12 +957,12 @@ HRESULT RenderingDevice::CreateDDSTextureFromFile(std::string& FilePath, void* T
 		std::cout << FilePath << " 텍스처 로드 실패" << "\n";
 		return hr;
 	}
-	TextureResourceView = TextureRV;
+	*TextureResourceView = TextureRV;
 	return hr;
 }
 
 //Textre 정보 획득
-HRESULT RenderingDevice::GetTextureDesc(void* TextureResourceView, void* Desc)
+HRESULT RenderingDevice::GetTextureDesc(void* TextureResourceView, void** Desc)
 {
 	HRESULT hr = S_OK;
 
@@ -975,15 +980,23 @@ HRESULT RenderingDevice::GetTextureDesc(void* TextureResourceView, void* Desc)
 	Res->QueryInterface<ID3D11Texture2D>(&Tex);
 	if (Tex)
 	{
-		D3D11_TEXTURE2D_DESC* TextureDesc;
+		D3D11_TEXTURE2D_DESC* TextureDesc = new D3D11_TEXTURE2D_DESC();
 
 		Tex->GetDesc(TextureDesc);
 
-		Desc = TextureDesc;
+		*Desc = TextureDesc;
 
 		Tex->Release();
 	}
 	return hr;
+}
+
+HRESULT RenderingDevice::PSSetShaderResources(UINT Slot, UINT NumViews, void* ShaderResourceView)
+{
+	ID3D11ShaderResourceView* pShaderResourceView = static_cast<ID3D11ShaderResourceView*>(ShaderResourceView);
+	ID3D11ShaderResourceView* const* ppShaderResourceView = &pShaderResourceView;
+	DeviceContext->PSSetShaderResources(Slot, NumViews, ppShaderResourceView);
+	return S_OK;
 }
 
 HRESULT RenderingDevice::DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation)

@@ -95,7 +95,7 @@ FPVector4* FPMaterial::GetAmbient()
 void FPMaterial::GetTextureList(std::vector<FPTextureItem>& TextureRenderList)
 {
 	TextureRenderList.clear();
-	for (FPTexture2D Texture2D : TextureList)
+	for (FPTexture2D& Texture2D : TextureList)
 	{
 		FPTextureItem TextureItem;
 		TextureItem.TexturePath = Texture2D.GetTexture();

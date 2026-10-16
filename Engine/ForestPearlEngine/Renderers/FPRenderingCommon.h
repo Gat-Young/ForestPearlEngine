@@ -5,6 +5,7 @@
 #include <string>
 #include "tchar.h"
 #include <vector>
+#include <unordered_map>
 
 enum FPSamplerType
 {
@@ -44,7 +45,7 @@ struct RenderItem
 	FPVector4* Diffuse = nullptr;
 	FPVector4* Ambient = nullptr;
 
-	std::vector<FPTextureItem> TextureList;
+	std::unordered_map<int, FPTextureItem>* TextureList;
 
 	//상수 버퍼용
 	FPConstantBufferRenderData* VertexConstBuffer = nullptr;

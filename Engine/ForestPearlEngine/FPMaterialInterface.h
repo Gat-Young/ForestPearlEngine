@@ -1,6 +1,7 @@
 #pragma once
 #include "Object/Object.h"
 #include "Renderers/FPRenderingCommon.h"
+#include <unordered_map>
 
 ////////////////////////////////////////////////
 //
@@ -14,7 +15,9 @@ class FPMaterialInterface : public FPObject
 		virtual void SetTexture(int Slot, std::string& TextureName, FPSamplerType SamplerType) = 0;
 		virtual void SetTexture(int Slot, std::string& TextureName) = 0;
 		virtual void SetTextureSampler(int Slot, FPSamplerType SamplerType) = 0;
-		virtual void GetTextureList(std::vector<FPTextureItem>& TextureRenderList) = 0;
+		virtual std::unordered_map<int, FPTextureItem>* GetTextureList() = 0;
+		virtual void AddTexture(int Slot) = 0;
+		virtual void DeleteTexture(int Slot) = 0;
 
 		virtual void SetVertexShader(std::string VertexShaderPath) = 0;
 		virtual void SetPixelShader(std::string PixelShaderPath) = 0;

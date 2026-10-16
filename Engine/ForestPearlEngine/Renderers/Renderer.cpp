@@ -177,33 +177,25 @@ void Renderer::CreateMeshRenderList()
 		MeshRenderData.TextureList.clear();
 		MeshRenderData.SamplerList.clear();
 
-		int TextureSlot = 0;
 		int SelectedSampler[Sampler_MAX_] = { 0, };
 
-		for (FPTextureItem& TextureItem : RenderItemData.TextureList)
+		for (std::pair<const int, FPTextureItem>& TextureItem : *(RenderItemData.TextureList))
 		{
-			std::string TexturePath = *(TextureItem.TexturePath);
-			FPSamplerType SamplerType = *(TextureItem.SamplerType);
+			int Slot = TextureItem.first;
+			std::string TexturePath = *(TextureItem.second.TexturePath);
+			FPSamplerType SamplerType = *(TextureItem.second.SamplerType);
 
-			//Texture가 할당되어 있다면
-			if (TexturePath != "N/A")
-			{
-				//Sampler 선택
-				SelectedSampler[SamplerType] = 1;
+			//Sampler 선택
+			SelectedSampler[SamplerType] = 1;
 
-				//Texture Data 생성
-				RenderingData::FPTextureItem RenderTextureItem;
-				RenderTextureItem.Slot = TextureSlot;
-				RenderTextureItem.TexturePath = TexturePath;
-				RenderTextureItem.SamplerType = SamplerType;
+			//Texture Data 생성
+			RenderingData::FPTextureItem RenderTextureItem;
+			RenderTextureItem.Slot = Slot;
+			RenderTextureItem.TexturePath = TexturePath;
+			RenderTextureItem.SamplerType = SamplerType;
 
-				//Texture Item 추가
-				MeshRenderData.TextureList.push_back(RenderTextureItem);
-
-				//TextureSlot 증가
-				TextureSlot++;
-			}
-	
+			//Texture Item 추가
+			MeshRenderData.TextureList.push_back(RenderTextureItem);
 		}
 
 		//Sampler 등록

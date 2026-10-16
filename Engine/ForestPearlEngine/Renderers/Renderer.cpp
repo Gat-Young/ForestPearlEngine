@@ -172,6 +172,49 @@ void Renderer::CreateMeshRenderList()
 		Material.Diffuse = *(RenderItemData.Diffuse);
 		Material.Ambient = *(RenderItemData.Ambient);
 
+		//Texture에 대한 처리 진행
+		//List 초기화
+		MeshRenderData.TextureList.clear();
+		MeshRenderData.SamplerList.clear();
+
+		int SelectedSampler[Sampler_MAX_] = { 0, };
+
+		for (std::pair<const int, FPTextureItem>& TextureItem : *(RenderItemData.TextureList))
+		{
+			int Slot = TextureItem.first;
+			std::string TexturePath = *(TextureItem.second.TexturePath);
+			FPSamplerType SamplerType = *(TextureItem.second.SamplerType);
+
+			//Sampler 선택
+			SelectedSampler[SamplerType] = 1;
+
+			//Texture Data 생성
+			RenderingData::FPTextureItem RenderTextureItem;
+			RenderTextureItem.Slot = Slot;
+			RenderTextureItem.TexturePath = TexturePath;
+			RenderTextureItem.SamplerType = SamplerType;
+
+			//Texture Item 추가
+			MeshRenderData.TextureList.push_back(RenderTextureItem);
+		}
+
+		//Sampler 등록
+		int SamplerSlot = 0;
+		for (int i = 0; i < Sampler_MAX_; ++i)
+		{
+			//해당 샘플러를 사용한다면
+			if (SelectedSampler[i] == 1)
+			{
+				RenderingData::FPSamplerItem RenderSamplerItem;
+				RenderSamplerItem.Slot = SamplerSlot;
+				RenderSamplerItem.SamplerType = static_cast<FPSamplerType>(i);
+
+				MeshRenderData.SamplerList.push_back(RenderSamplerItem);
+				SamplerSlot++;
+			}
+		}
+		//Texture 처리 End.
+
 		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, LightCount, Material);
 		this->MeshRenderList.push_back(MeshRenderData);
 	}
@@ -439,6 +482,7 @@ void Renderer::MeshRenderPass()
 	{
 		for(const RenderingData::MeshRenderItem& RenderItem : MeshRenderList)
 		{
+
 			std::tuple<void*, void*, void*> VertexShaderData = AssetManager->GetVertexShader(RenderItem.VertexShaderPath);
 			std::pair<void*, void*> PixelShaderData = AssetManager->GetPixelShader(RenderItem.PixelShaderPath);
 
@@ -470,6 +514,29 @@ void Renderer::MeshRenderPass()
 
 				Device.UpdatePixelShaderSubresource(Slot, RenderItem.PixelConstBuffer.Buffer.data(), Offset, Size);
 			}
+
+			//Texture 셋팅
+			const std::vector<RenderingData::FPTextureItem>& TextureList = RenderItem.TextureList;
+			
+			for (const RenderingData::FPTextureItem& TextureItem : TextureList)
+			{
+				//Texture 가져옴
+				FPTextureData& TextureData = AssetManager->GetTextureData(TextureItem.TexturePath);
+
+				Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData.TextureResource);
+			}
+			//Texture 셋팅 End.
+
+			//Sampler 셋팅
+			const std::vector<RenderingData::FPSamplerItem>& SamplerList = RenderItem.SamplerList;
+
+			for (const RenderingData::FPSamplerItem& SamplerItem : SamplerList)
+			{
+				Device.PSSetSamplers(SamplerItem.Slot, 1, SamplerItem.SamplerType);
+			}
+
+			//Sampler 셋팅 End.
+
 
 
 			std::vector<FPVertexBufferData> VB = AssetManager->GetVertexBuffer(RenderItem.MeshPath);

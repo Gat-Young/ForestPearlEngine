@@ -6,6 +6,7 @@
 #include "Grid.h"
 #include "Axis.h"
 #include "ADirectionalLight.h"
+#include "Plane.h"
 
 void RegistProjectName()
 {
@@ -32,7 +33,7 @@ void LoadClassRegist()
 	ClassRegistry->Register<Grid>("Grid");
 	ClassRegistry->Register<Axis>("Axis");
 	ClassRegistry->Register<ADirectionalLight>("ADirectionalLight");
-
+	ClassRegistry->Register<Plane>("Plane");
 
 	//Material Class µî·Ï
 }

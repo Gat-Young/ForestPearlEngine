@@ -101,12 +101,36 @@ bool FPAssetManager::HasStaticMeshData(std::string StaticMeshName)
 	return false;
 }
 
+////////////////////////////
+//
+// Texture
+//
+
+FPTextureData& FPAssetManager::GetTextureData(std::string TextureName)
+{
+	return this->TextureData[TextureName];
+}
+
+void FPAssetManager::AddTextureData(std::string TextureName, FPTextureData& TextureData)
+{
+	this->TextureData[TextureName] = TextureData;
+}
+
+bool FPAssetManager::HasTextureData(std::string TextureName)
+{
+	if (TextureData.count(TextureName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 
 ////////////////////////////
 //
 // Level
 //
-
 bool FPAssetManager::HasLevelData(std::string LevelName)
 {
 	if (LevelData.count(LevelName) > 0)

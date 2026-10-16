@@ -12,9 +12,66 @@ FPMaterial::FPMaterial()
 	MaterialVertexConstantBuffer.Diffuse = FPVector4{ 1.0f, 1.0f, 1.0f, 1.0f };
 	MaterialVertexConstantBuffer.Ambient = FPVector4{ 1.0f, 1.0f, 1.0f, 1.0f };
 
+	//우선 기본으로 무조건 0번에 Texture를 등록
+	AddTexture(0);
+
 	// 0번은 월드-뷰-프로젝션 , 1번은 ViewPort용 상수 버퍼임, 2번은 Light용으로 추가될 것
 	//Render에서 Offset을 부여하므로 0번 부터 계산, 단 Shader 코드를 짤때는 염두할 것
 	FPConstantBufferRenderDataUtil::AddConstantBuffer(VertexConstantBuffer, 0, MaterialVertexConstantBuffer);
+}
+
+bool FPMaterial::HasTexture(int Slot)
+{
+	if (TextureList.empty()) return false;
+	if (TextureList.count(Slot) <= 0)
+	{
+		return false;
+	}
+	return true;
+}
+
+void FPMaterial::SetTexture(int Slot, std::string& TextureName, FPSamplerType SamplerType)
+{
+	if (Slot >= 128) { std::cout << "설정할 수 있는 텍스처 최대 크기를 넘었습니다.\n"; return; }
+	if (HasTexture(Slot))
+	{
+		TextureList[Slot].SetTexture(TextureName);
+		TextureList[Slot].SetSamplerType(SamplerType);
+	}
+}
+
+void FPMaterial::SetTexture(int Slot, std::string& TextureName)
+{
+	if (Slot >= 128) { std::cout << "설정할 수 있는 텍스처 최대 크기를 넘었습니다.\n"; return; }
+	if (HasTexture(Slot))
+	{
+		TextureList[Slot].SetTexture(TextureName);
+	}
+}
+
+void FPMaterial::SetTextureSampler(int Slot, FPSamplerType SamplerType)
+{
+	if (Slot >= 128) { std::cout << "설정할 수 있는 텍스처 최대 크기를 넘었습니다.\n"; return; }
+	if (HasTexture(Slot))
+	{
+		TextureList[Slot].SetSamplerType(SamplerType);
+	}
+}
+
+void FPMaterial::AddTexture(int Slot)
+{
+	if (HasTexture(Slot)) { std::cout << "이미 Texture가 Slot에 존재 합니다.\n"; return; }
+	TextureList[Slot] = FPTexture2D{};
+	TextureItmeList[Slot] = FPTextureItem{TextureList[Slot].GetTexture(), TextureList[Slot].GetSamplerType()};
+}
+
+void FPMaterial::DeleteTexture(int Slot)
+{
+	if (HasTexture(Slot))
+	{
+		TextureList.erase(Slot);
+		TextureItmeList.erase(Slot);
+	}
 }
 
 void FPMaterial::SetVertexShader(std::string VertexShaderPath)
@@ -68,6 +125,11 @@ FPVector4* FPMaterial::GetDiffuse()
 FPVector4* FPMaterial::GetAmbient()
 {
 	return &MaterialVertexConstantBuffer.Ambient;
+}
+
+std::unordered_map<int, FPTextureItem>* FPMaterial::GetTextureList()
+{
+	return &TextureItmeList;
 }
 
 FPConstantBufferRenderData* FPMaterial::GetVertexConstantBufferRenderData()

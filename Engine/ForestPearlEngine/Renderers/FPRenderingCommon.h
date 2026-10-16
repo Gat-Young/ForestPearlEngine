@@ -5,6 +5,27 @@
 #include <string>
 #include "tchar.h"
 #include <vector>
+#include <unordered_map>
+
+enum FPSamplerType
+{
+	Sampler_CLAMP,
+	Sampler_Wrap,
+	Sampler_Mirror,
+	Sampler_Mirror_Once,
+	Sampler_BorderColor_RED,
+	Sampler_BorderColor_BLUE,
+	Sampler_BorderColor_GREEN,
+	Sampler_BorderColor_MAGENTA,
+
+	Sampler_MAX_
+};
+
+struct FPTextureItem
+{
+	std::string* TexturePath;
+	FPSamplerType* SamplerType;
+};
 
 struct RenderItem
 {
@@ -23,6 +44,8 @@ struct RenderItem
 	FPVector4* BaseColor = nullptr;
 	FPVector4* Diffuse = nullptr;
 	FPVector4* Ambient = nullptr;
+
+	std::unordered_map<int, FPTextureItem>* TextureList;
 
 	//상수 버퍼용
 	FPConstantBufferRenderData* VertexConstBuffer = nullptr;
@@ -247,6 +270,19 @@ namespace RenderingData
 		FPConstantBufferRenderData PixelConstBuffer;
 	};
 
+	struct FPTextureItem
+	{
+		int Slot;
+		std::string TexturePath;
+		FPSamplerType SamplerType;
+	};
+
+	struct FPSamplerItem
+	{
+		int Slot;
+		FPSamplerType SamplerType;
+	};
+
 	struct MeshRenderItem
 	{
 		int Priority;
@@ -260,6 +296,9 @@ namespace RenderingData
 
 		std::string VertexShaderPath;
 		std::string PixelShaderPath;
+
+		std::vector<RenderingData::FPTextureItem> TextureList;
+		std::vector<RenderingData::FPSamplerItem> SamplerList;
 
 		FPConstantBufferRenderData VertexConstBuffer;
 		FPConstantBufferRenderData PixelConstBuffer;

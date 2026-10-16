@@ -37,6 +37,13 @@ struct FPStaticMeshData
 	std::string MaterialName;
 };
 
+//Textue 데이터 구조체
+struct FPTextureData
+{
+	void* TextureResource = nullptr;
+	void* TextureDESC = nullptr;
+};
+
 //VertexBuffer Topology
 enum class Topology
 {

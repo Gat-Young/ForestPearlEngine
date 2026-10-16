@@ -1,5 +1,4 @@
 #include "RenderingDevice.h"
-#include "FPRenderingCommon.h"
 #include "../Utility/FPPathManager.h"
 #include <assert.h>
 #include <iostream>
@@ -529,6 +528,107 @@ void RenderingDevice::OMSetDepthStencilState(bool State)
 	}
 }
 
+HRESULT RenderingDevice::CreateSamplers()
+{
+	HRESULT hr = S_OK;
+	//샘플러 정보 설정
+	D3D11_SAMPLER_DESC sd = {};
+	
+	//기본값 설정
+	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sd.MaxAnisotropy = 1;
+	sd.MinLOD = 0;
+	sd.MaxLOD = D3D11_FLOAT32_MAX;
+	sd.MipLODBias = 0;
+	sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sd.BorderColor[0] = 1;
+	sd.BorderColor[1] = 1;
+	sd.BorderColor[2] = 1;
+	sd.BorderColor[3] = 1;
+
+	//텍스처 어드레스 모드
+	//Clamp
+	sd.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sd.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+
+	hr = Device->CreateSamplerState(&sd, &SamplerState[Sampler_CLAMP]);
+	if (FALSE(hr)){ std::cout << "Clamp 샘플러 생성 실패\n";}
+
+	//Wrap
+	sd.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sd.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sd.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+
+	hr = Device->CreateSamplerState(&sd, &SamplerState[Sampler_Wrap]);
+	if (FALSE(hr)) { std::cout << "Wrap 샘플러 생성 실패\n"; }
+
+	//Mirror
+	sd.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
+	sd.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
+	sd.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
+
+	hr = Device->CreateSamplerState(&sd, &SamplerState[Sampler_Mirror]);
+	if (FALSE(hr)) { std::cout << "Mirror 샘플러 생성 실패\n"; }
+
+	//Mirror-Once
+	sd.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
+	sd.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
+	sd.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
+
+	hr = Device->CreateSamplerState(&sd, &SamplerState[Sampler_Mirror_Once]);
+	if (FALSE(hr)) { std::cout << "Mirror-Once 샘플러 생성 실패\n"; }
+
+	//Border BasicSet
+	sd.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	sd.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	sd.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+
+	//BorderColor Red
+	sd.BorderColor[0] = 1;
+	sd.BorderColor[1] = 0;
+	sd.BorderColor[2] = 0;
+	sd.BorderColor[3] = 1;
+
+	hr = Device->CreateSamplerState(&sd, &SamplerState[Sampler_BorderColor_RED]);
+	if (FALSE(hr)) { std::cout << "BorderColor Red 샘플러 생성 실패\n"; }
+
+	//BorderColor Blue
+	sd.BorderColor[0] = 0;
+	sd.BorderColor[1] = 0;
+	sd.BorderColor[2] = 1;
+	sd.BorderColor[3] = 1;
+
+	hr = Device->CreateSamplerState(&sd, &SamplerState[Sampler_BorderColor_BLUE]);
+	if (FALSE(hr)) { std::cout << "BorderColor Blue 샘플러 생성 실패\n"; }
+
+	//BorderColor Green
+	sd.BorderColor[0] = 0;
+	sd.BorderColor[1] = 1;
+	sd.BorderColor[2] = 0;
+	sd.BorderColor[3] = 1;
+
+	hr = Device->CreateSamplerState(&sd, &SamplerState[Sampler_BorderColor_GREEN]);
+	if (FALSE(hr)) { std::cout << "BorderColor Green 샘플러 생성 실패\n"; }
+
+	//BorderColor Magenta
+	sd.BorderColor[0] = 1;
+	sd.BorderColor[1] = 0;
+	sd.BorderColor[2] = 1;
+	sd.BorderColor[3] = 1;
+
+	hr = Device->CreateSamplerState(&sd, &SamplerState[Sampler_BorderColor_MAGENTA]);
+	if (FALSE(hr)) { std::cout << "BorderColor Magenta 샘플러 생성 실패\n"; }
+
+	return hr;
+}
+
+HRESULT RenderingDevice::PSSetSamplers(UINT Slot, UINT NumSamplers, FPSamplerType SamplerType)
+{
+	DeviceContext->PSSetSamplers(Slot, NumSamplers, &SamplerState[SamplerType]);
+	return S_OK;
+}
+
 
 
 //Font Create
@@ -822,6 +922,80 @@ HRESULT RenderingDevice::DeviceFinalize()
 HRESULT RenderingDevice::Draw(UINT VertexCount, UINT StartVertexLocation)
 {
 	DeviceContext->Draw(VertexCount, StartVertexLocation);
+	return S_OK;
+}
+
+//WIC Texture Load
+HRESULT RenderingDevice::CreateWICTextureFromFile(std::string& FilePath, void** TextureResourceView)
+{
+	HRESULT hr = S_OK;
+	ID3D11Device* DevicePointer = Device.Get();
+	ID3D11ShaderResourceView* TextureRV = nullptr;
+
+	std::wstring TexturePath(FilePath.begin(), FilePath.end());
+	hr = DirectX::CreateWICTextureFromFile(DevicePointer, TexturePath.c_str(), nullptr, &TextureRV);
+	if (FAILED(hr))
+	{
+		std::cout << FilePath << " 텍스처 로드 실패" << "\n";
+		return hr;
+	}
+	*TextureResourceView = TextureRV;
+	return hr;
+}
+
+//DDS Texture Load
+HRESULT RenderingDevice::CreateDDSTextureFromFile(std::string& FilePath, void** TextureResourceView)
+{
+	HRESULT hr = S_OK;
+	ID3D11Device* DevicePointer = Device.Get();
+	ID3D11ShaderResourceView* TextureRV = nullptr;
+
+	std::wstring TexturePath(FilePath.begin(), FilePath.end());
+	hr = DirectX::CreateDDSTextureFromFile(DevicePointer, TexturePath.c_str(), nullptr, &TextureRV);
+	if (FAILED(hr))
+	{
+		std::cout << FilePath << " 텍스처 로드 실패" << "\n";
+		return hr;
+	}
+	*TextureResourceView = TextureRV;
+	return hr;
+}
+
+//Textre 정보 획득
+HRESULT RenderingDevice::GetTextureDesc(void* TextureResourceView, void** Desc)
+{
+	HRESULT hr = S_OK;
+
+	ID3D11ShaderResourceView* TextureRV = static_cast<ID3D11ShaderResourceView*>(TextureResourceView);
+
+	//셰이더 리소스 뷰 정보 획득
+	D3D11_SHADER_RESOURCE_VIEW_DESC ResourceDesc;
+	TextureRV->GetDesc(&ResourceDesc);
+
+	//텍스처 정보 획득
+	ID3D11Resource* Res = nullptr;
+	TextureRV->GetResource(&Res);
+
+	ID3D11Texture2D* Tex = nullptr;
+	Res->QueryInterface<ID3D11Texture2D>(&Tex);
+	if (Tex)
+	{
+		D3D11_TEXTURE2D_DESC* TextureDesc = new D3D11_TEXTURE2D_DESC();
+
+		Tex->GetDesc(TextureDesc);
+
+		*Desc = TextureDesc;
+
+		Tex->Release();
+	}
+	return hr;
+}
+
+HRESULT RenderingDevice::PSSetShaderResources(UINT Slot, UINT NumViews, void* ShaderResourceView)
+{
+	ID3D11ShaderResourceView* pShaderResourceView = static_cast<ID3D11ShaderResourceView*>(ShaderResourceView);
+	ID3D11ShaderResourceView* const* ppShaderResourceView = &pShaderResourceView;
+	DeviceContext->PSSetShaderResources(Slot, NumViews, ppShaderResourceView);
 	return S_OK;
 }
 

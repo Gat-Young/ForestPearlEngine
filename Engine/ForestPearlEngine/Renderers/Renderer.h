@@ -1,8 +1,8 @@
 #pragma once
-#include "RenderingDevice.h"
-#include "../Shader/ShaderFactory.h"
 #include <vector>
 #include <queue>
+#include "RenderingDevice.h"
+#include "../Shader/ShaderFactory.h"
 
 namespace RenderingData
 {
@@ -16,8 +16,6 @@ namespace RenderingData
 	struct UIRenderItemCompare;
 	struct LightRenderItem;
 }
-
-
 
 class Renderer
 {

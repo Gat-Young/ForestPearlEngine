@@ -49,6 +49,7 @@ struct VSOutput
 {
     float4 pos : SV_POSITION;
     float4 col : COLOR0;
+    float2 uv : TEXCOORD0;
 };
  
 
@@ -81,6 +82,7 @@ VSOutput VS_Main(
     
     o.pos = pos;
     o.col = Material.BaseColor * Diff;
+    o.uv = uv;
     
     return o;
 }

@@ -164,6 +164,8 @@
     <ClInclude Include="FPStaticMesh.h" />
     <ClInclude Include="FPStaticMeshComponent.h" />
     <ClInclude Include="FPStreamableRenderAssetr.h" />
+    <ClInclude Include="FPTexture.h" />
+    <ClInclude Include="FPTexture2D.h" />
     <ClInclude Include="FPViewPortClient.h" />
     <ClInclude Include="FPWorld.h" />
     <ClInclude Include="framework.h" />
@@ -227,6 +229,7 @@
     <ClCompile Include="FPSpringArmComponent.cpp" />
     <ClCompile Include="FPStaticMesh.cpp" />
     <ClCompile Include="FPStaticMeshComponent.cpp" />
+    <ClCompile Include="FPTexture2D.cpp" />
     <ClCompile Include="FPViewPortClient.cpp" />
     <ClCompile Include="FPWorld.cpp" />
     <ClCompile Include="FPGizmoAxisComponent.cpp" />
@@ -375,10 +378,14 @@
     <None Include="Assets\Shader\LambertLight.hlsli" />
     <None Include="Assets\Shader\NormalCalculate.hlsli" />
     <None Include="Assets\StaticMesh\Cube_StaticMesh.json" />
+    <None Include="Assets\StaticMesh\Plane_StaticMesh.json" />
     <None Include="Assets\StaticMesh\Sphere_StaticMesh.json" />
+    <None Include="Assets\Texture\Checker_bmp.json" />
+    <None Include="Assets\Texture\Checker_dds.json" />
+    <None Include="Assets\Texture\Default_Texture512.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\GAME_DEV\ForestPearlEngine\Games\Release_Game\Tri_World\Tri_World.vcxproj">
+    <ProjectReference Include="..\..\Games\Release_Game\Tri_World\Tri_World.vcxproj">
       <Project>{874c49a3-fd56-4137-9cfa-a3bd1b70917e}</Project>
     </ProjectReference>
   </ItemGroup>

@@ -54,10 +54,10 @@ bool ForestPearlEngine::PreInitialize()
 
     // RenderDevice 생성
     RenderDevice = &RenderingDevice::GetRenderingDevice();
-
     //Render 등록
     Render = new Renderer(*RenderDevice);
     Render->InitializeRenderer(Hwnd);
+    RenderDevice->CreateSamplers();
 
     LoadEngineAssets();
 

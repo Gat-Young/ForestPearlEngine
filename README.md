@@ -16,6 +16,7 @@
 [렌더링](#-렌더링-구조) ·
 [RenderPass](#render-pass) ·
 [Light · Normal](#lambert-light--normal-line) ·
+[Texture](#texture) ·
 [상수 버퍼](#상수-버퍼) ·
 [입력](#-input-시스템) ·
 [에셋](#-assets-구조) ·
@@ -39,6 +40,7 @@
 | 🧩 | **Actor / Component 프레임워크** | `FPObject → FPActor → FPPawn / FPAController / FPAGameMode`, 계층형 `FPSceneComponent` 트랜스폼 |
 | 🎨 | **DX11 렌더러** | `Renderer`(프레임 흐름) + `RenderingDevice`(D3D11 래퍼) 2계층, **Render List → Render Pass(Mesh / Gizmo / Normal / UI)** 구조, 슬롯 규약이 있는 **상수 버퍼 바인딩**, MSAA x4, Priority 정렬, 멀티 뷰포트 |
 | 💡 | **Lambert Light** | `FPDirectionalLightComponent`가 Light Render List에 등록 → 메시마다 **Local 공간 방향**으로 변환해 VS 상수 버퍼로 전달, 정점 단위 Lambert 계산 (최대 8개) |
+| 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS) → Material **텍스처 슬롯**(PS `t#`) + 샘플러 8종. 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환 |
 | 🧭 | **Normal Line 디버그** | 별도 `NormalRenderPass`. 정점 1개를 인스턴스 1개로 `DrawInstanced`해 노멀 선(초록)을 그림 (`F6`) |
 | 🎮 | **Input 시스템** | Raw Input(키보드·마우스) + XInput(게임패드) → Input Mapping Context → Input Action → 멤버 함수 바인딩 |
 | 🕹️ | **Possess** | 컨트롤러가 Pawn을 빙의(Possess)하며, 빙의된 Pawn의 바인딩만 입력을 받음 |
@@ -66,8 +68,10 @@ ForestPearlEngine/
 ├── Games/
 │   └── Release_Game/              # 엔진 현재 버전과 연결되는 게임 프로젝트
 │       ├── Tri_World/             #   ★ Demo 프로젝트 (솔루션에 포함)
-│       ├── Lambert_Light/         #   Lambert Light / Normal Line 개발용 프로젝트 (Cube + DirectionalLight)
+│       ├── Lambert_Light/         #   Lambert Light / Normal Line / Texture 개발용 프로젝트 (Cube · Plane + DirectionalLight)
 │       └── ShaderCode_Triangle/   #   커스텀 Material / 상수 버퍼 샘플 (이전 API 기준)
+├── Tool/
+│   └── DXTexViewer/               # DxTex.exe — 이미지 → DDS 변환·확인 도구 (d3dx9 DLL 포함)
 ├── GameTemplate/
 │   ├── Readme.txt
 │   └── TriWorldTemplate_Ver1.0.zip   # 새 게임 프로젝트용 템플릿
@@ -137,9 +141,11 @@ Engine/ForestPearlEngine/
 ├── InputValue.h                      # FInputValue
 │
 ├── FPStreamableRenderAssetr.h        # 렌더 에셋 베이스
+├── FPTexture.h                       # 텍스처 값(이름 + SamplerType)
+├── FPTexture2D.h / .cpp              # Texture2D (기본 Default_Texture512 + Clamp)
 ├── FPStaticMesh.h / .cpp             # StaticMesh 에셋 (VB, Socket, Material)
 ├── FPMaterialInterface.h             # Material 인터페이스
-├── FPMaterial.h / .cpp               # 기본 Material (Default Shader)
+├── FPMaterial.h / .cpp               # 기본 Material (Default Shader, Texture 슬롯)
 │
 ├── Define/
 │   ├── FPMath.h / .cpp               # Vector / Quaternion / Matrix
@@ -165,9 +171,13 @@ Engine/ForestPearlEngine/
 │   ├── FPPathManager.h / .cpp        # 에셋 경로 해석 (Debug / Release)
 │   └── FPGameplayStatics.h / .cpp    # 액터 검색 유틸
 ├── Assets/
+│   ├── Model/Primitive_Model/        # Cube / Sphere / Plane .fbx
+│   ├── StaticMesh/                   # Cube / Sphere / Plane _StaticMesh.json
+│   ├── Texture/                      # 텍스처 JSON (Default_Texture512 · Checker_bmp · Checker_dds)
+│   ├── TextureResource/              # 이미지 원본 (*.dds · checker.bmp)
 │   └── Shader/
 │       ├── DefaultVertexShader.vsh   # 기본 Mesh VS (WVP 변환 + Lambert Light 정점 계산)
-│       ├── DefaultPixelShader.psh    # 기본 Mesh PS (정점 색 출력)
+│       ├── DefaultPixelShader.psh    # 기본 Mesh PS (정점 색 × 텍스처 t0 / s0)
 │       ├── LambertLight.hlsli        # LambertLight() 계산 함수
 │       ├── DefaultGizmoVertexShader.vsh / DefaultGizmoPixelShader.psh  # Grid / Axis 기즈모용 (라이트 없음)
 │       ├── NormalDebugVertexShader.vsh / NormalDebugPixelShader.psh    # Normal Line용
@@ -175,7 +185,7 @@ Engine/ForestPearlEngine/
 │       ├── DefaultShader.fx          # 참고용 (빌드 제외)
 │       └── bin/                      # 빌드 시 생성: *.vso / *.pso (git 미추적)
 └── Libraries/
-    ├── DirectXTK/                    # SpriteBatch / SpriteFont
+    ├── DirectXTK/                    # SpriteBatch / SpriteFont / WIC · DDS TextureLoader
     ├── Ufbx/                         # FBX 로더 (ufbx.c / ufbx.h)
     └── nlohmann/                     # JSON (json.hpp)
 ```
@@ -274,6 +284,8 @@ classDiagram
     FPGizmoComponent <|-- FPGizmoAxisComponent
     FPMaterialInterface <|-- FPMaterial
     FPStreamableRenderAsset <|-- FPStaticMesh
+    FPStreamableRenderAsset <|-- FPTexture
+    FPTexture <|-- FPTexture2D
 ```
 
 `FPObject`는 `Outer` 포인터로 소유 체인을 형성합니다 (`Actor → World → GameInstance`).
@@ -294,8 +306,8 @@ FPAssetLoader* AssetLoader =
 | `FPGameTimer` | `GetGameTimer()` | `QueryPerformanceCounter` 기반. `DeltaTime()`(초), `DeltaTimeMS()`, `TotalTime()`, `Start/Stop/Reset` |
 | `FPGameProjectClassRegistry` | `GetClassRegister()` | `Register<T>("이름")`, `Create("이름")`, `HasFactory("이름")`. 이름은 **클래스 이름과 동일**해야 함 ([등록 규칙](#클래스-등록-규칙)) |
 | `FPInputSystem` | `GetInputSystem()` | Raw Input / XInput 수집, 입력 큐 |
-| `FPAssetManager` | `GetAssetManager()` | Mesh · VertexBuffer · StaticMesh · Level · GameMode · Shader 저장소 |
-| `FPAssetLoader` | `GetAssetLoader()` | FBX / Level JSON / StaticMesh JSON / Shader 로딩 |
+| `FPAssetManager` | `GetAssetManager()` | Mesh · VertexBuffer · StaticMesh · **Texture** · Level · GameMode · Shader 저장소 |
+| `FPAssetLoader` | `GetAssetLoader()` | FBX / Level JSON / StaticMesh JSON / **Texture JSON** / Shader 로딩 |
 | `FPMeshRenderList` | `GetMeshRenderList()` | 메시 `RenderItem` 등록/해제 |
 | `FPGizmoRenderList` | `GetGizmoRenderList()` | 기즈모 `GizmoRenderItem` 등록/해제 |
 | `FPMeshNormalRenderList` | `GetNormalRenderList()` | Normal Line `NormalRenderItem` 등록/해제 |
@@ -379,6 +391,7 @@ sequenceDiagram
     Eng->>Game: RegistProjectName()
     Note over Eng: CreateFPEWindow()<br/>ViewPort 생성<br/>Raw Input 등록
     Eng->>Ren: InitializeRenderer(hwnd)
+    Note over Eng: RenderingDevice::CreateSamplers()
     Note over Eng: LoadEngineAssets() - Default Shader
     Eng->>Game: LoadLevel()
     Eng->>Game: LoadClassRegist()
@@ -396,7 +409,7 @@ sequenceDiagram
 
 | 단계 | 함수 | 내용 |
 |:-:|---|---|
-| 1 | `PreInitialize()` | GameInstance 생성 → `RegistProjectName()` → 윈도우 생성 → ViewPort 생성 → Raw Input 등록 → Renderer 초기화 → 엔진 에셋 로드 → `LoadLevel()` → `LoadClassRegist()` → `LoadAssets()` |
+| 1 | `PreInitialize()` | GameInstance 생성 → `RegistProjectName()` → 윈도우 생성 → ViewPort 생성 → Raw Input 등록 → Renderer 초기화 → `CreateSamplers()` → 엔진 에셋 로드 → `LoadLevel()` → `LoadClassRegist()` → `LoadAssets()` |
 | 2 | `Initialize()` | `OpenLevel(ReturnStartLevel())` → `World::Initialize()` → `World::BeginPlay()` |
 | 3 | `GameLoop()` | 아래 프레임 루프 |
 | 4 | `Finalize()` | `World::Finalize()`(Actor 삭제) → `Renderer::Finalize()` |
@@ -612,6 +625,7 @@ struct RenderItem            // Mesh용. Material 색을 포인터로 직접 들
     FPMatrix* Location; FPMatrix* Rotation; FPMatrix* Scale;
     std::string* VertexShaderPath; std::string* PixelShaderPath;   // Material의 셰이더 이름
     FPVector4* BaseColor; FPVector4* Diffuse; FPVector4* Ambient;  // Material 색 (렌더러가 VS 상수 버퍼로 조립)
+    std::unordered_map<int, FPTextureItem>* TextureList;           // Material의 텍스처 슬롯 목록 (슬롯 → 이름 · SamplerType 포인터)
     FPConstantBufferRenderData* VertexConstBuffer;      // 현재 MeshRenderPass는 읽지 않음 (아래 참고)
     FPConstantBufferRenderData* PixelConstBuffer;
 };
@@ -647,6 +661,8 @@ struct FPViewPort            // 뷰포트 1개
     FPConstantBufferRenderData* PixelConstBuffer;
 };
 ```
+
+`MeshRenderItem`은 값 복사본에 `TextureList`(슬롯 · 텍스처 이름 · 샘플러)와 `SamplerList`(`s#` 배정)를 추가로 가집니다 ([Texture](#texture)).
 
 렌더러는 위 항목을 `RenderingData::MeshRenderItem` · `GizmoRenderItem` · `NormalRenderItem` · `LightRenderItem` · `CameraItem` · `UIContextItem` · `FPViewPort`로 **값 복사**해 Render List에 보관합니다.
 메시 / 기즈모 / Normal Line은 `MeshPath`로 `FPAssetManager`에서 VertexBuffer 목록을, 셰이더 이름으로 VS · PS · InputLayout을 찾아 사용합니다.
@@ -756,6 +772,7 @@ flowchart TD
     I --> C
 ```
 
+- **텍스처** — `MeshRenderPass`는 항목마다 Material 상수 버퍼 갱신 뒤 텍스처 슬롯을 `PSSetShaderResources(t#)`, 샘플러를 `PSSetSamplers(s#)`로 바인딩합니다 (Gizmo · Normal Pass는 해당 없음).
 - **정렬** — `Priority` **값이 작은 항목부터** 그려집니다 (`std::sort` 오름차순). 메시 · 기즈모 컴포넌트의 `SetPriority(int)`로 지정합니다.
 - **Fill / Cull** — 컴포넌트별 설정이 아니라 **Pass 전체에 적용되는 전역 값**입니다. `ForestPearlEngine::SetbFill(bool)`, `SetbCull(bool)` 조합으로 4개의 Rasterizer State 중 하나가 선택됩니다.
 - **Draw** — 인덱스 버퍼 없이 `Draw(VertexCount, 0)`로 그립니다. FBX 로딩 시 삼각형 코너마다 정점을 복제합니다.
@@ -869,17 +886,104 @@ if (input.VertexID == 1) WorldPosition += WorldNormal * NormalLength;
 | 항목 | 내용 |
 |---|---|
 | 입력 레이아웃 | `POSITION`(float3, 0), `NORMAL`(float3, 12), `COLOR`(float4, 24), `TEXCOORD`(float2, 40) — `VERTEX` 52 byte. Normal Line 셰이더만 `POSITION` · `NORMAL`을 **Per-Instance**로 읽음 |
-| 기본 Mesh 셰이더 | `DefaultVertexShader.vso` — WVP 변환 + **Lambert Light를 정점 단위로 계산**(`b0` Object, `b2` Light, `b3` Material). `DefaultPixelShader.pso`는 보간된 정점 색을 그대로 출력 |
+| 기본 Mesh 셰이더 | `DefaultVertexShader.vso` — WVP 변환 + **Lambert Light를 정점 단위로 계산**(`b0` Object, `b2` Light, `b3` Material). `DefaultPixelShader.pso`는 보간된 정점 색에 **텍스처(`t0` / `s0`)를 곱해** 출력 |
 | 기본 Gizmo 셰이더 | `DefaultGizmoVertexShader.vso` / `DefaultGizmoPixelShader.pso` — WVP 변환 후 정점 색 출력 (`b0`만 사용, 라이트 없음). `FPGizmoGridComponent` · `FPGizmoAxisComponent`가 사용 |
 | Normal Line 셰이더 | `NormalDebugVertexShader.vso` / `NormalDebugPixelShader.pso` — [Lambert Light · Normal Line](#lambert-light--normal-line) 참고. 전용 Input Layout을 쓰므로 `LoadNormalDebugVertexShader()`로 로드 |
 | 로드 방식 1 | 사전 컴파일된 오브젝트 로드 — `LoadVertexShader("X.vso", owner)` |
 | 로드 방식 2 | 런타임 컴파일 — `LoadVertexShader("X.fx", "VS_Main", "vs_5_0", owner)` (행 우선 행렬 패킹) |
-| `FPMaterialInterface` | `SetVertexShader / SetPixelShader`, 셰이더 이름 Getter, `Set / GetBaseColor · Diffuse · Ambient`, `Get{Vertex,Pixel}ConstantBufferRenderData()`, `UpdateMaterial(DeltaTime)` |
-| `FPMaterial` | 생성 시 기본 셰이더 이름과 `BaseColor` · `Diffuse` · `Ambient`(기본 모두 `{1,1,1,1}`)를 설정. 보호 멤버 `VertexConstantBuffer` / `PixelConstantBuffer`에 `AddConstantBuffer`로 상수 버퍼를 등록 (Gizmo Pass에서만 사용) |
+| `FPMaterialInterface` | `SetTexture / SetTextureSampler / AddTexture / DeleteTexture / GetTextureList`, `SetVertexShader / SetPixelShader`, 셰이더 이름 Getter, `Set / GetBaseColor · Diffuse · Ambient`, `Get{Vertex,Pixel}ConstantBufferRenderData()`, `UpdateMaterial(DeltaTime)` |
+| `FPMaterial` | 생성 시 **텍스처 슬롯 0**(`Default_Texture512`)과 기본 셰이더 이름, `BaseColor` · `Diffuse` · `Ambient`(기본 모두 `{1,1,1,1}`)를 설정. 보호 멤버 `VertexConstantBuffer` / `PixelConstantBuffer`에 `AddConstantBuffer`로 상수 버퍼를 등록 (Gizmo Pass에서만 사용) |
 
 Material은 셰이더를 **파일 이름**(`"Demo.vso"`)으로 가리키고, 렌더러가 Pass 안에서 `FPAssetManager`에서 실제 셰이더를 찾습니다. 따라서 `LoadAssets()`에서 먼저 로드해 두어야 합니다.
 
 Material 선택 우선순위: **컴포넌트에 `SetMaterial`로 지정한 Material** → StaticMesh JSON의 `"Material"` 클래스 → 기본 `FPMaterial`
+
+### Texture
+
+텍스처는 **에셋 로드 → Material 슬롯 → Render List → `MeshRenderPass`의 PS 바인딩** 순서로 전달됩니다. 현재는 `MeshRenderPass`(메시)만 텍스처를 바인딩합니다. Gizmo · Normal Pass는 사용하지 않습니다.
+
+```mermaid
+flowchart LR
+    J["Texture/*.json<br/>TextureResource/*.dds · bmp"] -->|"LoadTexture<br/>WIC / DDS"| AM["FPAssetManager<br/>FPTextureData<br/>SRV + Texture2D Desc"]
+    MAT["FPMaterial<br/>TextureList - 슬롯 → FPTexture2D<br/>이름 + SamplerType"] -->|"GetTextureList"| RI["RenderItem<br/>TextureList 포인터"]
+    RI -->|"CreateMeshRenderList<br/>값 복사"| RL["MeshRenderItem<br/>TextureList · SamplerList"]
+    RL -->|"MeshRenderPass"| PS["PSSetShaderResources t슬롯<br/>PSSetSamplers s번호"]
+    AM -->|"GetTextureData 이름"| PS
+```
+
+| 구성 요소 | 파일 | 설명 |
+|---|---|---|
+| `FPTexture` / `FPTexture2D` | `FPTexture.h`, `FPTexture2D.h/.cpp` | Material 슬롯 1개가 가지는 값. **텍스처 이름**(`FPAssetManager` 키)과 `FPSamplerType`. `FPTexture2D`의 기본값은 `"Default_Texture512"` + `Sampler_CLAMP` |
+| `FPTextureData` | `Define/FPDataDefine.h` | 로드된 텍스처. `TextureResource`(`ID3D11ShaderResourceView*`), `TextureDESC`(`D3D11_TEXTURE2D_DESC*`) |
+| `FPTextureItem` | `Renderers/FPRenderingCommon.h` | `RenderItem`이 Material의 텍스처 목록을 가리키는 포인터 묶음 (`std::string* TexturePath`, `FPSamplerType* SamplerType`) |
+| `RenderingData::FPTextureItem` · `FPSamplerItem` | `Renderers/FPRenderingCommon.h` | Render List의 값 복사본. `{ Slot, 텍스처 이름, SamplerType }`, `{ Slot, SamplerType }` |
+| `FPAssetManager` | `FPAssetManager.h/.cpp` | `AddTextureData` · `GetTextureData` · `HasTextureData` |
+| `FPAssetLoader::LoadTexture` | `AssetLoader.cpp` | Texture JSON을 읽어 `WIC` 또는 `DDS`로 로드 |
+| `RenderingDevice` | `RenderingDevice.h/.cpp` | `CreateWICTextureFromFile` · `CreateDDSTextureFromFile`(DirectXTK), `GetTextureDesc`, `PSSetShaderResources`, `CreateSamplers`, `PSSetSamplers` |
+
+#### 바인딩 규칙
+
+| 대상 | 규칙 |
+|---|---|
+| 텍스처 슬롯 | Material에 등록한 슬롯 `n` → PS **`t(n)`**. 슬롯은 `0 ~ 127`만 허용 |
+| 기본 슬롯 | `FPMaterial` 생성자가 **슬롯 0**을 자동 등록 (`Default_Texture512`, Clamp). 슬롯 0은 항상 존재 |
+| 샘플러 번호 | 텍스처 슬롯과 **1:1이 아닙니다.** Render List를 만들 때 그 메시가 쓰는 샘플러 종류를 `FPSamplerType` 값 오름차순으로 중복 없이 모아 `s0, s1, …`에 차례로 배정합니다 |
+| 갱신 시점 | `CreateMeshRenderList`에서 `Active`인 메시의 텍스처 · 샘플러 목록을 복사하고, `MeshRenderPass`가 **메시마다** `PSSetShaderResources` / `PSSetSamplers`를 호출 |
+
+샘플러 번호 예: 슬롯 0 = `Sampler_Wrap`, 슬롯 1 = `Sampler_CLAMP`이면 → `s0` = Clamp, `s1` = Wrap (열거형 순서). 한 메시가 샘플러를 하나만 쓰면 항상 `s0`입니다.
+
+| `FPSamplerType` | 주소 모드 | 비고 |
+|---|---|---|
+| `Sampler_CLAMP` | Clamp | 기본값 |
+| `Sampler_Wrap` | Wrap | 타일링 |
+| `Sampler_Mirror` | Mirror | |
+| `Sampler_Mirror_Once` | Mirror Once | |
+| `Sampler_BorderColor_RED` / `BLUE` / `GREEN` / `MAGENTA` | Border | 범위 밖 UV는 해당 색 |
+
+모든 샘플러는 `MIN_MAG_MIP_LINEAR`, Anisotropy 1입니다.
+
+> [!IMPORTANT]
+> 샘플러 상태 객체 8개는 `RenderingDevice::CreateSamplers()`가 만들며, `ForestPearlEngine::PreInitialize()`에서 `Renderer::InitializeRenderer()` **직후**, 엔진 에셋 로드(`LoadEngineAssets`) 전에 호출합니다.
+> 이 함수는 `ID3D11Device`로 `CreateSamplerState`를 호출하므로 **D3D 디바이스가 만들어진 뒤**(`InitializeRenderer`의 `CreateHighSpecDevice` 이후)여야 합니다. 앞으로 부팅 순서를 바꿀 때도 이 순서를 지켜야 합니다.
+> 호출되지 않으면 `PSSetSamplers`가 `nullptr`을 바인딩해, `SetTexture(…, SamplerType)`로 고른 샘플러가 반영되지 않습니다.
+
+#### 기본 셰이더
+
+`DefaultVertexShader`는 `TEXCOORD0`을 `o.uv`로 넘기고, `DefaultPixelShader`는 정점 색에 텍스처를 곱해 출력합니다.
+
+```hlsl
+Texture2D    TexDiff : register(t0);   // Material 텍스처 슬롯 0
+SamplerState Smpler  : register(s0);   // 사용 중인 샘플러 중 가장 앞선 종류
+
+float4 PS_Main(float4 pos : SV_POSITION, float4 col : COLOR0, float2 uv : TEXCOORD0) : SV_TARGET
+{
+    return col * TexDiff.Sample(Smpler, uv);
+}
+```
+
+따라서 텍스처를 지정하지 않은 메시는 `Default_Texture512`가 곱해집니다. 기본 텍스처는 엔진이 `LoadEngineAssets()`에서 로드하며, `Checker_bmp`(WIC) · `Checker_dds`(DDS)도 함께 제공됩니다.
+
+#### 텍스처 에셋
+
+`FPAssetLoader::LoadTexture(name, file, owner)`는 `Texture/<file>`(JSON)을 읽고, JSON이 가리키는 이미지를 `TextureResource/`에서 로드해 `name`으로 등록합니다.
+
+```json
+{
+  "TextureData": [
+    { "Path": "checker.dds", "Type": "DDS" }
+  ]
+}
+```
+
+| 키 | 설명 |
+|---|---|
+| `Path` | `TextureResource/` 기준 이미지 파일 |
+| `Type` | `"WIC"` — bmp · png · jpg 등 WIC가 읽는 형식 / `"DDS"` — DDS 파일 |
+
+- 이미 같은 이름이 등록되어 있으면 로드하지 않고 콘솔에 메시지를 출력합니다.
+- `TextureData` 배열은 **마지막 항목 하나만** 사용됩니다.
+- 파일 열기 · 이미지 로드 실패는 콘솔에만 출력되고 계속 진행됩니다. 실패한 텍스처는 `nullptr` 리소스로 남습니다.
+- `Tool/DXTexViewer/DxTex.exe`로 이미지를 DDS로 변환하고 확인할 수 있습니다 (`d3dx9_*.dll` 포함).
 
 ### Legacy 렌더러
 
@@ -1029,6 +1133,8 @@ Assets/
 ├── Level/         *.json                레벨 = GameMode + Actor 배치
 ├── Model/         <모델>/*.fbx          원본 메시
 ├── StaticMesh/    *_StaticMesh.json     메시 + Topology + Socket + Material
+├── Texture/       *.json                텍스처 정의 (이미지 경로 + 로드 방식)
+├── TextureResource/ *.dds *.bmp …       이미지 원본 (DxTex로 DDS 변환 가능)
 └── Shader/        *.vsh *.psh *.fx      HLSL 소스
     └── bin/       *.vso *.pso           컴파일 결과 (빌드 시 생성)
 ```
@@ -1038,6 +1144,7 @@ Assets/
 | `LoadFbxData(path, owner)` | `Model/` | `"Windmill/Windmill_Body.fbx"` |
 | `LoadStaticMesh(name, file, owner)` | `StaticMesh/` | `"Tree_StaticMesh", "Tree_StaticMesh.json"` |
 | `LoadLevelData(name, file, owner)` | `Level/` | `"TriWorld", "TriWorld.json"` |
+| `LoadTexture(name, file, owner)` | `Texture/`(JSON) → `TextureResource/`(이미지) | `"Checker_dds", "Checker_dds.json"` |
 | `LoadVertexShader(obj, owner)` / `LoadPixelShader(obj, owner)` | `Shader/bin/` (Debug) · `Shader/` (Release) | `"Demo.vso"` |
 | `LoadVertexShader(src, entry, model, owner)` / `LoadPixelShader(...)` | `Shader/` | `"Demo.fx", "VS_Main", "vs_5_0"` |
 
@@ -1048,14 +1155,17 @@ flowchart LR
     FBX["Model/*.fbx"] -->|"LoadFbxData<br/>ufbx"| MD["FPMeshData<br/>VertexBuffer"]
     SMJ["StaticMesh/*.json"] -->|"LoadStaticMesh"| SMD["FPStaticMeshData"]
     LVJ["Level/*.json"] -->|"LoadLevelData"| LVD["FPActorData 목록<br/>GameMode 이름"]
+    TXJ["Texture/*.json<br/>TextureResource/*"] -->|"LoadTexture<br/>WIC / DDS"| TXD["FPTextureData<br/>SRV"]
     SH["Shader/bin/*.vso *.pso"] -->|"LoadVertex/PixelShader"| SHD["Shader 객체 + 바이트코드"]
     MD --> AM["FPAssetManager"]
     SMD --> AM
     LVD --> AM
+    TXD --> AM
     SHD --> AM
     AM -->|"GetStaticMeshData"| SMO["FPStaticMesh"] --> SMC["FPStaticMeshComponent"]
     AM -->|"GetLevelData"| W["FPWorld::OpenLevel"]
     AM -->|"GetVertex/PixelShader"| MAT["FPMaterial"]
+    AM -->|"GetTextureData<br/>MeshRenderPass"| TXR["PS t# 바인딩"]
 ```
 
 **FBX 변환 규칙** — 왼손 좌표계 · Y-Up · 미터 단위로 로드하고, 모든 면을 삼각형화한 뒤 코너마다 정점을 생성합니다. 정점에는 노드 변환이 적용된 위치와 Vertex Color가 들어가며(색이 없으면 흰색), 메시 노드 하나가 VertexBuffer 하나가 됩니다.
@@ -1142,7 +1252,7 @@ flowchart LR
 
 | 라이브러리 | 위치 | 용도 | 연결 방식 |
 |---|---|---|---|
-| DirectXTK | `Libraries/DirectXTK` | `SpriteBatch`, `SpriteFont` | 헤더 `Inc/`, 라이브러리 `Bin/Desktop_2022/$(Platform)/$(Configuration)/DirectXTK.lib` |
+| DirectXTK | `Libraries/DirectXTK` | `SpriteBatch`, `SpriteFont`, `WICTextureLoader`, `DDSTextureLoader` | 헤더 `Inc/`, 라이브러리 `Bin/Desktop_2022/$(Platform)/$(Configuration)/DirectXTK.lib` |
 | ufbx | `Libraries/Ufbx` | FBX 로딩 | `ufbx.c`를 엔진에 포함해 컴파일 |
 | nlohmann/json | `Libraries/nlohmann` | JSON 파싱 | 헤더 전용 |
 
@@ -1766,6 +1876,64 @@ StaticMesh JSON의 `"Material"`로 지정하려면 `Registry->Register<PulseMate
 > [!NOTE]
 > `Games/Release_Game/ShaderCode_Triangle`의 `CB2Material` 등 기존 샘플은 이전 방식(`VertextConst = 포인터`)과 이전 슬롯 규약(PS `b0`)을 사용하므로 **현재 엔진에서 그대로 빌드 · 동작하지 않습니다.** 위 방식으로 옮겨서 사용하세요.
 
+### 9. Texture 사용
+
+텍스처는 **에셋으로 로드**한 뒤, 메시의 **Material 슬롯에 이름으로 지정**합니다. 내부 흐름은 [Texture](#texture)를 참고하세요.
+
+```cpp
+// ① 에셋 준비: Assets/Texture/Brick.json → Assets/TextureResource/brick.dds
+//    { "TextureData": [ { "Path": "brick.dds", "Type": "DDS" } ] }
+
+// ② LoadAssets()에서 로드 (이름 "Brick"이 이후 지정에 쓰는 키)
+Loader->LoadTexture("Brick", "Brick.json", AssetOwner::User);
+
+// ③ Actor::Initialize() 또는 BeginPlay()에서 지정
+Mesh = new FPStaticMeshComponent(this, "Plane_StaticMesh");     // 엔진 기본 Plane 메시
+
+FPMaterialInterface& Material = Mesh->GetMaterial();
+std::string TextureName = "Brick";                               // 변수로 전달 (아래 표 참고)
+Material.SetTexture(0, TextureName);                             // 슬롯 0의 텍스처 교체
+Material.SetTexture(0, TextureName, Sampler_Wrap);               // 샘플러까지 지정
+
+Material.AddTexture(1);                                          // 슬롯 추가 (PS t1)
+std::string Detail = "Checker_dds";
+Material.SetTexture(1, Detail);
+```
+
+| 함수 (`FPMaterialInterface`) | 설명 |
+|---|---|
+| `SetTexture(Slot, Name)` | 슬롯의 텍스처 이름을 바꿈 |
+| `SetTexture(Slot, Name, SamplerType)` | 텍스처와 샘플러를 함께 바꿈 |
+| `SetTextureSampler(Slot, SamplerType)` | 샘플러만 바꿈 |
+| `AddTexture(Slot)` | 슬롯 추가. 기본값은 `Default_Texture512` + `Sampler_CLAMP` |
+| `DeleteTexture(Slot)` | 슬롯 제거 |
+
+엔진이 기본 제공하는 에셋: 메시 `Plane_StaticMesh`(`Primitive_Model/Plane.fbx`), 텍스처 `Default_Texture512` · `Checker_bmp` · `Checker_dds`. 샘플은 `Games/Release_Game/Lambert_Light/Plane.cpp`입니다.
+
+#### 여러 텍스처를 쓰는 셰이더
+
+```hlsl
+Texture2D    TexDiff   : register(t0);   // 슬롯 0
+Texture2D    TexDetail : register(t1);   // 슬롯 1 (AddTexture(1))
+SamplerState Smpler    : register(s0);   // 사용하는 샘플러 종류 중 가장 앞선 것
+```
+
+#### ⚠️ 유의사항
+
+| 항목 | 이유 / 어기면 |
+|---|---|
+| **`SetTexture`에는 문자열 리터럴이 아니라 `std::string` 변수를 넘긴다** | 인자가 `std::string&`(비 const 참조)라서 `SetTexture(0, "Brick")`은 컴파일되지 않습니다 |
+| **`AddTexture(Slot)`로 만든 슬롯에만 `SetTexture`가 동작한다** | 없는 슬롯에 호출하면 **아무 일도 일어나지 않고 메시지도 없습니다.** 슬롯 0만 자동으로 존재합니다 |
+| **슬롯은 `0 ~ 127`** | 128 이상은 메시지를 출력하고 무시됩니다 |
+| **텍스처 이름은 `LoadTexture`의 첫 인자와 같아야 한다** | 로드하지 않은 이름을 지정하면 빈 항목이 만들어져 `nullptr` 리소스가 바인딩되고, 기본 PS에서는 메시가 검게 보입니다. `LoadAssets()`에서 먼저 로드하세요 |
+| **`GetMaterial()`은 컴포넌트가 가진 Material을 반환한다** | StaticMesh JSON에 `"Material"` 클래스를 지정하면 컴포넌트의 Material 포인터가 비어 있어 `GetMaterial()`이 널 참조가 됩니다. 이 경우 먼저 `SetMaterial()`로 Material을 지정하세요 |
+| **텍스처는 Material 단위다** | 같은 Material 객체를 여러 메시에 `SetMaterial`하면 텍스처도 함께 바뀝니다. 기본 Material은 컴포넌트마다 따로 만들어지므로 `GetMaterial()`로 바꿔도 해당 메시에만 적용됩니다 |
+| **셰이더의 `t#`는 Material 슬롯과 같다** | 슬롯 `n` → `t(n)`. 셰이더가 읽는 슬롯은 모두 `AddTexture`로 만들어 두세요. Pass는 텍스처를 **해제하지 않으므로**, 슬롯이 없는 메시를 그리면 직전 메시의 텍스처가 남아 보일 수 있습니다 |
+| **샘플러 `s#`는 슬롯이 아니라 종류 순서다** | 한 메시에서 샘플러를 하나만 쓰면 `s0`입니다. 둘 이상 섞을 때는 [바인딩 규칙](#바인딩-규칙)의 순서를 따르세요 |
+| **샘플러는 엔진이 부팅 때 만든 8종만 쓸 수 있다** | `CreateSamplers()`는 `PreInitialize()`에서 렌더러 초기화 직후 호출됩니다. 게임 코드에서 따로 호출할 필요는 없습니다 ([Texture](#texture) 참고) |
+| **메시(`MeshRenderPass`)에서만 동작한다** | Gizmo · Normal · UI Pass는 텍스처를 바인딩하지 않습니다 |
+| **큰 텍스처는 DDS(밉맵 포함)로 변환해 쓴다** | `Tool/DXTexViewer/DxTex.exe`로 변환할 수 있습니다. 슬롯 수만큼 SRV 바인딩이 *메시 × 카메라*마다 일어나므로 쓰지 않는 슬롯은 `DeleteTexture`로 지우세요 |
+
 ---
 
 ## 🎬 Demo 프로젝트 — Tri_World
@@ -1901,9 +2069,9 @@ Tri_World처럼 *레벨 하나를 열어 종료할 때까지 유지*하는 흐�
 | `FPStaticMesh` | `Material`. 생성자에서 만든 `FPMaterial`이 곧바로 `SetMaterial()`로 덮어써져 즉시 누수 | 없음 |
 | `FPMaterial` | `VBLayout`(InputLayout). `SetVertexShader()`를 호출하면 이전 레이아웃도 해제되지 않음 | 없음 |
 | `FPGizmoComponent` | `Material`, 직접 만든 VertexBuffer | 렌더 목록 해제만 수행 |
-| `FPViewPortClient` | `FPViewPort` 5개, `VertexConst` 4개 | `= default` |
-| `FPAssetManager` | `void*`로 보관하는 VertexBuffer, Shader 객체, Shader 바이트코드 | `= default` |
-| `RenderingDevice` | 상수 버퍼 28개(VS 14 · PS 14), DepthStencilState 3개, 열거한 `IDXGIAdapter1`, `IDXGIAdapter4` | 없음 |
+| `FPViewPortClient` | `FPViewPort` 5개, `FPConstantBufferRenderData` 4개 | `= default` |
+| `FPAssetManager` | `void*`로 보관하는 VertexBuffer, Shader 객체, Shader 바이트코드, 텍스처 SRV와 `new`로 만든 `D3D11_TEXTURE2D_DESC`(`FPTextureData`) | `= default` |
+| `RenderingDevice` | 상수 버퍼 28개(VS 14 · PS 14), DepthStencilState 3개, SamplerState 8개(생성 시), 열거한 `IDXGIAdapter1`, `IDXGIAdapter4` | 없음 |
 | `ForestPearlEngine` | `Renderer` | `Finalize()`만 호출 |
 | `FPGameplayStatics::GetActorOfClass` · `GetAllActorsOfClass` | 타입 비교용 임시 인스턴스의 `RootComponent` — **호출할 때마다** 1개 | — |
 | `FPWorld::CreateClassInstnce<T>` | `dynamic_cast`가 실패한 객체 (`release()` 후 버려짐) | — |

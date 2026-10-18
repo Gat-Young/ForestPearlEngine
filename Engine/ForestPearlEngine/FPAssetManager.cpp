@@ -52,6 +52,172 @@ bool FPAssetManager::HasVertexBuffer(std::string MeshPath)
 	return true;
 }
 
+void FPAssetManager::AddPositionVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset)
+{
+	FPVertexBufferData VBData;
+	VBData.VertexBuffer = VertexBuffer;
+	VBData.VB_Size = VBSize;
+	VBData.VB_Cnt = VBCnt;
+	VBData.Stride = Stride;
+	VBData.Offset = Offset;
+
+	MeshPositionVertexBuffer[FbxPath].push_back(VBData);
+}
+
+bool FPAssetManager::HasPositionBuffer(std::string MeshPath)
+{
+	if (MeshPositionVertexBuffer.count(MeshPath) <= 0)
+	{
+		return false;
+	}
+	return true;
+}
+
+std::vector<FPVertexBufferData> FPAssetManager::GetPositionVertexBuffer(std::string MeshPath)
+{
+	if (!HasPositionBuffer(MeshPath))
+	{
+		std::cout << MeshPath << "의 VB Position 데이터가 없습니다." << "\n";
+
+		return {};
+	}
+
+	return MeshPositionVertexBuffer[MeshPath];
+}
+
+void FPAssetManager::AddColorVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset)
+{
+	FPVertexBufferData VBData;
+	VBData.VertexBuffer = VertexBuffer;
+	VBData.VB_Size = VBSize;
+	VBData.VB_Cnt = VBCnt;
+	VBData.Stride = Stride;
+	VBData.Offset = Offset;
+
+	MeshColorVertexBuffer[FbxPath].push_back(VBData);
+}
+
+bool FPAssetManager::HasColorBuffer(std::string MeshPath)
+{
+	if (MeshColorVertexBuffer.count(MeshPath) <= 0)
+	{
+		return false;
+	}
+	return true;
+}
+
+std::vector<FPVertexBufferData> FPAssetManager::GetColorVertexBuffer(std::string MeshPath)
+{
+	if (!HasColorBuffer(MeshPath))
+	{
+		std::cout << MeshPath << "의 VB Color 데이터가 없습니다." << "\n";
+
+		return {};
+	}
+
+	return MeshColorVertexBuffer[MeshPath];
+}
+
+void FPAssetManager::AddNormalVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset)
+{
+	FPVertexBufferData VBData;
+	VBData.VertexBuffer = VertexBuffer;
+	VBData.VB_Size = VBSize;
+	VBData.VB_Cnt = VBCnt;
+	VBData.Stride = Stride;
+	VBData.Offset = Offset;
+
+	MeshNormalVertexBuffer[FbxPath].push_back(VBData);
+}
+
+bool FPAssetManager::HasNormalBuffer(std::string MeshPath)
+{
+	if (MeshNormalVertexBuffer.count(MeshPath) <= 0)
+	{
+		return false;
+	}
+	return true;
+}
+
+std::vector<FPVertexBufferData> FPAssetManager::GetNormalVertexBuffer(std::string MeshPath)
+{
+	if (!HasNormalBuffer(MeshPath))
+	{
+		std::cout << MeshPath << "의 VB Normal 데이터가 없습니다." << "\n";
+
+		return {};
+	}
+
+	return MeshNormalVertexBuffer[MeshPath];
+}
+
+void FPAssetManager::AddUVVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset)
+{
+	FPVertexBufferData VBData;
+	VBData.VertexBuffer = VertexBuffer;
+	VBData.VB_Size = VBSize;
+	VBData.VB_Cnt = VBCnt;
+	VBData.Stride = Stride;
+	VBData.Offset = Offset;
+
+	MeshUVVertexBuffer[FbxPath].push_back(VBData);
+}
+
+bool FPAssetManager::HasUVBuffer(std::string MeshPath)
+{
+	if (MeshUVVertexBuffer.count(MeshPath) <= 0)
+	{
+		return false;
+	}
+	return true;
+}
+
+std::vector<FPVertexBufferData> FPAssetManager::GetUVVertexBuffer(std::string MeshPath)
+{
+	if (!HasUVBuffer(MeshPath))
+	{
+		std::cout << MeshPath << "의 VB UV 데이터가 없습니다." << "\n";
+
+		return {};
+	}
+
+	return MeshUVVertexBuffer[MeshPath];
+}
+
+void FPAssetManager::AddIndexBuffer(std::string FbxPath, void* IndexBuffer, unsigned long IBSize, unsigned long IBCnt, unsigned long FaceCnt, unsigned long Stride, unsigned long Offset)
+{
+	FPIndexBufferData IBData;
+	IBData.IndexBuffer = IndexBuffer;
+	IBData.Index_Size = IBSize;
+	IBData.Index_Cnt = IBCnt;
+	IBData.FaceCnt = FaceCnt;
+	IBData.Stride = Stride;
+	IBData.Offset = Offset;
+
+	MeshIndexBuffer[FbxPath].push_back(IBData);
+}
+
+bool FPAssetManager::HasIndexBuffer(std::string MeshPath)
+{
+	if (MeshIndexBuffer.count(MeshPath) <= 0)
+	{
+		return false;
+	}
+	return true;
+}
+
+std::vector<FPIndexBufferData> FPAssetManager::GetIndexBuffer(std::string MeshPath)
+{
+	if (!HasIndexBuffer(MeshPath))
+	{
+		std::cout << MeshPath << "의 IB 데이터가 없습니다." << "\n";
+
+		return {};
+	}
+
+	return MeshIndexBuffer[MeshPath];
+}
+
 
 ////////////////////////////
 //

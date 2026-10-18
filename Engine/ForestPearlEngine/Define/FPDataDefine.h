@@ -2,20 +2,61 @@
 #include <vector>
 #include <string>
 
-//정점 구조체
-struct VERTEX
+//정점 구조체 분리 
+//Position
+struct POSITION_VERTEX
 {
 	float x, y, z;		//좌표 Position
+};
+
+//Color
+struct COLOR_VERTEX
+{
+	float r, g, b, a;	//Vertex 색상
+};
+
+//Normal
+struct NORMAL_VERTEX
+{
 	float nx, ny, nz;	//노말 Normal
-	float r, g, b, a;	//색상 Diffuse Color	<- Material이 변경되고 나면 삭제 조치
+};
+
+//UV
+struct UV_VERTEX
+{
 	float u, v;			//좌표 UV
+};
+
+//Index
+struct INDEX_16BIT
+{
+	unsigned short A, B, C;
+};
+
+struct INDEX_32BIT
+{
+	unsigned long A, B, C;
+};
+
+//VERTEX
+struct VERTEX
+{
+	POSITION_VERTEX PositionVertex;
+	NORMAL_VERTEX NormalVertex;
+	COLOR_VERTEX ColorVertex;
+	UV_VERTEX UVVertex;
+	INDEX_32BIT Index;
 };
 
 //메시 데이터 구조체
 struct FPMeshData
 {
 	std::string Name;
-	std::vector<VERTEX> Vertices;
+	std::vector<POSITION_VERTEX> Position_Vertices;
+	std::vector<NORMAL_VERTEX> Normal_Vertices;
+	std::vector<COLOR_VERTEX> Color_Vertices;
+	std::vector<UV_VERTEX> UV_Vertices;
+	std::vector<INDEX_32BIT> Index;
 };
 
 //소켓용 트랜스폼
@@ -58,9 +99,21 @@ Topology StringToTopology(std::string Topo);
 struct FPVertexBufferData
 {
 	void* VertexBuffer;
-	int Size;
-	int Stride;
-	int Offset;
+	unsigned long VB_Size;
+	unsigned long VB_Cnt;
+	unsigned long Stride;
+	unsigned long Offset;
+};
+
+//IndexBuffer 데이터 구조체
+struct FPIndexBufferData
+{
+	void* IndexBuffer;
+	unsigned long Index_Size;
+	unsigned long Index_Cnt;
+	unsigned long FaceCnt;
+	unsigned long Stride;
+	unsigned long Offset;
 };
 
 struct FPActorData

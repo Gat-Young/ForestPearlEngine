@@ -166,6 +166,9 @@ class RenderingDevice
 		//VB 만들기
 		void* CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride);
 
+		//IB 만들기
+		void* CreateIndexBuffer(void* IndexData, UINT Size, UINT stride);
+
 		//CB 만들기
 		HRESULT CreateVertexShaderConstBuffer(UINT Size);
 		HRESULT CreatePixelShaderConstBuffer(UINT Size);

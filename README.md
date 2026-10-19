@@ -46,7 +46,7 @@
 | 🕹️ | **Possess** | 컨트롤러가 Pawn을 빙의(Possess)하며, 빙의된 Pawn의 바인딩만 입력을 받음 |
 | 🔩 | **Socket Attach** | StaticMesh JSON에 정의한 Socket에 컴포넌트/액터를 부착 |
 | 📷 | **SpringArm + Camera** | 컨트롤러 회전을 따라가는 3인칭 카메라 |
-| 📦 | **에셋 파이프라인** | FBX(ufbx) → VertexBuffer, JSON(Level / StaticMesh), 사전 컴파일 셰이더(`.vso` / `.pso`) |
+| 📦 | **에셋 파이프라인** | FBX(ufbx) → **속성별 VertexBuffer 4개(Position · Normal · Color · UV) + Index Buffer**, JSON(Level / StaticMesh), 사전 컴파일 셰이더(`.vso` / `.pso`) |
 | 🏭 | **클래스 레지스트리** | 문자열 이름 → 팩토리. Level JSON의 `"class"` 문자열로 액터를 생성 |
 | 🛠️ | **자동 패키징** | Release\|x64 빌드 후 PowerShell 스크립트가 `<게임이름>.exe` + `Assets/`를 구성 |
 
@@ -306,7 +306,7 @@ FPAssetLoader* AssetLoader =
 | `FPGameTimer` | `GetGameTimer()` | `QueryPerformanceCounter` 기반. `DeltaTime()`(초), `DeltaTimeMS()`, `TotalTime()`, `Start/Stop/Reset` |
 | `FPGameProjectClassRegistry` | `GetClassRegister()` | `Register<T>("이름")`, `Create("이름")`, `HasFactory("이름")`. 이름은 **클래스 이름과 동일**해야 함 ([등록 규칙](#클래스-등록-규칙)) |
 | `FPInputSystem` | `GetInputSystem()` | Raw Input / XInput 수집, 입력 큐 |
-| `FPAssetManager` | `GetAssetManager()` | Mesh · VertexBuffer · StaticMesh · **Texture** · Level · GameMode · Shader 저장소 |
+| `FPAssetManager` | `GetAssetManager()` | Mesh · VertexBuffer(Position / Normal / Color / UV) · IndexBuffer · StaticMesh · **Texture** · Level · GameMode · Shader 저장소 |
 | `FPAssetLoader` | `GetAssetLoader()` | FBX / Level JSON / StaticMesh JSON / **Texture JSON** / Shader 로딩 |
 | `FPMeshRenderList` | `GetMeshRenderList()` | 메시 `RenderItem` 등록/해제 |
 | `FPGizmoRenderList` | `GetGizmoRenderList()` | 기즈모 `GizmoRenderItem` 등록/해제 |
@@ -348,9 +348,9 @@ FPAssetLoader* AssetLoader =
 | `FPMatrix` | `Define/FPMath.h` | `DirectX::XMMATRIX` 래퍼. `*`, `MatrixInverse`, `Transpose` |
 | 함수 | `Define/FPMath.h` | `DegToRad / RadToDeg / Clamp`, `Rotate / Conjugate / Inverse / FromEuler / AngleAxis`, `NormalizeAxis`, `MatrtixTranslation / MatrixRotationQuaternion / MatrixScaling`, `MatrixLookAtLH / MatrixLookToLH / MatrixPerspectiveFovLH` |
 | `FTransform` | `FTransform.h` | Location, Rotation(Euler, Degree), QuaternionRotation, Scale + 각 행렬, `Right / Up / Foraward` |
-| `VERTEX` | `Define/FPDataDefine.h` | `x, y, z` + `r, g, b, a` (28 byte) |
+| 정점 스트림 | `Define/FPDataDefine.h` | `POSITION_VERTEX`(12 byte) · `NORMAL_VERTEX`(12) · `COLOR_VERTEX`(16) · `UV_VERTEX`(8), 인덱스 `INDEX_16BIT` · `INDEX_32BIT`(삼각형 1개). `VERTEX`는 이들을 묶은 조립용 구조체 ([정점 스트림 분리와 Index Buffer](#정점-스트림-분리와-index-buffer)) |
 | `Topology` | `Define/FPDataDefine.h` | `TRIANGLELIST`, `TRIANGLESTRIP`, `LINELIST` |
-| 데이터 구조체 | `Define/FPDataDefine.h` | `FPMeshData`, `FPStaticMeshData`, `SOCKET_TRANSFORM`, `FPVertexBufferData`, `FPActorData` |
+| 데이터 구조체 | `Define/FPDataDefine.h` | `FPMeshData`, `FPStaticMeshData`, `SOCKET_TRANSFORM`, `FPVertexBufferData`, `FPIndexBufferData`, `FPActorData` |
 | `FInputValue` | `InputValue.h` | `X, Y, Z, bBool, Float` |
 
 > 좌표계는 **왼손 좌표계, Y-Up, +Z 전방**입니다. 회전 벡터는 `{ Pitch(X), Yaw(Y), Roll(Z) }`이며 단위는 Degree입니다.
@@ -590,7 +590,7 @@ flowchart LR
 |---|---|---|---|---|---|
 | `MeshRenderPass` | `MeshRenderList` | `TRIANGLELIST` | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Light · Material** (Renderer가 구성, [Light · Normal](#lambert-light--normal-line)) | `Priority` 오름차순 |
 | `GizmoRenderPass` | `GizmoRenderList` | `LINELIST` | 카메라 → 기즈모 → 뷰포트 → 서브 메시 | Object · ViewPort · Material | `Priority` 오름차순 |
-| `NormalRenderPass` | `NormalRenderList` | `LINELIST` (`DrawInstanced`) | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Normal Matrix** | 없음 (`bNormal`이 `true`일 때만 실행) |
+| `NormalRenderPass` | `NormalRenderList` | `LINELIST` (`DrawIndexed`) | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Normal Matrix** | 없음 (`bNormal`이 `true`일 때만 실행) |
 | `UIRenderPass` | `UIRenderList` | (SpriteBatch) | 텍스트 → `UIViewPort` | 사용 안 함 | `Priority` 오름차순 |
 
 - 모든 Pass는 시작할 때 VS / PS 상수 버퍼 14개를 바인딩합니다 ([상수 버퍼](#상수-버퍼)).
@@ -621,7 +621,7 @@ flowchart LR
 struct RenderItem            // Mesh용. Material 색을 포인터로 직접 들고 있음
 {
     int*  Priority;   bool* Active;
-    std::string* MeshPath;                              // AssetManager의 VertexBuffer 키
+    std::string* MeshPath;                              // AssetManager의 VertexBuffer · IndexBuffer 키
     FPMatrix* Location; FPMatrix* Rotation; FPMatrix* Scale;
     std::string* VertexShaderPath; std::string* PixelShaderPath;   // Material의 셰이더 이름
     FPVector4* BaseColor; FPVector4* Diffuse; FPVector4* Ambient;  // Material 색 (렌더러가 VS 상수 버퍼로 조립)
@@ -665,7 +665,7 @@ struct FPViewPort            // 뷰포트 1개
 `MeshRenderItem`은 값 복사본에 `TextureList`(슬롯 · 텍스처 이름 · 샘플러)와 `SamplerList`(`s#` 배정)를 추가로 가집니다 ([Texture](#texture)).
 
 렌더러는 위 항목을 `RenderingData::MeshRenderItem` · `GizmoRenderItem` · `NormalRenderItem` · `LightRenderItem` · `CameraItem` · `UIContextItem` · `FPViewPort`로 **값 복사**해 Render List에 보관합니다.
-메시 / 기즈모 / Normal Line은 `MeshPath`로 `FPAssetManager`에서 VertexBuffer 목록을, 셰이더 이름으로 VS · PS · InputLayout을 찾아 사용합니다.
+메시 / 기즈모 / Normal Line은 `MeshPath`로 `FPAssetManager`에서 스트림별 VertexBuffer 목록과 IndexBuffer 목록을, 셰이더 이름으로 VS · PS · InputLayout을 찾아 사용합니다.
 
 ### 초기화 (`Renderer::InitializeRenderer`)
 
@@ -766,7 +766,7 @@ flowchart TD
     I --> ST["InputLayout · VS / PS 설정<br/>Material 상수 버퍼 갱신"]
     ST --> VPL{"카메라의 ViewPort마다"}
     VPL --> MVP["SetViewPort<br/>Object 상수 버퍼 b0 갱신<br/>ViewPort 상수 버퍼 갱신"]
-    MVP --> DR["서브 메시마다<br/>IASetVertexBuffers → Draw"]
+    MVP --> DR["서브 메시마다<br/>스트림별 IASetVertexBuffers<br/>+ IASetIndexBuffer → DrawIndexed"]
     DR --> VPL
     VPL --> I
     I --> C
@@ -775,7 +775,7 @@ flowchart TD
 - **텍스처** — `MeshRenderPass`는 항목마다 Material 상수 버퍼 갱신 뒤 텍스처 슬롯을 `PSSetShaderResources(t#)`, 샘플러를 `PSSetSamplers(s#)`로 바인딩합니다 (Gizmo · Normal Pass는 해당 없음).
 - **정렬** — `Priority` **값이 작은 항목부터** 그려집니다 (`std::sort` 오름차순). 메시 · 기즈모 컴포넌트의 `SetPriority(int)`로 지정합니다.
 - **Fill / Cull** — 컴포넌트별 설정이 아니라 **Pass 전체에 적용되는 전역 값**입니다. `ForestPearlEngine::SetbFill(bool)`, `SetbCull(bool)` 조합으로 4개의 Rasterizer State 중 하나가 선택됩니다.
-- **Draw** — 인덱스 버퍼 없이 `Draw(VertexCount, 0)`로 그립니다. FBX 로딩 시 삼각형 코너마다 정점을 복제합니다.
+- **Draw** — Mesh · Normal Pass는 Index Buffer로 `DrawIndexed(Index_Cnt, 0, 0)`을, Gizmo Pass는 인덱스 없이 `Draw`를 호출합니다. FBX 로딩 시 코너마다 만든 정점은 `ufbx_generate_indices`로 중복을 병합합니다 ([정점 스트림 분리와 Index Buffer](#정점-스트림-분리와-index-buffer)).
 - **깊이 테스트** — `ForestPearlEngine::SetZEnable(bool)`로 전역 On/Off.
 - **카메라** — 활성 카메라를 모두 순회하며, 카메라마다 Render List 전체를 다시 그립니다.
 - **Material 상수 버퍼는 항목당 한 번**, **Object · ViewPort 상수 버퍼는 뷰포트마다** 갱신됩니다.
@@ -816,7 +816,7 @@ flowchart LR
 | 방향 공간 | **Local(오브젝트) 공간.** 엔진이 메시마다 `Direction`을 정규화 → `World` 역행렬을 곱해 로컬로 바꾼 뒤 다시 정규화해 전달합니다. 셰이더는 모델의 노멀(`NORMAL`)을 변환하지 않고 그대로 `dot(N, L)`에 사용합니다 |
 | 라이트 개수 | 활성 라이트 중 **최대 8개**를 메시마다 상수 버퍼 `LIGHT`로 등록 (`Direction`, `Range`, `Diffuse`, `Ambient`) |
 | Material | `FPMaterial`의 `BaseColor` · `Diffuse` · `Ambient`. `RenderItem`이 값의 주소를 들고 있고, 렌더러가 Light 다음 슬롯에 `MATERIAL`로 등록합니다 |
-| 노멀 | `VERTEX`가 `nx, ny, nz`를 가집니다. FBX 로딩 시 노드의 `node_to_world`로 변환 후 정규화해 저장합니다 |
+| 노멀 | `NORMAL_VERTEX`(`nx, ny, nz`) 스트림(Input Slot 1)에 저장됩니다. FBX 로딩 시 노드의 `node_to_world`로 변환 후 정규화해 저장합니다 |
 
 ```hlsl
 // LambertLight.hlsli
@@ -855,7 +855,7 @@ Level JSON에 `"class": "ADirectionalLight"`로 배치하며, 클래스는 `Load
 | 컴포넌트 | `FPGizmoNormalLineComponent`. **`FPStaticMeshComponent`가 생성자에서 자동으로 만들어** 같은 메시 · 같은 Transform으로 `FPMeshNormalRenderList`에 등록합니다. `SetActive`, `SetNormalLength(float)` |
 | 토글 | `ForestPearlEngine::SetbNormal(bool)` → `Renderer::bNormal`. `false`이면 `NormalRenderPass`가 바로 반환합니다 (Tri_World: <kbd>F6</kbd>) |
 | Render Pass | `NormalRenderPass` — `MeshRenderPass` 다음, `GizmoRenderPass` 다음에 호출. Topology `LINELIST` |
-| 그리는 방식 | 메시의 **정점 1개 = 인스턴스 1개**. Input Layout의 `POSITION` · `NORMAL`을 `PER_INSTANCE_DATA`로 읽고 `DrawInstanced(2, 정점 수, 0, 0)`으로 선 1개(정점 2개)를 그립니다 |
+| 그리는 방식 | 메시의 **정점 1개 = 인스턴스 1개**로 설계되어 Input Layout의 `POSITION`(슬롯 0) · `NORMAL`(슬롯 1)을 `PER_INSTANCE_DATA`로 읽습니다. Index Buffer 도입 후 Pass는 `DrawIndexed(Index_Cnt, 0, 0)`을 호출하도록 바뀌었고, 이 Pass의 Draw 방식은 수정 중입니다 ([경고](#pass별-사용)) |
 | 선의 양끝 | `SV_VertexID`가 0이면 시작점(정점 위치), 1이면 끝점(`시작점 + WorldNormal * NormalLength`) |
 | Normal Matrix | CPU(`CreateNormalRenderList`)에서 `transpose(inverse(World))`를 계산해 VS `b2`로 전달. 셰이더의 `TransformWorldNormal()`이 이 행렬로 노멀을 월드로 변환하고 정규화합니다. World 행렬식이 0이면 그 항목은 그리지 않습니다 |
 | 색 | 초록 `(0, 1, 0, 1)` 고정 (`NormalDebugPixelShader`) |
@@ -885,9 +885,9 @@ if (input.VertexID == 1) WorldPosition += WorldNormal * NormalLength;
 
 | 항목 | 내용 |
 |---|---|
-| 입력 레이아웃 | `POSITION`(float3, 0), `NORMAL`(float3, 12), `COLOR`(float4, 24), `TEXCOORD`(float2, 40) — `VERTEX` 52 byte. Normal Line 셰이더만 `POSITION` · `NORMAL`을 **Per-Instance**로 읽음 |
+| 입력 레이아웃 | 속성마다 **별도 슬롯, 오프셋 0** — `POSITION`(float3, 슬롯 0), `NORMAL`(float3, 슬롯 1), `COLOR`(float4, 슬롯 2), `TEXCOORD`(float2, 슬롯 3). Normal Line 셰이더만 `POSITION`(0) · `NORMAL`(1)을 **Per-Instance**로 읽음 |
 | 기본 Mesh 셰이더 | `DefaultVertexShader.vso` — WVP 변환 + **Lambert Light를 정점 단위로 계산**(`b0` Object, `b2` Light, `b3` Material). `DefaultPixelShader.pso`는 보간된 정점 색에 **텍스처(`t0` / `s0`)를 곱해** 출력 |
-| 기본 Gizmo 셰이더 | `DefaultGizmoVertexShader.vso` / `DefaultGizmoPixelShader.pso` — WVP 변환 후 정점 색 출력 (`b0`만 사용, 라이트 없음). `FPGizmoGridComponent` · `FPGizmoAxisComponent`가 사용 |
+| 기본 Gizmo 셰이더 | `DefaultGizmoVertexShader.vso` / `DefaultGizmoPixelShader.pso` — WVP 변환 후 정점 색 출력 (`b0`만 사용, 라이트 없음). Position · Color 스트림만 바인딩. `FPGizmoGridComponent` · `FPGizmoAxisComponent`가 사용 |
 | Normal Line 셰이더 | `NormalDebugVertexShader.vso` / `NormalDebugPixelShader.pso` — [Lambert Light · Normal Line](#lambert-light--normal-line) 참고. 전용 Input Layout을 쓰므로 `LoadNormalDebugVertexShader()`로 로드 |
 | 로드 방식 1 | 사전 컴파일된 오브젝트 로드 — `LoadVertexShader("X.vso", owner)` |
 | 로드 방식 2 | 런타임 컴파일 — `LoadVertexShader("X.fx", "VS_Main", "vs_5_0", owner)` (행 우선 행렬 패킹) |
@@ -897,6 +897,81 @@ if (input.VertexID == 1) WorldPosition += WorldNormal * NormalLength;
 Material은 셰이더를 **파일 이름**(`"Demo.vso"`)으로 가리키고, 렌더러가 Pass 안에서 `FPAssetManager`에서 실제 셰이더를 찾습니다. 따라서 `LoadAssets()`에서 먼저 로드해 두어야 합니다.
 
 Material 선택 우선순위: **컴포넌트에 `SetMaterial`로 지정한 Material** → StaticMesh JSON의 `"Material"` 클래스 → 기본 `FPMaterial`
+
+### 정점 스트림 분리와 Index Buffer
+
+메시의 정점 데이터는 하나의 `VERTEX` 배열 대신 **속성별 스트림 4개 + Index Buffer 1개**로 나뉘어 GPU에 올라갑니다.
+
+| 스트림 | 구조체 | 크기 | Input Slot | 시맨틱 |
+|---|---|:-:|:-:|---|
+| Position | `POSITION_VERTEX { x, y, z }` | 12 byte | 0 | `POSITION` |
+| Normal | `NORMAL_VERTEX { nx, ny, nz }` | 12 byte | 1 | `NORMAL` |
+| Color | `COLOR_VERTEX { r, g, b, a }` | 16 byte | 2 | `COLOR` |
+| UV | `UV_VERTEX { u, v }` | 8 byte | 3 | `TEXCOORD` |
+| Index | `INDEX_32BIT { A, B, C }` (삼각형 1개) | 12 byte | — | `DXGI_FORMAT_R32_UINT` |
+
+Input Layout은 시맨틱마다 **슬롯이 다르고 오프셋은 모두 0**입니다 (`ShaderFactory::CreateInputLayout`). HLSL의 시맨틱(`POSITION`, `NORMAL`, `COLOR0`, `TEXCOORD0`) 선언은 바뀌지 않았으므로 기존 셰이더는 그대로 사용할 수 있습니다.
+`VERTEX`(`PositionVertex` · `NormalVertex` · `ColorVertex` · `UVVertex` · `Index`)는 Gizmo 정점을 만들 때 쓰는 **조립용 구조체**이며, GPU에는 속성별로 분해되어 올라갑니다.
+
+#### FBX 로딩과 Index 생성
+
+```mermaid
+flowchart LR
+    A["ufbx 삼각형화<br/>코너마다 Position · Normal · UV · Color 생성"] --> B["ufbx_generate_indices<br/>4개 스트림이 모두 같은 정점만 병합"]
+    B --> C["고유 정점 배열 4개<br/>+ 인덱스 배열"]
+    C --> D["INDEX_32BIT 삼각형 목록"]
+    C --> E["스트림별 VertexBuffer 4개"]
+    D --> F["IndexBuffer"]
+    E --> G["FPAssetManager<br/>경로별 · 서브 메시별 보관"]
+    F --> G
+```
+
+- 위치 · 노멀 · UV · 컬러 **네 값이 모두 같은 정점만** 하나로 합쳐집니다. 노멀이나 UV가 다른 모서리는 합쳐지지 않으므로 정점 수는 줄지만 하드 에지는 유지됩니다.
+- 메시 노드 하나가 서브 메시 하나이며, 서브 메시마다 스트림 4개와 Index Buffer가 `FPAssetManager`에 같은 순서로 쌓입니다. 렌더 Pass는 같은 인덱스 `i`로 꺼내 씁니다.
+- 변환할 정점이 없는 메시는 빈 데이터로 반환됩니다.
+
+#### 데이터 구조체
+
+```cpp
+// Define/FPDataDefine.h
+struct FPVertexBufferData { void* VertexBuffer; unsigned long VB_Size /*byte*/, VB_Cnt /*정점 수*/; unsigned int Stride, Offset; };
+struct FPIndexBufferData  { void* IndexBuffer;  unsigned long Index_Size /*byte*/, Index_Cnt /*인덱스 수 = FaceCnt*3*/, FaceCnt; unsigned int Stride, Offset; };
+
+struct FPMeshData { std::string Name;
+    std::vector<POSITION_VERTEX> Position_Vertices;  std::vector<NORMAL_VERTEX> Normal_Vertices;
+    std::vector<COLOR_VERTEX>    Color_Vertices;     std::vector<UV_VERTEX>     UV_Vertices;
+    std::vector<INDEX_32BIT>     Index; };
+```
+
+| `FPAssetManager` | 설명 |
+|---|---|
+| `AddPositionVertexBuffer` · `AddNormalVertexBuffer` · `AddColorVertexBuffer` · `AddUVVertexBuffer` · `AddIndexBuffer` | 경로(FBX 경로 · Gizmo 이름)별로 서브 메시 순서대로 추가 |
+| `GetPositionVertexBuffer` · `GetNormalVertexBuffer` · `GetColorVertexBuffer` · `GetUVVertexBuffer` · `GetIndexBuffer` | 경로의 서브 메시 목록 반환 |
+| `HasPositionBuffer` · `HasNormalBuffer` · `HasColorBuffer` · `HasUVBuffer` · `HasIndexBuffer` | 등록 여부 |
+
+기존 `AddVertexBuffer` · `GetVertexBuffer` · `HasVertexBuffer`는 제거되었습니다. 로더는 `FPAssetLoader::MakePositionVertexBuffer` · `MakeNormalVertexBuffer` · `MakeColorVertexBuffer` · `MakeUVVertexBuffer` · `MakeIndex32BitBuffer`로 GPU 버퍼를 만들며, `RenderingDevice`에는 `CreateIndexBuffer`, `IASetIndexBuffers`, `DrawIndexed`가 추가되었습니다. `MakeIndex16BitBuffer`(`INDEX_16BIT`)도 정의되어 있지만 Index Buffer 포맷은 `R32_UINT`로 고정되어 있어 현재 쓰이지 않습니다.
+
+#### Pass별 사용
+
+| Pass | 바인딩하는 스트림 | 그리기 |
+|---|---|---|
+| `MeshRenderPass` | Position(0) · Normal(1) · Color(2) · Index | `DrawIndexed(Index_Cnt, 0, 0)` |
+| `GizmoRenderPass` | Position(0) · Color(2) (Index 없음) | `Draw(…, 0)` — 선 목록을 인덱스 없이 그림 |
+| `NormalRenderPass` | Position(0) · Normal(1) · Index | `DrawIndexed(Index_Cnt, 0, 0)` |
+
+> [!WARNING]
+> 아래는 현재 코드를 읽어 확인한 내용이며, 커밋 메시지에도 Gizmo · Normal 쪽 Render Pass 수정이 남아 있다고 적혀 있습니다. 실행해서 동작을 확인하지는 못했습니다.
+> - **UV 스트림(슬롯 3)이 `MeshRenderPass`에서 바인딩되지 않습니다.** `GetUVVertexBuffer`로 가져오기만 하고 `IASetVertexBuffers(3, …)`가 없어, 텍스처 UV를 읽을 수 없습니다.
+> - **`GizmoRenderPass`는 `Draw(PositionVB[i].VB_Size, 0)`을 호출합니다.** `VB_Size`는 바이트 수이므로 정점 수(`VB_Cnt`)와 다릅니다.
+> - **`NormalRenderPass`는 `DrawInstanced(2, 정점 수)`에서 `DrawIndexed`로 바뀌었는데** Input Layout은 여전히 `PER_INSTANCE_DATA`입니다. 인스턴스가 1개만 그려지므로 노멀 선 표시를 확인해야 합니다.
+> - Gizmo Pass는 Normal(1) · UV(3) 슬롯을 바인딩하지 않지만 같은 Input Layout을 사용합니다.
+
+#### 콘텐츠 프로그래머가 알아둘 점
+
+- 메시를 쓰는 코드(`FPStaticMeshComponent`, StaticMesh JSON, `LoadFbxData`)는 **바뀐 것이 없습니다.** 스트림 분리와 Index 생성은 로더가 처리합니다.
+- 직접 만든 셰이더는 시맨틱(`POSITION` · `NORMAL` · `COLOR0` · `TEXCOORD0`) 이름만 맞추면 됩니다. 전용 Input Layout이 필요한 셰이더(예: Normal Line)는 `ShaderFactory`에서 슬롯 배치를 함께 맞춰야 합니다.
+- 새 Gizmo를 만들 때는 `FPGizmoComponent::MakeVertexBuffer`가 만드는 `VERTEX` 중 **Position과 Color만** 사용됩니다.
+- 인덱스는 삼각형 단위(3개씩)로 만들어지므로 FBX 메시는 `TRIANGLELIST`로 그려야 합니다.
 
 ### Texture
 
@@ -1152,7 +1227,7 @@ Assets/
 
 ```mermaid
 flowchart LR
-    FBX["Model/*.fbx"] -->|"LoadFbxData<br/>ufbx"| MD["FPMeshData<br/>VertexBuffer"]
+    FBX["Model/*.fbx"] -->|"LoadFbxData<br/>ufbx"| MD["FPMeshData<br/>스트림별 VertexBuffer + IndexBuffer"]
     SMJ["StaticMesh/*.json"] -->|"LoadStaticMesh"| SMD["FPStaticMeshData"]
     LVJ["Level/*.json"] -->|"LoadLevelData"| LVD["FPActorData 목록<br/>GameMode 이름"]
     TXJ["Texture/*.json<br/>TextureResource/*"] -->|"LoadTexture<br/>WIC / DDS"| TXD["FPTextureData<br/>SRV"]
@@ -1168,7 +1243,7 @@ flowchart LR
     AM -->|"GetTextureData<br/>MeshRenderPass"| TXR["PS t# 바인딩"]
 ```
 
-**FBX 변환 규칙** — 왼손 좌표계 · Y-Up · 미터 단위로 로드하고, 모든 면을 삼각형화한 뒤 코너마다 정점을 생성합니다. 정점에는 노드 변환이 적용된 위치와 Vertex Color가 들어가며(색이 없으면 흰색), 메시 노드 하나가 VertexBuffer 하나가 됩니다.
+**FBX 변환 규칙** — 왼손 좌표계 · Y-Up · 미터 단위로 로드하고, 모든 면을 삼각형화한 뒤 코너마다 정점을 생성합니다. 정점에는 노드 변환이 적용된 위치 · 노멀 · UV와 Vertex Color가 들어가며(색이 없으면 흰색), 위치 · 노멀 · UV · 컬러가 모두 같은 정점은 병합되어 **Index Buffer**로 참조됩니다. 메시 노드 하나가 서브 메시 하나이며, 서브 메시마다 Position · Normal · Color · UV VertexBuffer와 IndexBuffer가 하나씩 만들어집니다.
 
 ### Level JSON
 
@@ -2070,7 +2145,7 @@ Tri_World처럼 *레벨 하나를 열어 종료할 때까지 유지*하는 흐�
 | `FPMaterial` | `VBLayout`(InputLayout). `SetVertexShader()`를 호출하면 이전 레이아웃도 해제되지 않음 | 없음 |
 | `FPGizmoComponent` | `Material`, 직접 만든 VertexBuffer | 렌더 목록 해제만 수행 |
 | `FPViewPortClient` | `FPViewPort` 5개, `FPConstantBufferRenderData` 4개 | `= default` |
-| `FPAssetManager` | `void*`로 보관하는 VertexBuffer, Shader 객체, Shader 바이트코드, 텍스처 SRV와 `new`로 만든 `D3D11_TEXTURE2D_DESC`(`FPTextureData`) | `= default` |
+| `FPAssetManager` | `void*`로 보관하는 VertexBuffer(스트림 4종) · IndexBuffer, Shader 객체, Shader 바이트코드, 텍스처 SRV와 `new`로 만든 `D3D11_TEXTURE2D_DESC`(`FPTextureData`) | `= default` |
 | `RenderingDevice` | 상수 버퍼 28개(VS 14 · PS 14), DepthStencilState 3개, SamplerState 8개(생성 시), 열거한 `IDXGIAdapter1`, `IDXGIAdapter4` | 없음 |
 | `ForestPearlEngine` | `Renderer` | `Finalize()`만 호출 |
 | `FPGameplayStatics::GetActorOfClass` · `GetAllActorsOfClass` | 타입 비교용 임시 인스턴스의 `RootComponent` — **호출할 때마다** 1개 | — |

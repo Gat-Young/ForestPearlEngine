@@ -592,6 +592,7 @@ void Renderer::MeshRenderPass()
 					Device.IASetVertexBuffers(0, 1, PositionVB[i].VertexBuffer, &(PositionVB[i].Stride), &(PositionVB[i].Offset));
 					Device.IASetVertexBuffers(1, 1, NormalVB[i].VertexBuffer, &(NormalVB[i].Stride), &(NormalVB[i].Offset));
 					Device.IASetVertexBuffers(2, 1, ColorVB[i].VertexBuffer, &(ColorVB[i].Stride), &(ColorVB[i].Offset));
+					Device.IASetVertexBuffers(3, 1, UVVB[i].VertexBuffer, &(UVVB[i].Stride), &(UVVB[i].Offset));
 					Device.IASetIndexBuffers(IndexB[i].IndexBuffer, IndexB[i].Offset);
 
 					Device.DrawIndexed(IndexB[i].Index_Cnt, 0, 0);																//Draw Call
@@ -719,7 +720,7 @@ void Renderer::GizmoRenderPass()
 					Device.IASetVertexBuffers(0, 1, PositionVB[i].VertexBuffer, &(PositionVB[i].Stride), &(PositionVB[i].Offset));
 					Device.IASetVertexBuffers(2, 1, ColorVB[i].VertexBuffer, &(ColorVB[i].Stride), &(ColorVB[i].Offset));
 
-					Device.Draw(PositionVB[i].VB_Size, 0);																		//Draw Call
+					Device.Draw(PositionVB[i].VB_Cnt, 0);																		//Draw Call
 				}
 			}
 		}
@@ -847,7 +848,7 @@ void Renderer::NormalRenderPass()
 					Device.IASetVertexBuffers(1, 1, NormalVB[i].VertexBuffer, &(NormalVB[i].Stride), &(NormalVB[i].Offset));
 					Device.IASetIndexBuffers(IndexB[i].IndexBuffer, IndexB[i].Offset);
 
-					Device.DrawIndexed(IndexB[i].Index_Cnt, 0, 0);																	//Draw Call
+					Device.DrawInstanced(2, PositionVB[i].VB_Cnt, 0, 0);																		//Draw Call
 				}
 			}
 		}

@@ -656,6 +656,8 @@ void FPAssetLoader::LoadStaticMesh(std::string StaticMeshName, std::string Stati
 		}
 	}
 
+
+	//Material 값 일단 Maapping해서 들고 있기
 	std::string Material;
 
 	if (JsonStaticMeshData.contains("Material") && JsonStaticMeshData["Material"].is_string())

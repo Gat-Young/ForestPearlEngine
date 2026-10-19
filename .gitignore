@@ -430,3 +430,7 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# FBX to Static Mesh Json Translator tool I/O
+Tool/FBXToStaticMeshJsonTranslator/EXE/FBX/
+Tool/FBXToStaticMeshJsonTranslator/EXE/JSON/

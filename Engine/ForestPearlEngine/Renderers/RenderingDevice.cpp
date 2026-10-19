@@ -328,7 +328,6 @@ void RenderingDevice::RenderTargetPresent()
 //
 void* RenderingDevice::CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride)
 {
-
 	// 정점 버퍼 정보 구성
 	D3D11_BUFFER_DESC Bd = {};
 	ZeroMemory(&Bd, sizeof(Bd));
@@ -900,6 +899,12 @@ void RenderingDevice::IASetVertexBuffers(UINT StartSlot, UINT NumBuffers, void* 
 	DeviceContext->IASetVertexBuffers(StartSlot, NumBuffers, &VB, Strides, Offsets);
 }
 
+void RenderingDevice::IASetIndexBuffers(void* IndexBuffer, UINT Offset)
+{
+	ID3D11Buffer* IB = static_cast<ID3D11Buffer*>(IndexBuffer);
+	DeviceContext->IASetIndexBuffer(IB, DXGI_FORMAT_R32_UINT ,Offset);
+}
+
 
 void RenderingDevice::IASetInputLayout(void* InputLayout)
 {
@@ -945,6 +950,12 @@ HRESULT RenderingDevice::DeviceFinalize()
 HRESULT RenderingDevice::Draw(UINT VertexCount, UINT StartVertexLocation)
 {
 	DeviceContext->Draw(VertexCount, StartVertexLocation);
+	return S_OK;
+}
+
+HRESULT RenderingDevice::DrawIndexed(UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)
+{
+	DeviceContext->DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
 	return S_OK;
 }
 

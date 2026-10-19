@@ -37,11 +37,8 @@ public:
 	//Mesh
 	void AddMeshData(std::string FbxPath, FPMeshData* MeshData);
 
-	std::vector<FPVertexBufferData> GetVertexBuffer(std::string MeshPath);
-
 	std::vector<FPMeshData> GetMeshData(std::string FbxPath);
 
-	bool HasVertexBuffer(std::string MeshPath);
 
 	//각 필요한 정점 버퍼에 값 추가
 

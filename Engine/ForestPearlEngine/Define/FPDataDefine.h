@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 
+
 //정점 구조체 분리 
 //Position
 struct POSITION_VERTEX
@@ -101,8 +102,8 @@ struct FPVertexBufferData
 	void* VertexBuffer;
 	unsigned long VB_Size;
 	unsigned long VB_Cnt;
-	unsigned long Stride;
-	unsigned long Offset;
+	unsigned int Stride;
+	unsigned int Offset;
 };
 
 //IndexBuffer 데이터 구조체
@@ -112,8 +113,8 @@ struct FPIndexBufferData
 	unsigned long Index_Size;
 	unsigned long Index_Cnt;
 	unsigned long FaceCnt;
-	unsigned long Stride;
-	unsigned long Offset;
+	unsigned int Stride;
+	unsigned int Offset;
 };
 
 struct FPActorData

@@ -150,7 +150,11 @@ class RenderingDevice
 
 		HRESULT DeviceFinalize();
 
+		//Draw 함수
 		HRESULT Draw(UINT VertexCount, UINT StartVertexLocation);
+		HRESULT DrawIndexed(UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation);
+		//Normal이 사용
+		HRESULT DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation);
 
 		//Texture용
 		HRESULT CreateWICTextureFromFile(std::string& FilePath, void** TextureResourceView);
@@ -159,9 +163,6 @@ class RenderingDevice
 		HRESULT GetTextureDesc(void* TextureResourceView, void** Desc);
 
 		HRESULT PSSetShaderResources(UINT Slot, UINT NumViews, void* ShaderResourceView);
-
-		//Normal용
-		HRESULT DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation);
 
 		//VB 만들기
 		void* CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride);
@@ -239,6 +240,9 @@ class RenderingDevice
 
 		//정점 버퍼 설정
 		void IASetVertexBuffers(UINT StartSlot, UINT NumBuffers, void* VertexBuffer, UINT* Strides, UINT* Offsets);
+
+		//인덱스 버퍼 설정
+		void IASetIndexBuffers(void* IndexBuffer, UINT Offset);
 		
 		//입력 레이아웃 설정
 		void IASetInputLayout(void* InputLayout);

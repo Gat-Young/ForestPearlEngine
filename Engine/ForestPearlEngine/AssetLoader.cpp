@@ -115,9 +115,6 @@ void FPAssetLoader::LoadFbxData(std::string FbxPath, AssetOwner EngineAsset)
 			MeshData.Name = NodeName;
 		}
 
-		AssetManager->AddMeshData(FbxPath, &MeshData);
-
-
 		//각각에 맞는 버퍼 데이터를 만들어서 등록
 		FPVertexBufferData PositionVertex;
 		PositionVertex.VertexBuffer = MakePositionVertexBuffer(MeshData.Position_Vertices);
@@ -160,6 +157,9 @@ void FPAssetLoader::LoadFbxData(std::string FbxPath, AssetOwner EngineAsset)
 		AssetManager->AddColorVertexBuffer(FbxPath, ColorVertex);
 		AssetManager->AddUVVertexBuffer(FbxPath, UVVertex);
 		AssetManager->AddIndexBuffer(FbxPath, IndexBuffer);
+
+		AssetManager->AddMeshData(FbxPath, &MeshData);
+
 	}
 	ufbx_free_scene(Scene);
 }
@@ -365,6 +365,7 @@ FPMeshData FPAssetLoader::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node
 		nullptr,
 		&Error
 	);
+
 
 	// 실패 처리
 	if (Error.type != UFBX_ERROR_NONE ||

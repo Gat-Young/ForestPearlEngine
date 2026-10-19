@@ -10,13 +10,13 @@ void FPGizmoComponent::MakeVertexBuffer(std::vector<FPGIZMO_VERTEX>& GizmoMesh, 
 	for (int i = 0; i < GizmoMesh.size(); ++i)
 	{
 		VERTEX GizmoVertexData;
-		GizmoVertexData.x = GizmoMesh[i].x;
-		GizmoVertexData.y = GizmoMesh[i].y;
-		GizmoVertexData.z = GizmoMesh[i].z;
-		GizmoVertexData.r = GizmoMesh[i].r;
-		GizmoVertexData.g = GizmoMesh[i].g;
-		GizmoVertexData.b = GizmoMesh[i].b;
-		GizmoVertexData.a = GizmoMesh[i].a;
+		GizmoVertexData.PositionVertex.x = GizmoMesh[i].x;
+		GizmoVertexData.PositionVertex.y = GizmoMesh[i].y;
+		GizmoVertexData.PositionVertex.z = GizmoMesh[i].z;
+		GizmoVertexData.ColorVertex.r = GizmoMesh[i].r;
+		GizmoVertexData.ColorVertex.g = GizmoMesh[i].g;
+		GizmoVertexData.ColorVertex.b = GizmoMesh[i].b;
+		GizmoVertexData.ColorVertex.a = GizmoMesh[i].a;
 
 		Vertex.push_back(GizmoVertexData);
 	}

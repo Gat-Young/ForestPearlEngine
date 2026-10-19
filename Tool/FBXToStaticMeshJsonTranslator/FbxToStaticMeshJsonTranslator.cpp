@@ -228,7 +228,29 @@ json FbxToStaticMeshJsonTranslator::ExportMaterialTextures(const ufbx_material& 
 
 		const ufbx_texture& Texture = *MaterialTexture.texture;
 
-		std::string TextureName = ConvertUfbxString(Texture.name);
+		std::string TextureName =
+			ConvertUfbxString(Texture.name);
+
+		if (TextureName.empty())
+		{
+			const std::filesystem::path TextureFilePath =
+				ConvertUfbxString(Texture.relative_filename);
+
+			TextureName = TextureFilePath.stem().string();
+		}
+
+		if (TextureName.empty())
+		{
+			TextureName = "Texture_" + std::to_string(Slot);
+		}
+
+		// Material 이름을 결합하여 고유한 Texture Key 생성
+		const std::string MaterialName =
+			ConvertUfbxString(Material.name);
+
+		TextureName =
+			SanitizeFileName(MaterialName) + "_" +
+			SanitizeFileName(TextureName);
 
 		// 이름이 없으면 파일 경로의 파일명(확장자 제외)을 사용
 		if (TextureName.empty())

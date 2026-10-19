@@ -10,32 +10,11 @@
 //
 // Mesh
 //
-std::vector<FPVertexBufferData> FPAssetManager::GetVertexBuffer(std::string MeshPath)
-{
-	if (!HasVertexBuffer(MeshPath))
-	{
-		std::cout << MeshPath << "의 VB 데이터가 없습니다." << "\n";
 
-		return {};
-	}
-
-	return MeshVertexBuffer[MeshPath];
-}
 
 void FPAssetManager::AddMeshData(std::string FbxPath, FPMeshData* MeshData)
 {
 	LoadedMeshData[FbxPath].push_back(std::move(*MeshData));
-}
-
-void FPAssetManager::AddVertexBuffer(std::string FbxPath, void* VertexBuffer, int VBSize, int Stride, int Offset)
-{
-	FPVertexBufferData VBData;
-	VBData.VertexBuffer = VertexBuffer;
-	VBData.Size = VBSize;
-	VBData.Stride = Stride;
-	VBData.Offset = Offset;
-
-	MeshVertexBuffer[FbxPath].push_back(VBData);
 }
 
 std::vector<FPMeshData> FPAssetManager::GetMeshData(std::string FbxPath)
@@ -43,13 +22,195 @@ std::vector<FPMeshData> FPAssetManager::GetMeshData(std::string FbxPath)
 	return LoadedMeshData[FbxPath];
 }
 
-bool FPAssetManager::HasVertexBuffer(std::string MeshPath)
+void FPAssetManager::AddPositionVertexBuffer(std::string FbxPath, FPVertexBufferData& PositionVertexBuffer)
 {
-	if (MeshVertexBuffer.count(MeshPath) <= 0)
+	MeshPositionVertexBuffer[FbxPath].push_back(PositionVertexBuffer);
+}
+
+void FPAssetManager::AddPositionVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset)
+{
+	FPVertexBufferData VBData;
+	VBData.VertexBuffer = VertexBuffer;
+	VBData.VB_Size = VBSize;
+	VBData.VB_Cnt = VBCnt;
+	VBData.Stride = Stride;
+	VBData.Offset = Offset;
+
+	MeshPositionVertexBuffer[FbxPath].push_back(VBData);
+}
+
+bool FPAssetManager::HasPositionBuffer(std::string MeshPath)
+{
+	if (MeshPositionVertexBuffer.count(MeshPath) <= 0)
 	{
 		return false;
 	}
 	return true;
+}
+
+std::vector<FPVertexBufferData> FPAssetManager::GetPositionVertexBuffer(std::string MeshPath)
+{
+	if (!HasPositionBuffer(MeshPath))
+	{
+		std::cout << MeshPath << "의 VB Position 데이터가 없습니다." << "\n";
+
+		return {};
+	}
+
+	return MeshPositionVertexBuffer[MeshPath];
+}
+
+void FPAssetManager::AddColorVertexBuffer(std::string FbxPath, FPVertexBufferData& ColorVertexBuffer)
+{
+	MeshColorVertexBuffer[FbxPath].push_back(ColorVertexBuffer);
+}
+
+void FPAssetManager::AddColorVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset)
+{
+	FPVertexBufferData VBData;
+	VBData.VertexBuffer = VertexBuffer;
+	VBData.VB_Size = VBSize;
+	VBData.VB_Cnt = VBCnt;
+	VBData.Stride = Stride;
+	VBData.Offset = Offset;
+
+	MeshColorVertexBuffer[FbxPath].push_back(VBData);
+}
+
+bool FPAssetManager::HasColorBuffer(std::string MeshPath)
+{
+	if (MeshColorVertexBuffer.count(MeshPath) <= 0)
+	{
+		return false;
+	}
+	return true;
+}
+
+std::vector<FPVertexBufferData> FPAssetManager::GetColorVertexBuffer(std::string MeshPath)
+{
+	if (!HasColorBuffer(MeshPath))
+	{
+		std::cout << MeshPath << "의 VB Color 데이터가 없습니다." << "\n";
+
+		return {};
+	}
+
+	return MeshColorVertexBuffer[MeshPath];
+}
+
+void FPAssetManager::AddNormalVertexBuffer(std::string FbxPath, FPVertexBufferData& NormalVertexBuffer)
+{
+	MeshNormalVertexBuffer[FbxPath].push_back(NormalVertexBuffer);
+}
+
+void FPAssetManager::AddNormalVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset)
+{
+	FPVertexBufferData VBData;
+	VBData.VertexBuffer = VertexBuffer;
+	VBData.VB_Size = VBSize;
+	VBData.VB_Cnt = VBCnt;
+	VBData.Stride = Stride;
+	VBData.Offset = Offset;
+
+	MeshNormalVertexBuffer[FbxPath].push_back(VBData);
+}
+
+bool FPAssetManager::HasNormalBuffer(std::string MeshPath)
+{
+	if (MeshNormalVertexBuffer.count(MeshPath) <= 0)
+	{
+		return false;
+	}
+	return true;
+}
+
+std::vector<FPVertexBufferData> FPAssetManager::GetNormalVertexBuffer(std::string MeshPath)
+{
+	if (!HasNormalBuffer(MeshPath))
+	{
+		std::cout << MeshPath << "의 VB Normal 데이터가 없습니다." << "\n";
+
+		return {};
+	}
+
+	return MeshNormalVertexBuffer[MeshPath];
+}
+
+void FPAssetManager::AddUVVertexBuffer(std::string FbxPath, FPVertexBufferData& UVVertexBuffer)
+{
+	MeshUVVertexBuffer[FbxPath].push_back(UVVertexBuffer);
+}
+
+void FPAssetManager::AddUVVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset)
+{
+	FPVertexBufferData VBData;
+	VBData.VertexBuffer = VertexBuffer;
+	VBData.VB_Size = VBSize;
+	VBData.VB_Cnt = VBCnt;
+	VBData.Stride = Stride;
+	VBData.Offset = Offset;
+
+	MeshUVVertexBuffer[FbxPath].push_back(VBData);
+}
+
+bool FPAssetManager::HasUVBuffer(std::string MeshPath)
+{
+	if (MeshUVVertexBuffer.count(MeshPath) <= 0)
+	{
+		return false;
+	}
+	return true;
+}
+
+std::vector<FPVertexBufferData> FPAssetManager::GetUVVertexBuffer(std::string MeshPath)
+{
+	if (!HasUVBuffer(MeshPath))
+	{
+		std::cout << MeshPath << "의 VB UV 데이터가 없습니다." << "\n";
+
+		return {};
+	}
+
+	return MeshUVVertexBuffer[MeshPath];
+}
+
+void FPAssetManager::AddIndexBuffer(std::string FbxPath, FPIndexBufferData& PositionVertexBuffer)
+{
+	MeshIndexBuffer[FbxPath].push_back(PositionVertexBuffer);
+}
+
+void FPAssetManager::AddIndexBuffer(std::string FbxPath, void* IndexBuffer, unsigned long IBSize, unsigned long IBCnt, unsigned long FaceCnt, unsigned long Stride, unsigned long Offset)
+{
+	FPIndexBufferData IBData;
+	IBData.IndexBuffer = IndexBuffer;
+	IBData.Index_Size = IBSize;
+	IBData.Index_Cnt = IBCnt;
+	IBData.FaceCnt = FaceCnt;
+	IBData.Stride = Stride;
+	IBData.Offset = Offset;
+
+	MeshIndexBuffer[FbxPath].push_back(IBData);
+}
+
+bool FPAssetManager::HasIndexBuffer(std::string MeshPath)
+{
+	if (MeshIndexBuffer.count(MeshPath) <= 0)
+	{
+		return false;
+	}
+	return true;
+}
+
+std::vector<FPIndexBufferData> FPAssetManager::GetIndexBuffer(std::string MeshPath)
+{
+	if (!HasIndexBuffer(MeshPath))
+	{
+		std::cout << MeshPath << "의 IB 데이터가 없습니다." << "\n";
+
+		return {};
+	}
+
+	return MeshIndexBuffer[MeshPath];
 }
 
 

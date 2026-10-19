@@ -21,23 +21,59 @@ void FPAssetLoader::MakeGizmoVertexBuffer(std::vector<struct VERTEX>& Mesh, cons
 
 	FPMeshData MeshData;
 	MeshData.Name = GizemoMeshPath;
-	MeshData.Vertices = Mesh;
+
+	//Gizmo가 필요한 정보만 모아서 Vertex Buffer를 생성
+	std::vector<POSITION_VERTEX> PositionVertex;
+	std::vector<COLOR_VERTEX> ColorVertex;
+
+	for (VERTEX Vertex : Mesh)
+	{
+		PositionVertex.push_back(Vertex.PositionVertex);
+		ColorVertex.push_back(Vertex.ColorVertex);
+	}
+	
+	MeshData.Position_Vertices = PositionVertex;
+	MeshData.Color_Vertices = ColorVertex;
 
 	//Gizmo Mesh 정보를 저장
 	AssetManager->AddMeshData(GizemoMeshPath, &MeshData);
 
-	void* VB = MakeVertexBuffer(Mesh);
+	void* PositionVB = MakePositionVertexBuffer(PositionVertex);
+	void* ColorVB = MakeColorVertexBuffer(ColorVertex);
 
-	int VBSize = Mesh.size();
-
-	//정점버퍼 생성 후 Map에 정보 등록
-	AssetManager->AddVertexBuffer(GizemoMeshPath, VB, VBSize, sizeof(VERTEX), 0);
+	//정점버퍼 생성 후 Map에 정보 등록 (Position , Color)
+	AssetManager->AddPositionVertexBuffer(GizemoMeshPath, PositionVB, PositionVertex.size() * sizeof(POSITION_VERTEX), PositionVertex.size(), sizeof(POSITION_VERTEX), 0);
+	AssetManager->AddColorVertexBuffer(GizemoMeshPath, ColorVB, ColorVertex.size() * sizeof(COLOR_VERTEX), ColorVertex.size(), sizeof(COLOR_VERTEX), 0);
 }
 
-void* FPAssetLoader::MakeVertexBuffer(std::vector<VERTEX>& Mesh)
+void* FPAssetLoader::MakePositionVertexBuffer(std::vector<struct POSITION_VERTEX>& Mesh)
 {
-	return RenderingDevice::GetRenderingDevice().CreateVertexBuffer(Mesh.data(), Mesh.size(), sizeof(VERTEX));
+	return RenderingDevice::GetRenderingDevice().CreateVertexBuffer(Mesh.data(), Mesh.size(), sizeof(POSITION_VERTEX));
+}
 
+void* FPAssetLoader::MakeColorVertexBuffer(std::vector<struct COLOR_VERTEX>& Mesh)
+{
+	return RenderingDevice::GetRenderingDevice().CreateVertexBuffer(Mesh.data(), Mesh.size(), sizeof(COLOR_VERTEX));
+}
+
+void* FPAssetLoader::MakeNormalVertexBuffer(std::vector<struct NORMAL_VERTEX>& Mesh)
+{
+	return RenderingDevice::GetRenderingDevice().CreateVertexBuffer(Mesh.data(), Mesh.size(), sizeof(NORMAL_VERTEX));
+}
+
+void* FPAssetLoader::MakeUVVertexBuffer(std::vector<struct UV_VERTEX>& Mesh)
+{
+	return RenderingDevice::GetRenderingDevice().CreateVertexBuffer(Mesh.data(), Mesh.size(), sizeof(UV_VERTEX));
+}
+
+void* FPAssetLoader::MakeIndex16BitBuffer(std::vector<struct INDEX_16BIT>& Mesh)
+{
+	return RenderingDevice::GetRenderingDevice().CreateIndexBuffer(Mesh.data(), Mesh.size(), sizeof(INDEX_16BIT));
+}
+
+void* FPAssetLoader::MakeIndex32BitBuffer(std::vector<struct INDEX_32BIT>& Mesh)
+{
+	return RenderingDevice::GetRenderingDevice().CreateIndexBuffer(Mesh.data(), Mesh.size(), sizeof(INDEX_32BIT));
 }
 
 void FPAssetLoader::LoadFbxData(std::string FbxPath, AssetOwner EngineAsset)
@@ -79,13 +115,51 @@ void FPAssetLoader::LoadFbxData(std::string FbxPath, AssetOwner EngineAsset)
 			MeshData.Name = NodeName;
 		}
 
+		//각각에 맞는 버퍼 데이터를 만들어서 등록
+		FPVertexBufferData PositionVertex;
+		PositionVertex.VertexBuffer = MakePositionVertexBuffer(MeshData.Position_Vertices);
+		PositionVertex.VB_Cnt = MeshData.Position_Vertices.size();
+		PositionVertex.VB_Size = MeshData.Position_Vertices.size() * sizeof(POSITION_VERTEX);
+		PositionVertex.Stride = sizeof(POSITION_VERTEX);
+		PositionVertex.Offset = 0;
+
+		FPVertexBufferData NormalVertex;
+		NormalVertex.VertexBuffer = MakeNormalVertexBuffer(MeshData.Normal_Vertices);
+		NormalVertex.VB_Cnt = MeshData.Normal_Vertices.size();
+		NormalVertex.VB_Size = MeshData.Normal_Vertices.size() * sizeof(NORMAL_VERTEX);
+		NormalVertex.Stride = sizeof(NORMAL_VERTEX);
+		NormalVertex.Offset = 0;
+
+		FPVertexBufferData ColorVertex;
+		ColorVertex.VertexBuffer = MakeColorVertexBuffer(MeshData.Color_Vertices);
+		ColorVertex.VB_Cnt = MeshData.Color_Vertices.size();
+		ColorVertex.VB_Size = MeshData.Color_Vertices.size() * sizeof(COLOR_VERTEX);
+		ColorVertex.Stride = sizeof(COLOR_VERTEX);
+		ColorVertex.Offset = 0;
+
+		FPVertexBufferData UVVertex;
+		UVVertex.VertexBuffer = MakeUVVertexBuffer(MeshData.UV_Vertices);
+		UVVertex.VB_Cnt = MeshData.UV_Vertices.size();
+		UVVertex.VB_Size = MeshData.UV_Vertices.size() * sizeof(UV_VERTEX);
+		UVVertex.Stride = sizeof(UV_VERTEX);
+		UVVertex.Offset = 0;
+
+		FPIndexBufferData IndexBuffer;
+		IndexBuffer.IndexBuffer = MakeIndex32BitBuffer(MeshData.Index);
+		IndexBuffer.Index_Size = MeshData.Index.size() * sizeof(INDEX_32BIT);
+		IndexBuffer.Index_Cnt = MeshData.Index.size() * 3;
+		IndexBuffer.FaceCnt = MeshData.Index.size();
+		IndexBuffer.Stride = sizeof(INDEX_32BIT);
+		IndexBuffer.Offset = 0;
+		
+		AssetManager->AddPositionVertexBuffer(FbxPath , PositionVertex);
+		AssetManager->AddNormalVertexBuffer(FbxPath, NormalVertex);
+		AssetManager->AddColorVertexBuffer(FbxPath, ColorVertex);
+		AssetManager->AddUVVertexBuffer(FbxPath, UVVertex);
+		AssetManager->AddIndexBuffer(FbxPath, IndexBuffer);
+
 		AssetManager->AddMeshData(FbxPath, &MeshData);
 
-		void* VertexBuffer = MakeVertexBuffer(AssetManager->GetMeshData(FbxPath).back().Vertices);
-		int VBSize = AssetManager->GetMeshData(FbxPath).back().Vertices.size();
-
-		//정점버퍼 생성 후 Map에 정보 등록
-		AssetManager->AddVertexBuffer(FbxPath, VertexBuffer, VBSize, sizeof(VERTEX), 0);
 	}
 	ufbx_free_scene(Scene);
 }
@@ -119,8 +193,14 @@ FPMeshData FPAssetLoader::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node
 	// 삼각형 하나당 코너 인덱스 3개가 필요
 	std::vector<uint32_t> TriangleCorners(Mesh->max_face_triangles * 3);
 
+	// 삼각형화 이후 예상되는 정점 개수
+	const size_t VertexCount = Mesh->num_triangles * 3;
+
 	//메모리 재할당 감소를 위해 대략적인 정점 메모리를 미리 예약
-	Result.Vertices.reserve(Mesh->num_indices);
+	Result.Position_Vertices.reserve(VertexCount);
+	Result.Normal_Vertices.reserve(VertexCount);
+	Result.Color_Vertices.reserve(VertexCount);
+	Result.UV_Vertices.reserve(VertexCount);
 
 	//모든 면 순회
 	for (const ufbx_face& Face : Mesh->faces)
@@ -196,30 +276,141 @@ FPMeshData FPAssetLoader::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node
 			}
 
 			//엔진 정점으로 복사
-			VERTEX Vertex{};
-			Vertex.x = static_cast<float>(WorldPosition.x);
-			Vertex.y = static_cast<float>(WorldPosition.y);
-			Vertex.z = static_cast<float>(WorldPosition.z);
+			POSITION_VERTEX PositionVertex{};
 
-			Vertex.nx = static_cast<float>(Normal.x);
-			Vertex.ny = static_cast<float>(Normal.y);
-			Vertex.nz = static_cast<float>(Normal.z);
+			PositionVertex.x = static_cast<float>(WorldPosition.x);
+			PositionVertex.y = static_cast<float>(WorldPosition.y);
+			PositionVertex.z = static_cast<float>(WorldPosition.z);
 
-			Vertex.u = static_cast<float>(UV.x);
-			Vertex.v = static_cast<float>(UV.y);
+			Result.Position_Vertices.push_back(PositionVertex);
 
-			Vertex.r = static_cast<float>(Color.x);
-			Vertex.g = static_cast<float>(Color.y);
-			Vertex.b = static_cast<float>(Color.z);
-			Vertex.a = static_cast<float>(Color.w);
+			NORMAL_VERTEX NormalVertex{};
 
-			Result.Vertices.push_back(Vertex);
+			NormalVertex.nx = static_cast<float>(Normal.x);
+			NormalVertex.ny = static_cast<float>(Normal.y);
+			NormalVertex.nz = static_cast<float>(Normal.z);
+
+			Result.Normal_Vertices.push_back(NormalVertex);
+
+			UV_VERTEX UVVertex{};
+
+			UVVertex.u = static_cast<float>(UV.x);
+			UVVertex.v = static_cast<float>(UV.y);
+
+			Result.UV_Vertices.push_back(UVVertex);
+
+			COLOR_VERTEX ColorVertex{};
+
+			ColorVertex.r = static_cast<float>(Color.x);
+			ColorVertex.g = static_cast<float>(Color.y);
+			ColorVertex.b = static_cast<float>(Color.z);
+			ColorVertex.a = static_cast<float>(Color.w);
+
+			Result.Color_Vertices.push_back(ColorVertex);
+
 		}
 	}
 
+	// Index Buffer 생성
+	const size_t TotalVertexCount = Result.Position_Vertices.size();
 
+	if (TotalVertexCount == 0)
+	{
+		return Result;
+	}
+
+	// ufbx_generate_indices()는 memcmp()로 비교하므로
+	// 정점 구조체에 패딩 바이트가 없어야 함
+	static_assert(sizeof(POSITION_VERTEX) == 12);
+	static_assert(sizeof(NORMAL_VERTEX) == 12);
+	static_assert(sizeof(COLOR_VERTEX) == 16);
+	static_assert(sizeof(UV_VERTEX) == 8);
+
+	// 각 속성을 독립된 Vertex Stream으로 등록
+	ufbx_vertex_stream VertexStreams[] =
+	{
+		{
+			Result.Position_Vertices.data(),
+			TotalVertexCount,
+			sizeof(POSITION_VERTEX)
+		},
+		{
+			Result.Normal_Vertices.data(),
+			TotalVertexCount,
+			sizeof(NORMAL_VERTEX)
+		},
+		{
+			Result.Color_Vertices.data(),
+			TotalVertexCount,
+			sizeof(COLOR_VERTEX)
+		},
+		{
+			Result.UV_Vertices.data(),
+			TotalVertexCount,
+			sizeof(UV_VERTEX)
+		}
+	};
+
+	// 임시 Index 배열
+	std::vector<uint32_t> Indices(TotalVertexCount);
+
+	ufbx_error Error{};
+
+	// 중복 정점 제거
+	const size_t UniqueVertexCount = ufbx_generate_indices(
+		VertexStreams,
+		4,
+		Indices.data(),
+		Indices.size(),
+		nullptr,
+		&Error
+	);
+
+
+	// 실패 처리
+	if (Error.type != UFBX_ERROR_NONE ||
+		UniqueVertexCount == 0)
+	{
+		Result.Position_Vertices.clear();
+		Result.Normal_Vertices.clear();
+		Result.Color_Vertices.clear();
+		Result.UV_Vertices.clear();
+
+		return Result;
+	}
+
+	// --------------------------------------------------------
+	// 3. 고유 정점 개수만큼 축소
+	// --------------------------------------------------------
+
+	Result.Position_Vertices.resize(UniqueVertexCount);
+	Result.Normal_Vertices.resize(UniqueVertexCount);
+	Result.Color_Vertices.resize(UniqueVertexCount);
+	Result.UV_Vertices.resize(UniqueVertexCount);
+
+	// ========================================================
+	// 4. INDEX_32BIT 구조체로 변환
+	// ========================================================
+
+	static_assert(sizeof(unsigned long) == sizeof(uint32_t));
+
+	const size_t FaceCount = Indices.size() / 3;
+
+	Result.Index.reserve(FaceCount);
+
+	for (size_t i = 0; i < Indices.size(); i += 3)
+	{
+		INDEX_32BIT Index{};
+
+		Index.A = static_cast<unsigned long>(Indices[i]);
+		Index.B = static_cast<unsigned long>(Indices[i + 1]);
+		Index.C = static_cast<unsigned long>(Indices[i + 2]);
+
+		Result.Index.push_back(Index);
+	}
 
 	return Result;
+
 }
 
 //Level 정보를 저장

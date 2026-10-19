@@ -328,12 +328,11 @@ void RenderingDevice::RenderTargetPresent()
 //
 void* RenderingDevice::CreateVertexBuffer(void* VertexData, UINT Size, UINT Stride)
 {
-
 	// 정점 버퍼 정보 구성
 	D3D11_BUFFER_DESC Bd = {};
 	ZeroMemory(&Bd, sizeof(Bd));
 	Bd.Usage			= D3D11_USAGE_DEFAULT;		//버퍼 사용방식
-	Bd.ByteWidth		= Stride * Size;			//버퍼 크기 sizeof(VTX_MESH) * 3
+	Bd.ByteWidth		= Size * Stride;						//버퍼 크기
 	Bd.BindFlags		= D3D11_BIND_VERTEX_BUFFER;	//버퍼 용도 : 정점 버퍼
 	Bd.CPUAccessFlags	= 0;
 
@@ -348,6 +347,29 @@ void* RenderingDevice::CreateVertexBuffer(void* VertexData, UINT Size, UINT Stri
 	assert(SUCCEEDED(hr) && "정점 버퍼 생성 실패");
 
 	return VertexBuffer;
+}
+
+void* RenderingDevice::CreateIndexBuffer(void* IndexData, UINT Size, UINT Stride)
+{
+	// 정점 버퍼 정보 구성
+	D3D11_BUFFER_DESC Bd = {};
+	ZeroMemory(&Bd, sizeof(Bd));
+	Bd.Usage = D3D11_USAGE_DEFAULT;		//버퍼 사용방식
+	Bd.ByteWidth = Size * Stride;			//버퍼 크기
+	Bd.BindFlags = D3D11_BIND_INDEX_BUFFER;	//버퍼 용도 : 색인 버퍼
+	Bd.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA Rd;
+	ZeroMemory(&Rd, sizeof(Rd));
+	Rd.pSysMem = IndexData;						//버퍼에 저장될 데이터 : "정점들"
+
+	//정점 버퍼 생성
+	ID3D11Buffer* IndexBuffer = nullptr;
+
+	HRESULT hr = Device->CreateBuffer(&Bd, &Rd, &IndexBuffer);
+	assert(SUCCEEDED(hr) && "정점 버퍼 생성 실패");
+
+	return IndexBuffer;
 }
 
 // 상수 버퍼 생성
@@ -877,6 +899,12 @@ void RenderingDevice::IASetVertexBuffers(UINT StartSlot, UINT NumBuffers, void* 
 	DeviceContext->IASetVertexBuffers(StartSlot, NumBuffers, &VB, Strides, Offsets);
 }
 
+void RenderingDevice::IASetIndexBuffers(void* IndexBuffer, UINT Offset)
+{
+	ID3D11Buffer* IB = static_cast<ID3D11Buffer*>(IndexBuffer);
+	DeviceContext->IASetIndexBuffer(IB, DXGI_FORMAT_R32_UINT ,Offset);
+}
+
 
 void RenderingDevice::IASetInputLayout(void* InputLayout)
 {
@@ -922,6 +950,12 @@ HRESULT RenderingDevice::DeviceFinalize()
 HRESULT RenderingDevice::Draw(UINT VertexCount, UINT StartVertexLocation)
 {
 	DeviceContext->Draw(VertexCount, StartVertexLocation);
+	return S_OK;
+}
+
+HRESULT RenderingDevice::DrawIndexed(UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)
+{
+	DeviceContext->DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
 	return S_OK;
 }
 

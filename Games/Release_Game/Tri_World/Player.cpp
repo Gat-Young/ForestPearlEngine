@@ -15,10 +15,10 @@
 
 void Player::Initialize()
 {
-	Mesh = new FPStaticMeshComponent(this, "ToonLinkTriangle_StaticMesh");
+	//Mesh = new FPStaticMeshComponent(this, "ToonLinkTriangle_StaticMesh");
 
 	//real Model
-	//Mesh = new FPStaticMeshComponent(this, "ToonLink_StaticMesh");
+	Mesh = new FPStaticMeshComponent(this, "ToonLink_StaticMesh");
 
 	FPVector4 Color = { 0.529f, 0.808f, 0.980f, 1.0f };
 	Mesh->GetMaterial().SetBaseColor(Color);
@@ -33,7 +33,7 @@ void Player::Initialize()
 	//카메라 설정
 	SpringArm = new FPSpringArmComponent(this);
 	SpringArm->SetupAttachment(RootComponent);
-	SpringArm->TargetArmLength = 50.0f;
+	SpringArm->TargetArmLength = 20.0f;
 	SpringArm->SetRelativeRotation({ 30.0f, 0.0f, 0.0f });
 	SpringArm->bUsePawnControlRotation = true;
 

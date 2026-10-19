@@ -1,0 +1,28 @@
+{
+    "Name": "ToonLink_Mouth18_StaticMesh",
+    "NodeName": "_041_toonlink_PatternA_VIS_O_OBJ_",
+
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+
+    "Sockets": [],
+
+    "Material": {
+        "Name": "mouth2.002"
+    },
+
+    "Texture": [
+        {
+            "Name": "Mouth2_png",
+            "Slot": 0
+        },
+        {
+            "Name": "Mouth2_png",
+            "Slot": 1
+        }
+    ]
+}

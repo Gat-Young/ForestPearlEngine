@@ -1,0 +1,28 @@
+{
+    "Name": "ToonLink_Mouth12_StaticMesh",
+    "NodeName": "_035_toonlink_Attack_VIS_O_OBJ_",
+
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+
+    "Sockets": [],
+
+    "Material": {
+        "Name": "mouth3.002"
+    },
+
+    "Texture": [
+        {
+            "Name": "Mouth3_png",
+            "Slot": 0
+        },
+        {
+            "Name": "Mouth3_png",
+            "Slot": 1
+        }
+    ]
+}

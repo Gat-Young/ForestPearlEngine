@@ -1,0 +1,27 @@
+{
+    "Name": "ToonLink_Mouth8_StaticMesh",
+    "NodeName": "_031_toonlink_HeavyAttack_VIS_O_OBJ_",
+
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    
+    "Material": {
+        "Name": "mouth7.002"
+    },
+
+    "Texture": [
+        {
+            "Name": "Mouth7_png",
+            "Slot": 0
+        },
+        {
+            "Name": "Mouth7_png",
+            "Slot": 1
+        }
+    ]
+}

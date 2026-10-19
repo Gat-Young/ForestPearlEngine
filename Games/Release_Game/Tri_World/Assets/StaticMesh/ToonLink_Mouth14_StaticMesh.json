@@ -1,0 +1,28 @@
+{
+    "Name": "ToonLink_Mouth14_StaticMesh",
+    "NodeName": "_037_toonlink_Furafura_VIS_O_OBJ_",
+
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+
+    "Sockets": [],
+
+    "Material": {
+        "Name": "mouth6.002"
+    },
+
+    "Texture": [
+        {
+            "Name": "Mouth6_png",
+            "Slot": 0
+        },
+        {
+            "Name": "Mouth6_png",
+            "Slot": 1
+        }
+    ]
+}

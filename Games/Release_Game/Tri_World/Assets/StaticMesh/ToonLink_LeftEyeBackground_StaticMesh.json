@@ -1,0 +1,26 @@
+{
+    "Name": "ToonLink_LeftEyeBackground_StaticMesh",
+    "NodeName": "_009_toonlink_LMabuta_VIS_O_OBJ_",
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+
+    "Material": {
+        "Name": "eye.002"
+    },
+
+    "Texture": [
+        {
+            "Name": "Eye_png",
+            "Slot": 0
+        },
+        {
+            "Name": "Eye_png",
+            "Slot": 1
+        }
+    ]
+}

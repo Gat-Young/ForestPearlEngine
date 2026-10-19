@@ -1,0 +1,28 @@
+{
+    "Name": "ToonLink_Hair_StaticMesh",
+    "NodeName": "_043_Gamemodel_",
+
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+
+    "Sockets": [],
+
+    "Material": {
+        "Name": "hair.002"
+    },
+
+    "Texture": [
+        {
+            "Name": "Hair_png",
+            "Slot": 0
+        },
+        {
+            "Name": "Hair_png",
+            "Slot": 1
+        }
+    ]
+}

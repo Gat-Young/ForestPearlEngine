@@ -590,7 +590,7 @@ flowchart LR
 |---|---|---|---|---|---|
 | `MeshRenderPass` | `MeshRenderList` | `TRIANGLELIST` | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Light · Material** (Renderer가 구성, [Light · Normal](#lambert-light--normal-line)) | `Priority` 오름차순 |
 | `GizmoRenderPass` | `GizmoRenderList` | `LINELIST` | 카메라 → 기즈모 → 뷰포트 → 서브 메시 | Object · ViewPort · Material | `Priority` 오름차순 |
-| `NormalRenderPass` | `NormalRenderList` | `LINELIST` (`DrawIndexed`) | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Normal Matrix** | 없음 (`bNormal`이 `true`일 때만 실행) |
+| `NormalRenderPass` | `NormalRenderList` | `LINELIST` (`DrawInstanced`) | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Normal Matrix** | 없음 (`bNormal`이 `true`일 때만 실행) |
 | `UIRenderPass` | `UIRenderList` | (SpriteBatch) | 텍스트 → `UIViewPort` | 사용 안 함 | `Priority` 오름차순 |
 
 - 모든 Pass는 시작할 때 VS / PS 상수 버퍼 14개를 바인딩합니다 ([상수 버퍼](#상수-버퍼)).
@@ -606,6 +606,40 @@ flowchart LR
 | `CreateGizmoRenderList` | `GizmoRenderItem`에 대해 동일 |
 | `CreateNormalRenderList` | `Active`인 `NormalRenderItem`을 복사하고, 오브젝트마다 **Normal Matrix**(`transpose(inverse(World))`)와 `NormalLength`를 VS 상수 버퍼 슬롯 0으로 등록. World 행렬식이 0이거나 비정상이면 해당 항목 제외 |
 | `CreateUIRenderList` | `active`인 텍스트만 복사하고 `UIViewPort`를 붙인 뒤 `Priority` 오름차순 정렬 |
+
+#### ⚠️ Render Pass 초기화가 불안정합니다
+
+현재 Render Pass에는 **공통 초기화(Begin) · 종료(End) 단계가 없습니다.** 각 Pass가 자기 함수 맨 앞에서 필요한 상태를 직접 지정하는 방식이며, 이 코드가 Pass마다 복사되어 있습니다. 어떤 상태를 누가 지정하는지가 Pass마다 다르고, 끝난 뒤 상태를 되돌리는 곳도 없어서 **Pass를 추가하거나 순서를 바꾸면 이전 Pass의 상태가 남아 결과가 달라질 수 있습니다.**
+
+| 상태 | `MeshRenderPass` | `GizmoRenderPass` | `NormalRenderPass` | `UIRenderPass` |
+|---|:-:|:-:|:-:|:-:|
+| 상수 버퍼 14개 바인딩 | ✔ | ✔ | ✔ | ✔ (사용하지 않는데도 바인딩) |
+| Depth Stencil State (`ZEnable`) | ✔ | ✔ | ✔ | ✘ |
+| Rasterizer State (`bFill` / `bCull`) | ✔ | ✔ | ✔ | ✘ |
+| Topology | `TRIANGLELIST` | `LINELIST` | `LINELIST` | ✘ |
+| InputLayout · VS · PS | 항목마다 | 항목마다 | 항목마다 | ✘ (SpriteBatch가 자체 지정) |
+| Blend State · RTV / DSV | ✘ (지정 없음) | ✘ | ✘ | ✘ |
+| 종료 시 상태 복원 | ✘ | ✘ | ✘ | ✘ |
+
+확인된 불안정 요소는 다음과 같습니다.
+
+| 요소 | 내용 |
+|---|---|
+| **같은 초기화 코드가 Pass마다 복사됨** | 상수 버퍼 14개 바인딩, Depth / Rasterizer / Topology 설정, 슬롯 오프셋(`VS 2`, `PS 1`)과 MVP 상수 버퍼 계산이 Mesh · Gizmo · Normal에 거의 그대로 반복됩니다. 한 곳을 고치고 다른 곳을 놓치기 쉽습니다. 실제로 PS 뷰포트 슬롯 규칙이 Pass마다 달랐던 적이 있습니다 |
+| **주석과 실제 동작이 다름** | Gizmo · Normal Pass에도 "MeshRenderPass에서 …"라는 복사된 주석이 남아 있고, 슬롯 오프셋 값의 의미를 코드만으로 알 수 없습니다 |
+| **UI Pass는 상태를 지정하지 않음** | Depth · Rasterizer · Topology를 설정하지 않고 `SpriteBatch::Begin()` / `End()`가 바꾸는 상태(Blend · Depth · Rasterizer · Sampler 등)를 그대로 둡니다. 엔진은 이를 복원하지 않으므로 **다음 프레임의 첫 Pass로 상태가 이어집니다.** Depth / Rasterizer는 Mesh Pass가 다시 지정하지만, Blend State는 어떤 Pass도 지정하지 않습니다 |
+| **Blend State · RTV / DSV를 Pass가 지정하지 않음** | 렌더 타깃은 초기화와 리사이즈 때 한 번만 바인딩됩니다. Pass를 추가해 다른 렌더 타깃이나 Blend를 쓰려면 사용한 뒤 직접 되돌려야 합니다 |
+| **IA · PS 슬롯이 해제되지 않음** | Mesh Pass가 바인딩한 Normal(1) · UV(3) 스트림, Index Buffer, 텍스처 `t#`, 샘플러 `s#`는 다음 Pass에도 남습니다. Gizmo Pass는 슬롯 1 · 3을 바인딩하지 않으므로 Mesh Pass가 남긴 버퍼가 그대로 걸려 있는 상태로 같은 Input Layout을 사용합니다 |
+| **28개 상수 버퍼를 모든 Pass가 공유** | 같은 버퍼가 Pass마다 다른 의미로 쓰입니다 (VS `b2`: Mesh는 Light, Normal은 Normal Matrix, Material은 그 뒤 슬롯). 한 Pass가 쓰지 않은 슬롯에는 **이전 Pass의 값이 남아** 있습니다 |
+| **`Normal` Pass만 조기 반환이 있음** | `bNormal`이 `false`면 상수 버퍼 바인딩 전에 바로 반환합니다. 다른 Pass는 항상 전체 초기화를 수행하므로 Pass마다 진입 동작이 일관되지 않습니다 |
+| **Depth · Fill · Cull이 전역** | `ZEnable` · `bFill` · `bCull`이 Mesh · Gizmo · Normal에 똑같이 적용되어, 기즈모만 깊이 테스트를 끄거나 와이어프레임 없이 그리는 식의 Pass별 설정이 불가능합니다 |
+
+**Pass를 만들거나 수정할 때의 규칙**
+
+1. Pass 함수 **맨 앞에서 필요한 상태를 모두 직접 지정**합니다 (Depth · Rasterizer · Topology · 사용하는 IA 슬롯). 이전 Pass가 설정해 두었을 것이라고 가정하지 않습니다.
+2. 사용하지 않는 상수 버퍼 · 텍스처 · 샘플러 슬롯은 셰이더가 읽지 않도록 합니다. 읽는다면 그 Pass에서 값을 먼저 써 넣습니다.
+3. 기본 상태와 다른 상태(Blend, 렌더 타깃, 다른 Topology 등)를 쓰는 Pass는 끝날 때 **직접 원래대로 되돌립니다.**
+4. 공통 초기화를 고칠 때는 Mesh · Gizmo · Normal 세 곳을 함께 확인합니다.
 
 #### 새 Render Pass 추가 순서
 
@@ -775,7 +809,7 @@ flowchart TD
 - **텍스처** — `MeshRenderPass`는 항목마다 Material 상수 버퍼 갱신 뒤 텍스처 슬롯을 `PSSetShaderResources(t#)`, 샘플러를 `PSSetSamplers(s#)`로 바인딩합니다 (Gizmo · Normal Pass는 해당 없음).
 - **정렬** — `Priority` **값이 작은 항목부터** 그려집니다 (`std::sort` 오름차순). 메시 · 기즈모 컴포넌트의 `SetPriority(int)`로 지정합니다.
 - **Fill / Cull** — 컴포넌트별 설정이 아니라 **Pass 전체에 적용되는 전역 값**입니다. `ForestPearlEngine::SetbFill(bool)`, `SetbCull(bool)` 조합으로 4개의 Rasterizer State 중 하나가 선택됩니다.
-- **Draw** — Mesh · Normal Pass는 Index Buffer로 `DrawIndexed(Index_Cnt, 0, 0)`을, Gizmo Pass는 인덱스 없이 `Draw`를 호출합니다. FBX 로딩 시 코너마다 만든 정점은 `ufbx_generate_indices`로 중복을 병합합니다 ([정점 스트림 분리와 Index Buffer](#정점-스트림-분리와-index-buffer)).
+- **Draw** — Mesh Pass는 Index Buffer로 `DrawIndexed(Index_Cnt, 0, 0)`을, Gizmo Pass는 인덱스 없이 `Draw(VB_Cnt, 0)`을, Normal Pass는 `DrawInstanced(2, VB_Cnt, 0, 0)`을 호출합니다. FBX 로딩 시 코너마다 만든 정점은 `ufbx_generate_indices`로 중복을 병합합니다 ([정점 스트림 분리와 Index Buffer](#정점-스트림-분리와-index-buffer)).
 - **깊이 테스트** — `ForestPearlEngine::SetZEnable(bool)`로 전역 On/Off.
 - **카메라** — 활성 카메라를 모두 순회하며, 카메라마다 Render List 전체를 다시 그립니다.
 - **Material 상수 버퍼는 항목당 한 번**, **Object · ViewPort 상수 버퍼는 뷰포트마다** 갱신됩니다.
@@ -855,7 +889,7 @@ Level JSON에 `"class": "ADirectionalLight"`로 배치하며, 클래스는 `Load
 | 컴포넌트 | `FPGizmoNormalLineComponent`. **`FPStaticMeshComponent`가 생성자에서 자동으로 만들어** 같은 메시 · 같은 Transform으로 `FPMeshNormalRenderList`에 등록합니다. `SetActive`, `SetNormalLength(float)` |
 | 토글 | `ForestPearlEngine::SetbNormal(bool)` → `Renderer::bNormal`. `false`이면 `NormalRenderPass`가 바로 반환합니다 (Tri_World: <kbd>F6</kbd>) |
 | Render Pass | `NormalRenderPass` — `MeshRenderPass` 다음, `GizmoRenderPass` 다음에 호출. Topology `LINELIST` |
-| 그리는 방식 | 메시의 **정점 1개 = 인스턴스 1개**로 설계되어 Input Layout의 `POSITION`(슬롯 0) · `NORMAL`(슬롯 1)을 `PER_INSTANCE_DATA`로 읽습니다. Index Buffer 도입 후 Pass는 `DrawIndexed(Index_Cnt, 0, 0)`을 호출하도록 바뀌었고, 이 Pass의 Draw 방식은 수정 중입니다 ([경고](#pass별-사용)) |
+| 그리는 방식 | 메시의 **정점 1개 = 인스턴스 1개**. Input Layout의 `POSITION`(슬롯 0) · `NORMAL`(슬롯 1)을 `PER_INSTANCE_DATA`로 읽고 `DrawInstanced(2, 정점 수, 0, 0)`으로 선 1개(정점 2개)를 그립니다. 정점 수는 병합된 **고유 정점 수**(`VB_Cnt`)이며 Index Buffer는 사용하지 않습니다 |
 | 선의 양끝 | `SV_VertexID`가 0이면 시작점(정점 위치), 1이면 끝점(`시작점 + WorldNormal * NormalLength`) |
 | Normal Matrix | CPU(`CreateNormalRenderList`)에서 `transpose(inverse(World))`를 계산해 VS `b2`로 전달. 셰이더의 `TransformWorldNormal()`이 이 행렬로 노멀을 월드로 변환하고 정규화합니다. World 행렬식이 0이면 그 항목은 그리지 않습니다 |
 | 색 | 초록 `(0, 1, 0, 1)` 고정 (`NormalDebugPixelShader`) |
@@ -955,16 +989,14 @@ struct FPMeshData { std::string Name;
 
 | Pass | 바인딩하는 스트림 | 그리기 |
 |---|---|---|
-| `MeshRenderPass` | Position(0) · Normal(1) · Color(2) · Index | `DrawIndexed(Index_Cnt, 0, 0)` |
-| `GizmoRenderPass` | Position(0) · Color(2) (Index 없음) | `Draw(…, 0)` — 선 목록을 인덱스 없이 그림 |
-| `NormalRenderPass` | Position(0) · Normal(1) · Index | `DrawIndexed(Index_Cnt, 0, 0)` |
+| `MeshRenderPass` | Position(0) · Normal(1) · Color(2) · UV(3) · Index | `DrawIndexed(Index_Cnt, 0, 0)` |
+| `GizmoRenderPass` | Position(0) · Color(2) (Index 없음) | `Draw(VB_Cnt, 0)` — 선 목록을 인덱스 없이 그림 |
+| `NormalRenderPass` | Position(0) · Normal(1) (Index는 바인딩만 하고 사용하지 않음) | `DrawInstanced(2, VB_Cnt, 0, 0)` — 정점마다 인스턴스 1개 |
 
-> [!WARNING]
-> 아래는 현재 코드를 읽어 확인한 내용이며, 커밋 메시지에도 Gizmo · Normal 쪽 Render Pass 수정이 남아 있다고 적혀 있습니다. 실행해서 동작을 확인하지는 못했습니다.
-> - **UV 스트림(슬롯 3)이 `MeshRenderPass`에서 바인딩되지 않습니다.** `GetUVVertexBuffer`로 가져오기만 하고 `IASetVertexBuffers(3, …)`가 없어, 텍스처 UV를 읽을 수 없습니다.
-> - **`GizmoRenderPass`는 `Draw(PositionVB[i].VB_Size, 0)`을 호출합니다.** `VB_Size`는 바이트 수이므로 정점 수(`VB_Cnt`)와 다릅니다.
-> - **`NormalRenderPass`는 `DrawInstanced(2, 정점 수)`에서 `DrawIndexed`로 바뀌었는데** Input Layout은 여전히 `PER_INSTANCE_DATA`입니다. 인스턴스가 1개만 그려지므로 노멀 선 표시를 확인해야 합니다.
-> - Gizmo Pass는 Normal(1) · UV(3) 슬롯을 바인딩하지 않지만 같은 Input Layout을 사용합니다.
+> [!NOTE]
+> - Gizmo Pass는 Normal(1) · UV(3) 슬롯을 바인딩하지 않지만 Mesh와 같은 Input Layout을 사용합니다. 셰이더가 읽지 않는 슬롯이므로 문제는 없습니다.
+> - Draw 호출에는 바이트 수(`VB_Size`)가 아니라 **정점 수(`VB_Cnt`)** 를 넘겨야 합니다. 새 Pass를 만들 때 주의하세요.
+> - Normal Pass가 `DrawInstanced`를 쓰는 이유는 정점마다 선을 하나 그리는 구조이기 때문입니다. 병합된 정점의 노멀은 모두 같으므로 정점 하나당 선 하나가 됩니다.
 
 #### 콘텐츠 프로그래머가 알아둘 점
 

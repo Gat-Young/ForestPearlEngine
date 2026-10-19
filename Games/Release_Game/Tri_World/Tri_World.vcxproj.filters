@@ -25,6 +25,12 @@
     <Filter Include="Assets\StaticMesh">
       <UniqueIdentifier>{f562b373-3b75-433f-bfe5-9099879da954}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\Texture">
+      <UniqueIdentifier>{0e8bed59-4874-4c6e-a036-9f4cfdbe4c15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Material">
+      <UniqueIdentifier>{641c0b76-761a-4574-afd5-4eee44d33abc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UI.h">
@@ -132,6 +138,258 @@
     </None>
     <None Include="Assets\StaticMesh\Terrain_StaticMesh.json">
       <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Blink_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_BodyAndHat_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Buckle_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_DoubleEyeWhithBackground_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_DownEye_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Eye_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_EyeBrow1_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_EyeBrow2_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_EyeBrow3_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_EyeBrow4_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_EyeBrow5_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_EyeBrow6_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Face_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Hair_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Hand_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Harfblink1_StaticMesh_.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Harfblink2_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Harfblink3_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_LeftEyeBackground_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_MasterSword_BackHandle_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_MasterSword_Blade_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_MasterSword_Handle_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_MasterSword_Scabbard_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouse1_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth2_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth3_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth4_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth5_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth6_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth7_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth8_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth9_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth10_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth11_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth12_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth13_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth14_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth15_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth16_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth17_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Mouth18_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_RightEyeBackground_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Shield_Back_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\ToonLink_Shield_Handle_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
+    <None Include="Assets\Texture\Clothes_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Equipment_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Eye_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Eyebrow0_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Eyebrow1_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Eyelid_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Hair_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Mouth0_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Mouth1_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Mouth2_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Mouth3_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Mouth4_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Mouth5_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Mouth6_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Mouth7_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Mouth8_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Mouth9_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Mouth10_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Pupil_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Texture\Skin_png.json">
+      <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Material\clothes.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\equipment.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\eye.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\eyebrow0.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\eyebrow1.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\eyelid.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\hair.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\mouth0.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\mouth1.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\mouth2.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\mouth3.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\mouth4.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\mouth5.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\mouth6.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\mouth7.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\mouth8.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\mouth9.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\mouth10.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\pupil.002.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\Material\skin.002.json">
+      <Filter>Assets\Material</Filter>
     </None>
   </ItemGroup>
 </Project>

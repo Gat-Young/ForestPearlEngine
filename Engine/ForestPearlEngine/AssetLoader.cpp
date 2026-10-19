@@ -117,11 +117,49 @@ void FPAssetLoader::LoadFbxData(std::string FbxPath, AssetOwner EngineAsset)
 
 		AssetManager->AddMeshData(FbxPath, &MeshData);
 
-		void* VertexBuffer = MakeVertexBuffer(AssetManager->GetMeshData(FbxPath).back().Vertices);
-		int VBSize = AssetManager->GetMeshData(FbxPath).back().Vertices.size();
 
-		//정점버퍼 생성 후 Map에 정보 등록
-		AssetManager->AddVertexBuffer(FbxPath, VertexBuffer, VBSize, sizeof(VERTEX), 0);
+		//각각에 맞는 버퍼 데이터를 만들어서 등록
+		FPVertexBufferData PositionVertex;
+		PositionVertex.VertexBuffer = MakePositionVertexBuffer(MeshData.Position_Vertices);
+		PositionVertex.VB_Cnt = MeshData.Position_Vertices.size();
+		PositionVertex.VB_Size = MeshData.Position_Vertices.size() * sizeof(POSITION_VERTEX);
+		PositionVertex.Stride = sizeof(POSITION_VERTEX);
+		PositionVertex.Offset = 0;
+
+		FPVertexBufferData NormalVertex;
+		NormalVertex.VertexBuffer = MakeNormalVertexBuffer(MeshData.Normal_Vertices);
+		NormalVertex.VB_Cnt = MeshData.Normal_Vertices.size();
+		NormalVertex.VB_Size = MeshData.Normal_Vertices.size() * sizeof(NORMAL_VERTEX);
+		NormalVertex.Stride = sizeof(NORMAL_VERTEX);
+		NormalVertex.Offset = 0;
+
+		FPVertexBufferData ColorVertex;
+		ColorVertex.VertexBuffer = MakeColorVertexBuffer(MeshData.Color_Vertices);
+		ColorVertex.VB_Cnt = MeshData.Color_Vertices.size();
+		ColorVertex.VB_Size = MeshData.Color_Vertices.size() * sizeof(COLOR_VERTEX);
+		ColorVertex.Stride = sizeof(COLOR_VERTEX);
+		ColorVertex.Offset = 0;
+
+		FPVertexBufferData UVVertex;
+		UVVertex.VertexBuffer = MakeUVVertexBuffer(MeshData.UV_Vertices);
+		UVVertex.VB_Cnt = MeshData.UV_Vertices.size();
+		UVVertex.VB_Size = MeshData.UV_Vertices.size() * sizeof(UV_VERTEX);
+		UVVertex.Stride = sizeof(UV_VERTEX);
+		UVVertex.Offset = 0;
+
+		FPIndexBufferData IndexBuffer;
+		IndexBuffer.IndexBuffer = MakeIndex32BitBuffer(MeshData.Index);
+		IndexBuffer.Index_Size = MeshData.Index.size() * sizeof(INDEX_32BIT);
+		IndexBuffer.Index_Cnt = MeshData.Index.size() * 3;
+		IndexBuffer.FaceCnt = MeshData.Index.size();
+		IndexBuffer.Stride = sizeof(INDEX_32BIT);
+		IndexBuffer.Offset = 0;
+		
+		AssetManager->AddPositionVertexBuffer(FbxPath , PositionVertex);
+		AssetManager->AddNormalVertexBuffer(FbxPath, NormalVertex);
+		AssetManager->AddColorVertexBuffer(FbxPath, ColorVertex);
+		AssetManager->AddUVVertexBuffer(FbxPath, UVVertex);
+		AssetManager->AddIndexBuffer(FbxPath, IndexBuffer);
 	}
 	ufbx_free_scene(Scene);
 }

@@ -287,6 +287,26 @@ bool FPAssetManager::HasTextureData(std::string TextureName)
 	return false;
 }
 
+FPTextureInfo& FPAssetManager::GetTextureInfoData(std::string TextureName)
+{
+	return this->LoadedTextureData[TextureName];
+}
+
+void FPAssetManager::AddTextureInfoData(std::string TextureName, FPTextureInfo& TextureData)
+{
+	this->LoadedTextureData[TextureName] = TextureData;
+}
+
+bool FPAssetManager::HasTextureInfoData(std::string TextureName)
+{
+	if (LoadedTextureData.count(TextureName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 
 ////////////////////////////
 //

@@ -28,6 +28,8 @@ private:
 	std::unordered_map<std::string, std::tuple<void*, void*, void*> > VertexShaderData;
 	std::unordered_map<std::string, std::pair<void*, void*> > PixelShaderData;
 
+	//Texture
+	std::unordered_map < std::string, FPTextureInfo> LoadedTextureData;
 	std::unordered_map<std::string, FPTextureData> TextureData;
 
 public:
@@ -82,10 +84,13 @@ public:
 
 	//Texture
 	FPTextureData& GetTextureData(std::string TextureName);
-
 	void AddTextureData(std::string TextureName, FPTextureData& TextureData);
-
 	bool HasTextureData(std::string TextureName);
+
+	//Texture Info
+	FPTextureInfo& GetTextureInfoData(std::string TextureName);
+	void AddTextureInfoData(std::string TextureName, FPTextureInfo& TextureData);
+	bool HasTextureInfoData(std::string TextureName);
 
 	//Level
 	bool HasLevelData(std::string LevelName);

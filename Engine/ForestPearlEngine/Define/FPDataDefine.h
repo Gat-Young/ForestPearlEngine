@@ -3,6 +3,12 @@
 #include <string>
 
 
+enum AssetOwner
+{
+	Engine,
+	User
+};
+
 //정점 구조체 분리 
 //Position
 struct POSITION_VERTEX
@@ -77,6 +83,7 @@ struct FPStaticMeshData
 	std::string MeshTopology;
 	std::vector<SOCKET_TRANSFORM> Sockets;
 	std::string MaterialName;
+	AssetOwner Owner;
 };
 
 //Textue 데이터 구조체
@@ -84,6 +91,28 @@ struct FPTextureData
 {
 	void* TextureResource = nullptr;
 	void* TextureDESC = nullptr;
+};
+
+//Texture Info
+struct FPTextureInfo
+{
+	std::string Name;
+	std::string Path;
+	std::string Type;
+	AssetOwner Owner;
+};
+
+//Material 데이터 구조체
+struct FPMaterialData
+{
+	std::string VertexShader;
+	std::string PixelShader;
+
+	COLOR_VERTEX BaseColor;
+	COLOR_VERTEX Ambient;
+	COLOR_VERTEX Diffuse;
+
+	std::vector<std::pair<int, std::string> > Textures;
 };
 
 //VertexBuffer Topology

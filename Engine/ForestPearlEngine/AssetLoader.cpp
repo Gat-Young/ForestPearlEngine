@@ -704,24 +704,36 @@ void FPAssetLoader::LoadTexture(std::string TexturePath, AssetOwner EngineAsset)
 		return;
 	}
 
-	FPTextureData Data;
-	std::string TextureName;
-	std::string TextureResourcePath;
-	std::string TextureType;
+	FPTextureInfo TextureInfo;
 
-	TextureName = JsonStaticMeshData["Name"].get<std::string>();
-	TextureResourcePath = JsonStaticMeshData["Path"].get<std::string>();
-	TextureType = JsonStaticMeshData["Type"].get<std::string>();
+	TextureInfo.Name = JsonStaticMeshData["Name"].get<std::string>();
+	TextureInfo.Path = JsonStaticMeshData["Path"].get<std::string>();
+	TextureInfo.Type = JsonStaticMeshData["Type"].get<std::string>();
+	TextureInfo.Owner = EngineAsset;
 
-	if (AssetManager->HasTextureData(TextureName))
+	if (AssetManager->HasTextureData(TextureInfo.Name))
 	{
 		std::cout << "같은 이름의 Texture가 존재합니다." << "\n";
 		return;
 	}
 
-	//이 시점에서 Texture를 만들어서 넘김
+	//DX Texture 객체 생성
+	MakeTexture(TextureInfo);
 
-	if (EngineAsset == AssetOwner::Engine)
+	//AssetManager에 Load한 정보 등록
+	AssetManager->AddTextureInfoData(TextureInfo.Name, TextureInfo);
+}
+
+void FPAssetLoader::MakeTexture(FPTextureInfo& TextureInfo)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	//이 시점에서 Texture를 만들어서 넘김
+	FPTextureData Data;
+
+	std::string TextureResourcePath = TextureInfo.Path;
+
+	if (TextureInfo.Owner == AssetOwner::Engine)
 	{
 		TextureResourcePath = FPPathManager::Get().GetEngineAssetPath("TextureResource/" + TextureResourcePath);
 	}
@@ -730,17 +742,140 @@ void FPAssetLoader::LoadTexture(std::string TexturePath, AssetOwner EngineAsset)
 		TextureResourcePath = FPPathManager::Get().GetAssetPath("TextureResource/" + TextureResourcePath);
 	}
 
-	if (TextureType == "WIC")
+	if (TextureInfo.Type == "WIC")
 	{
 		RenderingDevice::GetRenderingDevice().CreateWICTextureFromFile(TextureResourcePath, &Data.TextureResource);
 	}
 
-	if (TextureType == "DDS")
+	if (TextureInfo.Type == "DDS")
 	{
 		RenderingDevice::GetRenderingDevice().CreateDDSTextureFromFile(TextureResourcePath, &Data.TextureResource);
 	}
 
 	RenderingDevice::GetRenderingDevice().GetTextureDesc(Data.TextureResource, &Data.TextureDESC);
 
-	AssetManager->AddTextureData(TextureName, Data);
+	AssetManager->AddTextureData(TextureInfo.Name, Data);
+}
+
+
+//Material Data Loader
+void FPAssetLoader::LoadMaterial(std::string MaterialPat, AssetOwner EngineAsset)
+{
+	using json = nlohmann::json;
+
+	// 색상 구조체
+	struct FPColor
+	{
+		float r = 1.0f;
+		float g = 1.0f;
+		float b = 1.0f;
+		float a = 1.0f;
+	};
+
+	// 텍스처 정보
+	struct FPTextureInfo
+	{
+		std::string Name;
+		int Slot = 0;
+	};
+
+	// 머티리얼 정보
+	struct FPMaterialData
+	{
+		std::string Name;
+		std::string VertexShader;
+		std::string PixelShader;
+
+		FPColor Ambient;
+		FPColor BaseColor;
+		FPColor Diffuse;
+
+		std::vector<FPTextureInfo> Textures;
+	};
+
+	// 색상 JSON 읽기
+	FPColor ReadColor(const json & ColorJson)
+	{
+		FPColor Color;
+
+		Color.r = ColorJson.value("r", 1.0f);
+		Color.g = ColorJson.value("g", 1.0f);
+		Color.b = ColorJson.value("b", 1.0f);
+		Color.a = ColorJson.value("a", 1.0f);
+
+		return Color;
+	}
+
+	// Material JSON 읽기
+	bool LoadMaterialJson(
+		const std::string & FilePath,
+		FPMaterialData & OutMaterial)
+	{
+		std::ifstream File(FilePath);
+
+		if (!File.is_open())
+		{
+			std::cerr << "Material JSON Open Failed: "
+				<< FilePath << '\n';
+			return false;
+		}
+
+		try
+		{
+			json Root;
+			File >> Root;
+
+			FPMaterialData Result;
+
+			// Material 객체
+			const json& Material = Root.at("Material");
+
+			Result.Name =
+				Material.at("Name").get<std::string>();
+
+			Result.VertexShader =
+				Material.at("VertexShader").get<std::string>();
+
+			Result.PixelShader =
+				Material.at("PixelShader").get<std::string>();
+
+			// Color
+			Result.Ambient =
+				ReadColor(Material.at("Ambient"));
+
+			Result.BaseColor =
+				ReadColor(Material.at("BaseColor"));
+
+			Result.Diffuse =
+				ReadColor(Material.at("Diffuse"));
+
+			// Texture 배열
+			if (Root.contains("Texture") &&
+				Root.at("Texture").is_array())
+			{
+				for (const auto& Texture : Root.at("Texture"))
+				{
+					FPTextureInfo Info;
+
+					Info.Name =
+						Texture.at("Name").get<std::string>();
+
+					Info.Slot =
+						Texture.at("Slot").get<int>();
+
+					Result.Textures.push_back(Info);
+				}
+			}
+
+			OutMaterial = std::move(Result);
+
+			return true;
+		}
+		catch (const json::exception& e)
+		{
+			std::cerr << "Material JSON Error: "
+				<< e.what() << '\n';
+			return false;
+		}
+	}
 }

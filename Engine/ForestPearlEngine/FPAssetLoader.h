@@ -6,12 +6,6 @@
 #include "../ForestPearlEngine/Define/FPMath.h"
 #include "FPGameInstanceSubSystem.h"
 
-enum AssetOwner
-{
-	Engine,
-	User
-};
-
 class FPAssetLoader : public FPGameInstanceSubSystem
 {
 	private:
@@ -43,7 +37,13 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 		void LoadVertexShader(std::string ShaderPath, std::string VS_Main, std::string ShaderModel, AssetOwner EngineAsset);
 		void LoadPixelShader(std::string ShaderPath, std::string PS_Main, std::string ShaderModel, AssetOwner EngineAsset);
 
+		//StaticMesh Load
 		void LoadStaticMesh(std::string StaticMeshName, std::string StaticMeshPath, AssetOwner EngineAsset);
 
+		//Texture Load
 		void LoadTexture(std::string TexturePath, AssetOwner EngineAsset);
+		void MakeTexture(FPTextureInfo& TextureInfo);
+
+		//Material Load
+		void LoadMaterial(std::string MaterialPat, AssetOwner EngineAsset);
 };

@@ -136,21 +136,30 @@ void FPAssetManager::MakeGizmoVertexBuffer(std::vector<struct VERTEX>& Mesh, con
 	MeshData.Color_Vertices = ColorVertex;
 
 	//Gizmo Mesh 정보를 저장
-	AddMeshData(GizemoMeshPath, &MeshData);
+	AddMeshData(GizemoMeshPath, MeshData);
 }
 
 ////////////////////////////
 //
 // Mesh
 //
-void FPAssetManager::AddMeshData(std::string FbxPath, FPMeshData* MeshData)
+void FPAssetManager::AddMeshData(std::string ModelNodeName, FPMeshData& MeshData)
 {
-	LoadedMeshData[FbxPath].push_back(std::move(*MeshData));
+	LoadedMeshData[ModelNodeName] = MeshData;
 }
 
-std::vector<FPMeshData> FPAssetManager::GetMeshData(std::string FbxPath)
+FPMeshData& FPAssetManager::GetMeshData(std::string FbxPath)
 {
 	return LoadedMeshData[FbxPath];
+}
+
+bool FPAssetManager::HasMeshData(std::string ModelNodeName)
+{
+	if (LoadedMeshData.count(ModelNodeName) <= 0)
+	{
+		return false;
+	}
+	return true;
 }
 
 void FPAssetManager::AddPositionVertexBuffer(std::string FbxPath, FPVertexBufferData& PositionVertexBuffer)
@@ -348,7 +357,6 @@ std::vector<FPIndexBufferData> FPAssetManager::GetIndexBuffer(std::string MeshPa
 //
 // FBX Load
 //
-
 void FPAssetManager::LoadFbxData(FPStaticMeshData& StaticMeshData)
 {
 	//fbx Load 옵션 설정
@@ -386,7 +394,7 @@ void FPAssetManager::LoadFbxData(FPStaticMeshData& StaticMeshData)
 			MeshData.Name = NodeName;
 		}
 
-		AddMeshData(StaticMeshData.Name, &MeshData);
+		AddMeshData(StaticMeshData.Name, MeshData);
 	}
 	ufbx_free_scene(Scene);
 }

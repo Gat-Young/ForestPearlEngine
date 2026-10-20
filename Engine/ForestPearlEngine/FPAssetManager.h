@@ -20,9 +20,7 @@ private:
 	std::unordered_map<std::string, FPStaticMeshData> LoadedStaticMeshData;
 	std::unordered_map<std::string, FPVertexShaderData> LoadedVertexShaderData;
 	std::unordered_map<std::string, FPPixelShaderData> LoadedPixelShaderData;
-
-	//Mesh
-	std::unordered_map<std::string, std::vector<FPMeshData> > LoadedMeshData;
+	std::unordered_map<std::string, FPMeshData> LoadedMeshData;
 
 	//Resource List
 	std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshPositionVertexBuffer;
@@ -64,11 +62,10 @@ public:
 	//FBX Load
 	void LoadFbxData(FPStaticMeshData& StaticMeshData);
 
-
 	//Mesh
-	void AddMeshData(std::string FbxPath, FPMeshData* MeshData);
-
+	void AddMeshData(std::string ModelNodeName, FPMeshData& MeshData);
 	std::vector<FPMeshData> GetMeshData(std::string FbxPath);
+	bool HasMeshData(std::string ModelNodeName);
 
 	//각 필요한 정점 버퍼에 값 추가
 
@@ -106,9 +103,6 @@ public:
 	FPStaticMesh* GetStaticMeshData(std::string StaticMeshName);
 	void AddStaticMeshData(std::string StaticMeshName, FPStaticMeshData* StaticMeshData);
 	bool HasStaticMeshData(std::string StaticMeshName);
-
-	//FBX Mesh Load
-
 
 	//Texture
 	FPTextureData& GetTextureData(std::string TextureName);

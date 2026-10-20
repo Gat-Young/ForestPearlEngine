@@ -418,6 +418,34 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 	return nullptr;
 }
 
+FPVertexShaderData& FPAssetManager::GetVertexShaderData(std::string VertexShaderName)
+{
+	// TODO: insert return statement here
+}
+
+void FPAssetManager::AddVertexShaderData(std::string VertexShaderName, FPVertexShaderData& VertexShaderData)
+{
+}
+
+bool FPAssetManager::HasVertexShaderData(std::string VertexShaderName)
+{
+	return false;
+}
+
+FPPixelShaderData& FPAssetManager::GetPixelShaderData(std::string PixelShaderName)
+{
+	// TODO: insert return statement here
+}
+
+void FPAssetManager::AddPixelShaderData(std::string PixelShaderName, FPPixelShaderData& PixelShaderData)
+{
+}
+
+bool FPAssetManager::HasPixelShaderData(std::string PixelShaderName)
+{
+	return false;
+}
+
 ////////////////////////////
 //
 // Shader

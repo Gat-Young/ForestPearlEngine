@@ -1,8 +1,8 @@
 {
     "Material": {
         "Name": "DefaultMaterial",
-        "VertexShader": "DefaultVertexShader.vso",
-        "PixelShader": "DefaultPixelShader.pso",
+        "VertexShader": "DefaultVertexShader",
+        "PixelShader": "DefaultPixelShader",
         "Ambient": {
             "r": 1.0,
             "g": 1.0,

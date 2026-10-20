@@ -11,6 +11,16 @@ class FPMaterialInterface;
 class FPAssetManager : public FPGameInstanceSubSystem
 {
 private:
+	//Data List
+	std::unordered_map<std::string, FPTextureInfo> LoadedTextureData;
+	std::unordered_map<std::string, FPMaterialData> LoadedMaterialData;
+	std::unordered_map<std::string, std::vector<FPActorData> > LevelData;
+	std::unordered_map<std::string, std::string> GameModeData;
+	std::unordered_map<std::string, FPStaticMeshData> LoadedStaticMeshData;
+	std::unordered_map<std::string, FPVertexShaderData> LoadedVertexShaderData;
+	std::unordered_map<std::string, FPPixelShaderData> LoadedPixelShaderData;
+
+	//Resource List
 	std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshPositionVertexBuffer;
 	std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshNormalVertexBuffer;
 	std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshUVVertexBuffer;
@@ -19,22 +29,13 @@ private:
 
 	std::unordered_map<std::string, std::vector<FPMeshData> > LoadedMeshData;
 
-	std::unordered_map<std::string, FPStaticMeshData> LoadedStaticMeshData;
-
-	std::unordered_map<std::string, std::vector<FPActorData> > LevelData;
-
-	std::unordered_map<std::string, std::string> GameModeData;
 
 	//Shader
 	std::unordered_map<std::string, std::tuple<void*, void*, void*> > VertexShaderData;
 	std::unordered_map<std::string, std::pair<void*, void*> > PixelShaderData;
 
 	//Texture
-	std::unordered_map<std::string, FPTextureInfo> LoadedTextureData;
 	std::unordered_map<std::string, FPTextureData> TextureData;
-
-	//Material
-	std::unordered_map<std::string, FPMaterialData> LoadedMaterialData;
 
 public:
 	FPAssetManager() = default;
@@ -117,6 +118,16 @@ public:
 	FPMaterialInterface* MakeMaterial(std::string MaterialName);
 
 	//Shader
+	//Vertext
+	FPVertexShaderData& GetVertexShaderData(std::string VertexShaderName);
+	void AddVertexShaderData(std::string VertexShaderName, FPVertexShaderData& VertexShaderData);
+	bool HasVertexShaderData(std::string VertexShaderName);
+
+	//pixel
+	FPPixelShaderData& GetPixelShaderData(std::string PixelShaderName);
+	void AddPixelShaderData(std::string PixelShaderName, FPPixelShaderData& PixelShaderData);
+	bool HasPixelShaderData(std::string PixelShaderName);
+
 	bool HasVertexShader(std::string ShaderPath);
 	bool HasPixelShader(std::string ShaderPath);
 

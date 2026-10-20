@@ -194,6 +194,21 @@ struct FPMaterialData
 	std::vector<std::tuple<unsigned int, std::string, FPSamplerType> > Textures;
 };
 
+//VertexShader 데이터 구조체
+struct FPVertexShaderData
+{
+	std::string Name;
+	std::string Path;
+	std::string InputLayout;
+};
+
+//PixelShader 데이터 구조체
+struct FPPixelShaderData
+{
+	std::string Name;
+	std::string Path;
+};
+
 //VertexBuffer 데이터 구조체
 struct FPVertexBufferData
 {

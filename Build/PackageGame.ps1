@@ -270,10 +270,10 @@ $ReleaseGameRoot
 #   Assets\* -> Release\Assets\*
 #
 # Shader:
-#   Assets\Shader\bin\*
-#       -> Release\Assets\Shader\*
+#   Assets\ShaderResource\bin\*
+#       -> Release\Assets\ShaderResource\*
 #
-# 최종 결과에는 Shader\bin 폴더가 생성되지 않음
+# 최종 결과에는 ShaderResource\bin 폴더가 생성되지 않음
 # ------------------------------------------------------------
 
 function Copy-AssetDirectory
@@ -307,7 +307,7 @@ function Copy-AssetDirectory
         -LiteralPath $Source `
         -Force |
         Where-Object {
-            $_.Name -ne "Shader"
+            $_.Name -ne "ShaderResource"
         } |
         ForEach-Object {
 
@@ -323,23 +323,23 @@ function Copy-AssetDirectory
     # Shader 처리
     #
     # Source:
-    #   Assets\Shader\bin\*
+    #   Assets\ShaderResource\bin\*
     #
     # Destination:
-    #   Release\Assets\Shader\*
+    #   Release\Assets\ShaderResource\*
     #
     # bin 폴더 자체는 복사하지 않음
     # --------------------------------------------------------
 
     $ShaderBinPath = Join-Path `
         $Source `
-        "Shader\bin"
+        "ShaderResource\bin"
 
     if (Test-Path $ShaderBinPath)
     {
         $DestinationShaderPath = Join-Path `
             $Destination `
-            "Shader"
+            "ShaderResource"
 
 
         New-Item `

@@ -4,6 +4,7 @@
 #include "../ForestPearlEngine/Define/FPMath.h"
 #include "FPGameInstanceSubSystem.h"
 #include "Renderers/FPRenderingCommon.h"
+#include "Libraries/Ufbx/ufbx.h"
 
 class FPStaticMesh;
 class FPMaterialInterface;
@@ -20,15 +21,15 @@ private:
 	std::unordered_map<std::string, FPVertexShaderData> LoadedVertexShaderData;
 	std::unordered_map<std::string, FPPixelShaderData> LoadedPixelShaderData;
 
+	//Mesh
+	std::unordered_map<std::string, std::vector<FPMeshData> > LoadedMeshData;
+
 	//Resource List
 	std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshPositionVertexBuffer;
 	std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshNormalVertexBuffer;
 	std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshUVVertexBuffer;
 	std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshColorVertexBuffer;
 	std::unordered_map<std::string, std::vector<FPIndexBufferData> > MeshIndexBuffer;
-
-	std::unordered_map<std::string, std::vector<FPMeshData> > LoadedMeshData;
-
 
 	//Shader
 	std::unordered_map<std::string, std::tuple<void*, void*, void*> > VertexShaderData;
@@ -37,15 +38,37 @@ private:
 	//Texture
 	std::unordered_map<std::string, FPTextureData> TextureData;
 
+	std::string ConvertUfbxString(ufbx_string String);
+	struct FPMeshData ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node* Node);
+
 public:
 	FPAssetManager() = default;
 	~FPAssetManager() = default;
+
+	//Gizmo Vertex Buffer 생성
+	void MakeGizmoVertexBuffer(std::vector<struct VERTEX>& Mesh, const std::string& GizemoMeshPath);
+
+	//Buffer 생성
+	void MakeMeshBuffer(FPMeshData& MeshData);
+	void* MakePositionVertexBuffer(std::vector<struct POSITION_VERTEX>& Mesh);
+	void* MakeColorVertexBuffer(std::vector<struct COLOR_VERTEX>& Mesh);
+	void* MakeNormalVertexBuffer(std::vector<struct NORMAL_VERTEX>& Mesh);
+	void* MakeUVVertexBuffer(std::vector<struct UV_VERTEX>& Mesh);
+	void* MakeIndex16BitBuffer(std::vector<struct INDEX_16BIT>& Mesh);
+	void* MakeIndex32BitBuffer(std::vector<struct INDEX_32BIT>& Mesh);
+
+	//Shader 생성
+	void MakeVertexShader(FPVertexShaderData& VertexShaderData);
+	void MakePixelShader(FPPixelShaderData& PixelShaderData);
+
+	//FBX Load
+	void LoadFbxData(FPStaticMeshData& StaticMeshData);
+
 
 	//Mesh
 	void AddMeshData(std::string FbxPath, FPMeshData* MeshData);
 
 	std::vector<FPMeshData> GetMeshData(std::string FbxPath);
-
 
 	//각 필요한 정점 버퍼에 값 추가
 
@@ -81,10 +104,10 @@ public:
 
 	//StaticMesh
 	FPStaticMesh* GetStaticMeshData(std::string StaticMeshName);
-
 	void AddStaticMeshData(std::string StaticMeshName, FPStaticMeshData* StaticMeshData);
-
 	bool HasStaticMeshData(std::string StaticMeshName);
+
+	//FBX Mesh Load
 
 
 	//Texture
@@ -105,9 +128,7 @@ public:
 
 	//Level
 	bool HasLevelData(std::string LevelName);
-
 	void AddLevelData(std::string LevelName, FPActorData* ActorData);
-
 	std::vector<FPActorData>& GetLevelData(std::string LevelName);
 
 	//GameMode
@@ -123,20 +144,20 @@ public:
 	void AddVertexShaderData(std::string VertexShaderName, FPVertexShaderData& VertexShaderData);
 	bool HasVertexShaderData(std::string VertexShaderName);
 
+	//Shader객체 생성
+	bool HasVertexShader(std::string ShaderName);
+	void AddVertexShader(std::string ShaderName, void* VertexShader, void* VSCode, void* VBLayout);
+	//VertexShader , VSCode, VBLayout
+	std::tuple<void*, void*, void*> GetVertexShader(std::string ShaderName);
+
 	//pixel
 	FPPixelShaderData& GetPixelShaderData(std::string PixelShaderName);
 	void AddPixelShaderData(std::string PixelShaderName, FPPixelShaderData& PixelShaderData);
 	bool HasPixelShaderData(std::string PixelShaderName);
 
-	bool HasVertexShader(std::string ShaderPath);
-	bool HasPixelShader(std::string ShaderPath);
-
-	void AddVertexShader(std::string ShaderPath, void* VertexShader, void* VSCode, void* VBLayout);
-	void AddPixelShader(std::string ShaderPath, void* PixelShader, void* PSCode);
-
-	//VertexShader , VSCode, VBLayout
-	std::tuple<void*, void*, void*> GetVertexShader(std::string ShaderPath);
-
+	//Shader 객체 생성
+	bool HasPixelShader(std::string ShaderName);
+	void AddPixelShader(std::string ShaderName, void* PixelShader, void* PSCode);
 	//PixelShader, PSCode
-	std::pair<void*, void*> GetPixelShader(std::string ShaderPath);
+	std::pair<void*, void*> GetPixelShader(std::string ShaderName);
 };

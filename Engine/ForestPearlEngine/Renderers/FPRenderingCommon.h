@@ -200,6 +200,7 @@ struct FPVertexShaderData
 	std::string Name;
 	std::string Path;
 	std::string InputLayout;
+	AssetOwner Owner;
 };
 
 //PixelShader 데이터 구조체
@@ -207,6 +208,7 @@ struct FPPixelShaderData
 {
 	std::string Name;
 	std::string Path;
+	AssetOwner Owner;
 };
 
 //VertexBuffer 데이터 구조체

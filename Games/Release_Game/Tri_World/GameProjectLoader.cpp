@@ -119,15 +119,6 @@ void LoadAssets()
 	AssetLoader->LoadStaticMesh("ToonLink_RightEyeBackground_StaticMesh.json", AssetOwner::User);
 	AssetLoader->LoadStaticMesh("ToonLink_Shield_Back_StaticMesh.json", AssetOwner::User);
 	AssetLoader->LoadStaticMesh("ToonLink_Shield_Handle_StaticMesh.json", AssetOwner::User);
-
-	//이건 나중에 Engine에서 Lazy 하게 생성
-	//FBX Load
-	AssetLoader->LoadFbxData("ToonLink/ToonLinkTriangle.fbx", AssetOwner::User);
-	AssetLoader->LoadFbxData("ToonLink/ToonLink.fbx", AssetOwner::User);
-	AssetLoader->LoadFbxData("Terrain/Terrain.fbx", AssetOwner::User);
-	AssetLoader->LoadFbxData("Tree/Tree.fbx", AssetOwner::User);
-	AssetLoader->LoadFbxData("Windmill/Windmill_Body.fbx", AssetOwner::User);
-	AssetLoader->LoadFbxData("Windmill/Windmill_Wing.fbx", AssetOwner::User);
 }
 
 std::string ReturnStartLevel()

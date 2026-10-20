@@ -1,5 +1,5 @@
 #include "FPGizmoComponent.h"
-#include "FPAssetLoader.h"
+#include "FPAssetManager.h"
 #include "FPGameInstance.h"
 #include "Renderers/FPRenderingCommon.h"
 
@@ -21,8 +21,8 @@ void FPGizmoComponent::MakeVertexBuffer(std::vector<FPGIZMO_VERTEX>& GizmoMesh, 
 		Vertex.push_back(GizmoVertexData);
 	}
 
-	FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
-	AssetLoader->MakeGizmoVertexBuffer(Vertex, GizmoMeshPath);
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	AssetManager->MakeGizmoVertexBuffer(Vertex, GizmoMeshPath);
 }
 
 void FPGizmoComponent::RegistGizmoRenderList()

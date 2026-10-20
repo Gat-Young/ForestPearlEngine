@@ -655,5 +655,8 @@
     <None Include="Assets\Material\skin.002_ToonLink_Hand_StaticMesh_MaterialInstance.json">
       <Filter>Assets\Material</Filter>
     </None>
+    <None Include="Assets\StaticMesh\Tree_Trunk_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
   </ItemGroup>
 </Project>

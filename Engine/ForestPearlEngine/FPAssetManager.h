@@ -25,6 +25,7 @@ private:
 
 	std::unordered_map<std::string, std::string> GameModeData;
 
+	//Shader
 	std::unordered_map<std::string, std::tuple<void*, void*, void*> > VertexShaderData;
 	std::unordered_map<std::string, std::pair<void*, void*> > PixelShaderData;
 

@@ -207,6 +207,7 @@
     <None Include="Assets\StaticMesh\ToonLink_Shield_Handle_StaticMesh.json" />
     <None Include="Assets\StaticMesh\ToonLink_StaticMesh.json" />
     <None Include="Assets\StaticMesh\Tree_StaticMesh.json" />
+    <None Include="Assets\StaticMesh\Tree_Trunk_StaticMesh.json" />
     <None Include="Assets\StaticMesh\Windmill_Body_StaticMesh.json" />
     <None Include="Assets\StaticMesh\Windmill_Wing_StaticMesh.json" />
     <None Include="Assets\Texture\Clothes_png.json" />

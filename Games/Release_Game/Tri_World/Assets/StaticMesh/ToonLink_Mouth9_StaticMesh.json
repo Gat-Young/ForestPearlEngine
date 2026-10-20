@@ -1,7 +1,6 @@
 {
     "Name": "ToonLink_Mouth9_StaticMesh",
     "NodeName": "_032_toonlink_VoiceA_VIS_O_OBJ_",
-
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",
@@ -9,19 +8,7 @@
         }
     ],
     "Sockets": [],
-
     "Material": {
-        "Name": "mouth9.002"
-    },
-
-    "Texture": [
-        {
-            "Name": "Mouth9_png",
-            "Slot": 0
-        },
-        {
-            "Name": "Mouth9_png",
-            "Slot": 1
-        }
-    ]
+        "Name": "mouth9.002_ToonLink_Mouth9_StaticMesh_MaterialInstance"
+    }
 }

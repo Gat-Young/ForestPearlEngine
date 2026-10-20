@@ -1,7 +1,6 @@
 {
     "Name": "ToonLink_Shield_Back_StaticMesh",
     "NodeName": "_004_TateMb_VIS_O_OBJ_",
-
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",
@@ -9,19 +8,7 @@
         }
     ],
     "Sockets": [],
-
     "Material": {
-        "Name": "equipment.002"
-    },
-
-    "Texture": [
-        {
-            "Name": "Equipment_png",
-            "Slot": 0
-        },
-        {
-            "Name": "Equipment_png",
-            "Slot": 1
-        }
-    ]
+        "Name": "equipment.002_ToonLink_Shield_Back_StaticMesh_MaterialInstance"
+    }
 }

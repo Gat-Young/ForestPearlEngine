@@ -8,19 +8,7 @@
         }
     ],
     "Sockets": [],
-
     "Material": {
-        "Name": "eye.002"
-    },
-
-    "Texture": [
-        {
-            "Name": "Eye_png",
-            "Slot": 0
-        },
-        {
-            "Name": "Eye_png",
-            "Slot": 1
-        }
-    ]
+        "Name": "eye.002_ToonLink_LeftEyeBackground_StaticMesh_MaterialInstance"
+    }
 }

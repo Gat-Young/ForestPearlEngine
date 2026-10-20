@@ -1,28 +1,14 @@
 {
     "Name": "ToonLink_DownEye_StaticMesh",
     "NodeName": "_024_toonlink_DownEye_VIS_O_OBJ_",
-
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",
             "Topology": "TRIANGLELIST"
         }
     ],
-
     "Sockets": [],
-
     "Material": {
-        "Name": "eyebrow1.002"
-    },
-
-    "Texture": [
-        {
-            "Name": "Eyebrow1_png",
-            "Slot": 0
-        },
-        {
-            "Name": "Eyebrow1_png",
-            "Slot": 1
-        }
-    ]
+        "Name": "eyebrow1.002_ToonLink_DownEye_StaticMesh_MaterialInstance"
+    }
 }

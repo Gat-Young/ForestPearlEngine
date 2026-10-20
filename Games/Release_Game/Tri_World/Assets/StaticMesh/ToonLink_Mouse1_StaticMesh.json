@@ -1,7 +1,6 @@
 {
     "Name": "ToonLink_Mouse1_StaticMesh",
     "NodeName": "_012_Toonlink_faceN_VIS_O_OBJ_",
-
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",
@@ -9,19 +8,7 @@
         }
     ],
     "Sockets": [],
-
     "Material": {
-        "Name": "mouth0.002"
-    },
-
-    "Texture": [
-        {
-            "Name": "Mouth0_png",
-            "Slot": 0
-        },
-        {
-            "Name": "Mouth0_png",
-            "Slot": 1
-        }
-    ]
+        "Name": "mouth0.002_ToonLink_Mouse1_StaticMesh_MaterialInstance"
+    }
 }

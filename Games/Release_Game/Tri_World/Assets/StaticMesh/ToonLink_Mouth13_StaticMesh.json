@@ -1,29 +1,14 @@
 {
     "Name": "ToonLink_Mouth13_StaticMesh",
     "NodeName": "_036_toonlink_Capture_VIS_O_OBJ_",
-
-
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",
             "Topology": "TRIANGLELIST"
         }
     ],
-
     "Sockets": [],
-
     "Material": {
-        "Name": "mouth4.002"
-    },
-
-    "Texture": [
-        {
-            "Name": "Mouth4_png",
-            "Slot": 0
-        },
-        {
-            "Name": "Mouth4_png",
-            "Slot": 1
-        }
-    ]
+        "Name": "mouth4.002_ToonLink_Mouth13_StaticMesh_MaterialInstance"
+    }
 }

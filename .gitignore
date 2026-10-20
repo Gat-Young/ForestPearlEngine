@@ -431,6 +431,8 @@ FodyWeavers.xsd
 *.msm
 *.msp
 
-# FBX to Static Mesh Json Translator tool I/O
-Tool/FBXToStaticMeshJsonTranslator/EXE/FBX/
-Tool/FBXToStaticMeshJsonTranslator/EXE/JSON/
+# FBX to Static Mesh Json Translator tool I/O (폴더 자체는 유지하고 내부 내용만 무시)
+Tool/FBXToStaticMeshJsonTranslator/EXE/FBX/*
+!Tool/FBXToStaticMeshJsonTranslator/EXE/FBX/.gitkeep
+Tool/FBXToStaticMeshJsonTranslator/EXE/JSON/*
+!Tool/FBXToStaticMeshJsonTranslator/EXE/JSON/.gitkeep

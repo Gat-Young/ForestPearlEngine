@@ -1,28 +1,14 @@
 {
     "Name": "ToonLink_Eye_StaticMesh",
     "NodeName": "_026_toonlink_eye_VIS_O_OBJ_",
-
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",
             "Topology": "TRIANGLELIST"
         }
     ],
-
     "Sockets": [],
-
     "Material": {
-        "Name": "pupil.002"
-    },
-
-    "Texture": [
-        {
-            "Name": "Pupil_png",
-            "Slot": 0
-        },
-        {
-            "Name": "Pupil_png",
-            "Slot": 1
-        }
-    ]
+        "Name": "pupil.002_ToonLink_Eye_StaticMesh_MaterialInstance"
+    }
 }

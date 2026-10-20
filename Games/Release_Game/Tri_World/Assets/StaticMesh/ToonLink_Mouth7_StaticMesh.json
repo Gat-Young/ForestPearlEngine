@@ -1,28 +1,14 @@
 {
     "Name": "ToonLink_Mouth7_StaticMesh",
     "NodeName": "_025_toonlink_HeavyOuch_VIS_O_OBJ_",
-
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",
             "Topology": "TRIANGLELIST"
         }
     ],
-
     "Sockets": [],
-
     "Material": {
-        "Name": "mouth7.002"
-    },
-
-    "Texture": [
-        {
-            "Name": "Mouth7_png",
-            "Slot": 0
-        },
-        {
-            "Name": "Mouth7_png",
-            "Slot": 1
-        }
-    ]
+        "Name": "mouth7.002_ToonLink_Mouth7_StaticMesh_MaterialInstance"
+    }
 }

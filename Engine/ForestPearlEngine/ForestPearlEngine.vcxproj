@@ -247,6 +247,7 @@
     <ClCompile Include="Object\Components\InputComponent.cpp" />
     <ClCompile Include="Object\Components\InputMappingContext.cpp" />
     <ClCompile Include="Object\FPPawn.cpp" />
+    <ClCompile Include="Renderers\FPRenderingCommon.cpp" />
     <ClCompile Include="Renderers\RenderingDevice.cpp" />
     <ClCompile Include="Renderers\Renderer.cpp" />
     <ClCompile Include="Shader\ShaderFactory.cpp" />

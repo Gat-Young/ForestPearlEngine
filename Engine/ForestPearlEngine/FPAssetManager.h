@@ -23,11 +23,11 @@ private:
 	std::unordered_map<std::string, std::string> GameModeData;
 
 	//Resource List
-	std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshPositionVertexBuffer;
-	std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshNormalVertexBuffer;
-	std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshUVVertexBuffer;
-	std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshColorVertexBuffer;
-	std::unordered_map<std::string, std::vector<FPIndexBufferData> > MeshIndexBuffer;
+	std::unordered_map<std::string, FPVertexBufferData> MeshPositionVertexBuffer;
+	std::unordered_map<std::string, FPVertexBufferData> MeshNormalVertexBuffer;
+	std::unordered_map<std::string, FPVertexBufferData> MeshUVVertexBuffer;
+	std::unordered_map<std::string, FPVertexBufferData> MeshColorVertexBuffer;
+	std::unordered_map<std::string, FPIndexBufferData> MeshIndexBuffer;
 
 	//Shader
 	std::unordered_map<std::string, std::tuple<void*, void*, void*> > VertexShaderData;
@@ -76,31 +76,31 @@ public:
 	void AddPositionVertexBuffer(std::string FbxPath, FPVertexBufferData& PositionVertexBuffer);
 	void AddPositionVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset);
 	bool HasPositionBuffer(std::string MeshPath);
-	std::vector<FPVertexBufferData> GetPositionVertexBuffer(std::string MeshPath);
+	FPVertexBufferData GetPositionVertexBuffer(std::string MeshPath);
 
 	//Color
 	void AddColorVertexBuffer(std::string FbxPath, FPVertexBufferData& ColorVertexBuffer);
 	void AddColorVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset);
 	bool HasColorBuffer(std::string MeshPath);
-	std::vector<FPVertexBufferData> GetColorVertexBuffer(std::string MeshPath);
+	FPVertexBufferData GetColorVertexBuffer(std::string MeshPath);
 
 	//Normal
 	void AddNormalVertexBuffer(std::string FbxPath, FPVertexBufferData& NormalVertexBuffer);
 	void AddNormalVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset);
 	bool HasNormalBuffer(std::string MeshPath);
-	std::vector<FPVertexBufferData> GetNormalVertexBuffer(std::string MeshPath);
+	FPVertexBufferData GetNormalVertexBuffer(std::string MeshPath);
 
 	//UV
 	void AddUVVertexBuffer(std::string FbxPath, FPVertexBufferData& UVVertexBuffer);
 	void AddUVVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset);
 	bool HasUVBuffer(std::string MeshPath);
-	std::vector<FPVertexBufferData> GetUVVertexBuffer(std::string MeshPath);
+	FPVertexBufferData GetUVVertexBuffer(std::string MeshPath);
 
 	//Index
 	void AddIndexBuffer(std::string FbxPath, FPIndexBufferData& PositionVertexBuffer);
 	void AddIndexBuffer(std::string FbxPath, void* IndexBuffer, unsigned long IBSize, unsigned long IBCnt, unsigned long FaceCnt, unsigned long Stride, unsigned long Offset);
 	bool HasIndexBuffer(std::string MeshPath);
-	std::vector<FPIndexBufferData> GetIndexBuffer(std::string MeshPath);
+	FPIndexBufferData GetIndexBuffer(std::string MeshPath);
 
 	//StaticMesh
 	FPStaticMesh* GetStaticMeshData(std::string StaticMeshName);

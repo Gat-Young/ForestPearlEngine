@@ -1,5 +1,5 @@
 {
-  "Name": "DefaultVertexShader",
-  "Path": "DefaultVertexShader.vso",
+  "Name": "NormalDebugVertexShader",
+  "Path": "NormalDebugVertexShader.vso",
   "InputLayout": "NormalDebug"
 }

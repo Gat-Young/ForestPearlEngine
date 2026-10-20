@@ -467,6 +467,9 @@
     <ClCompile Include="FPTexture2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Renderers\FPRenderingCommon.cpp">
+      <Filter>Renderers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\StaticMesh\Cube_StaticMesh.json">

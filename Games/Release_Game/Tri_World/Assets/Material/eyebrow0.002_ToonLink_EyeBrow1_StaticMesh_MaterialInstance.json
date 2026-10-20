@@ -1,6 +1,8 @@
 {
     "Material": {
         "Name": "eyebrow0.002_ToonLink_EyeBrow1_StaticMesh_MaterialInstance",
+        "VertexShader": "DefaultVertexShader",
+        "PixelShader": "DefaultPixelShader",
         "Ambient": {
             "r": 0.05087608844041824,
             "g": 0.05087608844041824,
@@ -23,11 +25,13 @@
     "Texture": [
         {
             "Name": "Eyebrow0_png",
-            "Slot": 0
+            "Slot": 0,
+            "SamplerType": "Sampler_Wrap"
         },
         {
             "Name": "Eyebrow0_png",
-            "Slot": 1
+            "Slot": 1,
+            "SamplerType": "Sampler_Wrap"
         }
     ]
 }

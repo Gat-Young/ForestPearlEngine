@@ -8,12 +8,15 @@
 
 void Tree::Initialize()
 {
-	Mesh = new FPStaticMeshComponent(this, "Tree_StaticMesh");
-
+	TreeLeaf = new FPStaticMeshComponent(this, "Tree_StaticMesh");
+	TreeLeaf->SetupAttachment(RootComponent);
+	TreeTrunk = new FPStaticMeshComponent(this, "Tree_Trunk_StaticMesh");
+	TreeTrunk->SetupAttachment(RootComponent);
+	
 	FPVector4 Color = { 0.000f, 0.392f, 0.000f, 1.0f };
-	Mesh->GetMaterial().SetBaseColor(Color);
+	TreeLeaf->GetMaterial().SetBaseColor(Color);
+	TreeTrunk->GetMaterial().SetBaseColor(Color);
 
-	SetRootComponent((FPSceneComponent*)Mesh);
 }
 
 void Tree::BeginPlay()

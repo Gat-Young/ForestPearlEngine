@@ -17,7 +17,9 @@ FPStaticMeshComponent::FPStaticMeshComponent(FPActor* Owner, std::string StaticM
 	GizmoNormalLine->SetupAttachment(this);
 
 	FPMaterialInterface* StaticMeshMaterial = *(StaticMesh->GetStaticMeshMaterial());
+	Material = StaticMeshMaterial;
 	if (StaticMeshMaterial == nullptr) { Material = new FPMaterial(); }
+	
 	RegistMeshRenderList();
 }
 

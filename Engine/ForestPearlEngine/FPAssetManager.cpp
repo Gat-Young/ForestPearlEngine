@@ -2,7 +2,7 @@
 #include <iostream>
 #include "Utility/FPPathManager.h"
 #include "FPGameInstance.h"
-#include "FPGameProjectClassRegistry.h"
+#include "FPMaterial.h"
 #include "FPMaterialInterface.h"
 #include "FPStaticMesh.h"
 #include "Renderers/RenderingDevice.h"
@@ -69,8 +69,8 @@ void FPAssetManager::MakeMeshBuffer(FPMeshData& MeshData)
 //Vertex Shader 제작
 void FPAssetManager::MakeVertexShader(FPVertexShaderData& VertexShaderData)
 {
-	std::wstring FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetAssetPath("ShaderResource/" + VertexShaderData.Path)));
-	if (VertexShaderData.Owner == AssetOwner::Engine) FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetEngineAssetPath("ShaderResource/" + VertexShaderData.Path)));
+	std::wstring FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetAssetShaderPath(VertexShaderData.Path)));
+	if (VertexShaderData.Owner == AssetOwner::Engine) FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetEngineAssetShaderPath(VertexShaderData.Path)));
 
 	void* VertexShader = nullptr;
 	void* VSCode = nullptr;
@@ -94,8 +94,8 @@ void FPAssetManager::MakeVertexShader(FPVertexShaderData& VertexShaderData)
 //Pixel Shader 제작
 void FPAssetManager::MakePixelShader(FPPixelShaderData& PixelShaderData)
 {
-	std::wstring FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetAssetPath("ShaderResource/" + PixelShaderData.Path)));
-	if (PixelShaderData.Owner == AssetOwner::Engine) FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetEngineAssetPath("ShaderResource/" + PixelShaderData.Path)));
+	std::wstring FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetAssetShaderPath(PixelShaderData.Path)));
+	if (PixelShaderData.Owner == AssetOwner::Engine) FilePath = FPPathManager::Get().StringToWString((FPPathManager::Get().GetEngineAssetShaderPath(PixelShaderData.Path)));
 
 	void* PixelShader = nullptr;
 	void* PSCode = nullptr;
@@ -199,7 +199,7 @@ bool FPAssetManager::HasMeshData(std::string ModelNodeName)
 
 void FPAssetManager::AddPositionVertexBuffer(std::string FbxPath, FPVertexBufferData& PositionVertexBuffer)
 {
-	MeshPositionVertexBuffer[FbxPath].push_back(PositionVertexBuffer);
+	MeshPositionVertexBuffer[FbxPath] = PositionVertexBuffer;
 }
 
 void FPAssetManager::AddPositionVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset)
@@ -211,7 +211,7 @@ void FPAssetManager::AddPositionVertexBuffer(std::string FbxPath, void* VertexBu
 	VBData.Stride = Stride;
 	VBData.Offset = Offset;
 
-	MeshPositionVertexBuffer[FbxPath].push_back(VBData);
+	MeshPositionVertexBuffer[FbxPath] = VBData;
 }
 
 bool FPAssetManager::HasPositionBuffer(std::string MeshPath)
@@ -223,7 +223,7 @@ bool FPAssetManager::HasPositionBuffer(std::string MeshPath)
 	return true;
 }
 
-std::vector<FPVertexBufferData> FPAssetManager::GetPositionVertexBuffer(std::string MeshPath)
+FPVertexBufferData FPAssetManager::GetPositionVertexBuffer(std::string MeshPath)
 {
 	if (!HasPositionBuffer(MeshPath))
 	{
@@ -237,7 +237,7 @@ std::vector<FPVertexBufferData> FPAssetManager::GetPositionVertexBuffer(std::str
 
 void FPAssetManager::AddColorVertexBuffer(std::string FbxPath, FPVertexBufferData& ColorVertexBuffer)
 {
-	MeshColorVertexBuffer[FbxPath].push_back(ColorVertexBuffer);
+	MeshColorVertexBuffer[FbxPath] = ColorVertexBuffer;
 }
 
 void FPAssetManager::AddColorVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset)
@@ -249,7 +249,7 @@ void FPAssetManager::AddColorVertexBuffer(std::string FbxPath, void* VertexBuffe
 	VBData.Stride = Stride;
 	VBData.Offset = Offset;
 
-	MeshColorVertexBuffer[FbxPath].push_back(VBData);
+	MeshColorVertexBuffer[FbxPath] = VBData;
 }
 
 bool FPAssetManager::HasColorBuffer(std::string MeshPath)
@@ -261,7 +261,7 @@ bool FPAssetManager::HasColorBuffer(std::string MeshPath)
 	return true;
 }
 
-std::vector<FPVertexBufferData> FPAssetManager::GetColorVertexBuffer(std::string MeshPath)
+FPVertexBufferData FPAssetManager::GetColorVertexBuffer(std::string MeshPath)
 {
 	if (!HasColorBuffer(MeshPath))
 	{
@@ -275,7 +275,7 @@ std::vector<FPVertexBufferData> FPAssetManager::GetColorVertexBuffer(std::string
 
 void FPAssetManager::AddNormalVertexBuffer(std::string FbxPath, FPVertexBufferData& NormalVertexBuffer)
 {
-	MeshNormalVertexBuffer[FbxPath].push_back(NormalVertexBuffer);
+	MeshNormalVertexBuffer[FbxPath] = NormalVertexBuffer;
 }
 
 void FPAssetManager::AddNormalVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset)
@@ -287,7 +287,7 @@ void FPAssetManager::AddNormalVertexBuffer(std::string FbxPath, void* VertexBuff
 	VBData.Stride = Stride;
 	VBData.Offset = Offset;
 
-	MeshNormalVertexBuffer[FbxPath].push_back(VBData);
+	MeshNormalVertexBuffer[FbxPath] = VBData;
 }
 
 bool FPAssetManager::HasNormalBuffer(std::string MeshPath)
@@ -299,7 +299,7 @@ bool FPAssetManager::HasNormalBuffer(std::string MeshPath)
 	return true;
 }
 
-std::vector<FPVertexBufferData> FPAssetManager::GetNormalVertexBuffer(std::string MeshPath)
+FPVertexBufferData FPAssetManager::GetNormalVertexBuffer(std::string MeshPath)
 {
 	if (!HasNormalBuffer(MeshPath))
 	{
@@ -313,7 +313,7 @@ std::vector<FPVertexBufferData> FPAssetManager::GetNormalVertexBuffer(std::strin
 
 void FPAssetManager::AddUVVertexBuffer(std::string FbxPath, FPVertexBufferData& UVVertexBuffer)
 {
-	MeshUVVertexBuffer[FbxPath].push_back(UVVertexBuffer);
+	MeshUVVertexBuffer[FbxPath] = UVVertexBuffer;
 }
 
 void FPAssetManager::AddUVVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset)
@@ -325,7 +325,7 @@ void FPAssetManager::AddUVVertexBuffer(std::string FbxPath, void* VertexBuffer, 
 	VBData.Stride = Stride;
 	VBData.Offset = Offset;
 
-	MeshUVVertexBuffer[FbxPath].push_back(VBData);
+	MeshUVVertexBuffer[FbxPath] = VBData;
 }
 
 bool FPAssetManager::HasUVBuffer(std::string MeshPath)
@@ -337,7 +337,7 @@ bool FPAssetManager::HasUVBuffer(std::string MeshPath)
 	return true;
 }
 
-std::vector<FPVertexBufferData> FPAssetManager::GetUVVertexBuffer(std::string MeshPath)
+FPVertexBufferData FPAssetManager::GetUVVertexBuffer(std::string MeshPath)
 {
 	if (!HasUVBuffer(MeshPath))
 	{
@@ -351,7 +351,7 @@ std::vector<FPVertexBufferData> FPAssetManager::GetUVVertexBuffer(std::string Me
 
 void FPAssetManager::AddIndexBuffer(std::string FbxPath, FPIndexBufferData& PositionVertexBuffer)
 {
-	MeshIndexBuffer[FbxPath].push_back(PositionVertexBuffer);
+	MeshIndexBuffer[FbxPath] = PositionVertexBuffer;
 }
 
 void FPAssetManager::AddIndexBuffer(std::string FbxPath, void* IndexBuffer, unsigned long IBSize, unsigned long IBCnt, unsigned long FaceCnt, unsigned long Stride, unsigned long Offset)
@@ -364,7 +364,7 @@ void FPAssetManager::AddIndexBuffer(std::string FbxPath, void* IndexBuffer, unsi
 	IBData.Stride = Stride;
 	IBData.Offset = Offset;
 
-	MeshIndexBuffer[FbxPath].push_back(IBData);
+	MeshIndexBuffer[FbxPath] = IBData;
 }
 
 bool FPAssetManager::HasIndexBuffer(std::string MeshPath)
@@ -376,7 +376,7 @@ bool FPAssetManager::HasIndexBuffer(std::string MeshPath)
 	return true;
 }
 
-std::vector<FPIndexBufferData> FPAssetManager::GetIndexBuffer(std::string MeshPath)
+FPIndexBufferData FPAssetManager::GetIndexBuffer(std::string MeshPath)
 {
 	if (!HasIndexBuffer(MeshPath))
 	{
@@ -690,7 +690,7 @@ FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_nod
 FPStaticMesh* FPAssetManager::GetStaticMeshData(std::string StaticMeshName)
 {
 	FPStaticMeshData StaticMeshData = LoadedStaticMeshData[StaticMeshName];
-	FPStaticMesh* StaticMesh = new FPStaticMesh(StaticMeshData.MeshPath);
+	FPStaticMesh* StaticMesh = new FPStaticMesh(StaticMeshData.Name);
 
 	for (SOCKET_TRANSFORM& Socket : StaticMeshData.Sockets)
 	{
@@ -877,13 +877,30 @@ std::string FPAssetManager::GetGameModeData(std::string LevelName)
 //
 FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 {
-	FPGameProjectClassRegistry* ClassRegistry = static_cast<FPGameProjectClassRegistry*>(FPGameInstance::Get().GetClassRegister());
-	if (ClassRegistry->HasFactory(MaterialName))
+	std::string ResolvedMaterialName = HasMaterialData(MaterialName) ? MaterialName : "DefaultMaterial";
+	FPMaterialData& MaterialData = GetMaterialData(ResolvedMaterialName);
+
+	FPMaterial* Material = new FPMaterial();
+	Material->SetVertexShader(MaterialData.VertexShader);
+	Material->SetPixelShader(MaterialData.PixelShader);
+
+	FPVector4 BaseColor{ MaterialData.BaseColor.r, MaterialData.BaseColor.g, MaterialData.BaseColor.b, MaterialData.BaseColor.a };
+	FPVector4 Diffuse{ MaterialData.Diffuse.r, MaterialData.Diffuse.g, MaterialData.Diffuse.b, MaterialData.Diffuse.a };
+	FPVector4 Ambient{ MaterialData.Ambient.r, MaterialData.Ambient.g, MaterialData.Ambient.b, MaterialData.Ambient.a };
+	Material->SetBaseColor(BaseColor);
+	Material->SetDiffuse(Diffuse);
+	Material->SetAmbient(Ambient);
+
+	for (auto& [Slot, TextureName, SamplerType] : MaterialData.Textures)
 	{
-		FPMaterialInterface* Material = static_cast<FPMaterialInterface*>((ClassRegistry->Create(MaterialName)).release());
-		return Material;
+		if (Slot != 0)
+		{
+			Material->AddTexture(Slot);
+		}
+		Material->SetTexture(Slot, TextureName, SamplerType);
 	}
-	return nullptr;
+
+	return Material;
 }
 
 FPVertexShaderData& FPAssetManager::GetVertexShaderData(std::string VertexShaderName)

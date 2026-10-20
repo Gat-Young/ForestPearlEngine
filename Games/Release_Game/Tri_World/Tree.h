@@ -11,7 +11,8 @@ class FPStaticMeshComponent;
 class Tree : public FPActor
 {
 private:
-	FPStaticMeshComponent* Mesh;
+	FPStaticMeshComponent* TreeLeaf;
+	FPStaticMeshComponent* TreeTrunk;
 
 
 public:

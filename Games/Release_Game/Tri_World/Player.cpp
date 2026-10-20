@@ -15,18 +15,58 @@
 
 void Player::Initialize()
 {
-	//Mesh = new FPStaticMeshComponent(this, "ToonLinkTriangle_StaticMesh");
 
 	//real Model
-	Mesh = new FPStaticMeshComponent(this, "ToonLink_StaticMesh");
+	BodyAndHat = new FPStaticMeshComponent(this, "ToonLink_BodyAndHat_StaticMesh");
+	BodyAndHat->SetupAttachment(RootComponent);
 
-	FPVector4 Color = { 0.529f, 0.808f, 0.980f, 1.0f };
-	Mesh->GetMaterial().SetBaseColor(Color);
+	Buckle = new FPStaticMeshComponent(this, "ToonLink_Buckle_StaticMesh");
+	Buckle->SetupAttachment(RootComponent);
 
-	SetRootComponent((FPSceneComponent*)Mesh);
+	Eye = new FPStaticMeshComponent(this, "ToonLink_Eye_StaticMesh");
+	Eye->SetupAttachment(RootComponent);
+
+	EyeBrow = new FPStaticMeshComponent(this, "ToonLink_EyeBrow1_StaticMesh");
+	EyeBrow->SetupAttachment(RootComponent);
+
+	Face = new FPStaticMeshComponent(this, "ToonLink_Face_StaticMesh");
+	Face->SetupAttachment(RootComponent);
+
+	Hair = new FPStaticMeshComponent(this, "ToonLink_Hair_StaticMesh");
+	Hair->SetupAttachment(RootComponent);
+
+	Hand = new FPStaticMeshComponent(this, "ToonLink_Hand_StaticMesh");
+	Hand->SetupAttachment(RootComponent);
+
+	LeftEyeBg = new FPStaticMeshComponent(this, "ToonLink_LeftEyeBackground_StaticMesh");
+	LeftEyeBg->SetupAttachment(RootComponent);
+
+	RightEyebg = new FPStaticMeshComponent(this, "ToonLink_RightEyeBackground_StaticMesh");
+	RightEyebg->SetupAttachment(RootComponent);
+
+	MasterSword_Scabbard = new FPStaticMeshComponent(this, "ToonLink_MasterSword_Scabbard_StaticMesh");
+	MasterSword_Scabbard->SetupAttachment(RootComponent);
+
+	MasterSword_Handle = new FPStaticMeshComponent(this, "ToonLink_MasterSword_Handle_StaticMesh");
+	MasterSword_Handle->SetupAttachment(RootComponent);
+
+	MasterSword_Blade = new FPStaticMeshComponent(this, "ToonLink_MasterSword_Blade_StaticMesh");
+	MasterSword_Blade->SetupAttachment(RootComponent);
+
+	MasterSword_BackHandle = new FPStaticMeshComponent(this, "ToonLink_MasterSword_BackHandle_StaticMesh");
+	MasterSword_BackHandle->SetupAttachment(RootComponent);
+
+	Mouth = new FPStaticMeshComponent(this, "ToonLink_Mouse1_StaticMesh");
+	Mouth->SetupAttachment(RootComponent);
+
+	Shield_Back = new FPStaticMeshComponent(this, "ToonLink_Shield_Back_StaticMesh");
+	Shield_Back->SetupAttachment(RootComponent);
+
+	Shidld_Hand = new FPStaticMeshComponent(this, "ToonLink_Shield_Handle_StaticMesh");
+	Shidld_Hand->SetupAttachment(RootComponent);
 
 	ShieldPivot = new FPSceneComponent(this);
-	ShieldPivot->SetupAttachment(Mesh);
+	ShieldPivot->SetupAttachment(RootComponent);
 	ShieldPivot->SetRelativeLocation({ 0.0f, 2.0f, 0.0f });
 	ShieldPivot->SetRelativeRotation({ -90.0f, 0.0f, 0.0f });
 

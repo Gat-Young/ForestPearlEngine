@@ -107,6 +107,40 @@ void FPAssetManager::MakePixelShader(FPPixelShaderData& PixelShaderData)
 	AssetManager->AddPixelShader(PixelShaderData.Name, PixelShader, PSCode);
 }
 
+//葛电 Asset Data 按眉甫 积己
+void FPAssetManager::AllAssetDataCreate()
+{
+	//Texture 积己
+	for (auto& [AssetName, Asset] : LoadedTextureData)
+	{
+		MakeTexture(Asset);
+	}
+
+	//Fbx Load
+	for (auto& [AssetName, Asset] : LoadedStaticMeshData)
+	{
+		LoadFbxData(Asset);
+	}
+
+	//Mesh Buffer 积己
+	for (auto& [AssetName, Asset] : LoadedMeshData)
+	{
+		MakeMeshBuffer(Asset);
+	}
+
+	//Vertex Buffer 积己
+	for (auto& [AssetName, Asset] : LoadedVertexShaderData)
+	{
+		MakeVertexShader(Asset);
+	}
+
+	//Pixel Buffer 积己
+	for (auto& [AssetName, Asset] : LoadedPixelShaderData)
+	{
+		MakePixelShader(Asset);
+	}
+}
+
 ////////////////////////////
 //
 // Gizmo Mesh Maker
@@ -137,6 +171,7 @@ void FPAssetManager::MakeGizmoVertexBuffer(std::vector<struct VERTEX>& Mesh, con
 
 	//Gizmo Mesh 沥焊甫 历厘
 	AddMeshData(GizemoMeshPath, MeshData);
+	MakeMeshBuffer(MeshData);
 }
 
 ////////////////////////////

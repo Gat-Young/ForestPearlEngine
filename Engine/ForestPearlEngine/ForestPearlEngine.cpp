@@ -9,6 +9,7 @@
 #include "Systems/InputSystem.h"
 #include "FPGameProjectSetting.h"
 #include "FPViewPortClient.h"
+#include "FPAssetManager.h"
 #include <iostream>
 #include "MCLOG.h"
 
@@ -64,6 +65,10 @@ bool ForestPearlEngine::PreInitialize()
     LoadLevel();
     LoadClassRegist();
     LoadAssets();
+
+    //등록된 모든 Asset Data 객체 만들기
+    FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+    AssetManager->AllAssetDataCreate();
 
     return true;
 }

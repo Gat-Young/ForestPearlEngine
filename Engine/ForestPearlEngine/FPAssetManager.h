@@ -15,12 +15,12 @@ private:
 	//Data List
 	std::unordered_map<std::string, FPTextureInfo> LoadedTextureData;
 	std::unordered_map<std::string, FPMaterialData> LoadedMaterialData;
-	std::unordered_map<std::string, std::vector<FPActorData> > LevelData;
-	std::unordered_map<std::string, std::string> GameModeData;
 	std::unordered_map<std::string, FPStaticMeshData> LoadedStaticMeshData;
 	std::unordered_map<std::string, FPVertexShaderData> LoadedVertexShaderData;
 	std::unordered_map<std::string, FPPixelShaderData> LoadedPixelShaderData;
 	std::unordered_map<std::string, FPMeshData> LoadedMeshData;
+	std::unordered_map<std::string, std::vector<FPActorData> > LevelData;
+	std::unordered_map<std::string, std::string> GameModeData;
 
 	//Resource List
 	std::unordered_map<std::string, std::vector<FPVertexBufferData> > MeshPositionVertexBuffer;
@@ -43,6 +43,9 @@ public:
 	FPAssetManager() = default;
 	~FPAssetManager() = default;
 
+	//모든 Asset Data를 객체 생성
+	void AllAssetDataCreate();
+
 	//Gizmo Vertex Buffer 생성
 	void MakeGizmoVertexBuffer(std::vector<struct VERTEX>& Mesh, const std::string& GizemoMeshPath);
 
@@ -64,7 +67,7 @@ public:
 
 	//Mesh
 	void AddMeshData(std::string ModelNodeName, FPMeshData& MeshData);
-	std::vector<FPMeshData> GetMeshData(std::string FbxPath);
+	FPMeshData& GetMeshData(std::string FbxPath);
 	bool HasMeshData(std::string ModelNodeName);
 
 	//각 필요한 정점 버퍼에 값 추가

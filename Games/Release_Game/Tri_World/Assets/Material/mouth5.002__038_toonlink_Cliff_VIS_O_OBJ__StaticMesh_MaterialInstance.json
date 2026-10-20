@@ -25,11 +25,13 @@
     "Texture": [
         {
             "Name": "Mouth5_png",
-            "Slot": 0
+            "Slot": 0,
+            "SamplerType": "Sampler_Wrap"
         },
         {
             "Name": "Mouth5_png",
-            "Slot": 1
+            "Slot": 1,
+            "SamplerType": "Sampler_Wrap"
         }
     ]
 }

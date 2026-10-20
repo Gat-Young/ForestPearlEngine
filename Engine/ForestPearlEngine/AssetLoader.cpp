@@ -413,6 +413,19 @@ FPMeshData FPAssetLoader::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node
 
 }
 
+COLOR_VERTEX FPAssetLoader::ReadColor(const json& ColorJson)
+{
+
+	COLOR_VERTEX Color;
+
+	Color.r = ColorJson.value("r", 1.0f);
+	Color.g = ColorJson.value("g", 1.0f);
+	Color.b = ColorJson.value("b", 1.0f);
+	Color.a = ColorJson.value("a", 1.0f);
+
+	return Color;
+}
+
 //Level 정보를 저장
 void FPAssetLoader::LoadLevelData(std::string LevelName, std::string LevelPath, AssetOwner EngineAsset)
 {
@@ -676,6 +689,7 @@ void FPAssetLoader::LoadStaticMesh(std::string StaticMeshName, std::string Stati
 	AssetManager->AddStaticMeshData(StaticMeshName, &Data);
 }
 
+//Texture
 void FPAssetLoader::LoadTexture(std::string TexturePath, AssetOwner EngineAsset)
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
@@ -689,11 +703,11 @@ void FPAssetLoader::LoadTexture(std::string TexturePath, AssetOwner EngineAsset)
 		return;
 	}
 
-	json JsonStaticMeshData;
+	json JsonTextureData;
 
 	try
 	{
-		File >> JsonStaticMeshData;
+		File >> JsonTextureData;
 	}
 	catch (const json::parse_error& Error)
 	{
@@ -706,9 +720,9 @@ void FPAssetLoader::LoadTexture(std::string TexturePath, AssetOwner EngineAsset)
 
 	FPTextureInfo TextureInfo;
 
-	TextureInfo.Name = JsonStaticMeshData["Name"].get<std::string>();
-	TextureInfo.Path = JsonStaticMeshData["Path"].get<std::string>();
-	TextureInfo.Type = JsonStaticMeshData["Type"].get<std::string>();
+	TextureInfo.Name = JsonTextureData["Name"].get<std::string>();
+	TextureInfo.Path = JsonTextureData["Path"].get<std::string>();
+	TextureInfo.Type = JsonTextureData["Type"].get<std::string>();
 	TextureInfo.Owner = EngineAsset;
 
 	if (AssetManager->HasTextureData(TextureInfo.Name))
@@ -757,125 +771,71 @@ void FPAssetLoader::MakeTexture(FPTextureInfo& TextureInfo)
 	AssetManager->AddTextureData(TextureInfo.Name, Data);
 }
 
+//Material
+
 
 //Material Data Loader
-void FPAssetLoader::LoadMaterial(std::string MaterialPat, AssetOwner EngineAsset)
+void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsset)
 {
-	using json = nlohmann::json;
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
-	// 색상 구조체
-	struct FPColor
+	std::ifstream File(FPPathManager::Get().GetAssetPath("Material/" + MaterialPath));
+	if (EngineAsset == AssetOwner::Engine) File = std::ifstream(FPPathManager::Get().GetEngineAssetPath("Material/" + MaterialPath));
+
+	if (!File.is_open())
 	{
-		float r = 1.0f;
-		float g = 1.0f;
-		float b = 1.0f;
-		float a = 1.0f;
-	};
-
-	// 텍스처 정보
-	struct FPTextureInfo
-	{
-		std::string Name;
-		int Slot = 0;
-	};
-
-	// 머티리얼 정보
-	struct FPMaterialData
-	{
-		std::string Name;
-		std::string VertexShader;
-		std::string PixelShader;
-
-		FPColor Ambient;
-		FPColor BaseColor;
-		FPColor Diffuse;
-
-		std::vector<FPTextureInfo> Textures;
-	};
-
-	// 색상 JSON 읽기
-	FPColor ReadColor(const json & ColorJson)
-	{
-		FPColor Color;
-
-		Color.r = ColorJson.value("r", 1.0f);
-		Color.g = ColorJson.value("g", 1.0f);
-		Color.b = ColorJson.value("b", 1.0f);
-		Color.a = ColorJson.value("a", 1.0f);
-
-		return Color;
+		std::cerr << MaterialPath << "파일 열기 실패\n";
+		return;
 	}
 
-	// Material JSON 읽기
-	bool LoadMaterialJson(
-		const std::string & FilePath,
-		FPMaterialData & OutMaterial)
+	json JsonMaterialData;
+
+	try
 	{
-		std::ifstream File(FilePath);
+		File >> JsonMaterialData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
 
-		if (!File.is_open())
+		return;
+	}
+
+	FPMaterialData MaterialData;
+
+	// Material 객체
+	const json& Material = JsonMaterialData.at("Material");
+
+	MaterialData.Name = Material.at("Name").get<std::string>();
+
+	MaterialData.VertexShader = Material.at("VertexShader").get<std::string>();
+
+	MaterialData.PixelShader = Material.at("PixelShader").get<std::string>();
+
+	// Color
+	MaterialData.Ambient = ReadColor(Material.at("Ambient"));
+
+	MaterialData.BaseColor = ReadColor(Material.at("BaseColor"));
+
+	MaterialData.Diffuse = ReadColor(Material.at("Diffuse"));
+
+	// Texture 배열
+	if (JsonMaterialData.contains("Texture") && JsonMaterialData.at("Texture").is_array())
+	{
+		for (const auto& Texture : JsonMaterialData.at("Texture"))
 		{
-			std::cerr << "Material JSON Open Failed: "
-				<< FilePath << '\n';
-			return false;
-		}
+			std::string Name;
+			Name =	Texture.at("Name").get<std::string>();
+			unsigned int Slot;
+				Info.Slot =
+					Texture.at("Slot").get<int>();
 
-		try
-		{
-			json Root;
-			File >> Root;
-
-			FPMaterialData Result;
-
-			// Material 객체
-			const json& Material = Root.at("Material");
-
-			Result.Name =
-				Material.at("Name").get<std::string>();
-
-			Result.VertexShader =
-				Material.at("VertexShader").get<std::string>();
-
-			Result.PixelShader =
-				Material.at("PixelShader").get<std::string>();
-
-			// Color
-			Result.Ambient =
-				ReadColor(Material.at("Ambient"));
-
-			Result.BaseColor =
-				ReadColor(Material.at("BaseColor"));
-
-			Result.Diffuse =
-				ReadColor(Material.at("Diffuse"));
-
-			// Texture 배열
-			if (Root.contains("Texture") &&
-				Root.at("Texture").is_array())
-			{
-				for (const auto& Texture : Root.at("Texture"))
-				{
-					FPTextureInfo Info;
-
-					Info.Name =
-						Texture.at("Name").get<std::string>();
-
-					Info.Slot =
-						Texture.at("Slot").get<int>();
-
-					Result.Textures.push_back(Info);
-				}
+				Result.Textures.push_back(Info);
 			}
-
-			OutMaterial = std::move(Result);
-
-			return true;
-		}
-		catch (const json::exception& e)
-		{
-			std::cerr << "Material JSON Error: "
-				<< e.what() << '\n';
-			return false;
-		}
 	}
+
+	OutMaterial = std::move(Result);
+
 }

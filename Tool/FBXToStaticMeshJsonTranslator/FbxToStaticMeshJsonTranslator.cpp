@@ -15,6 +15,14 @@ namespace
 		return LowerExtensionNoDot == "dds" ? "DDS" : "WIC";
 	}
 
+	// FBX 텍스처의 Wrap 설정을 엔진의 FPSamplerType 문자열로 변환한다. (Renderers/FPRenderingCommon.h 참고)
+	// ufbx는 Repeat/Clamp 두 가지만 구분하므로 그 외 Sampler_Mirror 등은 사용하지 않는다.
+	// U/V 축 설정이 다를 수 있지만 엔진 쪽 텍스처 슬롯에는 SamplerType이 하나뿐이라 U축(wrap_u) 기준으로 결정한다.
+	std::string DetermineSamplerType(ufbx_wrap_mode WrapU)
+	{
+		return WrapU == UFBX_WRAP_REPEAT ? "Sampler_Wrap" : "Sampler_CLAMP";
+	}
+
 	// 문자열의 첫 글자만 대문자로 바꾼다. (예: "hair" -> "Hair")
 	std::string CapitalizeFirstLetter(const std::string& Text)
 	{
@@ -348,6 +356,7 @@ json FbxToStaticMeshJsonTranslator::ExportMaterialTextures(const ufbx_material& 
 		json TextureRef;
 		TextureRef["Name"] = TextureName;
 		TextureRef["Slot"] = Slot;
+		TextureRef["SamplerType"] = DetermineSamplerType(Texture.wrap_u);
 
 		TextureArray.push_back(TextureRef);
 

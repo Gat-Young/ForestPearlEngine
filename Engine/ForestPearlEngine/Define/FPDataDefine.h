@@ -105,6 +105,7 @@ struct FPTextureInfo
 //Material 데이터 구조체
 struct FPMaterialData
 {
+	std::string Name;
 	std::string VertexShader;
 	std::string PixelShader;
 

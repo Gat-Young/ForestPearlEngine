@@ -42,7 +42,8 @@ private:
 	static nlohmann::ordered_json ExportMeshMaterial(const ufbx_mesh& Mesh, const std::string& StaticMeshName, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedMaterialNames, std::set<std::string>& ExportedTextureNames);
 
 	// 머티리얼에 연결된 텍스처들을 실제 이미지 파일 기준으로 Texture.json으로 변환해서 저장한다. (같은 파일이면 한 번만 저장)
-	// 반환값은 Material Instance json에 들어갈 "Texture" 배열(Slot, Name)이다.
+	// 반환값은 Material Instance json에 들어갈 "Texture" 배열(Name, Slot, SamplerType)이다.
+	// SamplerType은 FBX 텍스처의 Wrap 설정(Repeat/Clamp)을 엔진 FPSamplerType 이름으로 변환한 값이다.
 	static nlohmann::ordered_json ExportMaterialTextures(const ufbx_material& Material, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedTextureNames);
 
 	// 머티리얼의 색상 맵(ufbx_material_map)을 {r,g,b,a} json으로 변환한다.

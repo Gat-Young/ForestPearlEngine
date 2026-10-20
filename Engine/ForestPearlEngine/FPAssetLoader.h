@@ -12,6 +12,8 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 		std::string ConvertUfbxString(ufbx_string String);
 		struct FPMeshData ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node* Node);
 
+		// 색상 JSON 읽기
+		COLOR_VERTEX ReadColor(const json& ColorJson);
 	public:
 		FPAssetLoader() = default;
 		~FPAssetLoader() = default;
@@ -45,5 +47,5 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 		void MakeTexture(FPTextureInfo& TextureInfo);
 
 		//Material Load
-		void LoadMaterial(std::string MaterialPat, AssetOwner EngineAsset);
+		void LoadMaterial(std::string MaterialPath, AssetOwner EngineAsset);
 };

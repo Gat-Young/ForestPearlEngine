@@ -29,8 +29,11 @@ private:
 	std::unordered_map<std::string, std::pair<void*, void*> > PixelShaderData;
 
 	//Texture
-	std::unordered_map < std::string, FPTextureInfo> LoadedTextureData;
+	std::unordered_map<std::string, FPTextureInfo> LoadedTextureData;
 	std::unordered_map<std::string, FPTextureData> TextureData;
+
+	//Material
+	std::unordered_map<std::string, FPMaterialData> LoadedMaterialData;
 
 public:
 	FPAssetManager() = default;
@@ -91,6 +94,11 @@ public:
 	FPTextureInfo& GetTextureInfoData(std::string TextureName);
 	void AddTextureInfoData(std::string TextureName, FPTextureInfo& TextureData);
 	bool HasTextureInfoData(std::string TextureName);
+
+	//Material
+	FPMaterialData& GetMaterialData(std::string MaterialName);
+	void AddMaterialData(std::string MaterialName, FPMaterialData& MaterialData);
+	bool HasMaterialData(std::string MaterialName);
 
 	//Level
 	bool HasLevelData(std::string LevelName);

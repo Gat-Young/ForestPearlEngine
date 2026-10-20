@@ -52,6 +52,33 @@ void LoadClassRegist()
 void LoadAssets()
 {
 	FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
+
+	//Texture Load
+
+	//ToonLink Texture
+	AssetLoader->LoadTexture("Clothes_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Equipment_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Eye_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Eyebrow0_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Eyebrow1_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Eyelid_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Hair_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Mouth0_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Mouth1_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Mouth2_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Mouth3_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Mouth4_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Mouth5_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Mouth6_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Mouth7_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Mouth8_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Mouth9_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Mouth10_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Pupil_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Skin_png.json", AssetOwner::User);
+
+
+	//FBX Load
 	AssetLoader->LoadFbxData("ToonLink/ToonLinkTriangle.fbx", AssetOwner::User);
 	AssetLoader->LoadFbxData("ToonLink/ToonLink.fbx", AssetOwner::User);
 	AssetLoader->LoadFbxData("Terrain/Terrain.fbx", AssetOwner::User);

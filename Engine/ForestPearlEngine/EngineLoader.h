@@ -25,7 +25,7 @@ void LoadEngineAssets()
 	AssetLoader->LoadStaticMesh("Plane_StaticMesh", "Plane_StaticMesh.json", AssetOwner::Engine);
 
 	//Texture Load
-	AssetLoader->LoadTexture("Default_Texture512", "Default_Texture512.json", AssetOwner::Engine);
-	AssetLoader->LoadTexture("Checker_bmp", "Checker_bmp.json", AssetOwner::Engine);
-	AssetLoader->LoadTexture("Checker_dds", "Checker_dds.json", AssetOwner::Engine);
+	AssetLoader->LoadTexture("Default_Texture512.json", AssetOwner::Engine);
+	AssetLoader->LoadTexture("Checker_bmp.json", AssetOwner::Engine);
+	AssetLoader->LoadTexture("Checker_dds.json", AssetOwner::Engine);
 };

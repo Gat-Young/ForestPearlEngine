@@ -45,5 +45,5 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 
 		void LoadStaticMesh(std::string StaticMeshName, std::string StaticMeshPath, AssetOwner EngineAsset);
 
-		void LoadTexture(std::string TextureName, std::string TexturePath, AssetOwner EngineAsset);
+		void LoadTexture(std::string TexturePath, AssetOwner EngineAsset);
 };

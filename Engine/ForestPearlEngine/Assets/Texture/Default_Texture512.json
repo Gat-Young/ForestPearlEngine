@@ -1,8 +1,5 @@
 {
-  "TextureData": [
-    {
-      "Path": "Default_Texture512.dds",
-      "Type": "DDS"
-    }
-  ]
+  "Name" : "Default_Texture512",
+  "Path": "Default_Texture512.dds",
+  "Type": "DDS"
 }

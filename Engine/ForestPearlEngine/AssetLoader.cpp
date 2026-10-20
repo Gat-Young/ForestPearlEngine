@@ -676,21 +676,16 @@ void FPAssetLoader::LoadStaticMesh(std::string StaticMeshName, std::string Stati
 	AssetManager->AddStaticMeshData(StaticMeshName, &Data);
 }
 
-void FPAssetLoader::LoadTexture(std::string TextureName, std::string TexturePath, AssetOwner EngineAsset)
+void FPAssetLoader::LoadTexture(std::string TexturePath, AssetOwner EngineAsset)
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-	if (AssetManager->HasTextureData(TextureName))
-	{
-		std::cout << "같은 이름의 Texture가 존재합니다." << "\n";
-		return;
-	}
 
 	std::ifstream File(FPPathManager::Get().GetAssetPath("Texture/" + TexturePath));
 	if (EngineAsset == AssetOwner::Engine) File = std::ifstream(FPPathManager::Get().GetEngineAssetPath("Texture/" + TexturePath));
 
 	if (!File.is_open())
 	{
-		std::cerr << TextureName << ".json 파일 열기 실패\n";
+		std::cerr << TexturePath << "파일 열기 실패\n";
 		return;
 	}
 
@@ -710,13 +705,18 @@ void FPAssetLoader::LoadTexture(std::string TextureName, std::string TexturePath
 	}
 
 	FPTextureData Data;
+	std::string TextureName;
 	std::string TextureResourcePath;
 	std::string TextureType;
 
-	for (const json& TextureData : JsonStaticMeshData["TextureData"])
+	TextureName = JsonStaticMeshData["Name"].get<std::string>();
+	TextureResourcePath = JsonStaticMeshData["Path"].get<std::string>();
+	TextureType = JsonStaticMeshData["Type"].get<std::string>();
+
+	if (AssetManager->HasTextureData(TextureName))
 	{
-		TextureResourcePath = TextureData["Path"];
-		TextureType = TextureData["Type"];
+		std::cout << "같은 이름의 Texture가 존재합니다." << "\n";
+		return;
 	}
 
 	//이 시점에서 Texture를 만들어서 넘김

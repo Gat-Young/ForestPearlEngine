@@ -100,6 +100,9 @@
     <Filter Include="Assets\Texture">
       <UniqueIdentifier>{4dfb6818-38eb-4819-910d-9d130b63ed0b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\Material">
+      <UniqueIdentifier>{76010f39-ce50-4bb6-9e2a-1b8fbe47e78d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -185,9 +188,6 @@
     </ClInclude>
     <ClInclude Include="Utility\FPPathManager.h">
       <Filter>Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="Define\FPDataDefine.h">
-      <Filter>Define</Filter>
     </ClInclude>
     <ClInclude Include="EngineLoader.h">
       <Filter>Header Files</Filter>
@@ -419,9 +419,6 @@
     <ClCompile Include="FPStaticMesh.cpp">
       <Filter>RenderAsset</Filter>
     </ClCompile>
-    <ClCompile Include="Define\FPDataDefine.cpp">
-      <Filter>Define</Filter>
-    </ClCompile>
     <ClCompile Include="FPGizmoComponent.cpp">
       <Filter>Component\Gizmo</Filter>
     </ClCompile>
@@ -509,6 +506,9 @@
     </None>
     <None Include="Assets\Texture\Default_Texture512.json">
       <Filter>Assets\Texture</Filter>
+    </None>
+    <None Include="Assets\Material\DefaultMaterial.json">
+      <Filter>Assets\Material</Filter>
     </None>
   </ItemGroup>
 </Project>

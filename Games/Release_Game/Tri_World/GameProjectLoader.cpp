@@ -77,7 +77,50 @@ void LoadAssets()
 	AssetLoader->LoadTexture("Pupil_png.json", AssetOwner::User);
 	AssetLoader->LoadTexture("Skin_png.json", AssetOwner::User);
 
+	//Material Load
+	AssetLoader->LoadMaterial("clothes.002_ToonLink_BodyAndHat_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("equipment.002_ToonLink_Buckle_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("pupil.002_ToonLink_Eye_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("eyebrow0.002_ToonLink_EyeBrow1_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("skin.002_ToonLink_Face_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("hair.002_ToonLink_Hair_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("skin.002_ToonLink_Hand_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("eye.002_ToonLink_LeftEyeBackground_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("equipment.002_ToonLink_MasterSword_Scabbard_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("equipment.002_ToonLink_MasterSword_Handle_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("equipment.002_ToonLink_MasterSword_Blade_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("equipment.002_ToonLink_MasterSword_BackHandle_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("mouth0.002_ToonLink_Mouse1_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("eye.002_ToonLink_RightEyeBackground_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("equipment.002_ToonLink_Shield_Back_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("equipment.002_ToonLink_Shield_Handle_StaticMesh_MaterialInstance.json", AssetOwner::User);
 
+	//Static_Mesh Load
+	AssetLoader->LoadStaticMesh("Terrain_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("Tree_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("Tree_Trunk_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("Windmill_Body_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("Windmill_Wing_StaticMesh.json", AssetOwner::User);
+
+	//Link Static Mesh
+	AssetLoader->LoadStaticMesh("ToonLink_BodyAndHat_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLink_Buckle_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLink_Eye_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLink_EyeBrow1_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLink_Face_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLink_Hair_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLink_Hand_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLink_LeftEyeBackground_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLink_MasterSword_Scabbard_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLink_MasterSword_Handle_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLink_MasterSword_Blade_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLink_MasterSword_BackHandle_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLink_Mouse1_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLink_RightEyeBackground_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLink_Shield_Back_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("ToonLink_Shield_Handle_StaticMesh.json", AssetOwner::User);
+
+	//이건 나중에 Engine에서 Lazy 하게 생성
 	//FBX Load
 	AssetLoader->LoadFbxData("ToonLink/ToonLinkTriangle.fbx", AssetOwner::User);
 	AssetLoader->LoadFbxData("ToonLink/ToonLink.fbx", AssetOwner::User);
@@ -85,14 +128,6 @@ void LoadAssets()
 	AssetLoader->LoadFbxData("Tree/Tree.fbx", AssetOwner::User);
 	AssetLoader->LoadFbxData("Windmill/Windmill_Body.fbx", AssetOwner::User);
 	AssetLoader->LoadFbxData("Windmill/Windmill_Wing.fbx", AssetOwner::User);
-
-	//Static_Mesh Load
-	AssetLoader->LoadStaticMesh("Terrain_StaticMesh", "Terrain_StaticMesh.json", AssetOwner::User);
-	AssetLoader->LoadStaticMesh("ToonLink_StaticMesh", "ToonLink_StaticMesh.json", AssetOwner::User);
-	AssetLoader->LoadStaticMesh("ToonLinkTriangle_StaticMesh", "ToonLinkTriangle_StaticMesh.json", AssetOwner::User);
-	AssetLoader->LoadStaticMesh("Tree_StaticMesh", "Tree_StaticMesh.json", AssetOwner::User);
-	AssetLoader->LoadStaticMesh("Windmill_Body_StaticMesh", "Windmill_Body_StaticMesh.json", AssetOwner::User);
-	AssetLoader->LoadStaticMesh("Windmill_Wing_StaticMesh", "Windmill_Wing_StaticMesh.json", AssetOwner::User);
 }
 
 std::string ReturnStartLevel()

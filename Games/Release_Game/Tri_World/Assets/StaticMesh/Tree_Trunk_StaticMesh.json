@@ -1,0 +1,14 @@
+{
+    "Name": "Tree_Trunk_StaticMesh",
+    "NodeName": "Tree_Trunk",
+    "MeshData": [
+        {
+            "Path": "Tree/Tree.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "DefaultMaterial"
+    }
+}

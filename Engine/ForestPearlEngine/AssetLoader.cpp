@@ -10,6 +10,19 @@
 
 using json = nlohmann::json;
 
+// 색상 JSON 읽기
+COLOR_VERTEX ReadColor(const json& ColorJson)
+{
+	COLOR_VERTEX Color;
+
+	Color.r = ColorJson.value("r", 1.0f);
+	Color.g = ColorJson.value("g", 1.0f);
+	Color.b = ColorJson.value("b", 1.0f);
+	Color.a = ColorJson.value("a", 1.0f);
+
+	return Color;
+}
+
 void FPAssetLoader::MakeGizmoVertexBuffer(std::vector<struct VERTEX>& Mesh, const std::string& GizemoMeshPath)
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
@@ -413,19 +426,6 @@ FPMeshData FPAssetLoader::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node
 
 }
 
-COLOR_VERTEX FPAssetLoader::ReadColor(const json& ColorJson)
-{
-
-	COLOR_VERTEX Color;
-
-	Color.r = ColorJson.value("r", 1.0f);
-	Color.g = ColorJson.value("g", 1.0f);
-	Color.b = ColorJson.value("b", 1.0f);
-	Color.a = ColorJson.value("a", 1.0f);
-
-	return Color;
-}
-
 //Level 정보를 저장
 void FPAssetLoader::LoadLevelData(std::string LevelName, std::string LevelPath, AssetOwner EngineAsset)
 {
@@ -584,21 +584,17 @@ void FPAssetLoader::LoadPixelShader(std::string ShaderPath, std::string PS_Main,
 	AssetManager->AddPixelShader(ShaderPath, PixelShader, PSCode);
 }
 
-void FPAssetLoader::LoadStaticMesh(std::string StaticMeshName, std::string StaticMeshPath, AssetOwner EngineAsset)
+//StaticMesh
+void FPAssetLoader::LoadStaticMesh(std::string StaticMeshPath, AssetOwner EngineAsset)
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-	if (AssetManager->HasStaticMeshData(StaticMeshName))
-	{
-		std::cout << "같은 이름의 StaticMesh가 존재합니다." << "\n";
-		return;
-	}
 
 	std::ifstream File(FPPathManager::Get().GetAssetPath("StaticMesh/" + StaticMeshPath));
 	if (EngineAsset == AssetOwner::Engine) File = std::ifstream(FPPathManager::Get().GetEngineAssetPath("StaticMesh/" + StaticMeshPath));
 
 	if (!File.is_open())
 	{
-		std::cerr << StaticMeshName << ".json 파일 열기 실패\n";
+		std::cerr << StaticMeshPath << ".json 파일 열기 실패\n";
 		return;
 	}
 
@@ -618,75 +614,79 @@ void FPAssetLoader::LoadStaticMesh(std::string StaticMeshName, std::string Stati
 	}
 
 	FPStaticMeshData Data;
+	Data.Name = JsonStaticMeshData.at("Name").get<std::string>();
+	Data.NodeName = JsonStaticMeshData.at("NodeName").get<std::string>();
 
-	for (const json& MeshData : JsonStaticMeshData["MeshData"])
+	if (AssetManager->HasStaticMeshData(Data.Name))
 	{
-		Data.MeshPath = MeshData["Path"];
-		Data.MeshTopology = MeshData["Topology"];
+		std::cout << "같은 이름의 StaticMesh가 존재합니다." << "\n";
+		return;
+	}
+
+	// MeshData 배열
+	if (JsonStaticMeshData.contains("MeshData") && JsonStaticMeshData.at("MeshData").is_array())
+	{
+		for (const auto& Mesh : JsonStaticMeshData.at("MeshData"))
+		{
+			Data.MeshPath = Mesh.at("Path").get<std::string>();
+
+			Data.MeshTopology = StringToTopology(Mesh.at("Topology").get<std::string>());
+		}
 	}
 
 	if (JsonStaticMeshData.contains("Sockets") && JsonStaticMeshData["Sockets"].is_array())
 	{
-		if (!JsonStaticMeshData["Sockets"].empty())
+		for (const json& SocketData : JsonStaticMeshData["Sockets"])
 		{
-			for (const json& SocketData : JsonStaticMeshData["Sockets"])
-			{
-				std::string SocketName = SocketData["Name"];
+			std::string SocketName = SocketData["Name"];
 
-				const json& Transform = SocketData["Transform"];
-				const json& Location = Transform["Location"];
-				const json& Rotation = Transform["Rotation"];
-				const json& Scale = Transform["Scale"];
+			const json& Transform = SocketData["Transform"];
+			const json& Location = Transform["Location"];
+			const json& Rotation = Transform["Rotation"];
+			const json& Scale = Transform["Scale"];
 
-				float LocationX = Location["x"];
-				float LocationY = Location["y"];
-				float LocationZ = Location["z"];
+			float LocationX = Location["x"];
+			float LocationY = Location["y"];
+			float LocationZ = Location["z"];
 
-				float RotationX = Rotation["x"];
-				float RotationY = Rotation["y"];
-				float RotationZ = Rotation["z"];
+			float RotationX = Rotation["x"];
+			float RotationY = Rotation["y"];
+			float RotationZ = Rotation["z"];
 
-				float ScaleX = Scale["x"];
-				float ScaleY = Scale["y"];
-				float ScaleZ = Scale["z"];
+			float ScaleX = Scale["x"];
+			float ScaleY = Scale["y"];
+			float ScaleZ = Scale["z"];
 
-				SOCKET_TRANSFORM SocketTransform;
-				SocketTransform.SocketName = SocketName;
-				SocketTransform.Location_x = LocationX;
-				SocketTransform.Location_y = LocationY;
-				SocketTransform.Location_z = LocationZ;
+			SOCKET_TRANSFORM SocketTransform;
+			SocketTransform.SocketName = SocketName;
+			SocketTransform.Location_x = LocationX;
+			SocketTransform.Location_y = LocationY;
+			SocketTransform.Location_z = LocationZ;
 
-				SocketTransform.Rotation_x = RotationX;
-				SocketTransform.Rotation_y = RotationY;
-				SocketTransform.Rotation_z = RotationZ;
+			SocketTransform.Rotation_x = RotationX;
+			SocketTransform.Rotation_y = RotationY;
+			SocketTransform.Rotation_z = RotationZ;
 
-				SocketTransform.Scale_x = ScaleX;
-				SocketTransform.Scale_y = ScaleY;
-				SocketTransform.Scale_Z = ScaleZ;
+			SocketTransform.Scale_x = ScaleX;
+			SocketTransform.Scale_y = ScaleY;
+			SocketTransform.Scale_Z = ScaleZ;
 
-				Data.Sockets.push_back(SocketTransform);
-			}
+			Data.Sockets.push_back(SocketTransform);
 		}
 	}
 
 
 	//Material 값 일단 Maapping해서 들고 있기
-	std::string Material;
-
-	if (JsonStaticMeshData.contains("Material") && JsonStaticMeshData["Material"].is_string())
+	if (JsonStaticMeshData.contains("Material") && JsonStaticMeshData.at("Material").is_object())
 	{
-		Material = JsonStaticMeshData["Material"].get<std::string>();
+		const json& Material = JsonStaticMeshData.at("Material");
 
-		if (Material.empty())
-		{
-			// Material 없음
-			Material.clear();
-		}
+		Data.MaterialName = Material.value("Name", std::string{});
 	}
 
-	Data.MaterialName = JsonStaticMeshData["Material"];
+	Data.Owner = EngineAsset;
 
-	AssetManager->AddStaticMeshData(StaticMeshName, &Data);
+	AssetManager->AddStaticMeshData(Data.Name, &Data);
 }
 
 //Texture
@@ -731,48 +731,9 @@ void FPAssetLoader::LoadTexture(std::string TexturePath, AssetOwner EngineAsset)
 		return;
 	}
 
-	//DX Texture 객체 생성
-	MakeTexture(TextureInfo);
-
 	//AssetManager에 Load한 정보 등록
 	AssetManager->AddTextureInfoData(TextureInfo.Name, TextureInfo);
 }
-
-void FPAssetLoader::MakeTexture(FPTextureInfo& TextureInfo)
-{
-	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-
-	//이 시점에서 Texture를 만들어서 넘김
-	FPTextureData Data;
-
-	std::string TextureResourcePath = TextureInfo.Path;
-
-	if (TextureInfo.Owner == AssetOwner::Engine)
-	{
-		TextureResourcePath = FPPathManager::Get().GetEngineAssetPath("TextureResource/" + TextureResourcePath);
-	}
-	else
-	{
-		TextureResourcePath = FPPathManager::Get().GetAssetPath("TextureResource/" + TextureResourcePath);
-	}
-
-	if (TextureInfo.Type == "WIC")
-	{
-		RenderingDevice::GetRenderingDevice().CreateWICTextureFromFile(TextureResourcePath, &Data.TextureResource);
-	}
-
-	if (TextureInfo.Type == "DDS")
-	{
-		RenderingDevice::GetRenderingDevice().CreateDDSTextureFromFile(TextureResourcePath, &Data.TextureResource);
-	}
-
-	RenderingDevice::GetRenderingDevice().GetTextureDesc(Data.TextureResource, &Data.TextureDESC);
-
-	AssetManager->AddTextureData(TextureInfo.Name, Data);
-}
-
-//Material
-
 
 //Material Data Loader
 void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsset)
@@ -826,16 +787,14 @@ void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsse
 	{
 		for (const auto& Texture : JsonMaterialData.at("Texture"))
 		{
-			std::string Name;
-			Name =	Texture.at("Name").get<std::string>();
-			unsigned int Slot;
-				Info.Slot =
-					Texture.at("Slot").get<int>();
+			std::string Name = Texture.at("Name").get<std::string>();
+			unsigned int Slot = Texture.at("Slot").get<unsigned int>();
+			FPSamplerType SamplerType = StringToSamplerType(Texture.at("SamplerType").get<std::string>());
 
-				Result.Textures.push_back(Info);
-			}
+			MaterialData.Textures.push_back({Slot, Name, SamplerType});
+		}
 	}
+	MaterialData.Owner = EngineAsset;
 
-	OutMaterial = std::move(Result);
-
+	AssetManager->AddMaterialData(MaterialData.Name, MaterialData);
 }

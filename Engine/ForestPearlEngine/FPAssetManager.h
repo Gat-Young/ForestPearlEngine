@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include "../ForestPearlEngine/Define/FPMath.h"
 #include "FPGameInstanceSubSystem.h"
-#include "Define/FPDataDefine.h"
+#include "Renderers/FPRenderingCommon.h"
 
 class FPStaticMesh;
 class FPMaterialInterface;
@@ -89,6 +89,7 @@ public:
 	FPTextureData& GetTextureData(std::string TextureName);
 	void AddTextureData(std::string TextureName, FPTextureData& TextureData);
 	bool HasTextureData(std::string TextureName);
+	void MakeTexture(FPTextureInfo& TextureInfo);
 
 	//Texture Info
 	FPTextureInfo& GetTextureInfoData(std::string TextureName);

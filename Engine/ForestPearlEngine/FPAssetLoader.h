@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <unordered_map>
-#include "Define/FPDataDefine.h"
+#include "Renderers/FPRenderingCommon.h"
 #include "Libraries/Ufbx/ufbx.h"
 #include "../ForestPearlEngine/Define/FPMath.h"
 #include "FPGameInstanceSubSystem.h"
@@ -11,9 +11,6 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 	private:
 		std::string ConvertUfbxString(ufbx_string String);
 		struct FPMeshData ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node* Node);
-
-		// 색상 JSON 읽기
-		COLOR_VERTEX ReadColor(const json& ColorJson);
 	public:
 		FPAssetLoader() = default;
 		~FPAssetLoader() = default;
@@ -40,11 +37,10 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 		void LoadPixelShader(std::string ShaderPath, std::string PS_Main, std::string ShaderModel, AssetOwner EngineAsset);
 
 		//StaticMesh Load
-		void LoadStaticMesh(std::string StaticMeshName, std::string StaticMeshPath, AssetOwner EngineAsset);
+		void LoadStaticMesh(std::string StaticMeshPath, AssetOwner EngineAsset);
 
 		//Texture Load
 		void LoadTexture(std::string TexturePath, AssetOwner EngineAsset);
-		void MakeTexture(FPTextureInfo& TextureInfo);
 
 		//Material Load
 		void LoadMaterial(std::string MaterialPath, AssetOwner EngineAsset);

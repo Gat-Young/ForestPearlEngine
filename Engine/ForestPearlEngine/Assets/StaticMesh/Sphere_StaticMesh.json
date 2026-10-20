@@ -1,4 +1,7 @@
 {
+  "Name": "Sphere_StaticMesh",
+  "NodeName": "Sphere",
+
   "MeshData": [
     {
       "Path": "Primitive_Model/Sphere.fbx",
@@ -8,5 +11,7 @@
 
   "Sockets": [],
 
-  "Material": ""
+  "Material": {
+    "Name": "DefaultMaterial"
+  }
 }

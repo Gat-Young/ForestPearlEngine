@@ -5,6 +5,7 @@
 #include "FPGameProjectClassRegistry.h"
 #include "FPMaterialInterface.h"
 #include "FPStaticMesh.h"
+#include "Renderers/RenderingDevice.h"
 
 ////////////////////////////
 //
@@ -287,6 +288,41 @@ bool FPAssetManager::HasTextureData(std::string TextureName)
 	return false;
 }
 
+void FPAssetManager::MakeTexture(FPTextureInfo& TextureInfo)
+{
+	//이 시점에서 Texture를 만들어서 넘김
+	FPTextureData Data;
+
+	std::string TextureResourcePath = TextureInfo.Path;
+
+	if (TextureInfo.Owner == AssetOwner::Engine)
+	{
+		TextureResourcePath = FPPathManager::Get().GetEngineAssetPath("TextureResource/" + TextureResourcePath);
+	}
+	else
+	{
+		TextureResourcePath = FPPathManager::Get().GetAssetPath("TextureResource/" + TextureResourcePath);
+	}
+
+	if (TextureInfo.Type == "WIC")
+	{
+		RenderingDevice::GetRenderingDevice().CreateWICTextureFromFile(TextureResourcePath, &Data.TextureResource);
+	}
+
+	if (TextureInfo.Type == "DDS")
+	{
+		RenderingDevice::GetRenderingDevice().CreateDDSTextureFromFile(TextureResourcePath, &Data.TextureResource);
+	}
+
+	RenderingDevice::GetRenderingDevice().GetTextureDesc(Data.TextureResource, &Data.TextureDESC);
+
+	AddTextureData(TextureInfo.Name, Data);
+}
+
+////////////////////////////
+//
+// Texture Info
+//
 FPTextureInfo& FPAssetManager::GetTextureInfoData(std::string TextureName)
 {
 	return this->LoadedTextureData[TextureName];

@@ -1,4 +1,7 @@
 {
+  "Name": "Cube_StaticMesh",
+  "NodeName": "Cube",
+
   "MeshData": [
     {
       "Path": "Primitive_Model/Cube.fbx",
@@ -8,5 +11,7 @@
 
   "Sockets": [],
 
-  "Material": ""
+  "Material": {
+    "Name" : "DefaultMaterial"
+  }
 }

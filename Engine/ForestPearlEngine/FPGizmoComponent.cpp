@@ -1,7 +1,7 @@
 #include "FPGizmoComponent.h"
 #include "FPAssetLoader.h"
 #include "FPGameInstance.h"
-#include "Define/FPDataDefine.h"
+#include "Renderers/FPRenderingCommon.h"
 
 void FPGizmoComponent::MakeVertexBuffer(std::vector<FPGIZMO_VERTEX>& GizmoMesh, const std::string& GizmoMeshPath)
 {

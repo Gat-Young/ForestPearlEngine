@@ -1,0 +1,32 @@
+{
+    "Material": {
+        "Name": "DefaultMaterial",
+        "VertexShader": "DefaultVertexShader.vso",
+        "PixelShader": "DefaultPixelShader.pso",
+        "Ambient": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0,
+            "a": 1.0
+        },
+        "BaseColor": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0,
+            "a": 1.0
+        },
+        "Diffuse": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0,
+            "a": 1.0
+        }
+    },
+    "Texture": [
+      {
+        "Name": "Default_Texture512",
+        "Slot": 0,
+        "SamplerType": "Sampler_Clamp"
+      }
+    ]
+}

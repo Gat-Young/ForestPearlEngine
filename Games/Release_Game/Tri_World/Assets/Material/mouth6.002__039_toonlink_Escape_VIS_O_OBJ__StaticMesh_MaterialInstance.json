@@ -1,8 +1,8 @@
 {
     "Material": {
         "Name": "mouth6.002__039_toonlink_Escape_VIS_O_OBJ__StaticMesh_MaterialInstance",
-        "VertexShader": "DefaultVertexShader.vso",
-        "PixelShader": "DefaultPixelShader.pso",
+        "VertexShader": "DefaultVertexShader",
+        "PixelShader": "DefaultPixelShader",
         "Ambient": {
             "r": 0.05087608844041824,
             "g": 0.05087608844041824,

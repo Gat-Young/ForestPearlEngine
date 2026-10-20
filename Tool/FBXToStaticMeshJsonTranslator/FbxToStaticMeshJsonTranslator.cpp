@@ -270,8 +270,8 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 
 	json MaterialInstanceBody;
 	MaterialInstanceBody["Name"] = MaterialInstanceName;
-	MaterialInstanceBody["VertexShader"] = "DefaultVertexShader.vso";
-	MaterialInstanceBody["PixelShader"] = "DefaultPixelShader.pso";
+	MaterialInstanceBody["VertexShader"] = "DefaultVertexShader";
+	MaterialInstanceBody["PixelShader"] = "DefaultPixelShader";
 	MaterialInstanceBody["Ambient"] = AmbientJson;
 	MaterialInstanceBody["BaseColor"] = BaseColorJson;
 	MaterialInstanceBody["Diffuse"] = DiffuseJson;

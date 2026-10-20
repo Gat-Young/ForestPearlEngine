@@ -1,8 +1,8 @@
 {
     "Material": {
         "Name": "skin.002__007_Face_O_OBJ__StaticMesh_MaterialInstance",
-        "VertexShader": "DefaultVertexShader.vso",
-        "PixelShader": "DefaultPixelShader.pso",
+        "VertexShader": "DefaultVertexShader",
+        "PixelShader": "DefaultPixelShader",
         "Ambient": {
             "r": 0.05087608844041824,
             "g": 0.05087608844041824,

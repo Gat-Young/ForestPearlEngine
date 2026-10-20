@@ -1,8 +1,8 @@
 {
     "Material": {
         "Name": "hair.002__043_Gamemodel__StaticMesh_MaterialInstance",
-        "VertexShader": "DefaultVertexShader.vso",
-        "PixelShader": "DefaultPixelShader.pso",
+        "VertexShader": "DefaultVertexShader",
+        "PixelShader": "DefaultPixelShader",
         "Ambient": {
             "r": 0.05087608844041824,
             "g": 0.05087608844041824,

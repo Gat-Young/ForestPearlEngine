@@ -331,6 +331,9 @@
     <None Include="Assets\Texture\Skin_png.json">
       <Filter>Assets\Texture</Filter>
     </None>
+    <None Include="Assets\StaticMesh\Tree_Trunk_StaticMesh.json">
+      <Filter>Assets\StaticMesh</Filter>
+    </None>
     <None Include="Assets\Material\clothes.002__042_Gamemodel__StaticMesh_MaterialInstance.json">
       <Filter>Assets\Material</Filter>
     </None>
@@ -654,9 +657,6 @@
     </None>
     <None Include="Assets\Material\skin.002_ToonLink_Hand_StaticMesh_MaterialInstance.json">
       <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\StaticMesh\Tree_Trunk_StaticMesh.json">
-      <Filter>Assets\StaticMesh</Filter>
     </None>
   </ItemGroup>
 </Project>

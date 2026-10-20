@@ -1,0 +1,35 @@
+{
+    "Material": {
+        "Name": "pupil.002__026_toonlink_eye_VIS_O_OBJ__StaticMesh_MaterialInstance",
+        "VertexShader": "DefaultVertexShader.vso",
+        "PixelShader": "DefaultPixelShader.pso",
+        "Ambient": {
+            "r": 0.05087608844041824,
+            "g": 0.05087608844041824,
+            "b": 0.05087608844041824,
+            "a": 1.0
+        },
+        "BaseColor": {
+            "r": 0.800000011920929,
+            "g": 0.800000011920929,
+            "b": 0.800000011920929,
+            "a": 1.0
+        },
+        "Diffuse": {
+            "r": 0.800000011920929,
+            "g": 0.800000011920929,
+            "b": 0.800000011920929,
+            "a": 1.0
+        }
+    },
+    "Texture": [
+        {
+            "Name": "Pupil_png",
+            "Slot": 0
+        },
+        {
+            "Name": "Pupil_png",
+            "Slot": 1
+        }
+    ]
+}

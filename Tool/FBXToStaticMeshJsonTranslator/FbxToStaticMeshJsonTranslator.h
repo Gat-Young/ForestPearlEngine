@@ -36,6 +36,7 @@ private:
 	// 메쉬에 연결된 첫번째 머티리얼을 처리한다.
 	// - 기본 Material("<재질명>_Material.json")은 재질당 한 번만 저장한다.
 	// - 이 메쉬 전용 Material Instance("<재질명>_<StaticMeshName>_MaterialInstance.json")를 저장한다. (기본 머티리얼 색상 복제 + Texture 배열)
+	// - 두 json 모두 VertexShader/PixelShader는 FBX에 정보가 없으므로 기본값("DefaultVertexShader.vso" / "DefaultPixelShader.pso")으로 채운다.
 	// StaticMesh json에 들어갈 "Material" 참조 항목(Material Instance 이름만 있는 형태)을 반환한다.
 	// 연결된 머티리얼이 없으면 이름이 빈 Material 항목만 반환한다.
 	static nlohmann::ordered_json ExportMeshMaterial(const ufbx_mesh& Mesh, const std::string& StaticMeshName, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedMaterialNames, std::set<std::string>& ExportedTextureNames);

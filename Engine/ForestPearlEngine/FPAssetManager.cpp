@@ -62,8 +62,8 @@ void FPAssetManager::MakeMeshBuffer(FPMeshData& MeshData)
 	AddPositionVertexBuffer(MeshData.Name, PositionVB, MeshData.Position_Vertices.size() * sizeof(POSITION_VERTEX), MeshData.Position_Vertices.size(), sizeof(POSITION_VERTEX), 0);
 	AddColorVertexBuffer(MeshData.Name, ColorVB, MeshData.Color_Vertices.size() * sizeof(COLOR_VERTEX), MeshData.Color_Vertices.size(), sizeof(COLOR_VERTEX), 0);
 	AddNormalVertexBuffer(MeshData.Name, NormalVB, MeshData.Normal_Vertices.size() * sizeof(NORMAL_VERTEX), MeshData.Normal_Vertices.size(), sizeof(NORMAL_VERTEX), 0);
-	AddUVVertexBuffer(MeshData.Name, UVVB, MeshData.UV_Vertices.size() * sizeof(NORMAL_VERTEX), MeshData.Normal_Vertices.size(), sizeof(NORMAL_VERTEX), 0);
-	AddIndexBuffer(MeshData.Name, Index32B, MeshData.Index.size() * sizeof(INDEX_32BIT), MeshData.Index.size() * 3, MeshData.Index.size(), sizeof(NORMAL_VERTEX), 0);
+	AddUVVertexBuffer(MeshData.Name, UVVB, MeshData.UV_Vertices.size() * sizeof(UV_VERTEX), MeshData.UV_Vertices.size(), sizeof(UV_VERTEX), 0);
+	AddIndexBuffer(MeshData.Name, Index32B, MeshData.Index.size() * sizeof(INDEX_32BIT), MeshData.Index.size() * 3, MeshData.Index.size(), sizeof(INDEX_32BIT), 0);
 }
 
 //Vertex Shader 제작
@@ -415,6 +415,9 @@ void FPAssetManager::LoadFbxData(FPStaticMeshData& StaticMeshData)
 		if (!Node) { continue; }
 
 		const std::string NodeName = ConvertUfbxString(Node->name);
+		//std::cout << NodeName << "\n";
+
+		if (NodeName != StaticMeshData.NodeName) { continue; }
 
 		// 본, 카메라, 라이트, 빈 노드 등 메시가 없는 요소는 건너 뜀
 		if (!Node->mesh) { continue; }
@@ -424,6 +427,7 @@ void FPAssetManager::LoadFbxData(FPStaticMeshData& StaticMeshData)
 		//메시 정점 추출
 		FPMeshData MeshData = ConvertUfbxMesh(Mesh, Node);
 		MeshData.Name = StaticMeshData.Name;
+
 
 		if (MeshData.NodeName.empty())
 		{
@@ -566,7 +570,7 @@ FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_nod
 			UV_VERTEX UVVertex{};
 
 			UVVertex.u = static_cast<float>(UV.x);
-			UVVertex.v = static_cast<float>(UV.y);
+			UVVertex.v = 1.0f - static_cast<float>(UV.y);
 
 			Result.UV_Vertices.push_back(UVVertex);
 
@@ -899,10 +903,8 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 
 	for (auto& [Slot, TextureName, SamplerType] : MaterialData.Textures)
 	{
-		if (Slot != 0)
-		{
-			Material->AddTexture(Slot);
-		}
+
+		Material->AddTexture(Slot);
 		Material->SetTexture(Slot, TextureName, SamplerType);
 	}
 

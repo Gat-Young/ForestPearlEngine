@@ -26,6 +26,7 @@ void LoadLevel()
 {
 	FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
 	AssetLoader->LoadLevelData("TriWorld", "TriWorld.json", AssetOwner::User);
+	AssetLoader->LoadLevelData("ToonLink", "ToonLink.json", AssetOwner::User);
 }
 
 void LoadClassRegist()
@@ -123,5 +124,6 @@ void LoadAssets()
 
 std::string ReturnStartLevel()
 {
-	return "TriWorld";
+	return "ToonLink";
+	//return "TriWorld";
 }

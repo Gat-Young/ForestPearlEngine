@@ -482,6 +482,12 @@ void Renderer::MeshRenderPass()
 	{
 		for(const RenderingData::MeshRenderItem& RenderItem : MeshRenderList)
 		{
+			
+			std::cout << RenderItem.MeshPath << "\n";
+			std::cout << RenderItem.TextureList.size() << "\n";
+			std::cout << RenderItem.VertexShaderPath << "\n";
+			std::cout << RenderItem.PixelShaderPath << "\n";
+			
 
 			std::tuple<void*, void*, void*> VertexShaderData = AssetManager->GetVertexShader(RenderItem.VertexShaderPath);
 			std::pair<void*, void*> PixelShaderData = AssetManager->GetPixelShader(RenderItem.PixelShaderPath);
@@ -532,8 +538,6 @@ void Renderer::MeshRenderPass()
 
 			for (const RenderingData::FPSamplerItem& SamplerItem : SamplerList)
 			{
-				std::cout << SamplerItem.Slot << " : " << SamplerItem.SamplerType << "\n";
-
 				Device.PSSetSamplers(SamplerItem.Slot, 1, SamplerItem.SamplerType);
 			}
 
@@ -543,6 +547,13 @@ void Renderer::MeshRenderPass()
 			FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);
 			FPVertexBufferData UVVB = AssetManager->GetUVVertexBuffer(RenderItem.MeshPath);
 			FPIndexBufferData IndexB = AssetManager->GetIndexBuffer(RenderItem.MeshPath);
+
+			std::cout << "<VB Size>" << "\n";
+			std::cout << PositionVB.VB_Cnt << "\n";
+			std::cout << NormalVB.VB_Cnt << "\n";
+			std::cout << ColorVB.VB_Cnt << "\n";
+			std::cout << UVVB.VB_Cnt << "\n";
+			std::cout << IndexB.Index_Cnt << "\n";
 
 			for (RenderingData::FPViewPort& CamViewPort : CamItem.ViewPort)
 			{

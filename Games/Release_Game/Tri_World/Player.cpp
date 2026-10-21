@@ -17,12 +17,16 @@ void Player::Initialize()
 {
 
 	//real Model
+	
+	
 	BodyAndHat = new FPStaticMeshComponent(this, "ToonLink_BodyAndHat_StaticMesh");
 	BodyAndHat->SetupAttachment(RootComponent);
-
+	
+	
 	Buckle = new FPStaticMeshComponent(this, "ToonLink_Buckle_StaticMesh");
 	Buckle->SetupAttachment(RootComponent);
 
+	
 	Eye = new FPStaticMeshComponent(this, "ToonLink_Eye_StaticMesh");
 	Eye->SetupAttachment(RootComponent);
 
@@ -64,6 +68,7 @@ void Player::Initialize()
 
 	Shidld_Hand = new FPStaticMeshComponent(this, "ToonLink_Shield_Handle_StaticMesh");
 	Shidld_Hand->SetupAttachment(RootComponent);
+	
 
 	ShieldPivot = new FPSceneComponent(this);
 	ShieldPivot->SetupAttachment(RootComponent);
@@ -104,7 +109,7 @@ void Player::BeginPlay()
 void Player::Tick()
 {
 	float mov = 180.0f * GetWorld()->GetGameTimer()->DeltaTime();
-	RootComponent->AddLocalRotation(FPVector3{ 0.0f, -mov, 0.0f });
+	//RootComponent->AddLocalRotation(FPVector3{ 0.0f, -mov, 0.0f });
 
 	float RotateSpeed = 360.0f;
 	ShieldPivot->AddLocalRotation(FPVector3{ 0.0f, 0.0f, RotateSpeed * GetWorld()->GetGameTimer()->DeltaTime() });

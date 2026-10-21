@@ -63,6 +63,7 @@ struct VERTEX
 struct FPMeshData
 {
 	std::string Name;
+	std::string NodeName;
 	std::vector<POSITION_VERTEX> Position_Vertices;
 	std::vector<NORMAL_VERTEX> Normal_Vertices;
 	std::vector<COLOR_VERTEX> Color_Vertices;

@@ -28,8 +28,8 @@ void FPGizmoNormalLineComponent::RegistNormalRenderList()
 FPGizmoNormalLineComponent::FPGizmoNormalLineComponent(FPActor* Owner, std::string& StaticMeshPath) : FPPrimitiveComponent(Owner), MeshPath(StaticMeshPath)
 {
 	if (Material == nullptr) { Material = new FPMaterial(); }
-	Material->SetVertexShader("NormalDebugVertexShader.vso");
-	Material->SetPixelShader("NormalDebugPixelShader.pso");
+	Material->SetVertexShader("NormalDebugVertexShader");
+	Material->SetPixelShader("NormalDebugPixelShader");
 	RegistNormalRenderList();
 }
 

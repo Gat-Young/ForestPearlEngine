@@ -58,7 +58,7 @@ void FPAssetManager::MakeMeshBuffer(FPMeshData& MeshData)
 	void* UVVB = MakeUVVertexBuffer(MeshData.UV_Vertices);
 	void* Index32B = MakeIndex32BitBuffer(MeshData.Index);
 
-	//버퍼 생성 후 Map에 정보 등록
+	//버퍼 생성 후 Map에 정보 등록 
 	AddPositionVertexBuffer(MeshData.Name, PositionVB, MeshData.Position_Vertices.size() * sizeof(POSITION_VERTEX), MeshData.Position_Vertices.size(), sizeof(POSITION_VERTEX), 0);
 	AddColorVertexBuffer(MeshData.Name, ColorVB, MeshData.Color_Vertices.size() * sizeof(COLOR_VERTEX), MeshData.Color_Vertices.size(), sizeof(COLOR_VERTEX), 0);
 	AddNormalVertexBuffer(MeshData.Name, NormalVB, MeshData.Normal_Vertices.size() * sizeof(NORMAL_VERTEX), MeshData.Normal_Vertices.size(), sizeof(NORMAL_VERTEX), 0);
@@ -125,7 +125,6 @@ void FPAssetManager::AllAssetDataCreate()
 	//Mesh Buffer 생성
 	for (auto& [AssetName, Asset] : LoadedMeshData)
 	{
-		std::cout << Asset.Name << "\n";
 		MakeMeshBuffer(Asset);
 	}
 
@@ -424,13 +423,12 @@ void FPAssetManager::LoadFbxData(FPStaticMeshData& StaticMeshData)
 
 		//메시 정점 추출
 		FPMeshData MeshData = ConvertUfbxMesh(Mesh, Node);
+		MeshData.Name = StaticMeshData.Name;
 
-		if (MeshData.Name.empty())
+		if (MeshData.NodeName.empty())
 		{
-			MeshData.Name = NodeName;
+			MeshData.NodeName = NodeName;
 		}
-
-		std::cout << MeshData.Name << "\n";
 
 		AddMeshData(StaticMeshData.Name, MeshData);
 	}
@@ -460,7 +458,7 @@ FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_nod
 		return Result;
 	}
 
-	Result.Name = ConvertUfbxString(Mesh->name);
+	Result.NodeName = ConvertUfbxString(Node->name);
 
 	// 각 면을 삼각형화할 때 사용할 임시 코너 인덱스 배열
 	// 삼각형 하나당 코너 인덱스 3개가 필요

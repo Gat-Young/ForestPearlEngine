@@ -52,8 +52,8 @@ void FPGizmoComponent::RegistGizmoRenderList()
 FPGizmoComponent::FPGizmoComponent(FPActor* Owner, const std::string& GizmoMeshPath) : GizmoMeshPath(GizmoMeshPath), FPPrimitiveComponent(Owner)
 {
 	if (Material == nullptr) { Material = new FPMaterial(); }
-	Material->SetVertexShader("DefaultGizmoVertexShader.vso");
-	Material->SetPixelShader("DefaultGizmoPixelShader.pso");
+	Material->SetVertexShader("DefaultGizmoVertexShader");
+	Material->SetPixelShader("DefaultGizmoPixelShader");
 }
 
 

@@ -532,18 +532,17 @@ void Renderer::MeshRenderPass()
 
 			for (const RenderingData::FPSamplerItem& SamplerItem : SamplerList)
 			{
+				std::cout << SamplerItem.Slot << " : " << SamplerItem.SamplerType << "\n";
+
 				Device.PSSetSamplers(SamplerItem.Slot, 1, SamplerItem.SamplerType);
 			}
 
 			//Sampler ¼ÂÆÃ End.
-
-
-			FPStaticMeshData StaticMeshData = AssetManager->GetStaticMeshData_(RenderItem.MeshPath);
-			FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(StaticMeshData.NodeName);
-			FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer(StaticMeshData.NodeName);
-			FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(StaticMeshData.NodeName);
-			FPVertexBufferData UVVB = AssetManager->GetUVVertexBuffer(StaticMeshData.NodeName);
-			FPIndexBufferData IndexB = AssetManager->GetIndexBuffer(StaticMeshData.NodeName);
+			FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData UVVB = AssetManager->GetUVVertexBuffer(RenderItem.MeshPath);
+			FPIndexBufferData IndexB = AssetManager->GetIndexBuffer(RenderItem.MeshPath);
 
 			for (RenderingData::FPViewPort& CamViewPort : CamItem.ViewPort)
 			{

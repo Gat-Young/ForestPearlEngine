@@ -59,6 +59,7 @@ bool ForestPearlEngine::PreInitialize()
     Render = new Renderer(*RenderDevice);
     Render->InitializeRenderer(Hwnd);
     RenderDevice->CreateSamplers();
+    RenderDevice->CreateBlendStateObject();
 
     LoadEngineAssets();
 

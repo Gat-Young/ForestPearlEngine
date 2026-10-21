@@ -121,6 +121,15 @@ enum FPSamplerType
 
 FPSamplerType StringToSamplerType(const std::string& Name);
 
+enum FPBlendingStateType
+{
+	BS_DEFAULT,	// ±‚∫ª »•«’ ∞¥√º
+	BS_ADD,		// µ°º¿
+
+	BS_NULL_,	//√ ±‚»≠
+	BS_MAX_
+};
+
 //Textue µ•¿Ã≈Õ ±∏¡∂√º
 struct FPTextureData
 {

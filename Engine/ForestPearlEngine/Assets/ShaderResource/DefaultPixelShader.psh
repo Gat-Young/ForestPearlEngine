@@ -30,6 +30,8 @@ float4 PS_Main(
     float4 tex = TexDiff.Sample(Smpler, uv);
     
     col = col * tex;
+    
+    col.a = tex.a;
 
     return col;
 }

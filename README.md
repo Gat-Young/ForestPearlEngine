@@ -17,9 +17,12 @@
 [RenderPass](#render-pass) ·
 [Light · Normal](#lambert-light--normal-line) ·
 [Texture](#texture) ·
+[Alpha Blend](#alpha-blend-초기-구현) ·
 [상수 버퍼](#상수-버퍼) ·
 [입력](#-input-시스템) ·
 [에셋](#-assets-구조) ·
+[Material](#material-json) ·
+[FBX 변환 도구](#fbx-변환-도구-fbxtostaticmeshjsontranslator) ·
 [빌드](#-build-시스템) ·
 [VS 설정](#visual-studio-설정) ·
 [사용 가이드](#-콘텐츠-프로그래머-가이드) ·
@@ -41,12 +44,15 @@
 | 🎨 | **DX11 렌더러** | `Renderer`(프레임 흐름) + `RenderingDevice`(D3D11 래퍼) 2계층, **Render List → Render Pass(Mesh / Gizmo / Normal / UI)** 구조, 슬롯 규약이 있는 **상수 버퍼 바인딩**, MSAA x4, Priority 정렬, 멀티 뷰포트 |
 | 💡 | **Lambert Light** | `FPDirectionalLightComponent`가 Light Render List에 등록 → 메시마다 **Local 공간 방향**으로 변환해 VS 상수 버퍼로 전달, 정점 단위 Lambert 계산 (최대 8개) |
 | 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS) → Material **텍스처 슬롯**(PS `t#`) + 샘플러 8종. 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환 |
+| 🎭 | **데이터 기반 Material** | Material도 JSON(`LoadMaterial`)으로 정의. 재질 1개당 **기본 Material** + 메시마다 색상 복제·텍스처 배열을 가진 **Material Instance** 두 단계로 저장하고, `FPAssetManager::MakeMaterial`이 실행 중 `FPMaterial` 인스턴스로 변환 (없으면 `DefaultMaterial` 사용) |
+| 🧪 | **FBX → JSON 변환 도구** | `Tool/FBXToStaticMeshJsonTranslator` 콘솔 툴이 FBX 폴더를 통째로 읽어 **StaticMesh / Material / Material Instance / Texture** JSON을 한 번에 생성 (ToonLink 데모 모델 전체가 이 도구로 변환됨) |
+| 🌫️ | **Alpha Blend** *(초기 구현)* | `MeshRenderPass`가 매 프레임 표준 알파 블렌드 상태(`src·a + dst·(1−a)`, Alpha-to-Coverage)를 걸고 기본 PS가 텍스처 알파를 그대로 출력. 모든 메시에 일괄 적용되며 Z-Order 정렬은 아직 없음 |
 | 🧭 | **Normal Line 디버그** | 별도 `NormalRenderPass`. 정점 1개를 인스턴스 1개로 `DrawInstanced`해 노멀 선(초록)을 그림 (`F6`) |
 | 🎮 | **Input 시스템** | Raw Input(키보드·마우스) + XInput(게임패드) → Input Mapping Context → Input Action → 멤버 함수 바인딩 |
 | 🕹️ | **Possess** | 컨트롤러가 Pawn을 빙의(Possess)하며, 빙의된 Pawn의 바인딩만 입력을 받음 |
 | 🔩 | **Socket Attach** | StaticMesh JSON에 정의한 Socket에 컴포넌트/액터를 부착 |
 | 📷 | **SpringArm + Camera** | 컨트롤러 회전을 따라가는 3인칭 카메라 |
-| 📦 | **에셋 파이프라인** | FBX(ufbx) → **속성별 VertexBuffer 4개(Position · Normal · Color · UV) + Index Buffer**, JSON(Level / StaticMesh), 사전 컴파일 셰이더(`.vso` / `.pso`) |
+| 📦 | **에셋 파이프라인** | FBX(ufbx) → **속성별 VertexBuffer 4개(Position · Normal · Color · UV) + Index Buffer**, JSON(Level / StaticMesh / Material / Texture), 사전 컴파일 셰이더(`.vso` / `.pso`). `Load*()`로 JSON · FBX를 설명 데이터로만 모아 둔 뒤 `FPAssetManager::AllAssetDataCreate()`가 한 번에 GPU 리소스로 일괄 생성 |
 | 🏭 | **클래스 레지스트리** | 문자열 이름 → 팩토리. Level JSON의 `"class"` 문자열로 액터를 생성 |
 | 🛠️ | **자동 패키징** | Release\|x64 빌드 후 PowerShell 스크립트가 `<게임이름>.exe` + `Assets/`를 구성 |
 
@@ -71,7 +77,8 @@ ForestPearlEngine/
 │       ├── Lambert_Light/         #   Lambert Light / Normal Line / Texture 개발용 프로젝트 (Cube · Plane + DirectionalLight)
 │       └── ShaderCode_Triangle/   #   커스텀 Material / 상수 버퍼 샘플 (이전 API 기준)
 ├── Tool/
-│   └── DXTexViewer/               # DxTex.exe — 이미지 → DDS 변환·확인 도구 (d3dx9 DLL 포함)
+│   ├── DXTexViewer/                # DxTex.exe — 이미지 → DDS 변환·확인 도구 (d3dx9 DLL 포함)
+│   └── FBXToStaticMeshJsonTranslator/  # FBX 폴더 → StaticMesh / Material / Texture JSON 일괄 변환 콘솔 툴 (ufbx + nlohmann json)
 ├── GameTemplate/
 │   ├── Readme.txt
 │   └── TriWorldTemplate_Ver1.0.zip   # 새 게임 프로젝트용 템플릿
@@ -96,8 +103,8 @@ Engine/ForestPearlEngine/
 ├── FPGameTimer.h / .cpp              # [SubSystem] 고해상도 타이머 (DeltaTime)
 ├── FPGameProjectClassRegistry.h/.cpp # [SubSystem] 클래스 이름 → 팩토리
 ├── FPGameProjectSetting.h / .cpp     # [SubSystem] 윈도우/디스플레이 설정
-├── FPAssetLoader.h / AssetLoader.cpp # [SubSystem] FBX · JSON · Shader 로딩
-├── FPAssetManager.h / .cpp           # [SubSystem] 로딩된 에셋 보관소
+├── FPAssetLoader.h / AssetLoader.cpp # [SubSystem] FBX · JSON(Level/StaticMesh/Material/Texture) · Shader 설명 데이터 로딩
+├── FPAssetManager.h / .cpp           # [SubSystem] 로딩된 에셋 보관소. `AllAssetDataCreate()`가 설명 데이터를 GPU 리소스로 일괄 생성, `MakeMaterial`로 Material JSON → `FPMaterial` 변환
 ├── FPMeshRenderList.h / .cpp         # [SubSystem] 메시 RenderItem 목록
 ├── FPGizmoRenderList.h / .cpp        # [SubSystem] 기즈모 GizmoRenderItem 목록
 ├── FPMeshNormalRenderList.h / .cpp   # [SubSystem] Normal Line NormalRenderItem 목록
@@ -173,6 +180,7 @@ Engine/ForestPearlEngine/
 ├── Assets/
 │   ├── Model/Primitive_Model/        # Cube / Sphere / Plane .fbx
 │   ├── StaticMesh/                   # Cube / Sphere / Plane _StaticMesh.json
+│   ├── Material/                     # DefaultMaterial.json (Material JSON 미지정 시 fallback)
 │   ├── Texture/                      # 텍스처 JSON (Default_Texture512 · Checker_bmp · Checker_dds)
 │   ├── TextureResource/              # 이미지 원본 (*.dds · checker.bmp)
 │   └── Shader/
@@ -220,10 +228,13 @@ Games/Release_Game/Tri_World/
 ├── ADirectionalLight.h / .cpp     # Actor (Directional Light)
 ├── UI.h / .cpp                    # Actor (텍스트 UI)
 └── Assets/
-    ├── Font/        Consolas10.sfont, 굴림9k.sfont
-    ├── Level/       TriWorld.json
-    ├── Model/       Terrain/ · ToonLink/ · Tree/ · Windmill/   (*.fbx)
-    └── StaticMesh/  *_StaticMesh.json (6개)
+    ├── Font/            Consolas10.sfont, 굴림9k.sfont
+    ├── Level/           TriWorld.json, ToonLink.json (현재 시작 레벨)
+    ├── Model/           Terrain/ · ToonLink/ · Tree/ · Windmill/   (*.fbx)
+    ├── StaticMesh/      *_StaticMesh.json (51개 — ToonLink 서브메시 다수 포함)
+    ├── Material/        *_Material.json + *_MaterialInstance.json (64개)
+    ├── Texture/         *.json (20개)
+    └── TextureResource/ *.png                                      (39개, ToonLink 캐릭터 텍스처)
 ```
 
 ---
@@ -306,8 +317,8 @@ FPAssetLoader* AssetLoader =
 | `FPGameTimer` | `GetGameTimer()` | `QueryPerformanceCounter` 기반. `DeltaTime()`(초), `DeltaTimeMS()`, `TotalTime()`, `Start/Stop/Reset` |
 | `FPGameProjectClassRegistry` | `GetClassRegister()` | `Register<T>("이름")`, `Create("이름")`, `HasFactory("이름")`. 이름은 **클래스 이름과 동일**해야 함 ([등록 규칙](#클래스-등록-규칙)) |
 | `FPInputSystem` | `GetInputSystem()` | Raw Input / XInput 수집, 입력 큐 |
-| `FPAssetManager` | `GetAssetManager()` | Mesh · VertexBuffer(Position / Normal / Color / UV) · IndexBuffer · StaticMesh · **Texture** · Level · GameMode · Shader 저장소 |
-| `FPAssetLoader` | `GetAssetLoader()` | FBX / Level JSON / StaticMesh JSON / **Texture JSON** / Shader 로딩 |
+| `FPAssetManager` | `GetAssetManager()` | Mesh · VertexBuffer(Position / Normal / Color / UV) · IndexBuffer · StaticMesh · **Texture** · **Material** · Level · GameMode · Shader 저장소. `AllAssetDataCreate()`로 설명 데이터 → GPU 리소스 일괄 생성 |
+| `FPAssetLoader` | `GetAssetLoader()` | FBX / Level JSON / StaticMesh JSON / Texture JSON / **Material JSON** / Shader 로딩 (실제 GPU 리소스 생성은 `AllAssetDataCreate()`가 나중에 수행) |
 | `FPMeshRenderList` | `GetMeshRenderList()` | 메시 `RenderItem` 등록/해제 |
 | `FPGizmoRenderList` | `GetGizmoRenderList()` | 기즈모 `GizmoRenderItem` 등록/해제 |
 | `FPMeshNormalRenderList` | `GetNormalRenderList()` | Normal Line `NormalRenderItem` 등록/해제 |
@@ -391,11 +402,12 @@ sequenceDiagram
     Eng->>Game: RegistProjectName()
     Note over Eng: CreateFPEWindow()<br/>ViewPort 생성<br/>Raw Input 등록
     Eng->>Ren: InitializeRenderer(hwnd)
-    Note over Eng: RenderingDevice::CreateSamplers()
-    Note over Eng: LoadEngineAssets() - Default Shader
+    Note over Eng: RenderingDevice::CreateSamplers()<br/>RenderingDevice::CreateBlendStateObject()
+    Note over Eng: LoadEngineAssets() - Default Shader / Texture / Material
     Eng->>Game: LoadLevel()
     Eng->>Game: LoadClassRegist()
     Eng->>Game: LoadAssets()
+    Note over Eng: AssetManager->AllAssetDataCreate()<br/>Texture·FBX·Mesh Buffer·Shader를 GPU 리소스로 일괄 생성
 
     Run->>Eng: Initialize()
     Eng->>Game: ReturnStartLevel()
@@ -409,12 +421,15 @@ sequenceDiagram
 
 | 단계 | 함수 | 내용 |
 |:-:|---|---|
-| 1 | `PreInitialize()` | GameInstance 생성 → `RegistProjectName()` → 윈도우 생성 → ViewPort 생성 → Raw Input 등록 → Renderer 초기화 → `CreateSamplers()` → 엔진 에셋 로드 → `LoadLevel()` → `LoadClassRegist()` → `LoadAssets()` |
+| 1 | `PreInitialize()` | GameInstance 생성 → `RegistProjectName()` → 윈도우 생성 → ViewPort 생성 → Raw Input 등록 → Renderer 초기화 → `CreateSamplers()` / `CreateBlendStateObject()` → 엔진 에셋 로드 → `LoadLevel()` → `LoadClassRegist()` → `LoadAssets()` → `AssetManager->AllAssetDataCreate()` |
 | 2 | `Initialize()` | `OpenLevel(ReturnStartLevel())` → `World::Initialize()` → `World::BeginPlay()` |
 | 3 | `GameLoop()` | 아래 프레임 루프 |
 | 4 | `Finalize()` | `World::Finalize()`(Actor 삭제) → `Renderer::Finalize()` |
 
 `FPWorld::OpenLevel`은 Level JSON의 `gamemode` 문자열로 GameMode를 만들고, `actors` 배열의 각 항목을 `ClassRegistry`로 생성해 이름과 Transform을 적용합니다.
+
+> [!IMPORTANT]
+> `LoadAssets()`까지는 `Load*()` 함수들이 JSON · FBX를 읽어 **설명 데이터**(`FPTextureInfo` / `FPMaterialData` / `FPStaticMeshData` / `FPVertexShaderData` 등)만 `FPAssetManager`에 쌓아 둡니다. 실제 텍스처 SRV · FBX 메시 버퍼 · 셰이더 바이트코드 같은 **GPU 리소스**는 그 뒤 `AssetManager->AllAssetDataCreate()`가 한 번에 순서대로(Texture → FBX → Mesh Buffer → Vertex/Pixel Shader) 생성합니다. 따라서 `LoadAssets()` 안에서는 **Texture → Material → StaticMesh** 순서로만 호출하면 되고(에셋 사이의 상호 참조는 이름으로만 걸어 둡니다), FBX·셰이더 로드 순서를 신경 쓸 필요가 없습니다.
 
 ### 프레임 루프
 
@@ -588,7 +603,7 @@ flowchart LR
 
 | Pass | 읽는 목록 | Topology | 반복 단위 | 상수 버퍼 | 정렬 |
 |---|---|---|---|---|---|
-| `MeshRenderPass` | `MeshRenderList` | `TRIANGLELIST` | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Light · Material** (Renderer가 구성, [Light · Normal](#lambert-light--normal-line)) | `Priority` 오름차순 |
+| `MeshRenderPass` | `MeshRenderList` | `TRIANGLELIST` | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Light · Material** (Renderer가 구성, [Light · Normal](#lambert-light--normal-line)) | `Priority` 오름차순 (+ 시작/종료 시 [Alpha Blend](#alpha-blend-초기-구현) 상태 On/Off) |
 | `GizmoRenderPass` | `GizmoRenderList` | `LINELIST` | 카메라 → 기즈모 → 뷰포트 → 서브 메시 | Object · ViewPort · Material | `Priority` 오름차순 |
 | `NormalRenderPass` | `NormalRenderList` | `LINELIST` (`DrawInstanced`) | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Normal Matrix** | 없음 (`bNormal`이 `true`일 때만 실행) |
 | `UIRenderPass` | `UIRenderList` | (SpriteBatch) | 텍스트 → `UIViewPort` | 사용 안 함 | `Priority` 오름차순 |
@@ -618,8 +633,8 @@ flowchart LR
 | Rasterizer State (`bFill` / `bCull`) | ✔ | ✔ | ✔ | ✘ |
 | Topology | `TRIANGLELIST` | `LINELIST` | `LINELIST` | ✘ |
 | InputLayout · VS · PS | 항목마다 | 항목마다 | 항목마다 | ✘ (SpriteBatch가 자체 지정) |
-| Blend State · RTV / DSV | ✘ (지정 없음) | ✘ | ✘ | ✘ |
-| 종료 시 상태 복원 | ✘ | ✘ | ✘ | ✘ |
+| Blend State · RTV / DSV | **✔** (`BS_ADD`, [Alpha Blend](#alpha-blend-초기-구현)) | ✘ | ✘ | ✘ |
+| 종료 시 상태 복원 | **✔** (Blend만 `BS_NULL_`로 복원) | ✘ | ✘ | ✘ |
 
 확인된 불안정 요소는 다음과 같습니다.
 
@@ -628,7 +643,7 @@ flowchart LR
 | **같은 초기화 코드가 Pass마다 복사됨** | 상수 버퍼 14개 바인딩, Depth / Rasterizer / Topology 설정, 슬롯 오프셋(`VS 2`, `PS 1`)과 MVP 상수 버퍼 계산이 Mesh · Gizmo · Normal에 거의 그대로 반복됩니다. 한 곳을 고치고 다른 곳을 놓치기 쉽습니다. 실제로 PS 뷰포트 슬롯 규칙이 Pass마다 달랐던 적이 있습니다 |
 | **주석과 실제 동작이 다름** | Gizmo · Normal Pass에도 "MeshRenderPass에서 …"라는 복사된 주석이 남아 있고, 슬롯 오프셋 값의 의미를 코드만으로 알 수 없습니다 |
 | **UI Pass는 상태를 지정하지 않음** | Depth · Rasterizer · Topology를 설정하지 않고 `SpriteBatch::Begin()` / `End()`가 바꾸는 상태(Blend · Depth · Rasterizer · Sampler 등)를 그대로 둡니다. 엔진은 이를 복원하지 않으므로 **다음 프레임의 첫 Pass로 상태가 이어집니다.** Depth / Rasterizer는 Mesh Pass가 다시 지정하지만, Blend State는 어떤 Pass도 지정하지 않습니다 |
-| **Blend State · RTV / DSV를 Pass가 지정하지 않음** | 렌더 타깃은 초기화와 리사이즈 때 한 번만 바인딩됩니다. Pass를 추가해 다른 렌더 타깃이나 Blend를 쓰려면 사용한 뒤 직접 되돌려야 합니다 |
+| **Blend State는 `MeshRenderPass`만 지정** | `MeshRenderPass`는 시작할 때 `OMSetBlendState(BS_ADD)`를 걸고 끝나면 `BS_NULL_`로 되돌리지만, Gizmo · Normal · UI Pass는 Blend State를 전혀 건드리지 않습니다. 메시별 On/Off는 없고 **모든 메시에 일괄 적용**됩니다 ([Alpha Blend](#alpha-blend-초기-구현) 참고). 렌더 타깃(RTV/DSV)은 여전히 초기화와 리사이즈 때 한 번만 바인딩되며, 다른 렌더 타깃을 쓰려면 사용한 뒤 직접 되돌려야 합니다 |
 | **IA · PS 슬롯이 해제되지 않음** | Mesh Pass가 바인딩한 Normal(1) · UV(3) 스트림, Index Buffer, 텍스처 `t#`, 샘플러 `s#`는 다음 Pass에도 남습니다. Gizmo Pass는 슬롯 1 · 3을 바인딩하지 않으므로 Mesh Pass가 남긴 버퍼가 그대로 걸려 있는 상태로 같은 Input Layout을 사용합니다 |
 | **28개 상수 버퍼를 모든 Pass가 공유** | 같은 버퍼가 Pass마다 다른 의미로 쓰입니다 (VS `b2`: Mesh는 Light, Normal은 Normal Matrix, Material은 그 뒤 슬롯). 한 Pass가 쓰지 않은 슬롯에는 **이전 Pass의 값이 남아** 있습니다 |
 | **`Normal` Pass만 조기 반환이 있음** | `bNormal`이 `false`면 상수 버퍼 바인딩 전에 바로 반환합니다. 다른 Pass는 항상 전체 초기화를 수행하므로 Pass마다 진입 동작이 일관되지 않습니다 |
@@ -647,6 +662,21 @@ flowchart LR
 2. Item을 담을 목록 SubSystem을 추가합니다 (예: `FPGizmoRenderList`).
 3. `Renderer`에 `CreateXxxRenderList()`와 `XxxRenderPass()`를 추가합니다.
 4. `GameLoop()`에서 원하는 순서에 호출합니다. 먼저 호출된 Pass가 먼저 그려집니다.
+
+#### Alpha Blend (초기 구현)
+
+`RenderingDevice::CreateBlendStateObject()`가 Blend State 2종을 만들어 두고(`FPBlendingStateType`: `BS_DEFAULT` — Blend Off, `BS_ADD` — 표준 알파 블렌드, `BS_NULL_` — 해제용 `nullptr`), `ForestPearlEngine::PreInitialize()`가 `CreateSamplers()` 직후에 호출합니다. `MeshRenderPass`는 메시를 그리기 **전**에 `Device.OMSetBlendState(BS_ADD)`로 블렌드를 켜고, 모든 메시를 그린 **뒤** `BS_NULL_`로 되돌립니다. 기본 `DefaultPixelShader.psh`도 함께 바뀌어 `col.a = tex.a;`로 텍스처의 알파 채널을 그대로 출력에 반영합니다.
+
+```hlsl
+// b(2 + N)의 BlendOp/Src/Dest — 실제로는 RenderingDevice::CreateBlendStateObject()에서 D3D11_BLEND_DESC로 지정
+// 결과색 = Src.Color * Src.a + Dest.Color * (1 − Src.a)   (+ AlphaToCoverage 활성화)
+```
+
+> [!NOTE]
+> 이름은 `BS_ADD`지만 실제 혼합 공식은 **가산(Additive)이 아니라 표준 Over 알파 블렌드**(`SrcAlpha` / `InvSrcAlpha`)입니다. 커밋 메모에도 남아 있듯 **아직 초기 구현**입니다.
+> - Blend On/Off가 **메시 단위가 아니라 `MeshRenderPass` 전체**에 걸립니다. 알파 1인(완전 불투명) 메시도 함께 블렌드 상태로 그려집니다.
+> - **Z-Order(뒤→앞 정렬)가 없습니다.** `Priority` 오름차순 정렬은 유지되지만 이는 블렌드용 거리 정렬이 아니므로, 겹치는 반투명 메시의 전후 관계가 틀릴 수 있습니다.
+> - Gizmo · Normal · UI Pass는 Blend State를 건드리지 않으므로 영향이 없습니다.
 
 ### 렌더러에 전달되는 데이터
 
@@ -930,7 +960,7 @@ if (input.VertexID == 1) WorldPosition += WorldNormal * NormalLength;
 
 Material은 셰이더를 **파일 이름**(`"Demo.vso"`)으로 가리키고, 렌더러가 Pass 안에서 `FPAssetManager`에서 실제 셰이더를 찾습니다. 따라서 `LoadAssets()`에서 먼저 로드해 두어야 합니다.
 
-Material 선택 우선순위: **컴포넌트에 `SetMaterial`로 지정한 Material** → StaticMesh JSON의 `"Material"` 클래스 → 기본 `FPMaterial`
+Material 선택 우선순위: **컴포넌트 생성 뒤 `SetMaterial`로 직접 지정한 Material** → StaticMesh JSON의 `"Material.Name"`이 가리키는 [Material JSON](#material-json)(`MakeMaterial`이 자동 생성) → 그 이름이 없으면 엔진의 `DefaultMaterial`
 
 ### 정점 스트림 분리와 Index Buffer
 
@@ -1011,7 +1041,8 @@ struct FPMeshData { std::string Name;
 
 ```mermaid
 flowchart LR
-    J["Texture/*.json<br/>TextureResource/*.dds · bmp"] -->|"LoadTexture<br/>WIC / DDS"| AM["FPAssetManager<br/>FPTextureData<br/>SRV + Texture2D Desc"]
+    J["Texture/*.json"] -->|"LoadTexture"| TI["FPAssetManager<br/>FPTextureInfo<br/>Name · Path · Type"]
+    TI -->|"AllAssetDataCreate<br/>MakeTexture - WIC / DDS"| AM["FPAssetManager<br/>FPTextureData<br/>SRV + Texture2D Desc"]
     MAT["FPMaterial<br/>TextureList - 슬롯 → FPTexture2D<br/>이름 + SamplerType"] -->|"GetTextureList"| RI["RenderItem<br/>TextureList 포인터"]
     RI -->|"CreateMeshRenderList<br/>값 복사"| RL["MeshRenderItem<br/>TextureList · SamplerList"]
     RL -->|"MeshRenderPass"| PS["PSSetShaderResources t슬롯<br/>PSSetSamplers s번호"]
@@ -1021,11 +1052,12 @@ flowchart LR
 | 구성 요소 | 파일 | 설명 |
 |---|---|---|
 | `FPTexture` / `FPTexture2D` | `FPTexture.h`, `FPTexture2D.h/.cpp` | Material 슬롯 1개가 가지는 값. **텍스처 이름**(`FPAssetManager` 키)과 `FPSamplerType`. `FPTexture2D`의 기본값은 `"Default_Texture512"` + `Sampler_CLAMP` |
-| `FPTextureData` | `Define/FPDataDefine.h` | 로드된 텍스처. `TextureResource`(`ID3D11ShaderResourceView*`), `TextureDESC`(`D3D11_TEXTURE2D_DESC*`) |
+| `FPTextureInfo` | `FPAssetManager.h` | `LoadTexture`가 JSON에서 읽은 **설명 데이터**(`Name` / `Path` / `Type` / `Owner`). 이 시점에는 아직 GPU 리소스가 없음 |
+| `FPTextureData` | `Define/FPDataDefine.h` | `MakeTexture`가 만든 실제 텍스처. `TextureResource`(`ID3D11ShaderResourceView*`), `TextureDESC`(`D3D11_TEXTURE2D_DESC*`) |
 | `FPTextureItem` | `Renderers/FPRenderingCommon.h` | `RenderItem`이 Material의 텍스처 목록을 가리키는 포인터 묶음 (`std::string* TexturePath`, `FPSamplerType* SamplerType`) |
 | `RenderingData::FPTextureItem` · `FPSamplerItem` | `Renderers/FPRenderingCommon.h` | Render List의 값 복사본. `{ Slot, 텍스처 이름, SamplerType }`, `{ Slot, SamplerType }` |
-| `FPAssetManager` | `FPAssetManager.h/.cpp` | `AddTextureData` · `GetTextureData` · `HasTextureData` |
-| `FPAssetLoader::LoadTexture` | `AssetLoader.cpp` | Texture JSON을 읽어 `WIC` 또는 `DDS`로 로드 |
+| `FPAssetManager` | `FPAssetManager.h/.cpp` | `AddTextureInfoData` · `GetTextureInfoData` · `HasTextureInfoData`(설명 데이터), `MakeTexture`(GPU 리소스 생성), `AddTextureData` · `GetTextureData` · `HasTextureData`(생성된 텍스처) |
+| `FPAssetLoader::LoadTexture` | `AssetLoader.cpp` | Texture JSON을 읽어 `FPTextureInfo`로 등록 (실제 `WIC` / `DDS` 로드는 `AllAssetDataCreate()`가 나중에 수행) |
 | `RenderingDevice` | `RenderingDevice.h/.cpp` | `CreateWICTextureFromFile` · `CreateDDSTextureFromFile`(DirectXTK), `GetTextureDesc`, `PSSetShaderResources`, `CreateSamplers`, `PSSetSamplers` |
 
 #### 바인딩 규칙
@@ -1056,7 +1088,7 @@ flowchart LR
 
 #### 기본 셰이더
 
-`DefaultVertexShader`는 `TEXCOORD0`을 `o.uv`로 넘기고, `DefaultPixelShader`는 정점 색에 텍스처를 곱해 출력합니다.
+`DefaultVertexShader`는 `TEXCOORD0`을 `o.uv`로 넘기고, `DefaultPixelShader`는 정점 색에 텍스처를 곱해 출력합니다. [Alpha Blend](#alpha-blend-초기-구현) 추가 이후로는 텍스처의 알파 채널을 출력 알파로 그대로 내보냅니다.
 
 ```hlsl
 Texture2D    TexDiff : register(t0);   // Material 텍스처 슬롯 0
@@ -1064,7 +1096,10 @@ SamplerState Smpler  : register(s0);   // 사용 중인 샘플러 중 가장 앞
 
 float4 PS_Main(float4 pos : SV_POSITION, float4 col : COLOR0, float2 uv : TEXCOORD0) : SV_TARGET
 {
-    return col * TexDiff.Sample(Smpler, uv);
+    float4 tex = TexDiff.Sample(Smpler, uv);
+    float4 col2 = col * tex;
+    col2.a = tex.a;         // 출력 알파 = 텍스처 알파 (Alpha Blend용)
+    return col2;
 }
 ```
 
@@ -1072,25 +1107,81 @@ float4 PS_Main(float4 pos : SV_POSITION, float4 col : COLOR0, float2 uv : TEXCOO
 
 #### 텍스처 에셋
 
-`FPAssetLoader::LoadTexture(name, file, owner)`는 `Texture/<file>`(JSON)을 읽고, JSON이 가리키는 이미지를 `TextureResource/`에서 로드해 `name`으로 등록합니다.
+`FPAssetLoader::LoadTexture(name, file, owner)`는 `Texture/<file>`(JSON)을 읽어 `FPTextureInfo`로 등록합니다. 실제 이미지는 `TextureResource/`에서 `AllAssetDataCreate()`가 로드합니다.
 
 ```json
 {
-  "TextureData": [
-    { "Path": "checker.dds", "Type": "DDS" }
+  "Name": "Hair_png",
+  "Path": "hair.png",
+  "Type": "WIC"
+}
+```
+
+| 키 | 설명 |
+|---|---|
+| `Name` | 등록 이름. Material JSON의 `Texture[].Name`이 이 이름을 참조 |
+| `Path` | `TextureResource/` 기준 이미지 파일 |
+| `Type` | `"WIC"` — bmp · png · jpg 등 WIC가 읽는 형식 / `"DDS"` — DDS 파일 |
+
+- 이미 같은 이름이 등록되어 있으면 로드하지 않고 콘솔에 메시지를 출력합니다.
+- 파일 열기 · 이미지 로드 실패는 콘솔에만 출력되고 계속 진행됩니다. 실패한 텍스처는 `nullptr` 리소스로 남습니다.
+- `Tool/DXTexViewer/DxTex.exe`로 이미지를 DDS로 변환하고 확인할 수 있습니다 (`d3dx9_*.dll` 포함).
+- [`Tool/FBXToStaticMeshJsonTranslator`](#fbx-변환-도구-fbxtostaticmeshjsontranslator)는 FBX에 연결된 텍스처마다 이 JSON을 **자동 생성**합니다 (같은 이미지 파일은 한 번만).
+
+### Material JSON
+
+Material도 Texture처럼 **JSON으로 정의되는 에셋**입니다. `FPAssetLoader::LoadMaterial(name, owner)`가 `Material/<file>`을 읽어 `FPMaterialData`(설명 데이터)로 등록해 두면, `AllAssetDataCreate()` 이후 **StaticMesh가 실제로 생성되는 시점**(`FPAssetManager::GetStaticMeshData`)에 `MakeMaterial(이름)`이 이를 실제 `FPMaterial` 인스턴스로 변환합니다. 등록된 이름이 없으면 엔진 에셋 `DefaultMaterial`로 대체됩니다.
+
+```mermaid
+flowchart LR
+    MJ["Material/*.json<br/>Name · Shader · Color · Texture[]"] -->|"LoadMaterial"| MD["FPAssetManager<br/>FPMaterialData"]
+    SMJ["StaticMesh/*.json<br/>Material.Name"] -->|"LoadStaticMesh"| SMD["FPStaticMeshData<br/>MaterialName"]
+    MD -->|"MakeMaterial(이름)<br/>없으면 DefaultMaterial"| FM["FPMaterial<br/>BaseColor/Diffuse/Ambient + 텍스처 슬롯"]
+    SMD -->|"GetStaticMeshData"| FM
+    FM --> SM["FPStaticMesh::SetMaterial"]
+```
+
+실무에서는 재질 하나를 **기본 Material**(색만, 재질당 1개)과 **Material Instance**(메시마다 1개, 기본 색을 복제 + 이 메시가 쓰는 텍스처 배열)로 나눠서 두 JSON을 만들고, StaticMesh JSON은 Material Instance 쪽을 참조합니다 ([FBX 변환 도구](#fbx-변환-도구-fbxtostaticmeshjsontranslator)가 자동으로 이 구조로 생성합니다).
+
+```json
+// Material/hair.002_Material.json — 기본 Material (색만)
+{
+  "Material": {
+    "Name": "hair.002_Material",
+    "VertexShader": "DefaultVertexShader",
+    "PixelShader": "DefaultPixelShader",
+    "Ambient":   { "r": 0.05, "g": 0.05, "b": 0.05, "a": 1.0 },
+    "BaseColor": { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 },
+    "Diffuse":   { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 }
+  }
+}
+
+// Material/hair.002_ToonLink_Hair_StaticMesh_MaterialInstance.json — 이 메시 전용 Instance (+ 텍스처)
+{
+  "Material": {
+    "Name": "hair.002_ToonLink_Hair_StaticMesh_MaterialInstance",
+    "VertexShader": "DefaultVertexShader",
+    "PixelShader": "DefaultPixelShader",
+    "Ambient":   { "r": 0.05, "g": 0.05, "b": 0.05, "a": 1.0 },
+    "BaseColor": { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 },
+    "Diffuse":   { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 }
+  },
+  "Texture": [
+    { "Name": "Hair_png", "Slot": 0, "SamplerType": "Sampler_Wrap" }
   ]
 }
 ```
 
 | 키 | 설명 |
 |---|---|
-| `Path` | `TextureResource/` 기준 이미지 파일 |
-| `Type` | `"WIC"` — bmp · png · jpg 등 WIC가 읽는 형식 / `"DDS"` — DDS 파일 |
+| `Material.Name` | 등록 이름. StaticMesh JSON의 `Material.Name`과 다른 Material JSON이 이 이름으로 서로 참조 |
+| `Material.VertexShader` / `PixelShader` | `FPAssetManager`에 로드돼 있어야 하는 셰이더 이름 (확장자 없이) |
+| `Material.Ambient` / `BaseColor` / `Diffuse` | `FPMaterial::SetAmbient/BaseColor/Diffuse`로 그대로 전달되는 `{r,g,b,a}` 색 |
+| `Texture[]` | `{ Name, Slot, SamplerType }` 배열. `MakeMaterial`이 각 항목마다 `AddTexture(Slot)` + `SetTexture(Slot, Name, SamplerType)`를 호출 (생략하면 텍스처 없는 기본 Material) |
 
-- 이미 같은 이름이 등록되어 있으면 로드하지 않고 콘솔에 메시지를 출력합니다.
-- `TextureData` 배열은 **마지막 항목 하나만** 사용됩니다.
-- 파일 열기 · 이미지 로드 실패는 콘솔에만 출력되고 계속 진행됩니다. 실패한 텍스처는 `nullptr` 리소스로 남습니다.
-- `Tool/DXTexViewer/DxTex.exe`로 이미지를 DDS로 변환하고 확인할 수 있습니다 (`d3dx9_*.dll` 포함).
+> [!IMPORTANT]
+> `LoadAssets()`에서는 **Texture → Material → StaticMesh** 순서로 호출해야 합니다. `MakeMaterial`이 `Texture[].Name`을 그대로 `FPMaterial`에 박아 두고, 실제 조회(`GetTextureData`)는 `MeshRenderPass`가 그릴 때 일어나기 때문에 느슨하게라도 이 순서를 지키는 편이 안전합니다.
+> 데이터 기반 Material은 항상 **기본 `FPMaterial`** 클래스로 생성됩니다. 상수 버퍼를 추가로 쓰는 [커스텀 Material 서브클래스](#8-커스텀-material과-상수-버퍼)가 필요하면 `GetStaticMeshData`가 만든 Material을 가져오는 대신, 컴포넌트 생성 직후 `SetMaterial()`로 직접 교체해야 합니다.
 
 ### Legacy 렌더러
 
@@ -1238,8 +1329,9 @@ Debug 경로는 작업 디렉터리(`Runners/Runner`) 기준 상대 경로입니
 Assets/
 ├── Font/          *.sfont               DirectXTK SpriteFont (굴림9k.sfont 필수)
 ├── Level/         *.json                레벨 = GameMode + Actor 배치
-├── Model/         <모델>/*.fbx          원본 메시
-├── StaticMesh/    *_StaticMesh.json     메시 + Topology + Socket + Material
+├── Model/         <모델>/*.fbx          원본 메시 (StaticMesh JSON이 Name/NodeName으로 참조)
+├── StaticMesh/    *_StaticMesh.json     메시 + Topology + Socket + Material(참조)
+├── Material/      *_Material.json       기본 Material + *_MaterialInstance.json (색 + 텍스처 배열)
 ├── Texture/       *.json                텍스처 정의 (이미지 경로 + 로드 방식)
 ├── TextureResource/ *.dds *.bmp …       이미지 원본 (DxTex로 DDS 변환 가능)
 └── Shader/        *.vsh *.psh *.fx      HLSL 소스
@@ -1248,34 +1340,36 @@ Assets/
 
 | 로더 함수 | 기준 폴더 | 예 |
 |---|---|---|
-| `LoadFbxData(path, owner)` | `Model/` | `"Windmill/Windmill_Body.fbx"` |
-| `LoadStaticMesh(name, file, owner)` | `StaticMesh/` | `"Tree_StaticMesh", "Tree_StaticMesh.json"` |
+| `LoadStaticMesh(file, owner)` | `StaticMesh/` | `"Tree_StaticMesh.json"` (FBX는 JSON의 `NodeName`으로 `AllAssetDataCreate()`가 자동으로 찾아 로드) |
+| `LoadMaterial(file, owner)` | `Material/` | `"hair.002_Material.json"` ([Material JSON](#material-json)) |
 | `LoadLevelData(name, file, owner)` | `Level/` | `"TriWorld", "TriWorld.json"` |
-| `LoadTexture(name, file, owner)` | `Texture/`(JSON) → `TextureResource/`(이미지) | `"Checker_dds", "Checker_dds.json"` |
+| `LoadTexture(file, owner)` | `Texture/`(JSON) → `TextureResource/`(이미지, `AllAssetDataCreate()`가 로드) | `"Checker_dds.json"` |
 | `LoadVertexShader(obj, owner)` / `LoadPixelShader(obj, owner)` | `Shader/bin/` (Debug) · `Shader/` (Release) | `"Demo.vso"` |
 | `LoadVertexShader(src, entry, model, owner)` / `LoadPixelShader(...)` | `Shader/` | `"Demo.fx", "VS_Main", "vs_5_0"` |
+
+> FBX를 직접 가리키는 로더 함수는 더 이상 없습니다. `FPAssetManager::LoadFbxData(FPStaticMeshData&)`가 **내부용**(비공개)으로 바뀌어, `AllAssetDataCreate()`가 로드된 StaticMesh 설명 데이터마다 자동으로 호출합니다.
 
 ### 로딩 파이프라인
 
 ```mermaid
 flowchart LR
-    FBX["Model/*.fbx"] -->|"LoadFbxData<br/>ufbx"| MD["FPMeshData<br/>스트림별 VertexBuffer + IndexBuffer"]
-    SMJ["StaticMesh/*.json"] -->|"LoadStaticMesh"| SMD["FPStaticMeshData"]
+    SMJ["StaticMesh/*.json<br/>Name · NodeName · MeshData.Path"] -->|"LoadStaticMesh"| SMD["FPStaticMeshData"]
+    MJ["Material/*.json"] -->|"LoadMaterial"| MTD["FPMaterialData"]
     LVJ["Level/*.json"] -->|"LoadLevelData"| LVD["FPActorData 목록<br/>GameMode 이름"]
-    TXJ["Texture/*.json<br/>TextureResource/*"] -->|"LoadTexture<br/>WIC / DDS"| TXD["FPTextureData<br/>SRV"]
-    SH["Shader/bin/*.vso *.pso"] -->|"LoadVertex/PixelShader"| SHD["Shader 객체 + 바이트코드"]
-    MD --> AM["FPAssetManager"]
-    SMD --> AM
+    TXJ["Texture/*.json"] -->|"LoadTexture"| TXI["FPTextureInfo"]
+    SH["Shader/bin/*.vso *.pso"] -->|"LoadVertex/PixelShader"| SHD["FPVertex/PixelShaderData"]
+    SMD --> AM["FPAssetManager<br/>(설명 데이터)"]
+    MTD --> AM
     LVD --> AM
-    TXD --> AM
+    TXI --> AM
     SHD --> AM
-    AM -->|"GetStaticMeshData"| SMO["FPStaticMesh"] --> SMC["FPStaticMeshComponent"]
-    AM -->|"GetLevelData"| W["FPWorld::OpenLevel"]
-    AM -->|"GetVertex/PixelShader"| MAT["FPMaterial"]
-    AM -->|"GetTextureData<br/>MeshRenderPass"| TXR["PS t# 바인딩"]
+    AM -->|"AllAssetDataCreate()"| CREATE["FBX(ufbx, NodeName 매칭) → Mesh Buffer<br/>Texture → SRV<br/>Shader → 바이트코드/오브젝트"]
+    CREATE -->|"GetStaticMeshData"| SMO["FPStaticMesh<br/>+ MakeMaterial(Material.Name)"] --> SMC["FPStaticMeshComponent"]
+    CREATE -->|"GetLevelData"| W["FPWorld::OpenLevel"]
+    CREATE -->|"GetTextureData<br/>MeshRenderPass"| TXR["PS t# 바인딩"]
 ```
 
-**FBX 변환 규칙** — 왼손 좌표계 · Y-Up · 미터 단위로 로드하고, 모든 면을 삼각형화한 뒤 코너마다 정점을 생성합니다. 정점에는 노드 변환이 적용된 위치 · 노멀 · UV와 Vertex Color가 들어가며(색이 없으면 흰색), 위치 · 노멀 · UV · 컬러가 모두 같은 정점은 병합되어 **Index Buffer**로 참조됩니다. 메시 노드 하나가 서브 메시 하나이며, 서브 메시마다 Position · Normal · Color · UV VertexBuffer와 IndexBuffer가 하나씩 만들어집니다.
+**FBX 변환 규칙** — 왼손 좌표계 · Y-Up · 미터 단위로 로드하고, 모든 면을 삼각형화한 뒤 코너마다 정점을 생성합니다. 정점에는 노드 변환이 적용된 위치 · 노멀 · UV와 Vertex Color가 들어가며(색이 없으면 흰색), 위치 · 노멀 · UV · 컬러가 모두 같은 정점은 병합되어 **Index Buffer**로 참조됩니다. 메시 노드 하나가 서브 메시 하나이며, 서브 메시마다 Position · Normal · Color · UV VertexBuffer와 IndexBuffer가 하나씩 만들어집니다. `LoadFbxData`는 StaticMesh JSON의 `NodeName`과 **이름이 같은 노드**를 FBX 씬 전체에서 찾아 그 노드의 메시만 변환하므로, 같은 FBX 파일 안의 서로 다른 노드를 여러 StaticMesh JSON이 각각 가리킬 수 있습니다 (ToonLink 데모처럼 캐릭터 FBX 하나에서 머리카락 · 눈 · 검 등 서브메시 수십 개를 따로 뽑아 쓰는 구성).
 
 ### Level JSON
 
@@ -1307,8 +1401,10 @@ flowchart LR
 
 ```json
 {
+  "Name": "ToonLink_Hair_StaticMesh",
+  "NodeName": "_043_Gamemodel_",
   "MeshData": [
-    { "Path": "Windmill/Windmill_Body.fbx", "Topology": "TRIANGLELIST" }
+    { "Path": "ToonLink/ToonLink.fbx", "Topology": "TRIANGLELIST" }
   ],
   "Sockets": [
     {
@@ -1320,16 +1416,44 @@ flowchart LR
       }
     }
   ],
-  "Material": ""
+  "Material": {
+    "Name": "hair.002_ToonLink_Hair_StaticMesh_MaterialInstance"
+  }
 }
 ```
 
 | 키 | 설명 |
 |---|---|
-| `MeshData[].Path` | `Model/` 기준 FBX 경로. `LoadFbxData`에 넘긴 문자열과 같아야 함 |
+| `Name` | 이 StaticMesh의 등록 이름(파일명과 일치시키는 것이 관례). 변환된 메시 버퍼도 이 이름으로 저장됨 |
+| `NodeName` | FBX 씬에서 이 메시를 찾을 **노드 이름**. `LoadFbxData`가 전체 노드 중 이름이 같은 것을 찾아 그 메시만 변환 (여러 StaticMesh가 같은 FBX의 다른 노드를 각각 가리킬 수 있음) |
+| `MeshData[].Path` | `Model/` 기준 FBX 경로. 배열이지만 **마지막 항목만** 사용됨 |
 | `MeshData[].Topology` | `TRIANGLELIST` / `TRIANGLESTRIP` / `LINELIST` |
 | `Sockets[]` | 메시 로컬 기준 부착 지점. 비워 둘 수 있음 |
-| `Material` | `ClassRegistry`에 등록한 Material 클래스 이름. `""`이면 기본 Material |
+| `Material.Name` | [Material JSON](#material-json)(대개 Material Instance)의 등록 이름. 없는 이름이거나 `Material` 객체 자체가 없으면 엔진의 `DefaultMaterial`을 사용 |
+
+> 이전 버전에서는 `Material`이 `ClassRegistry`에 등록한 **C++ Material 클래스 이름**(문자열)이었습니다. 지금은 위처럼 **Material JSON을 가리키는 객체**로 바뀌었고, C++ 서브클래스가 필요하면 생성된 `FPStaticMeshComponent`에 `SetMaterial()`로 직접 교체해야 합니다.
+
+### FBX 변환 도구 (FBXToStaticMeshJsonTranslator)
+
+> 위치: [`Tool/FBXToStaticMeshJsonTranslator`](Tool/FBXToStaticMeshJsonTranslator)
+
+위에서 설명한 StaticMesh / Material / Material Instance / Texture JSON을 사람이 손으로 쓰는 대신, FBX 파일을 그대로 밀어 넣어 한 번에 뽑아내는 **독립 콘솔 툴**입니다. 엔진과 같은 `ufbx` · `nlohmann::json` 라이브러리를 그대로 가져와 쓰며(엔진 본체에는 의존하지 않음), ToonLink 데모 캐릭터의 StaticMesh/Material/Texture JSON 전체가 이 도구로 생성되었습니다.
+
+```text
+FBXToStaticMeshJsonTranslator.exe [FBX입력폴더] [Json출력폴더]
+# 인자를 생략하면 실행 파일 기준 EXE/FBX, EXE/Json 폴더를 사용
+```
+
+| 단계 | 하는 일 |
+|---|---|
+| FBX 스캔 | 입력 폴더의 모든 `.fbx`를 읽어, **메시를 가진 노드마다** StaticMesh JSON 하나를 생성 (`Name` = 파일명 그대로, `NodeName` = FBX 노드 이름) |
+| 소켓 | 메시가 없는 자식 노드(로케이터/더미)는 `Sockets[]`로 변환 |
+| Material | 메시에 연결된 첫 머티리얼마다 **기본 Material**(`<재질명>_Material.json`, 재질당 1번만 저장)과 **Material Instance**(`<재질명>_<StaticMesh이름>_MaterialInstance.json`, 메시마다 저장)를 함께 기록. 둘 다 `VertexShader` / `PixelShader`는 FBX에 정보가 없으므로 `DefaultVertexShader` / `DefaultPixelShader`로 채움 |
+| Texture | 머티리얼에 연결된 텍스처를 **실제 이미지 파일 기준으로 중복 없이** Texture JSON으로 저장 (DDS면 `"DDS"`, 그 외엔 `"WIC"`). FBX 텍스처의 Wrap 설정(Repeat/Clamp)을 `Sampler_Wrap` / `Sampler_CLAMP`로 변환 |
+
+- 출력 폴더 아래 `StaticMesh/`, `Material/`, `Texture/` 하위 폴더가 자동으로 만들어집니다.
+- 생성된 JSON은 그대로 게임 프로젝트의 `Assets/`에 복사해 쓸 수 있으며, `GameProjectLoader.cpp`의 `LoadAssets()`에서 **Texture → Material → StaticMesh** 순서로 호출만 추가하면 됩니다 (실제 이미지 · FBX 파일도 함께 복사해야 함).
+- 엔진 쪽 `FPAssetManager::LoadFbxData`와 **노드 탐색 로직이 일치해야** 같은 결과가 나오므로, FBX 구조를 바꾸는 작업을 할 때는 이 둘을 함께 확인해야 합니다.
 
 ---
 
@@ -2033,7 +2157,7 @@ SamplerState Smpler    : register(s0);   // 사용하는 샘플러 종류 중 �
 | **`AddTexture(Slot)`로 만든 슬롯에만 `SetTexture`가 동작한다** | 없는 슬롯에 호출하면 **아무 일도 일어나지 않고 메시지도 없습니다.** 슬롯 0만 자동으로 존재합니다 |
 | **슬롯은 `0 ~ 127`** | 128 이상은 메시지를 출력하고 무시됩니다 |
 | **텍스처 이름은 `LoadTexture`의 첫 인자와 같아야 한다** | 로드하지 않은 이름을 지정하면 빈 항목이 만들어져 `nullptr` 리소스가 바인딩되고, 기본 PS에서는 메시가 검게 보입니다. `LoadAssets()`에서 먼저 로드하세요 |
-| **`GetMaterial()`은 컴포넌트가 가진 Material을 반환한다** | StaticMesh JSON에 `"Material"` 클래스를 지정하면 컴포넌트의 Material 포인터가 비어 있어 `GetMaterial()`이 널 참조가 됩니다. 이 경우 먼저 `SetMaterial()`로 Material을 지정하세요 |
+| **`GetMaterial()`은 컴포넌트가 가진 Material을 반환한다** | StaticMesh JSON의 `Material.Name`이 [Material JSON](#material-json)으로 `MakeMaterial`을 거쳐 자동으로 채워지므로(없으면 `DefaultMaterial`) 보통 널 참조가 나지 않습니다. 코드로 직접 교체하려면 컴포넌트 생성 **직후** `SetMaterial()`을 호출하세요 |
 | **텍스처는 Material 단위다** | 같은 Material 객체를 여러 메시에 `SetMaterial`하면 텍스처도 함께 바뀝니다. 기본 Material은 컴포넌트마다 따로 만들어지므로 `GetMaterial()`로 바꿔도 해당 메시에만 적용됩니다 |
 | **셰이더의 `t#`는 Material 슬롯과 같다** | 슬롯 `n` → `t(n)`. 셰이더가 읽는 슬롯은 모두 `AddTexture`로 만들어 두세요. Pass는 텍스처를 **해제하지 않으므로**, 슬롯이 없는 메시를 그리면 직전 메시의 텍스처가 남아 보일 수 있습니다 |
 | **샘플러 `s#`는 슬롯이 아니라 종류 순서다** | 한 메시에서 샘플러를 하나만 쓰면 `s0`입니다. 둘 이상 섞을 때는 [바인딩 규칙](#바인딩-규칙)의 순서를 따르세요 |
@@ -2055,6 +2179,9 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 |---|---|
 | 패키지 실행 | `Release\|x64` 빌드 → `x64/Release/Tri_World.exe` |
 | 디버그 실행 | `Debug\|x64`, 시작 프로젝트 **Runner** → F5 |
+
+> [!NOTE]
+> `GameProjectLoader.cpp`의 `ReturnStartLevel()`은 현재 `"TriWorld"` 대신 **`"ToonLink"`**(`Assets/Level/ToonLink.json`)를 반환하도록 되어 있어, 실행하면 아래 TriWorld 씬 대신 **ToonLink 캐릭터 모델 데모**가 먼저 뜹니다. `ToonLink.json`은 `Terrain` · `Axis` · `Grid` · `UI` · `ADirectionalLight`와, Player 클래스 하나(`"Link"`)만 배치한 단순한 씬입니다. `Player`는 이제 `BodyAndHat` · `Hair` · `Face` · `Eye` · `EyeBrow` · `Mouth` · `Hand` · `Buckle` · `MasterSword_*`(4개) · `Shield_*`(2개) 등 **StaticMeshComponent 15개**를 조립해 ToonLink 전신을 구성하며, 각 서브메시는 [FBX 변환 도구](#fbx-변환-도구-fbxtostaticmeshjsontranslator)가 자동 생성한 StaticMesh + Material Instance + Texture JSON으로 텍스처가 입혀져 있습니다 ([Material JSON](#material-json), [Alpha Blend](#alpha-blend-초기-구현) 참고). 아래 TriWorld 씬을 보려면 `ReturnStartLevel()`의 주석을 바꿔 `"TriWorld"`를 반환하게 하면 됩니다.
 
 ### 씬 구성 (`Assets/Level/TriWorld.json`, 액터 311개)
 

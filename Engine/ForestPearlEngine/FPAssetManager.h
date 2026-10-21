@@ -104,6 +104,7 @@ public:
 
 	//StaticMesh
 	FPStaticMesh* GetStaticMeshData(std::string StaticMeshName);
+	FPStaticMeshData& GetStaticMeshData_(std::string StaticMeshName);
 	void AddStaticMeshData(std::string StaticMeshName, FPStaticMeshData* StaticMeshData);
 	bool HasStaticMeshData(std::string StaticMeshName);
 

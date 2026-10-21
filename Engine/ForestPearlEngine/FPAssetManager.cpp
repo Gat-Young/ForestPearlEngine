@@ -125,6 +125,7 @@ void FPAssetManager::AllAssetDataCreate()
 	//Mesh Buffer »ý¼º
 	for (auto& [AssetName, Asset] : LoadedMeshData)
 	{
+		std::cout << Asset.Name << "\n";
 		MakeMeshBuffer(Asset);
 	}
 
@@ -429,6 +430,8 @@ void FPAssetManager::LoadFbxData(FPStaticMeshData& StaticMeshData)
 			MeshData.Name = NodeName;
 		}
 
+		std::cout << MeshData.Name << "\n";
+
 		AddMeshData(StaticMeshData.Name, MeshData);
 	}
 	ufbx_free_scene(Scene);
@@ -714,6 +717,11 @@ FPStaticMesh* FPAssetManager::GetStaticMeshData(std::string StaticMeshName)
 	StaticMesh->SetMaterial(Material);
 
 	return StaticMesh;
+}
+
+FPStaticMeshData& FPAssetManager::GetStaticMeshData_(std::string StaticMeshName)
+{
+	return LoadedStaticMeshData[StaticMeshName];
 }
 
 void FPAssetManager::AddStaticMeshData(std::string StaticMeshName, FPStaticMeshData* StaticMeshData)

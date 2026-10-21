@@ -1,4 +1,7 @@
 {
+  "Name": "Terrain_StaticMesh",
+  "NodeName": "Plane",
+
   "MeshData": [
     {
       "Path": "Terrain/Terrain.fbx",
@@ -8,5 +11,7 @@
 
   "Sockets": [],
 
-  "Material": ""
+  "Material": {
+    "Name": "DefaultMaterial"
+  }
 }

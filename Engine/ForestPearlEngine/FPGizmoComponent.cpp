@@ -1,7 +1,7 @@
 #include "FPGizmoComponent.h"
-#include "FPAssetLoader.h"
+#include "FPAssetManager.h"
 #include "FPGameInstance.h"
-#include "Define/FPDataDefine.h"
+#include "Renderers/FPRenderingCommon.h"
 
 void FPGizmoComponent::MakeVertexBuffer(std::vector<FPGIZMO_VERTEX>& GizmoMesh, const std::string& GizmoMeshPath)
 {
@@ -21,8 +21,8 @@ void FPGizmoComponent::MakeVertexBuffer(std::vector<FPGIZMO_VERTEX>& GizmoMesh, 
 		Vertex.push_back(GizmoVertexData);
 	}
 
-	FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
-	AssetLoader->MakeGizmoVertexBuffer(Vertex, GizmoMeshPath);
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	AssetManager->MakeGizmoVertexBuffer(Vertex, GizmoMeshPath);
 }
 
 void FPGizmoComponent::RegistGizmoRenderList()
@@ -52,8 +52,8 @@ void FPGizmoComponent::RegistGizmoRenderList()
 FPGizmoComponent::FPGizmoComponent(FPActor* Owner, const std::string& GizmoMeshPath) : GizmoMeshPath(GizmoMeshPath), FPPrimitiveComponent(Owner)
 {
 	if (Material == nullptr) { Material = new FPMaterial(); }
-	Material->SetVertexShader("DefaultGizmoVertexShader.vso");
-	Material->SetPixelShader("DefaultGizmoPixelShader.pso");
+	Material->SetVertexShader("DefaultGizmoVertexShader");
+	Material->SetPixelShader("DefaultGizmoPixelShader");
 }
 
 

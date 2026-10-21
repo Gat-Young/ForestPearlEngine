@@ -1,0 +1,14 @@
+{
+    "Name": "ToonLink_Buckle_StaticMesh",
+    "NodeName": "_006_Gamemodel_",
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "equipment.002_ToonLink_Buckle_StaticMesh_MaterialInstance"
+    }
+}

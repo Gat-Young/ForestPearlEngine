@@ -1,0 +1,14 @@
+{
+    "Name": "ToonLink_Mouth6_StaticMesh",
+    "NodeName": "_023_toonlink_StepPose_VIS_O_OBJ_",
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "mouth10.002_ToonLink_Mouth6_StaticMesh_MaterialInstance"
+    }
+}

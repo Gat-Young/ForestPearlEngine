@@ -1,8 +1,5 @@
 {
-  "TextureData": [
-    {
-      "Path": "checker.dds",
-      "Type": "DDS"
-    }
-  ]
+  "Name" :  "Checker_dds",
+  "Path": "checker.dds",
+  "Type": "DDS"
 }

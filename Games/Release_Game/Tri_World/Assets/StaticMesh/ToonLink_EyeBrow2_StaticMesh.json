@@ -1,0 +1,14 @@
+{
+    "Name": "ToonLink_EyeBrow2_StaticMesh",
+    "NodeName": "_014_toonlink_Eyebrow1__VIS_O_OBJ_",
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "eyebrow0.002_ToonLink_EyeBrow2_StaticMesh_MaterialInstance"
+    }
+}

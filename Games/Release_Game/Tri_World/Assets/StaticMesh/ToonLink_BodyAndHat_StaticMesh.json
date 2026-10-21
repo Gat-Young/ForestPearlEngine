@@ -1,0 +1,14 @@
+{
+    "Name": "ToonLink_BodyAndHat_StaticMesh",
+    "NodeName": "_042_Gamemodel_",
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "clothes.002_ToonLink_BodyAndHat_StaticMesh_MaterialInstance"
+    }
+}

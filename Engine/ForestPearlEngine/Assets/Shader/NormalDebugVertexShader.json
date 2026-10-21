@@ -1,0 +1,5 @@
+{
+  "Name": "NormalDebugVertexShader",
+  "Path": "NormalDebugVertexShader.vso",
+  "InputLayout": "NormalDebug"
+}

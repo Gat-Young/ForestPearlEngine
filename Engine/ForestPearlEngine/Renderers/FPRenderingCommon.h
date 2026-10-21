@@ -1,11 +1,109 @@
 #pragma once
 #include "../Define/FPMath.h"
-#include "../Define/FPDataDefine.h"
 #include "FPConstantBufferCommon.h"
 #include <string>
 #include "tchar.h"
 #include <vector>
 #include <unordered_map>
+#include <tuple>
+
+enum AssetOwner
+{
+	Engine,
+	User
+};
+
+//정점 구조체 분리 
+//Position
+struct POSITION_VERTEX
+{
+	float x, y, z;		//좌표 Position
+};
+
+//Color
+struct COLOR_VERTEX
+{
+	float r, g, b, a;	//Vertex 색상
+};
+
+//Normal
+struct NORMAL_VERTEX
+{
+	float nx, ny, nz;	//노말 Normal
+};
+
+//UV
+struct UV_VERTEX
+{
+	float u, v;			//좌표 UV
+};
+
+//Index
+struct INDEX_16BIT
+{
+	unsigned short A, B, C;
+};
+
+struct INDEX_32BIT
+{
+	unsigned long A, B, C;
+};
+
+//VERTEX
+struct VERTEX
+{
+	POSITION_VERTEX PositionVertex;
+	NORMAL_VERTEX NormalVertex;
+	COLOR_VERTEX ColorVertex;
+	UV_VERTEX UVVertex;
+	INDEX_32BIT Index;
+};
+
+//메시 데이터 구조체
+struct FPMeshData
+{
+	std::string Name;
+	std::string NodeName;
+	std::vector<POSITION_VERTEX> Position_Vertices;
+	std::vector<NORMAL_VERTEX> Normal_Vertices;
+	std::vector<COLOR_VERTEX> Color_Vertices;
+	std::vector<UV_VERTEX> UV_Vertices;
+	std::vector<INDEX_32BIT> Index;
+};
+
+//소켓용 트랜스폼
+struct SOCKET_TRANSFORM
+{
+	std::string SocketName;
+
+	float Location_x, Location_y, Location_z;
+	float Rotation_x, Rotation_y, Rotation_z;
+	float Scale_x, Scale_y, Scale_Z;
+};
+
+
+//VertexBuffer Topology
+enum class Topology
+{
+	TRIANGLELIST,
+	TRIANGLESTRIP,
+	LINELIST
+};
+
+Topology StringToTopology(std::string Topo);
+
+//Static 메시 데이터 구조체
+struct FPStaticMeshData
+{
+	std::string Name;
+	std::string NodeName;
+	std::string MeshPath;
+	Topology MeshTopology;
+	std::vector<SOCKET_TRANSFORM> Sockets;
+	std::string MaterialName;
+	AssetOwner Owner;
+};
+
 
 enum FPSamplerType
 {
@@ -19,6 +117,96 @@ enum FPSamplerType
 	Sampler_BorderColor_MAGENTA,
 
 	Sampler_MAX_
+};
+
+FPSamplerType StringToSamplerType(const std::string& Name);
+
+enum FPBlendingStateType
+{
+	BS_DEFAULT,	// 기본 혼합 객체
+	BS_ADD,		// 덧셈
+
+	BS_NULL_,	//초기화
+	BS_MAX_
+};
+
+//Textue 데이터 구조체
+struct FPTextureData
+{
+	void* TextureResource = nullptr;
+	void* TextureDESC = nullptr;
+};
+
+//Texture Info
+struct FPTextureInfo
+{
+	std::string Name;
+	std::string Path;
+	std::string Type;
+	AssetOwner Owner;
+};
+
+//Material 데이터 구조체
+struct FPMaterialData
+{
+	std::string Name;
+	std::string VertexShader;
+	std::string PixelShader;
+	AssetOwner Owner;
+
+	COLOR_VERTEX BaseColor;
+	COLOR_VERTEX Ambient;
+	COLOR_VERTEX Diffuse;
+
+	//<Slot, Name, Samplertypr>
+	std::vector<std::tuple<unsigned int, std::string, FPSamplerType> > Textures;
+};
+
+//VertexShader 데이터 구조체
+struct FPVertexShaderData
+{
+	std::string Name;
+	std::string Path;
+	std::string InputLayout;
+	AssetOwner Owner;
+};
+
+//PixelShader 데이터 구조체
+struct FPPixelShaderData
+{
+	std::string Name;
+	std::string Path;
+	AssetOwner Owner;
+};
+
+//VertexBuffer 데이터 구조체
+struct FPVertexBufferData
+{
+	void* VertexBuffer;
+	unsigned long VB_Size;
+	unsigned long VB_Cnt;
+	unsigned int Stride;
+	unsigned int Offset;
+};
+
+//IndexBuffer 데이터 구조체
+struct FPIndexBufferData
+{
+	void* IndexBuffer;
+	unsigned long Index_Size;
+	unsigned long Index_Cnt;
+	unsigned long FaceCnt;
+	unsigned int Stride;
+	unsigned int Offset;
+};
+
+struct FPActorData
+{
+	std::string ClassName;
+	std::string ActorName;
+	float Location_x, Location_y, Location_z;
+	float Rotation_x, Rotation_y, Rotation_z;
+	float Scale_x, Scale_y, Scale_Z;
 };
 
 struct FPTextureItem

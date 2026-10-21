@@ -1,0 +1,37 @@
+{
+    "Material": {
+        "Name": "mouth2.002_ToonLink_Mouth18_StaticMesh_MaterialInstance",
+        "VertexShader": "DefaultVertexShader",
+        "PixelShader": "DefaultPixelShader",
+        "Ambient": {
+            "r": 0.05087608844041824,
+            "g": 0.05087608844041824,
+            "b": 0.05087608844041824,
+            "a": 1.0
+        },
+        "BaseColor": {
+            "r": 0.800000011920929,
+            "g": 0.800000011920929,
+            "b": 0.800000011920929,
+            "a": 1.0
+        },
+        "Diffuse": {
+            "r": 0.800000011920929,
+            "g": 0.800000011920929,
+            "b": 0.800000011920929,
+            "a": 1.0
+        }
+    },
+    "Texture": [
+        {
+            "Name": "Mouth2_png",
+            "Slot": 0,
+            "SamplerType": "Sampler_Wrap"
+        },
+        {
+            "Name": "Mouth2_png",
+            "Slot": 1,
+            "SamplerType": "Sampler_Wrap"
+        }
+    ]
+}

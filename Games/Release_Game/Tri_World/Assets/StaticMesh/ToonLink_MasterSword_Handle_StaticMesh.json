@@ -1,0 +1,14 @@
+{
+    "Name": "ToonLink_MasterSword_Handle_StaticMesh",
+    "NodeName": "_001_KenM_VIS_O_OBJ_",
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "equipment.002_ToonLink_MasterSword_Handle_StaticMesh_MaterialInstance"
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "Name": "ToonLink_Harfblink1_StaticMesh_",
+    "NodeName": "_030_toonlink_Harfblink1_VIS_O_OBJ_",
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "eyelid.002_ToonLink_Harfblink1_StaticMesh__MaterialInstance"
+    }
+}

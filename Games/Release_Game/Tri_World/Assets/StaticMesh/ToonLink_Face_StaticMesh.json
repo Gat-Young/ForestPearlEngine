@@ -1,0 +1,14 @@
+{
+    "Name": "ToonLink_Face_StaticMesh",
+    "NodeName": "_007_Face_O_OBJ_",
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "skin.002_ToonLink_Face_StaticMesh_MaterialInstance"
+    }
+}

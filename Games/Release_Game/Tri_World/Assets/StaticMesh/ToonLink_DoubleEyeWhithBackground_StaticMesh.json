@@ -1,0 +1,14 @@
+{
+    "Name": "ToonLink_DoubleEyeWhithBackground_StaticMesh",
+    "NodeName": "_011_toonlink_eye_VIS_O_OBJ__Layer_2",
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "eye.002_ToonLink_DoubleEyeWhithBackground_StaticMesh_MaterialInstance"
+    }
+}

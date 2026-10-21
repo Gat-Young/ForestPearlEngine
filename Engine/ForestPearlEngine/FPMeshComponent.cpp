@@ -1,7 +1,7 @@
 #include "FPMeshComponent.h"
 #include "FPAssetManager.h"
 #include "FPGameInstance.h"
-#include "Define/FPDataDefine.h"
+#include "Renderers/FPRenderingCommon.h"
 #include <iostream>
 
 FPMeshComponent::FPMeshComponent(FPActor* Owner, std::string MeshName) : FPPrimitiveComponent(Owner), MeshName(MeshName)

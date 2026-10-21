@@ -1,4 +1,7 @@
 {
+  "Name": "Tree_StaticMesh",
+  "NodeName": "Tree",
+
   "MeshData": [
     {
       "Path": "Tree/Tree.fbx",
@@ -8,5 +11,7 @@
 
   "Sockets": [],
 
-  "Material": ""
+  "Material": {
+    "Name": "DefaultMaterial"
+  }
 }

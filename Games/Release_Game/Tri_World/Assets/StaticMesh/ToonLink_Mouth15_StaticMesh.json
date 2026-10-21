@@ -1,0 +1,14 @@
+{
+    "Name": "ToonLink_Mouth15_StaticMesh",
+    "NodeName": "_038_toonlink_Cliff_VIS_O_OBJ_",
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "mouth5.002_ToonLink_Mouth15_StaticMesh_MaterialInstance"
+    }
+}

@@ -651,6 +651,63 @@ HRESULT RenderingDevice::PSSetSamplers(UINT Slot, UINT NumSamplers, FPSamplerTyp
 	return S_OK;
 }
 
+///////////////////////////////////
+//
+// 블랜드 상태 객체 생성 우선 RT0 백버퍼만 사용
+//
+HRESULT RenderingDevice::CreateBlendStateObject()
+{
+	//블랜딩 상태 객체 구성 옵션
+	D3D11_BLEND_DESC bd = {};
+	
+	D3D11_RENDER_TARGET_BLEND_DESC rtb = {};
+
+	//NULL 초기화용
+	BlendStateObject[BS_NULL_] = NULL;
+
+	//색상 혼합 개체 #0  기본
+	rtb.BlendEnable = FALSE;	//블렌딩 동작 결정. 기본값은 FALSE (OFF)
+	//색상 성분 혼합 : Color Blending. (기본값)
+	rtb.BlendOp = D3D11_BLEND_OP_ADD;
+	rtb.SrcBlend = D3D11_BLEND_ONE;
+	rtb.DestBlend = D3D11_BLEND_ZERO;
+	//알파 성분 혼합 : Alpha Blending. (기본값)
+	rtb.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	rtb.SrcBlendAlpha = D3D11_BLEND_ONE;
+	rtb.DestBlendAlpha = D3D11_BLEND_ZERO;
+	rtb.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	//렌더타겟 0번 혼합 상태 결정
+	bd.RenderTarget[0] = rtb;
+	bd.AlphaToCoverageEnable = FALSE;
+	bd.IndependentBlendEnable = FALSE;
+
+	Device->CreateBlendState(&bd, &BlendStateObject[BS_DEFAULT]);
+	
+	//색상 혼합 개체 #1 "AB"
+	rtb.BlendEnable = TRUE;
+	rtb.BlendOp = D3D11_BLEND_OP_ADD;
+
+	//색상 혼합 : 알파 기준 혼합
+	//최종색 = Src.Color * Src.a + Dest.Color * (1 - Src.a)
+	rtb.SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	rtb.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+
+	bd.RenderTarget[0] = rtb;
+	bd.AlphaToCoverageEnable  = TRUE;
+	//bd.IndependentBlendEnable = FALSE;
+
+	Device->CreateBlendState(&bd, &BlendStateObject[BS_ADD]);
+
+	return S_OK;
+}
+ 
+HRESULT RenderingDevice::OMSetBlendState(FPBlendingStateType BlendType)
+{
+	DeviceContext->OMSetBlendState(BlendStateObject[BlendType], NULL, 0xFFFFFFFF);
+	return S_OK;
+}
+
 
 
 //Font Create

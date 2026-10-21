@@ -15,7 +15,25 @@ class TripleWindmillWing;
 class Player : public FPPawn
 {
 	private:
-		FPStaticMeshComponent* Mesh;
+
+		//ToonLink Model
+		FPStaticMeshComponent* BodyAndHat;
+		FPStaticMeshComponent* Buckle;
+		FPStaticMeshComponent* Eye;
+		FPStaticMeshComponent* EyeBrow;
+		FPStaticMeshComponent* Face;
+		FPStaticMeshComponent* Hair;
+		FPStaticMeshComponent* Hand;
+		FPStaticMeshComponent* LeftEyeBg;
+		FPStaticMeshComponent* RightEyebg;
+		FPStaticMeshComponent* MasterSword_Scabbard;
+		FPStaticMeshComponent* MasterSword_Handle;
+		FPStaticMeshComponent* MasterSword_Blade;
+		FPStaticMeshComponent* MasterSword_BackHandle;
+		FPStaticMeshComponent* Mouth;
+		FPStaticMeshComponent* Shield_Back;
+		FPStaticMeshComponent* Shidld_Hand;
+
 		FPSceneComponent* ShieldPivot;
 		FPSpringArmComponent* SpringArm;
 		FPCameraComponent* PlayerCamera;

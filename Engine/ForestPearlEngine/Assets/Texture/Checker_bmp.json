@@ -1,8 +1,5 @@
 {
-  "TextureData": [
-    {
-      "Path": "checker.bmp",
-      "Type": "WIC"
-    }
-  ]
+  "Name" : "Checker_bmp",
+  "Path": "checker.bmp",
+  "Type": "WIC"
 }

@@ -456,6 +456,8 @@ void Renderer::MeshRenderPass()
 	//Depth Dtencill 상태 설정
 	Device.OMSetDepthStencilState(ZEnable);
 
+	Device.OMSetBlendState(BS_ADD);
+
 	//렌더링 모드 전환
 	Device.UpdateRSSetState(bFill, bCull);
 
@@ -482,6 +484,12 @@ void Renderer::MeshRenderPass()
 	{
 		for(const RenderingData::MeshRenderItem& RenderItem : MeshRenderList)
 		{
+			/*
+			std::cout << RenderItem.MeshPath << "\n";
+			std::cout << RenderItem.TextureList.size() << "\n";
+			std::cout << RenderItem.VertexShaderPath << "\n";
+			std::cout << RenderItem.PixelShaderPath << "\n";
+			*/
 
 			std::tuple<void*, void*, void*> VertexShaderData = AssetManager->GetVertexShader(RenderItem.VertexShaderPath);
 			std::pair<void*, void*> PixelShaderData = AssetManager->GetPixelShader(RenderItem.PixelShaderPath);
@@ -536,14 +544,19 @@ void Renderer::MeshRenderPass()
 			}
 
 			//Sampler 셋팅 End.
-
-
-
-			std::vector<FPVertexBufferData> PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
-			std::vector<FPVertexBufferData> NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.MeshPath);
-			std::vector<FPVertexBufferData> ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);
-			std::vector<FPVertexBufferData> UVVB = AssetManager->GetUVVertexBuffer(RenderItem.MeshPath);
-			std::vector<FPIndexBufferData> IndexB = AssetManager->GetIndexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData UVVB = AssetManager->GetUVVertexBuffer(RenderItem.MeshPath);
+			FPIndexBufferData IndexB = AssetManager->GetIndexBuffer(RenderItem.MeshPath);
+			/*
+			std::cout << "<VB Size>" << "\n";
+			std::cout << PositionVB.VB_Cnt << "\n";
+			std::cout << NormalVB.VB_Cnt << "\n";
+			std::cout << ColorVB.VB_Cnt << "\n";
+			std::cout << UVVB.VB_Cnt << "\n";
+			std::cout << IndexB.Index_Cnt << "\n";
+			*/
 
 			for (RenderingData::FPViewPort& CamViewPort : CamItem.ViewPort)
 			{
@@ -586,20 +599,19 @@ void Renderer::MeshRenderPass()
 					Device.UpdatePixelShaderSubresource(Slot, CamViewPort.PixelConstBuffer.Buffer.data(), Offset, Size);
 				}
 
-				int MeshSize = PositionVB.size();
-				for (int i = 0; i < MeshSize; ++i)
-				{
-					Device.IASetVertexBuffers(0, 1, PositionVB[i].VertexBuffer, &(PositionVB[i].Stride), &(PositionVB[i].Offset));
-					Device.IASetVertexBuffers(1, 1, NormalVB[i].VertexBuffer, &(NormalVB[i].Stride), &(NormalVB[i].Offset));
-					Device.IASetVertexBuffers(2, 1, ColorVB[i].VertexBuffer, &(ColorVB[i].Stride), &(ColorVB[i].Offset));
-					Device.IASetVertexBuffers(3, 1, UVVB[i].VertexBuffer, &(UVVB[i].Stride), &(UVVB[i].Offset));
-					Device.IASetIndexBuffers(IndexB[i].IndexBuffer, IndexB[i].Offset);
 
-					Device.DrawIndexed(IndexB[i].Index_Cnt, 0, 0);																//Draw Call
-				}
+				Device.IASetVertexBuffers(0, 1, PositionVB.VertexBuffer, &(PositionVB.Stride), &(PositionVB.Offset));
+				Device.IASetVertexBuffers(1, 1, NormalVB.VertexBuffer, &(NormalVB.Stride), &(NormalVB.Offset));
+				Device.IASetVertexBuffers(2, 1, ColorVB.VertexBuffer, &(ColorVB.Stride), &(ColorVB.Offset));
+				Device.IASetVertexBuffers(3, 1, UVVB.VertexBuffer, &(UVVB.Stride), &(UVVB.Offset));
+				Device.IASetIndexBuffers(IndexB.IndexBuffer, IndexB.Offset);
+
+				Device.DrawIndexed(IndexB.Index_Cnt, 0, 0);																//Draw Call
 			}
 		}
 	}
+
+	Device.OMSetBlendState(BS_NULL_);
 }
 
 
@@ -671,8 +683,8 @@ void Renderer::GizmoRenderPass()
 				Device.UpdatePixelShaderSubresource(Slot, RenderItem.PixelConstBuffer.Buffer.data(), Offset, Size);
 			}
 
-			std::vector<FPVertexBufferData> PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
-			std::vector<FPVertexBufferData> ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);
 
 			for (RenderingData::FPViewPort& CamViewPort : CamItem.ViewPort)
 			{
@@ -714,14 +726,11 @@ void Renderer::GizmoRenderPass()
 					Device.UpdatePixelShaderSubresource(Slot, CamViewPort.PixelConstBuffer.Buffer.data(), Offset, Size);
 				}
 
-				int MeshSize = PositionVB.size();
-				for (int i = 0; i < MeshSize; ++i)
-				{
-					Device.IASetVertexBuffers(0, 1, PositionVB[i].VertexBuffer, &(PositionVB[i].Stride), &(PositionVB[i].Offset));
-					Device.IASetVertexBuffers(2, 1, ColorVB[i].VertexBuffer, &(ColorVB[i].Stride), &(ColorVB[i].Offset));
 
-					Device.Draw(PositionVB[i].VB_Cnt, 0);																		//Draw Call
-				}
+				Device.IASetVertexBuffers(0, 1, PositionVB.VertexBuffer, &(PositionVB.Stride), &(PositionVB.Offset));
+				Device.IASetVertexBuffers(2, 1, ColorVB.VertexBuffer, &(ColorVB.Stride), &(ColorVB.Offset));
+
+				Device.Draw(PositionVB.VB_Cnt, 0);																		//Draw Call
 			}
 		}
 	}
@@ -797,9 +806,9 @@ void Renderer::NormalRenderPass()
 				Device.UpdatePixelShaderSubresource(Slot, RenderItem.PixelConstBuffer.Buffer.data(), Offset, Size);
 			}
 
-			std::vector<FPVertexBufferData> PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
-			std::vector<FPVertexBufferData> NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.MeshPath);
-			std::vector<FPIndexBufferData> IndexB = AssetManager->GetIndexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.MeshPath);
+			FPIndexBufferData IndexB = AssetManager->GetIndexBuffer(RenderItem.MeshPath);
 
 			for (RenderingData::FPViewPort& CamViewPort : CamItem.ViewPort)
 			{
@@ -841,15 +850,11 @@ void Renderer::NormalRenderPass()
 					Device.UpdatePixelShaderSubresource(Slot, CamViewPort.PixelConstBuffer.Buffer.data(), Offset, Size);
 				}
 
-				int MeshSize = PositionVB.size();
-				for (int i = 0; i < MeshSize; ++i)
-				{
-					Device.IASetVertexBuffers(0, 1, PositionVB[i].VertexBuffer, &(PositionVB[i].Stride), &(PositionVB[i].Offset));
-					Device.IASetVertexBuffers(1, 1, NormalVB[i].VertexBuffer, &(NormalVB[i].Stride), &(NormalVB[i].Offset));
-					Device.IASetIndexBuffers(IndexB[i].IndexBuffer, IndexB[i].Offset);
+				Device.IASetVertexBuffers(0, 1, PositionVB.VertexBuffer, &(PositionVB.Stride), &(PositionVB.Offset));
+				Device.IASetVertexBuffers(1, 1, NormalVB.VertexBuffer, &(NormalVB.Stride), &(NormalVB.Offset));
+				Device.IASetIndexBuffers(IndexB.IndexBuffer, IndexB.Offset);
 
-					Device.DrawInstanced(2, PositionVB[i].VB_Cnt, 0, 0);																		//Draw Call
-				}
+				Device.DrawInstanced(2, PositionVB.VB_Cnt, 0, 0);																		//Draw Call
 			}
 		}
 	}

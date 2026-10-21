@@ -1,4 +1,7 @@
 {
+  "Name": "Windmill_Body_StaticMesh",
+  "NodeName": "Cone",
+
   "MeshData": [
     {
       "Path": "Windmill/Windmill_Body.fbx",
@@ -113,5 +116,7 @@
     }
   ],
 
-  "Material": ""
+  "Material": {
+    "Name": "DefaultMaterial"
+  }
 }

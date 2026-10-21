@@ -1,0 +1,14 @@
+{
+    "Name": "ToonLink_Mouth5_StaticMesh",
+    "NodeName": "_022_toonlink_Down_VIS_O_OBJ_",
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "mouth10.002_ToonLink_Mouth5_StaticMesh_MaterialInstance"
+    }
+}

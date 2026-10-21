@@ -1,6 +1,6 @@
 #pragma once
 #include "FPStreamableRenderAssetr.h"
-#include "Define/FPDataDefine.h"
+#include "Renderers/FPRenderingCommon.h"
 #include "FTransform.h"
 #include <map>
 #include <vector>

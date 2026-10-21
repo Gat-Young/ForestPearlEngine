@@ -6,14 +6,14 @@
 
 FPMaterial::FPMaterial()
 {
-	this->VertexShaderPath = "DefaultVertexShader.vso";
-	this->PixelShaderPath = "DefaultPixelShader.pso";
-	MaterialVertexConstantBuffer.BaseColor = FPVector4{ 1.0f, 1.0f, 1.0f, 1.0f };
-	MaterialVertexConstantBuffer.Diffuse = FPVector4{ 1.0f, 1.0f, 1.0f, 1.0f };
-	MaterialVertexConstantBuffer.Ambient = FPVector4{ 1.0f, 1.0f, 1.0f, 1.0f };
+	//this->VertexShaderPath = "DefaultVertexShader";
+	//this->PixelShaderPath = "DefaultPixelShader";
+	//MaterialVertexConstantBuffer.BaseColor = FPVector4{ 1.0f, 1.0f, 1.0f, 1.0f };
+	//MaterialVertexConstantBuffer.Diffuse = FPVector4{ 1.0f, 1.0f, 1.0f, 1.0f };
+	//MaterialVertexConstantBuffer.Ambient = FPVector4{ 1.0f, 1.0f, 1.0f, 1.0f };
 
-	//우선 기본으로 무조건 0번에 Texture를 등록
-	AddTexture(0);
+	////우선 기본으로 무조건 0번에 Texture를 등록
+	//AddTexture(0);
 
 	// 0번은 월드-뷰-프로젝션 , 1번은 ViewPort용 상수 버퍼임, 2번은 Light용으로 추가될 것
 	//Render에서 Offset을 부여하므로 0번 부터 계산, 단 Shader 코드를 짤때는 염두할 것

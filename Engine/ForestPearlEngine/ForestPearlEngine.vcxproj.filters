@@ -43,9 +43,6 @@
     <Filter Include="Assets">
       <UniqueIdentifier>{2ea53f86-e9ca-4467-a598-ff02afd67c22}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Assets\Shader">
-      <UniqueIdentifier>{a1c83662-ba2a-4eba-a8ac-3979cdeefad8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="FPGameInstance">
       <UniqueIdentifier>{73f7a809-2b88-4b57-83f4-4e10742310a1}</UniqueIdentifier>
     </Filter>
@@ -73,18 +70,6 @@
     <Filter Include="Component\Light">
       <UniqueIdentifier>{e3ec462d-966a-4937-aedf-981294353844}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Assets\Shader\Common">
-      <UniqueIdentifier>{3d47e776-836d-42a1-b658-3c1e8fc9e6ed}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Shader\Common\Lighting">
-      <UniqueIdentifier>{6c01d566-f9fc-4c9e-8784-003a5fe87d0c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Shader\VS">
-      <UniqueIdentifier>{68ee037b-214a-496d-86b0-f668d37bf5f9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Shader\PS">
-      <UniqueIdentifier>{6a1799ab-975c-4226-bbf8-77558d01c16a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="FPGameInstance\RenderList">
       <UniqueIdentifier>{cdc845c4-251c-4198-bdf5-4d90fb98e8a0}</UniqueIdentifier>
     </Filter>
@@ -94,11 +79,38 @@
     <Filter Include="FPGameInstance\RenderList\Source">
       <UniqueIdentifier>{2bf95da7-78c5-41cd-b824-8eed22857f23}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Assets\Shader\Common\Normal">
-      <UniqueIdentifier>{d3870e15-d0f1-444c-bd17-1544b6bb10c4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Assets\Texture">
       <UniqueIdentifier>{4dfb6818-38eb-4819-910d-9d130b63ed0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Material">
+      <UniqueIdentifier>{76010f39-ce50-4bb6-9e2a-1b8fbe47e78d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\ShaderResource">
+      <UniqueIdentifier>{a1c83662-ba2a-4eba-a8ac-3979cdeefad8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\ShaderResource\Common">
+      <UniqueIdentifier>{3d47e776-836d-42a1-b658-3c1e8fc9e6ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\ShaderResource\Common\Lighting">
+      <UniqueIdentifier>{6c01d566-f9fc-4c9e-8784-003a5fe87d0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\ShaderResource\Common\Normal">
+      <UniqueIdentifier>{d3870e15-d0f1-444c-bd17-1544b6bb10c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\ShaderResource\VS">
+      <UniqueIdentifier>{68ee037b-214a-496d-86b0-f668d37bf5f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\ShaderResource\PS">
+      <UniqueIdentifier>{6a1799ab-975c-4226-bbf8-77558d01c16a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Shader">
+      <UniqueIdentifier>{01e3800a-7327-4e3d-96d2-d877a38daec2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Shader\VS">
+      <UniqueIdentifier>{bca78b27-53b5-41b0-b584-22c556ac5a1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Shader\PS">
+      <UniqueIdentifier>{955e596e-4ac3-4dfe-8982-0cc615d0eae5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -185,9 +197,6 @@
     </ClInclude>
     <ClInclude Include="Utility\FPPathManager.h">
       <Filter>Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="Define\FPDataDefine.h">
-      <Filter>Define</Filter>
     </ClInclude>
     <ClInclude Include="EngineLoader.h">
       <Filter>Header Files</Filter>
@@ -419,9 +428,6 @@
     <ClCompile Include="FPStaticMesh.cpp">
       <Filter>RenderAsset</Filter>
     </ClCompile>
-    <ClCompile Include="Define\FPDataDefine.cpp">
-      <Filter>Define</Filter>
-    </ClCompile>
     <ClCompile Include="FPGizmoComponent.cpp">
       <Filter>Component\Gizmo</Filter>
     </ClCompile>
@@ -461,29 +467,9 @@
     <ClCompile Include="FPTexture2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Assets\Shader\DefaultShader.fx">
-      <Filter>Assets\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Assets\Shader\DefaultGizmoVertexShader.vsh">
-      <Filter>Assets\Shader\VS</Filter>
-    </FxCompile>
-    <FxCompile Include="Assets\Shader\DefaultVertexShader.vsh">
-      <Filter>Assets\Shader\VS</Filter>
-    </FxCompile>
-    <FxCompile Include="Assets\Shader\DefaultGizmoPixelShader.psh">
-      <Filter>Assets\Shader\PS</Filter>
-    </FxCompile>
-    <FxCompile Include="Assets\Shader\DefaultPixelShader.psh">
-      <Filter>Assets\Shader\PS</Filter>
-    </FxCompile>
-    <FxCompile Include="Assets\Shader\NormalDebugVertexShader.vsh">
-      <Filter>Assets\Shader\VS</Filter>
-    </FxCompile>
-    <FxCompile Include="Assets\Shader\NormalDebugPixelShader.psh">
-      <Filter>Assets\Shader\PS</Filter>
-    </FxCompile>
+    <ClCompile Include="Renderers\FPRenderingCommon.cpp">
+      <Filter>Renderers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\StaticMesh\Cube_StaticMesh.json">
@@ -491,12 +477,6 @@
     </None>
     <None Include="Assets\StaticMesh\Sphere_StaticMesh.json">
       <Filter>Assets\StaticMesh</Filter>
-    </None>
-    <None Include="Assets\Shader\LambertLight.hlsli">
-      <Filter>Assets\Shader\Common\Lighting</Filter>
-    </None>
-    <None Include="Assets\Shader\NormalCalculate.hlsli">
-      <Filter>Assets\Shader\Common\Normal</Filter>
     </None>
     <None Include="Assets\StaticMesh\Plane_StaticMesh.json">
       <Filter>Assets\StaticMesh</Filter>
@@ -510,5 +490,52 @@
     <None Include="Assets\Texture\Default_Texture512.json">
       <Filter>Assets\Texture</Filter>
     </None>
+    <None Include="Assets\Material\DefaultMaterial.json">
+      <Filter>Assets\Material</Filter>
+    </None>
+    <None Include="Assets\ShaderResource\LambertLight.hlsli">
+      <Filter>Assets\ShaderResource\Common\Lighting</Filter>
+    </None>
+    <None Include="Assets\ShaderResource\NormalCalculate.hlsli">
+      <Filter>Assets\ShaderResource\Common\Normal</Filter>
+    </None>
+    <None Include="Assets\Shader\DefaultGizmoPixelShader.json">
+      <Filter>Assets\Shader\PS</Filter>
+    </None>
+    <None Include="Assets\Shader\DefaultPixelShader.json">
+      <Filter>Assets\Shader\PS</Filter>
+    </None>
+    <None Include="Assets\Shader\DefaultGizmoVertexShader.json">
+      <Filter>Assets\Shader\VS</Filter>
+    </None>
+    <None Include="Assets\Shader\DefaultVertexShader.json">
+      <Filter>Assets\Shader\VS</Filter>
+    </None>
+    <None Include="Assets\Shader\NormalDebugVertexShader.json">
+      <Filter>Assets\Shader\VS</Filter>
+    </None>
+    <None Include="Assets\Shader\NormalDebugPixelShader.json">
+      <Filter>Assets\Shader\PS</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Assets\ShaderResource\DefaultPixelShader.psh">
+      <Filter>Assets\ShaderResource\PS</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\NormalDebugPixelShader.psh">
+      <Filter>Assets\ShaderResource\PS</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\DefaultGizmoVertexShader.vsh">
+      <Filter>Assets\ShaderResource\VS</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\DefaultVertexShader.vsh">
+      <Filter>Assets\ShaderResource\VS</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\NormalDebugVertexShader.vsh">
+      <Filter>Assets\ShaderResource\VS</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\DefaultGizmoPixelShader.psh">
+      <Filter>Assets\ShaderResource\PS</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

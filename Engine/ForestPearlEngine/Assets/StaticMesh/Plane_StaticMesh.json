@@ -1,4 +1,7 @@
 {
+  "Name": "Plane_StaticMesh",
+  "NodeName": "Plane",
+
   "MeshData": [
     {
       "Path": "Primitive_Model/Plane.fbx",
@@ -8,5 +11,7 @@
 
   "Sockets": [],
 
-  "Material": ""
+  "Material": {
+    "Name": "DefaultMaterial"
+  }
 }

@@ -1,0 +1,14 @@
+{
+    "Name": "ToonLink_Hand_StaticMesh",
+    "NodeName": "_008_Gamemodel_",
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "skin.002_ToonLink_Hand_StaticMesh_MaterialInstance"
+    }
+}

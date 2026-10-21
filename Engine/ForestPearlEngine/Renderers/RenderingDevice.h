@@ -80,6 +80,9 @@ class RenderingDevice
 		//샘플러 상태 객체
 		ID3D11SamplerState* SamplerState[Sampler_MAX_];
 
+		//색상, 알파 혼합 관리 객체
+		ID3D11BlendState* BlendStateObject[BS_MAX_];
+
 		DXGI_MODE_DESC1 DisplayMode;
 
 		//AA & AF Option
@@ -197,6 +200,12 @@ class RenderingDevice
 
 		//Sampler 상태 설정
 		HRESULT PSSetSamplers(UINT Slot, UINT NumSamplers, FPSamplerType SamplerType);
+
+		//BlendState 관리 객체 생성
+		HRESULT CreateBlendStateObject();
+
+		//BlendState 상태 설정
+		HRESULT OMSetBlendState(FPBlendingStateType BlendType);
 
 		//GetDXDevice
 		ID3D11Device* GetDXDevice() { return Device.Get(); };

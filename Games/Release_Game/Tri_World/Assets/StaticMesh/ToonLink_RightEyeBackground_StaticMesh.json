@@ -1,0 +1,14 @@
+{
+    "Name": "ToonLink_RightEyeBackground_StaticMesh",
+    "NodeName": "_010_toonlink_RMabuta_VIS_O_OBJ_",
+    "MeshData": [
+        {
+            "Path": "ToonLink/ToonLink.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "eye.002_ToonLink_RightEyeBackground_StaticMesh_MaterialInstance"
+    }
+}

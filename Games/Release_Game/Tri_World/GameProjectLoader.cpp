@@ -124,6 +124,6 @@ void LoadAssets()
 
 std::string ReturnStartLevel()
 {
-	return "ToonLink";
-	//return "TriWorld";
+	//return "ToonLink";
+	return "TriWorld";
 }

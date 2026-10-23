@@ -1,0 +1,5 @@
+{
+  "Name": "TerrainVertexShader",
+  "Path": "TerrainVertexShader.vso",
+  "InputLayout": "Default"
+}

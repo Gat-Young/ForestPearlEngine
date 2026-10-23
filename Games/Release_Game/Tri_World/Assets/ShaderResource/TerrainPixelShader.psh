@@ -1,0 +1,37 @@
+// Tree Rendering Test 용
+
+
+////////////////////////////////////////////////////////////////////////////// 
+//
+//! Pixel Shader Main : 픽셀 셰이더 메인 함수.
+//
+////////////////////////////////////////////////////////////////////////////// 
+
+//텍스처 객체 변수 : 엔진에서 공급됨, 레지스터 직접 지정. (기본값은 t0)
+Texture2D TexDiff : register(t0);
+
+//텍스처 셈플러 (직접지정)  기본값은 s0
+SamplerState Smpler : register(s0);
+
+float4 PS_Main(
+                float4 pos : SV_POSITION, //[입력] 정점좌표. Vertex Position(Model Space, 3D) 
+                float4 col : COLOR0, //[입력] 정점색. Vertex Color : "Diffuse" 
+                float2 uv : TEXCOORD0, //[입력] uv
+                bool IsFrontFace : SV_IsFrontFace //CULLMODE None일때 앞 뒷면 판단
+                ) : SV_TARGET
+{
+	//지정색 출력.
+	//float4 col = {1, 0, 1, 1};
+    
+    //텍스처 샘플링
+   
+    //uv.x = uv.x * 20;
+    //uv.y = uv.y * 20;
+    
+    float4 tex = TexDiff.Sample(Smpler, uv);
+    
+    col = col * tex;
+    
+    return col;
+}
+

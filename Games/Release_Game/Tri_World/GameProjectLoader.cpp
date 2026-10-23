@@ -55,8 +55,9 @@ void LoadAssets()
 	FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
 
 	//Shader Load
+	AssetLoader->LoadVertexShader("TerrainVertexShader.json", AssetOwner::User);
+	AssetLoader->LoadPixelShader("TerrainPixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("WindmillWingBody_PixelShader.json", AssetOwner::User);
-
 	AssetLoader->LoadPixelShader("TreePixelShader.json", AssetOwner::User);
 
 	//Texture Load
@@ -91,6 +92,10 @@ void LoadAssets()
 	//Tree Texture
 	AssetLoader->LoadTexture("Tree/Tree01s_dds.json", AssetOwner::User);
 
+	//Terrain Texture Load
+	AssetLoader->LoadTexture("Terrain/lnd_micro16_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Terrain/Field_micro02_dds.json", AssetOwner::User);
+
 	//Material Load
 
 	//ToonLink Material
@@ -118,8 +123,14 @@ void LoadAssets()
 	//Tree Material
 	AssetLoader->LoadMaterial("Tree/Tree_Material.json", AssetOwner::User);
 
+	//Terrain Mayerial
+	AssetLoader->LoadMaterial("Terrain/Terrain_Material.json", AssetOwner::User);
+
+	/////////////////////////
 	//Static_Mesh Load
-	AssetLoader->LoadStaticMesh("Terrain_StaticMesh.json", AssetOwner::User);
+
+	//Terrain Static Mesh
+	AssetLoader->LoadStaticMesh("Terrain/Terrain_StaticMesh.json", AssetOwner::User);
 
 	//Windmill Static Mesh
 	AssetLoader->LoadStaticMesh("Windmill/Windmill_Body_StaticMesh.json", AssetOwner::User);

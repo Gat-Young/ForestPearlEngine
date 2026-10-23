@@ -270,5 +270,11 @@
     <FxCompile Include="Assets\ShaderResource\TreePixelShader.psh">
       <Filter>Assets\ShaderResource</Filter>
     </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\TerrainVertexShader.vsh">
+      <Filter>Assets\ShaderResource</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\TerrainPixelShader.psh">
+      <Filter>Assets\ShaderResource</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

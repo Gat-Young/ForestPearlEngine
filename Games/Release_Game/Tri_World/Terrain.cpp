@@ -10,9 +10,6 @@ void Terrain::Initialize()
 {
 	Mesh = new FPStaticMeshComponent(this, "Terrain_StaticMesh");
 
-	FPVector4 Color = { 0.678f, 1.000f, 0.184f, 1.0f };
-	Mesh->GetMaterial().SetBaseColor(Color);
-
 	SetRootComponent((FPSceneComponent*)Mesh);
 
 }

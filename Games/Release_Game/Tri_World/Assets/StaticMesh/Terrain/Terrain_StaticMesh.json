@@ -12,6 +12,6 @@
   "Sockets": [],
 
   "Material": {
-    "Name": "DefaultMaterial"
+    "Name": "Terrain_Material"
   }
 }

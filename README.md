@@ -45,6 +45,7 @@
 | 💡 | **Lambert Light** | `FPDirectionalLightComponent`가 Light Render List에 등록 → 메시마다 **Local 공간 방향**으로 변환해 VS 상수 버퍼로 전달, 정점 단위 Lambert 계산 (최대 8개) |
 | 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS) → Material **텍스처 슬롯**(PS `t#`) + 샘플러 8종. 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환 |
 | 🎭 | **데이터 기반 Material** | Material도 JSON(`LoadMaterial`)으로 정의. 재질 1개당 **기본 Material** + 메시마다 색상 복제·텍스처 배열을 가진 **Material Instance** 두 단계로 저장하고, `FPAssetManager::MakeMaterial`이 실행 중 `FPMaterial` 인스턴스로 변환 (없으면 `DefaultMaterial` 사용) |
+| 🪟 | **Two Sided Material** | Material JSON의 `"TwoSided"`(기본 `false`)로 메시별 양면 렌더링 지정. `MeshRenderPass`가 **메시마다** Rasterizer State의 Cull을 `!TwoSided`로 결정하고, 기본 PS는 `SV_IsFrontFace`를 입력으로 받음. Normal Line은 뒷면 노멀(주황)도 함께 표시 |
 | 🧪 | **FBX → JSON 변환 도구** | `Tool/FBXToStaticMeshJsonTranslator` 콘솔 툴이 FBX 폴더를 통째로 읽어 **StaticMesh / Material / Material Instance / Texture** JSON을 한 번에 생성 (ToonLink 데모 모델 전체가 이 도구로 변환됨) |
 | 🌫️ | **Alpha Blend** *(초기 구현)* | `MeshRenderPass`가 매 프레임 표준 알파 블렌드 상태(`src·a + dst·(1−a)`, Alpha-to-Coverage)를 걸고 기본 PS가 텍스처 알파를 그대로 출력. 모든 메시에 일괄 적용되며 Z-Order 정렬은 아직 없음 |
 | 🧭 | **Normal Line 디버그** | 별도 `NormalRenderPass`. 정점 1개를 인스턴스 1개로 `DrawInstanced`해 노멀 선(초록)을 그림 (`F6`) |
@@ -74,11 +75,11 @@ ForestPearlEngine/
 ├── Games/
 │   └── Release_Game/              # 엔진 현재 버전과 연결되는 게임 프로젝트
 │       ├── Tri_World/             #   ★ Demo 프로젝트 (솔루션에 포함)
-│       ├── Lambert_Light/         #   Lambert Light / Normal Line / Texture 개발용 프로젝트 (Cube · Plane + DirectionalLight)
+│       ├── Lambert_Light/         #   Lambert Light / Normal Line / Texture 개발용 프로젝트 (Cube · Plane + DirectionalLight, 현재 솔루션에서는 제외됨)
 │       └── ShaderCode_Triangle/   #   커스텀 Material / 상수 버퍼 샘플 (이전 API 기준)
 ├── Tool/
 │   ├── DXTexViewer/                # DxTex.exe — 이미지 → DDS 변환·확인 도구 (d3dx9 DLL 포함)
-│   └── FBXToStaticMeshJsonTranslator/  # FBX 폴더 → StaticMesh / Material / Texture JSON 일괄 변환 콘솔 툴 (ufbx + nlohmann json)
+│   └── FBXToStaticMeshJsonTranslator/  # FBX 폴더 → StaticMesh / Material / Texture JSON 일괄 변환 콘솔 툴 (ufbx + nlohmann json). EXE/ 폴더에 빌드된 실행 파일 포함
 ├── GameTemplate/
 │   ├── Readme.txt
 │   └── TriWorldTemplate_Ver1.0.zip   # 새 게임 프로젝트용 템플릿
@@ -183,9 +184,10 @@ Engine/ForestPearlEngine/
 │   ├── Material/                     # DefaultMaterial.json (Material JSON 미지정 시 fallback)
 │   ├── Texture/                      # 텍스처 JSON (Default_Texture512 · Checker_bmp · Checker_dds)
 │   ├── TextureResource/              # 이미지 원본 (*.dds · checker.bmp)
-│   └── Shader/
+│   ├── Shader/                       # 셰이더 등록 JSON (Name · Path · InputLayout) — Default* · DefaultGizmo* · NormalDebug*
+│   └── ShaderResource/               # HLSL 소스와 컴파일 결과(bin/)
 │       ├── DefaultVertexShader.vsh   # 기본 Mesh VS (WVP 변환 + Lambert Light 정점 계산)
-│       ├── DefaultPixelShader.psh    # 기본 Mesh PS (정점 색 × 텍스처 t0 / s0)
+│       ├── DefaultPixelShader.psh    # 기본 Mesh PS (정점 색 × 텍스처 t0 / s0, SV_IsFrontFace 입력)
 │       ├── LambertLight.hlsli        # LambertLight() 계산 함수
 │       ├── DefaultGizmoVertexShader.vsh / DefaultGizmoPixelShader.psh  # Grid / Axis 기즈모용 (라이트 없음)
 │       ├── NormalDebugVertexShader.vsh / NormalDebugPixelShader.psh    # Normal Line용
@@ -230,11 +232,13 @@ Games/Release_Game/Tri_World/
 └── Assets/
     ├── Font/            Consolas10.sfont, 굴림9k.sfont
     ├── Level/           TriWorld.json, ToonLink.json (현재 시작 레벨)
-    ├── Model/           Terrain/ · ToonLink/ · Tree/ · Windmill/   (*.fbx)
-    ├── StaticMesh/      *_StaticMesh.json (51개 — ToonLink 서브메시 다수 포함)
-    ├── Material/        *_Material.json + *_MaterialInstance.json (64개)
-    ├── Texture/         *.json (20개)
-    └── TextureResource/ *.png                                      (39개, ToonLink 캐릭터 텍스처)
+    ├── Model/           Terrain/ · ToonLink/ · Tree/ · Windmill/   (*.fbx — Windmill은 Windmill.fbx 하나로 통합)
+    ├── StaticMesh/      Terrain/ · Tree/ · Windmill/ · ToonLink/   (*_StaticMesh.json, 51개)
+    ├── Material/        Terrain/ · Tree/ · Windmill/ · ToonLink/   (68개 — 모델별 폴더로 분리)
+    ├── Texture/         Terrain/ · Tree/ · Windmill/ · ToonLink/   (*.json, 26개)
+    ├── TextureResource/ Terrain/ · Tree/ · Windmill/ · ToonLink/   (67개: png 45 · dds 14 · jpg 5 · tga 3)
+    ├── Shader/          TerrainVertexShader.json 등 4개            (셰이더 등록 JSON)
+    └── ShaderResource/  TerrainVertexShader.vsh · TerrainPixelShader.psh · TreePixelShader.psh · WindmillWingBody.psh (+ bin/)
 ```
 
 ---
@@ -603,7 +607,7 @@ flowchart LR
 
 | Pass | 읽는 목록 | Topology | 반복 단위 | 상수 버퍼 | 정렬 |
 |---|---|---|---|---|---|
-| `MeshRenderPass` | `MeshRenderList` | `TRIANGLELIST` | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Light · Material** (Renderer가 구성, [Light · Normal](#lambert-light--normal-line)) | `Priority` 오름차순 (+ 시작/종료 시 [Alpha Blend](#alpha-blend-초기-구현) 상태 On/Off) |
+| `MeshRenderPass` | `MeshRenderList` | `TRIANGLELIST` | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Light · Material** (Renderer가 구성, [Light · Normal](#lambert-light--normal-line)) | `Priority` 오름차순 (+ 시작/종료 시 [Alpha Blend](#alpha-blend-초기-구현) 상태 On/Off). Rasterizer(Cull)는 **메시마다** 지정 ([Two Sided](#two-sided-material)) |
 | `GizmoRenderPass` | `GizmoRenderList` | `LINELIST` | 카메라 → 기즈모 → 뷰포트 → 서브 메시 | Object · ViewPort · Material | `Priority` 오름차순 |
 | `NormalRenderPass` | `NormalRenderList` | `LINELIST` (`DrawInstanced`) | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Normal Matrix** | 없음 (`bNormal`이 `true`일 때만 실행) |
 | `UIRenderPass` | `UIRenderList` | (SpriteBatch) | 텍스트 → `UIViewPort` | 사용 안 함 | `Priority` 오름차순 |
@@ -630,7 +634,7 @@ flowchart LR
 |---|:-:|:-:|:-:|:-:|
 | 상수 버퍼 14개 바인딩 | ✔ | ✔ | ✔ | ✔ (사용하지 않는데도 바인딩) |
 | Depth Stencil State (`ZEnable`) | ✔ | ✔ | ✔ | ✘ |
-| Rasterizer State (`bFill` / `bCull`) | ✔ | ✔ | ✔ | ✘ |
+| Rasterizer State | ✔ (**메시마다**: `bFill`, Cull = `!TwoSided`) | ✔ (`bFill` / `bCull`, Pass 시작 시 1회) | ✔ (`bFill` / `bCull`, Pass 시작 시 1회) | ✘ |
 | Topology | `TRIANGLELIST` | `LINELIST` | `LINELIST` | ✘ |
 | InputLayout · VS · PS | 항목마다 | 항목마다 | 항목마다 | ✘ (SpriteBatch가 자체 지정) |
 | Blend State · RTV / DSV | **✔** (`BS_ADD`, [Alpha Blend](#alpha-blend-초기-구현)) | ✘ | ✘ | ✘ |
@@ -838,7 +842,7 @@ flowchart TD
 
 - **텍스처** — `MeshRenderPass`는 항목마다 Material 상수 버퍼 갱신 뒤 텍스처 슬롯을 `PSSetShaderResources(t#)`, 샘플러를 `PSSetSamplers(s#)`로 바인딩합니다 (Gizmo · Normal Pass는 해당 없음).
 - **정렬** — `Priority` **값이 작은 항목부터** 그려집니다 (`std::sort` 오름차순). 메시 · 기즈모 컴포넌트의 `SetPriority(int)`로 지정합니다.
-- **Fill / Cull** — 컴포넌트별 설정이 아니라 **Pass 전체에 적용되는 전역 값**입니다. `ForestPearlEngine::SetbFill(bool)`, `SetbCull(bool)` 조합으로 4개의 Rasterizer State 중 하나가 선택됩니다.
+- **Fill / Cull** — `bFill`은 `ForestPearlEngine::SetbFill(bool)`로 바꾸는 전역 값입니다. **Cull은 Pass마다 다릅니다.** `MeshRenderPass`는 메시마다 `UpdateRSSetState(bFill, !TwoSided)`를 호출하므로 `SetbCull`(<kbd>F4</kbd>)의 영향을 받지 않고 Material의 `TwoSided`로 결정됩니다. `GizmoRenderPass` · `NormalRenderPass`는 여전히 `bFill` · `bCull` 전역 값으로 Pass 시작 시 한 번 지정합니다.
 - **Draw** — Mesh Pass는 Index Buffer로 `DrawIndexed(Index_Cnt, 0, 0)`을, Gizmo Pass는 인덱스 없이 `Draw(VB_Cnt, 0)`을, Normal Pass는 `DrawInstanced(2, VB_Cnt, 0, 0)`을 호출합니다. FBX 로딩 시 코너마다 만든 정점은 `ufbx_generate_indices`로 중복을 병합합니다 ([정점 스트림 분리와 Index Buffer](#정점-스트림-분리와-index-buffer)).
 - **깊이 테스트** — `ForestPearlEngine::SetZEnable(bool)`로 전역 On/Off.
 - **카메라** — 활성 카메라를 모두 순회하며, 카메라마다 Render List 전체를 다시 그립니다.
@@ -905,7 +909,7 @@ cbuffer MaterialConstBuffer   : register(b3) { MATERIAL Material; };    // Mater
 ADirectionalLight::ADirectionalLight()
 {
     LightComponent = new FPDirectionalLightComponent(this);
-    FPVector3 Dir{ 0.0f, -2.0f, 3.0f };
+    FPVector3 Dir{ 0.43f, -0.64f, 0.64f };            // 정규화된 방향 (Tri_World)
     LightComponent->SetDirection(Dir);
 }
 ```
@@ -921,8 +925,9 @@ Level JSON에 `"class": "ADirectionalLight"`로 배치하며, 클래스는 `Load
 | Render Pass | `NormalRenderPass` — `MeshRenderPass` 다음, `GizmoRenderPass` 다음에 호출. Topology `LINELIST` |
 | 그리는 방식 | 메시의 **정점 1개 = 인스턴스 1개**. Input Layout의 `POSITION`(슬롯 0) · `NORMAL`(슬롯 1)을 `PER_INSTANCE_DATA`로 읽고 `DrawInstanced(2, 정점 수, 0, 0)`으로 선 1개(정점 2개)를 그립니다. 정점 수는 병합된 **고유 정점 수**(`VB_Cnt`)이며 Index Buffer는 사용하지 않습니다 |
 | 선의 양끝 | `SV_VertexID`가 0이면 시작점(정점 위치), 1이면 끝점(`시작점 + WorldNormal * NormalLength`) |
-| Normal Matrix | CPU(`CreateNormalRenderList`)에서 `transpose(inverse(World))`를 계산해 VS `b2`로 전달. 셰이더의 `TransformWorldNormal()`이 이 행렬로 노멀을 월드로 변환하고 정규화합니다. World 행렬식이 0이면 그 항목은 그리지 않습니다 |
-| 색 | 초록 `(0, 1, 0, 1)` 고정 (`NormalDebugPixelShader`) |
+| Normal Matrix | CPU(`CreateNormalRenderList`)에서 `transpose(inverse(World))`를 계산해 VS `b2`로 전달(`mNormal`, `NormalLength`, `NormalSign`). 셰이더의 `TransformWorldNormal()`이 이 행렬로 노멀을 월드로 변환하고 정규화합니다. World 행렬식이 0이면 그 항목은 그리지 않습니다 |
+| 색 | 앞면 노멀은 초록 `(0, 1, 0, 1)`, **뒷면 노멀은 주황 `(1, 0.5, 0, 1)`** — `NormalDebugVertexShader`가 `NormalSign`으로 결정 |
+| 뒷면 노멀 | `CreateNormalRenderList`가 메시 항목 하나당 `NormalRenderItem`을 **두 번** 등록합니다. 첫 번째는 `NormalSign = +1`(앞면, 초록), 두 번째는 `NormalSign = -1`(노멀 반대 방향, 주황)이며 선 끝점은 `WorldNormal * NormalLength * NormalSign`입니다. 따라서 Normal Line 항목 수와 Draw 수가 두 배가 됩니다 |
 | 기본 길이 | `NormalLength = 1.0` |
 
 ```hlsl
@@ -955,7 +960,7 @@ if (input.VertexID == 1) WorldPosition += WorldNormal * NormalLength;
 | Normal Line 셰이더 | `NormalDebugVertexShader.vso` / `NormalDebugPixelShader.pso` — [Lambert Light · Normal Line](#lambert-light--normal-line) 참고. 전용 Input Layout을 쓰므로 `LoadNormalDebugVertexShader()`로 로드 |
 | 로드 방식 1 | 사전 컴파일된 오브젝트 로드 — `LoadVertexShader("X.vso", owner)` |
 | 로드 방식 2 | 런타임 컴파일 — `LoadVertexShader("X.fx", "VS_Main", "vs_5_0", owner)` (행 우선 행렬 패킹) |
-| `FPMaterialInterface` | `SetTexture / SetTextureSampler / AddTexture / DeleteTexture / GetTextureList`, `SetVertexShader / SetPixelShader`, 셰이더 이름 Getter, `Set / GetBaseColor · Diffuse · Ambient`, `Get{Vertex,Pixel}ConstantBufferRenderData()`, `UpdateMaterial(DeltaTime)` |
+| `FPMaterialInterface` | `SetTexture / SetTextureSampler / AddTexture / DeleteTexture / GetTextureList`, `SetTwoSided / GetTwoSided`, `SetVertexShader / SetPixelShader`, 셰이더 이름 Getter, `Set / GetBaseColor · Diffuse · Ambient`, `Get{Vertex,Pixel}ConstantBufferRenderData()`, `UpdateMaterial(DeltaTime)` |
 | `FPMaterial` | 생성 시 **텍스처 슬롯 0**(`Default_Texture512`)과 기본 셰이더 이름, `BaseColor` · `Diffuse` · `Ambient`(기본 모두 `{1,1,1,1}`)를 설정. 보호 멤버 `VertexConstantBuffer` / `PixelConstantBuffer`에 `AddConstantBuffer`로 상수 버퍼를 등록 (Gizmo Pass에서만 사용) |
 
 Material은 셰이더를 **파일 이름**(`"Demo.vso"`)으로 가리키고, 렌더러가 Pass 안에서 `FPAssetManager`에서 실제 셰이더를 찾습니다. 따라서 `LoadAssets()`에서 먼저 로드해 두어야 합니다.
@@ -1094,7 +1099,8 @@ flowchart LR
 Texture2D    TexDiff : register(t0);   // Material 텍스처 슬롯 0
 SamplerState Smpler  : register(s0);   // 사용 중인 샘플러 중 가장 앞선 종류
 
-float4 PS_Main(float4 pos : SV_POSITION, float4 col : COLOR0, float2 uv : TEXCOORD0) : SV_TARGET
+float4 PS_Main(float4 pos : SV_POSITION, float4 col : COLOR0, float2 uv : TEXCOORD0,
+               bool IsFrontFace : SV_IsFrontFace) : SV_TARGET   // Cull이 꺼진(TwoSided) 메시의 앞/뒷면 판별용
 {
     float4 tex = TexDiff.Sample(Smpler, uv);
     float4 col2 = col * tex;
@@ -1103,7 +1109,7 @@ float4 PS_Main(float4 pos : SV_POSITION, float4 col : COLOR0, float2 uv : TEXCOO
 }
 ```
 
-따라서 텍스처를 지정하지 않은 메시는 `Default_Texture512`가 곱해집니다. 기본 텍스처는 엔진이 `LoadEngineAssets()`에서 로드하며, `Checker_bmp`(WIC) · `Checker_dds`(DDS)도 함께 제공됩니다.
+`IsFrontFace`는 입력으로 선언만 되어 있고 기본 PS는 아직 이 값으로 노멀을 뒤집지 않습니다 (뒷면 노멀 처리는 정점 셰이더의 Lambert 계산에 반영되어야 하며 구현은 진행 중입니다). 따라서 텍스처를 지정하지 않은 메시는 `Default_Texture512`가 곱해집니다. 기본 텍스처는 엔진이 `LoadEngineAssets()`에서 로드하며, `Checker_bmp`(WIC) · `Checker_dds`(DDS)도 함께 제공됩니다.
 
 #### 텍스처 에셋
 
@@ -1127,6 +1133,27 @@ float4 PS_Main(float4 pos : SV_POSITION, float4 col : COLOR0, float2 uv : TEXCOO
 - 파일 열기 · 이미지 로드 실패는 콘솔에만 출력되고 계속 진행됩니다. 실패한 텍스처는 `nullptr` 리소스로 남습니다.
 - `Tool/DXTexViewer/DxTex.exe`로 이미지를 DDS로 변환하고 확인할 수 있습니다 (`d3dx9_*.dll` 포함).
 - [`Tool/FBXToStaticMeshJsonTranslator`](#fbx-변환-도구-fbxtostaticmeshjsontranslator)는 FBX에 연결된 텍스처마다 이 JSON을 **자동 생성**합니다 (같은 이미지 파일은 한 번만).
+
+### 셰이더 JSON
+
+셰이더도 JSON으로 **등록**합니다. `FPAssetLoader::LoadVertexShader(file, owner)` / `LoadPixelShader(file, owner)`가 `Shader/<file>`을 읽어 `FPVertexShaderData` / `FPPixelShaderData`로 `FPAssetManager`에 보관하고, Material JSON의 `VertexShader` / `PixelShader`가 이 `Name`으로 셰이더를 가리킵니다.
+
+```json
+// Shader/TerrainVertexShader.json
+{ "Name": "TerrainVertexShader", "Path": "TerrainVertexShader.vso", "InputLayout": "Default" }
+
+// Shader/TerrainPixelShader.json  (Pixel Shader는 InputLayout 없음)
+{ "Name": "TerrainPixelShader", "Path": "TerrainPixelShader.pso" }
+```
+
+| 키 | 설명 |
+|---|---|
+| `Name` | 등록 이름. Material JSON의 `VertexShader` / `PixelShader` 값 |
+| `Path` | 컴파일된 셰이더 파일. Debug는 `ShaderResource/bin/`, Release는 `ShaderResource/` 기준 |
+| `InputLayout` | (Vertex Shader만) `"Default"` 등 사용할 Input Layout 이름 |
+
+- HLSL 소스(`*.vsh` / `*.psh` / `*.hlsli`)는 `ShaderResource/`에 두고, 게임 프로젝트의 **FxCompile** 항목으로 `ShaderResource/bin/%(Filename).vso|pso`에 컴파일되도록 설정합니다 (`Debug|x64`와 `Release|x64` 모두 진입점 `VS_Main` / `PS_Main`, Shader Model 5.0).
+- 새 셰이더는 `LoadAssets()`에서 **셰이더 → 텍스처 → Material → StaticMesh** 순서로 등록합니다.
 
 ### Material JSON
 
@@ -1152,7 +1179,8 @@ flowchart LR
     "PixelShader": "DefaultPixelShader",
     "Ambient":   { "r": 0.05, "g": 0.05, "b": 0.05, "a": 1.0 },
     "BaseColor": { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 },
-    "Diffuse":   { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 }
+    "Diffuse":   { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 },
+    "TwoSided":  false
   }
 }
 
@@ -1164,7 +1192,8 @@ flowchart LR
     "PixelShader": "DefaultPixelShader",
     "Ambient":   { "r": 0.05, "g": 0.05, "b": 0.05, "a": 1.0 },
     "BaseColor": { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 },
-    "Diffuse":   { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 }
+    "Diffuse":   { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 },
+    "TwoSided":  false
   },
   "Texture": [
     { "Name": "Hair_png", "Slot": 0, "SamplerType": "Sampler_Wrap" }
@@ -1177,6 +1206,7 @@ flowchart LR
 | `Material.Name` | 등록 이름. StaticMesh JSON의 `Material.Name`과 다른 Material JSON이 이 이름으로 서로 참조 |
 | `Material.VertexShader` / `PixelShader` | `FPAssetManager`에 로드돼 있어야 하는 셰이더 이름 (확장자 없이) |
 | `Material.Ambient` / `BaseColor` / `Diffuse` | `FPMaterial::SetAmbient/BaseColor/Diffuse`로 그대로 전달되는 `{r,g,b,a}` 색 |
+| `Material.TwoSided` | 양면 렌더링 여부. 생략하면 `false`. `true`이면 `MeshRenderPass`가 이 메시를 Cull 없이 그림 ([Two Sided Material](#two-sided-material)) |
 | `Texture[]` | `{ Name, Slot, SamplerType }` 배열. `MakeMaterial`이 각 항목마다 `AddTexture(Slot)` + `SetTexture(Slot, Name, SamplerType)`를 호출 (생략하면 텍스처 없는 기본 Material) |
 
 > [!IMPORTANT]
@@ -1318,8 +1348,8 @@ FPPawn* Pawn = Controller->GetPawn();
 
 | 구성 | 게임 에셋 루트 (`AssetOwner::User`) | 엔진 에셋 루트 (`AssetOwner::Engine`) | 컴파일된 셰이더 |
 |---|---|---|---|
-| Debug | `../../Games/Release_Game/<프로젝트명>/Assets` | `../../Engine/ForestPearlEngine/Assets` | `<루트>/Shader/bin/` |
-| Release | `Assets` (exe 옆) | `Assets` (exe 옆) | `<루트>/Shader/` |
+| Debug | `../../Games/Release_Game/<프로젝트명>/Assets` | `../../Engine/ForestPearlEngine/Assets` | `<루트>/ShaderResource/bin/` |
+| Release | `Assets` (exe 옆) | `Assets` (exe 옆) | `<루트>/ShaderResource/` |
 
 Debug 경로는 작업 디렉터리(`Runners/Runner`) 기준 상대 경로입니다. `<프로젝트명>`은 `FPPathManager::Get().Initialize("Tri_World")`로 지정합니다.
 
@@ -1334,7 +1364,8 @@ Assets/
 ├── Material/      *_Material.json       기본 Material + *_MaterialInstance.json (색 + 텍스처 배열)
 ├── Texture/       *.json                텍스처 정의 (이미지 경로 + 로드 방식)
 ├── TextureResource/ *.dds *.bmp …       이미지 원본 (DxTex로 DDS 변환 가능)
-└── Shader/        *.vsh *.psh *.fx      HLSL 소스
+├── Shader/        *.json                셰이더 등록 정보 (Name · Path · InputLayout)
+└── ShaderResource/ *.vsh *.psh *.hlsli  HLSL 소스
     └── bin/       *.vso *.pso           컴파일 결과 (빌드 시 생성)
 ```
 
@@ -1344,8 +1375,7 @@ Assets/
 | `LoadMaterial(file, owner)` | `Material/` | `"hair.002_Material.json"` ([Material JSON](#material-json)) |
 | `LoadLevelData(name, file, owner)` | `Level/` | `"TriWorld", "TriWorld.json"` |
 | `LoadTexture(file, owner)` | `Texture/`(JSON) → `TextureResource/`(이미지, `AllAssetDataCreate()`가 로드) | `"Checker_dds.json"` |
-| `LoadVertexShader(obj, owner)` / `LoadPixelShader(obj, owner)` | `Shader/bin/` (Debug) · `Shader/` (Release) | `"Demo.vso"` |
-| `LoadVertexShader(src, entry, model, owner)` / `LoadPixelShader(...)` | `Shader/` | `"Demo.fx", "VS_Main", "vs_5_0"` |
+| `LoadVertexShader(file, owner)` / `LoadPixelShader(file, owner)` | `Shader/`(JSON) → `ShaderResource/bin/`(컴파일된 `.vso` / `.pso`) | `"TerrainVertexShader.json"` ([셰이더 JSON](#셰이더-json)) |
 
 > FBX를 직접 가리키는 로더 함수는 더 이상 없습니다. `FPAssetManager::LoadFbxData(FPStaticMeshData&)`가 **내부용**(비공개)으로 바뀌어, `AllAssetDataCreate()`가 로드된 StaticMesh 설명 데이터마다 자동으로 호출합니다.
 
@@ -1357,7 +1387,7 @@ flowchart LR
     MJ["Material/*.json"] -->|"LoadMaterial"| MTD["FPMaterialData"]
     LVJ["Level/*.json"] -->|"LoadLevelData"| LVD["FPActorData 목록<br/>GameMode 이름"]
     TXJ["Texture/*.json"] -->|"LoadTexture"| TXI["FPTextureInfo"]
-    SH["Shader/bin/*.vso *.pso"] -->|"LoadVertex/PixelShader"| SHD["FPVertex/PixelShaderData"]
+    SH["Shader/*.json<br/>→ ShaderResource/bin/*.vso *.pso"] -->|"LoadVertex/PixelShader"| SHD["FPVertex/PixelShaderData"]
     SMD --> AM["FPAssetManager<br/>(설명 데이터)"]
     MTD --> AM
     LVD --> AM
@@ -1433,6 +1463,24 @@ flowchart LR
 
 > 이전 버전에서는 `Material`이 `ClassRegistry`에 등록한 **C++ Material 클래스 이름**(문자열)이었습니다. 지금은 위처럼 **Material JSON을 가리키는 객체**로 바뀌었고, C++ 서브클래스가 필요하면 생성된 `FPStaticMeshComponent`에 `SetMaterial()`로 직접 교체해야 합니다.
 
+#### Two Sided Material
+
+Material JSON의 `TwoSided`는 `FPMaterialData` → `FPMaterial::SetTwoSided()` → `RenderItem::TwoSided`(포인터) → `RenderingData::MeshRenderItem::TwoSided`(값 복사)로 전달되어 `MeshRenderPass`에서 쓰입니다.
+
+| 단계 | 내용 |
+|---|---|
+| 정의 | `Material.TwoSided` (`LoadMaterial`이 `Material.value("TwoSided", false)`로 읽음 — 키가 없으면 `false`) |
+| 코드 | `FPMaterialInterface::SetTwoSided(bool)` / `GetTwoSided()`. 런타임에 `Mesh->GetMaterial().SetTwoSided(true)`로도 바꿀 수 있음 |
+| 렌더링 | `MeshRenderPass`가 메시마다 `UpdateRSSetState(bFill, !(TwoSided))`를 호출 → **`TwoSided = true`이면 Cull 없음**, `false`이면 뒷면 제거 |
+| 전역 Cull | Mesh Pass에서는 `ForestPearlEngine::SetbCull`(<kbd>F4</kbd>)이 더 이상 적용되지 않습니다. Gizmo · Normal Pass만 전역 `bCull`을 따릅니다 |
+| 픽셀 셰이더 | `bool IsFrontFace : SV_IsFrontFace` 입력을 받을 수 있음. Tri_World의 Terrain · Tree · WindmillWingBody PS도 같은 시그니처 |
+| FBX 변환 도구 | FBX 머티리얼의 `double_sided` 설정을 기본 Material과 Material Instance 양쪽의 `"TwoSided"`로 기록 |
+| 디버그 | Normal Line이 뒷면 노멀(주황)을 함께 그림 ([Normal Line](#normal-line)) |
+
+> [!NOTE]
+> 커밋 메모에 남아 있듯, 양면 메시에서 **뒷면에 반대 방향 노멀을 쓰는 셰이더 코드는 아직 없습니다.** 지금은 Cull만 꺼지므로 뒷면도 앞면과 같은 노멀로 라이팅됩니다.
+> 한 번 바뀐 Rasterizer State가 Pass 안에서 메시마다 다시 지정되므로, 양면 메시가 많으면 상태 변경 횟수가 늘어납니다.
+
 ### FBX 변환 도구 (FBXToStaticMeshJsonTranslator)
 
 > 위치: [`Tool/FBXToStaticMeshJsonTranslator`](Tool/FBXToStaticMeshJsonTranslator)
@@ -1451,6 +1499,8 @@ FBXToStaticMeshJsonTranslator.exe [FBX입력폴더] [Json출력폴더]
 | Material | 메시에 연결된 첫 머티리얼마다 **기본 Material**(`<재질명>_Material.json`, 재질당 1번만 저장)과 **Material Instance**(`<재질명>_<StaticMesh이름>_MaterialInstance.json`, 메시마다 저장)를 함께 기록. 둘 다 `VertexShader` / `PixelShader`는 FBX에 정보가 없으므로 `DefaultVertexShader` / `DefaultPixelShader`로 채움 |
 | Texture | 머티리얼에 연결된 텍스처를 **실제 이미지 파일 기준으로 중복 없이** Texture JSON으로 저장 (DDS면 `"DDS"`, 그 외엔 `"WIC"`). FBX 텍스처의 Wrap 설정(Repeat/Clamp)을 `Sampler_Wrap` / `Sampler_CLAMP`로 변환 |
 
+- FBX 머티리얼의 **Two Sided(`double_sided`)** 설정이 켜져 있으면 두 Material JSON에 `"TwoSided": true`를 기록합니다 (엔진 `FPMaterial::TwoSided`와 같은 의미).
+- 빌드된 실행 파일이 `Tool/FBXToStaticMeshJsonTranslator/EXE/`에 포함되어 있습니다.
 - 출력 폴더 아래 `StaticMesh/`, `Material/`, `Texture/` 하위 폴더가 자동으로 만들어집니다.
 - 생성된 JSON은 그대로 게임 프로젝트의 `Assets/`에 복사해 쓸 수 있으며, `GameProjectLoader.cpp`의 `LoadAssets()`에서 **Texture → Material → StaticMesh** 순서로 호출만 추가하면 됩니다 (실제 이미지 · FBX 파일도 함께 복사해야 함).
 - 엔진 쪽 `FPAssetManager::LoadFbxData`와 **노드 탐색 로직이 일치해야** 같은 결과가 나오므로, FBX 구조를 바꾸는 작업을 할 때는 이 둘을 함께 확인해야 합니다.
@@ -1598,11 +1648,11 @@ FBXToStaticMeshJsonTranslator.exe [FBX입력폴더] [Json출력폴더]
 
 | 소스 | 종류 | 진입점 | 모델 | 출력 |
 |---|:-:|---|:-:|---|
-| `Assets/Shader/DefaultVertexShader.vsh` | Vertex | `VS_Main` | 5.0 | `Assets/Shader/bin/DefaultVertexShader.vso` |
-| `Assets/Shader/DefaultPixelShader.psh` | Pixel | `PS_Main` | 5.0 | `Assets/Shader/bin/DefaultPixelShader.pso` |
-| `Assets/Shader/DefaultShader.fx` | — | — | — | 빌드 제외 |
+| `Assets/ShaderResource/DefaultVertexShader.vsh` | Vertex | `VS_Main` | 5.0 | `Assets/ShaderResource/bin/DefaultVertexShader.vso` |
+| `Assets/ShaderResource/DefaultPixelShader.psh` | Pixel | `PS_Main` | 5.0 | `Assets/ShaderResource/bin/DefaultPixelShader.pso` |
+| `Assets/ShaderResource/DefaultShader.fx` | — | — | — | 빌드 제외 |
 
-게임 프로젝트의 셰이더도 같은 방식으로 `Assets/Shader/bin/`에 출력하도록 설정합니다.
+게임 프로젝트의 셰이더도 같은 방식으로 `Assets/ShaderResource/bin/`에 출력하도록 설정합니다. 엔진은 `Debug|x64`와 `Release|x64` 모두 이 경로로 출력하며, Tri_World도 `Release|x64`에서 `.vsh`는 Vertex, `.psh`는 Pixel 셰이더(Shader Model 5.0)로 컴파일하도록 설정이 추가되었습니다 (`TerrainVertexShader` · `TerrainPixelShader` · `TreePixelShader` · `WindmillWingBody`).
 
 ### Release 패키징
 
@@ -1624,8 +1674,8 @@ flowchart TD
 
 에셋 복사 규칙:
 
-- `Shader` 폴더를 제외한 모든 항목을 그대로 복사합니다.
-- 셰이더는 `Shader/bin/*`만 `Assets/Shader/`로 복사합니다 (`bin` 폴더와 HLSL 소스는 포함되지 않음).
+- `ShaderResource` 폴더를 제외한 모든 항목(`Shader/*.json` 포함)을 그대로 복사합니다.
+- 셰이더는 `ShaderResource/bin/*`만 `Assets/ShaderResource/`로 복사합니다 (`bin` 폴더와 HLSL 소스는 포함되지 않음).
 
 ```text
 x64/Release/
@@ -1634,8 +1684,12 @@ x64/Release/
     ├── Font/
     ├── Level/
     ├── Model/
-    ├── Shader/        DefaultVertexShader.vso, DefaultPixelShader.pso
-    └── StaticMesh/
+    ├── Shader/          *.json
+    ├── ShaderResource/  *.vso, *.pso
+    ├── StaticMesh/
+    ├── Material/
+    ├── Texture/
+    └── TextureResource/
 ```
 
 ### 실행할 게임 바꾸기
@@ -2181,23 +2235,42 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 | 디버그 실행 | `Debug\|x64`, 시작 프로젝트 **Runner** → F5 |
 
 > [!NOTE]
-> `GameProjectLoader.cpp`의 `ReturnStartLevel()`은 현재 `"TriWorld"` 대신 **`"ToonLink"`**(`Assets/Level/ToonLink.json`)를 반환하도록 되어 있어, 실행하면 아래 TriWorld 씬 대신 **ToonLink 캐릭터 모델 데모**가 먼저 뜹니다. `ToonLink.json`은 `Terrain` · `Axis` · `Grid` · `UI` · `ADirectionalLight`와, Player 클래스 하나(`"Link"`)만 배치한 단순한 씬입니다. `Player`는 이제 `BodyAndHat` · `Hair` · `Face` · `Eye` · `EyeBrow` · `Mouth` · `Hand` · `Buckle` · `MasterSword_*`(4개) · `Shield_*`(2개) 등 **StaticMeshComponent 15개**를 조립해 ToonLink 전신을 구성하며, 각 서브메시는 [FBX 변환 도구](#fbx-변환-도구-fbxtostaticmeshjsontranslator)가 자동 생성한 StaticMesh + Material Instance + Texture JSON으로 텍스처가 입혀져 있습니다 ([Material JSON](#material-json), [Alpha Blend](#alpha-blend-초기-구현) 참고). 아래 TriWorld 씬을 보려면 `ReturnStartLevel()`의 주석을 바꿔 `"TriWorld"`를 반환하게 하면 됩니다.
+> `GameProjectLoader.cpp`의 `ReturnStartLevel()`은 다시 **`"TriWorld"`**를 반환합니다 (`//return "ToonLink";`은 주석 처리). ToonLink 캐릭터 단독 데모(`Assets/Level/ToonLink.json` — `Terrain` · `Axis` · `Grid` · `UI` · `ADirectionalLight` + `Link`)를 보려면 두 줄의 주석을 바꾸면 됩니다. `Player`는 `BodyAndHat` · `Hair` · `Face` · `Eye` · `EyeBrow` · `Mouth` · `Hand` · `Buckle` · `MasterSword_*`(4개) · `Shield_*`(2개) 등 StaticMeshComponent 15개로 구성되며, 각 서브메시는 [FBX 변환 도구](#fbx-변환-도구-fbxtostaticmeshjsontranslator)가 만든 StaticMesh + Material Instance + Texture JSON을 사용합니다 ([Material JSON](#material-json), [Alpha Blend](#alpha-blend-초기-구현) 참고).
 
 ### 씬 구성 (`Assets/Level/TriWorld.json`, 액터 311개)
 
 | 클래스 | 수 | 베이스 | 구성 | 설명 |
 |---|:-:|---|---|---|
-| `Terrain` | 1 | `FPActor` | StaticMesh | 128×128 지형 |
-| `Tree` | 300 | `FPActor` | StaticMesh | 나무 |
+| `Terrain` | 1 | `FPActor` | StaticMesh | 128×128 지형. `Terrain_Material`(Two Sided, `Field_micro02_dds` Wrap, 전용 `TerrainVertexShader`로 UV ×20 타일링) |
+| `Tree` | 300 | `FPActor` | StaticMesh × 2 (잎 · 줄기) | 나무. `Tree_Material`(Two Sided, `Tree01s_dds`, `TreePixelShader`) |
 | `Grid` | 1 | `FPActor` | Gizmo | 128×128 그리드 |
 | `Axis` | 1 | `FPActor` | Gizmo | 월드 축 |
-| `ADirectionalLight` | 1 | `FPActor` | DirectionalLight | 씬 전체를 비추는 Directional Light. Direction `(0, -2, 3)` |
+| `ADirectionalLight` | 1 | `FPActor` | DirectionalLight | 씬 전체를 비추는 Directional Light. Direction `(0.43, -0.64, 0.64)` |
 | `UI` | 1 | `FPActor` | Text × 19 | FPS, 도움말, GPU / 해상도 / 렌더 상태 |
 | `Player` | 1 | `FPPawn` | StaticMesh + ShieldPivot + SpringArm + Camera | 시작 시 Possess. 제자리에서 계속 회전 |
-| `Windmill` | 2 | `FPPawn` | StaticMesh (몸체) | 이동 / 회전 / 크기 조절 |
-| `WindmillWing` | 1 | `FPPawn` | StaticMesh (날개) | `Windmill`의 `WingPoint1` Socket에 부착. Player에게 옮겨 붙일 수 있음 |
+| `Windmill` | 2 | `FPPawn` | StaticMesh (몸체) | 이동 / 회전 / 크기 조절. `WindmillBody_Material`(`Windmill_jpg` t0 + `Windmill_a_jpg` t1, `WindmillWingBody_PixelShader`) |
+| `WindmillWing` | 1 | `FPPawn` | StaticMesh (날개) | `Windmill`의 `WingPoint1` Socket에 부착. Player에게 옮겨 붙일 수 있음. `WindmillWing_Material`(Two Sided) |
 | `TripleWindmillWing` | 1 | `FPPawn` | StaticMesh × 3 | 날개 → 날개 → 날개로 이어지는 3단 Socket 체인. `Windmill2`의 `TripleWingPoint`에 부착 |
 | `TripleWingWindmill` | 1 | `FPPawn` | StaticMesh × 4 | 몸체 + `UpScaleWingPoint1~3` Socket에 크기·속도가 다른 날개 3개 |
+
+### Tri_World의 텍스처 · Material
+
+색을 코드(`SetBaseColor`)로 지정하던 Terrain · Tree · Windmill 액터가 **Material JSON + 텍스처**로 바뀌었습니다. 액터 코드에서 `GetMaterial().SetBaseColor(...)` 호출이 제거되었고, 색은 Material의 `BaseColor`(기본 흰색)와 텍스처가 정합니다.
+
+| Material | 셰이더 | 텍스처 (슬롯 / 샘플러) | Two Sided |
+|---|---|---|:-:|
+| `Terrain_Material` | `TerrainVertexShader` + `TerrainPixelShader` | `Field_micro02_dds` (0 / `Sampler_Wrap`) | ✔ |
+| `Tree_Material` | `DefaultVertexShader` + `TreePixelShader` | `Tree01s_dds` (0 / `Sampler_CLAMP`) | ✔ |
+| `WindmillBody_Material` | `DefaultVertexShader` + `WindmillWingBody_PixelShader` | `Windmill_jpg` (0), `Windmill_a_jpg` (1) / `Sampler_CLAMP` | — |
+| `WindmillWing_Material` | `DefaultVertexShader` + `WindmillWingBody_PixelShader` | `Windmill_jpg` (0), `Windmill_a_jpg` (1) / `Sampler_CLAMP` | ✔ |
+
+- **Terrain** — 전용 VS가 `uv`에 20을 곱해 하나의 텍스처를 지형 전체에 반복합니다. 반복하려면 샘플러가 `Sampler_Wrap`이어야 합니다 (Material JSON에서 지정).
+- **Windmill** — PS가 `t0`(색)과 `t1`(알파 마스크)을 모두 샘플링해 `col * tex * tex2`를 출력하고, 알파를 `t1`에서 가져와 [Alpha Blend](#alpha-blend-초기-구현)로 투명 영역을 처리합니다.
+- **Tree** — 잎과 줄기가 서로 다른 StaticMesh(`Tree_StaticMesh`, `Tree_Trunk_StaticMesh`)이며 같은 텍스처를 사용합니다.
+- 이 셰이더들은 `Assets/Shader/*.json`으로 등록하고 `LoadAssets()`에서 `LoadVertexShader` / `LoadPixelShader`로 로드합니다 ([셰이더 JSON](#셰이더-json)). `LoadAssets()`의 등록 순서는 **셰이더 → 텍스처 → Material → StaticMesh**입니다.
+- 에셋은 모델별 폴더(`Terrain/` · `Tree/` · `Windmill/` · `ToonLink/`)로 정리되었고, 로더 호출도 `"Terrain/Terrain_Material.json"`처럼 하위 폴더 경로를 포함합니다.
+- `Windmill_Body.fbx` / `Windmill_Wing.fbx`는 `Windmill.fbx` 하나로 합쳐졌고 StaticMesh JSON의 `NodeName`(`Windmill_Body` · `Windmill_Wing`)으로 각각 찾습니다.
+- `Player`의 SpringArm 길이는 `50`으로 복원되었습니다.
 
 **Socket 정의**
 

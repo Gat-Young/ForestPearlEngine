@@ -2,7 +2,7 @@
   "Material": {
     "Name": "WindmillWing_Material",
     "VertexShader": "DefaultVertexShader",
-    "PixelShader": "DefaultPixelShader",
+    "PixelShader": "WindmillWingBody_PixelShader",
     "Ambient": {
       "r": 1.0,
       "g": 1.0,

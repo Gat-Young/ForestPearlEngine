@@ -54,6 +54,9 @@ void LoadAssets()
 {
 	FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
 
+	//Shader Load
+	AssetLoader->LoadPixelShader("WindmillWingBody_PixelShader.json", AssetOwner::User);
+
 	//Texture Load
 
 	//ToonLink Texture

@@ -23,6 +23,7 @@ cbuffer NormalDebugConstBuffer : register(b2)
 {
     matrix mNormal;
     float NormalLength;
+    float NormalSign;
 };
 
 // Mesh Vertex Input
@@ -65,7 +66,7 @@ VSOutput VS_Main(VSInput input)
     // VertexID에 따라 Line Start / End 생성
     if (input.VertexID == 1)
     {
-        WorldPosition += WorldNormal * NormalLength;
+        WorldPosition += WorldNormal * NormalLength * NormalSign;
     }
 
     // World -> View -> Projection
@@ -75,7 +76,7 @@ VSOutput VS_Main(VSInput input)
     );
 
     // Green
-    Output.Color = float4(0.0f, 1.0f, 0.0f, 1.0f);
+    Output.Color = NormalSign > 0.0f ? float4(0.0f, 1.0f, 0.0f, 1.0f) : float4(1.0f, 0.5f, 0.0f, 1.0f);
 
     return Output;
 }

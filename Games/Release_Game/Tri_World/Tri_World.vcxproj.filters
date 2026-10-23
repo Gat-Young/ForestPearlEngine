@@ -31,6 +31,9 @@
     <Filter Include="Assets\Material">
       <UniqueIdentifier>{641c0b76-761a-4574-afd5-4eee44d33abc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\ShaderResource">
+      <UniqueIdentifier>{69e05fcd-f062-4c7d-890a-5276a7080604}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UI.h">
@@ -259,5 +262,10 @@
     <None Include="Assets\Level\ToonLink.json">
       <Filter>Level</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Assets\ShaderResource\WindmillWingBody.psh">
+      <Filter>Assets\ShaderResource</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -374,7 +374,6 @@ void Renderer::CreateNormalRenderList()
 
 		RenderingData::NormalDebugItem NormalItem;
 		NormalItem.NormalLength = NormalRenderData.NormalLength;
-
 		//모델링 행렬 계산
 		FPMatrix WorldMatrix = ((NormalRenderData.Scale) * (NormalRenderData.Rotation) * (NormalRenderData.Location));
 
@@ -393,6 +392,11 @@ void Renderer::CreateNormalRenderList()
 		//VB 설정
 		FPConstantBufferRenderDataUtil::AddConstantBuffer(NormalRenderData.VertexConstBuffer, 0, NormalItem);
 
+		this->NormalRenderList.push_back(NormalRenderData);
+
+		//뒷면 노말
+		NormalItem.NormalSign = -1.0f;
+		FPConstantBufferRenderDataUtil::UpdateConstantBuffer(NormalRenderData.VertexConstBuffer, 0, NormalItem);
 		this->NormalRenderList.push_back(NormalRenderData);
 	}
 }

@@ -361,7 +361,8 @@ namespace RenderingData
 	{
 		FPMatrix NormalMatrix;
 		float NormalLength = 1.0f;
-		float Padding[3] = {};
+		float NormalSign = 1.0f;
+		float Padding[2] = {};
 	};
 
 	struct NormalRenderItem

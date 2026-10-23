@@ -1,0 +1,33 @@
+{
+  "Material": {
+    "Name": "Terrain_Material",
+    "VertexShader": "TerrainVertexShader",
+    "PixelShader": "TerrainPixelShader",
+    "Ambient": {
+      "r": 1.0,
+      "g": 1.0,
+      "b": 1.0,
+      "a": 1.0
+    },
+    "BaseColor": {
+      "r": 1.0,
+      "g": 1.0,
+      "b": 1.0,
+      "a": 1.0
+    },
+    "Diffuse": {
+      "r": 1.0,
+      "g": 1.0,
+      "b": 1.0,
+      "a": 1.0
+    },
+    "TwoSided": true
+  },
+    "Texture": [
+      {
+        "Name": "Field_micro02_dds",
+        "Slot": 0,
+        "SamplerType": "Sampler_Wrap"
+      }
+    ]
+}

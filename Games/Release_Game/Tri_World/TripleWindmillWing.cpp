@@ -14,22 +14,12 @@ void TripleWindmillWing::Initialize()
 	Wing = new FPStaticMeshComponent(this, "Windmill_Wing_StaticMesh");
 	SetRootComponent(Wing);
 
-	FPVector4 Color = { 1.000f, 0.843f, 0.000f, 1.0f };
-	Wing->GetMaterial().SetBaseColor(Color);
-
 	Wing1 = new FPStaticMeshComponent(this, "Windmill_Wing_StaticMesh");
 	Wing1->SetupAttachment(Wing, "WingPoint1");
 	Wing1->SetWorldScale3D({ 1.0f, 1.0f, 1.0f });
 
-	Color = { 1.000f, 0.843f, 0.000f, 1.0f };
-	Wing1->GetMaterial().SetBaseColor(Color);
-
 	Wing2 = new FPStaticMeshComponent(this, "Windmill_Wing_StaticMesh");
 	Wing2->SetupAttachment(Wing1, "WingPoint1");
-	Wing2->SetWorldScale3D({ 0.5f, 0.5f, 0.5f });
-
-	Color = { 1.000f, 0.843f, 0.000f, 1.0f };
-	Wing2->GetMaterial().SetBaseColor(Color);
 
 	FPAController* Controller = GetWorld()->GetController(0);
 	Controller->GetInputComponent().BindMethod("IA_SetScaleWing", this, EKeyState::Pressed, &TripleWindmillWing::SetScaleWing);

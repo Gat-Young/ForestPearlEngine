@@ -78,7 +78,7 @@ void Player::Initialize()
 	//카메라 설정
 	SpringArm = new FPSpringArmComponent(this);
 	SpringArm->SetupAttachment(RootComponent);
-	SpringArm->TargetArmLength = 20.0f;
+	SpringArm->TargetArmLength = 50.0f;
 	SpringArm->SetRelativeRotation({ 30.0f, 0.0f, 0.0f });
 	SpringArm->bUsePawnControlRotation = true;
 

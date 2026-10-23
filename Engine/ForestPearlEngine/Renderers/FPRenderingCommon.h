@@ -154,6 +154,8 @@ struct FPMaterialData
 	std::string PixelShader;
 	AssetOwner Owner;
 
+	bool TwoSided;
+
 	COLOR_VERTEX BaseColor;
 	COLOR_VERTEX Ambient;
 	COLOR_VERTEX Diffuse;
@@ -219,9 +221,12 @@ struct RenderItem
 {
 	int* Priority = nullptr;
 	bool* Active = nullptr;
-	std::string* MeshPath = nullptr;
 
+	std::string* MeshPath = nullptr;
+	
 	//핵심 데이터
+	bool* TwoSided = nullptr;
+
 	FPMatrix* Location = nullptr;
 	FPMatrix* Rotation = nullptr;
 	FPMatrix* Scale = nullptr;
@@ -356,7 +361,8 @@ namespace RenderingData
 	{
 		FPMatrix NormalMatrix;
 		float NormalLength = 1.0f;
-		float Padding[3] = {};
+		float NormalSign = 1.0f;
+		float Padding[2] = {};
 	};
 
 	struct NormalRenderItem
@@ -478,6 +484,8 @@ namespace RenderingData
 		std::string MeshPath;
 
 		//주요 정보
+		bool TwoSided;
+
 		FPMatrix Location;
 		FPMatrix Rotation;
 		FPMatrix Scale;

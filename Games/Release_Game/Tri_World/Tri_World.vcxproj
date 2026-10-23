@@ -53,116 +53,26 @@
     <None Include="Assets\Level\ToonLink.json" />
     <None Include="Assets\Level\Triworld.json" />
     <None Include="Assets\Material\clothes.002_Material.json" />
-    <None Include="Assets\Material\clothes.002_ToonLink_BodyAndHat_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\equipment.002_Material.json" />
-    <None Include="Assets\Material\equipment.002_ToonLink_Buckle_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\equipment.002_ToonLink_MasterSword_BackHandle_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\equipment.002_ToonLink_MasterSword_Blade_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\equipment.002_ToonLink_MasterSword_Handle_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\equipment.002_ToonLink_MasterSword_Scabbard_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\equipment.002_ToonLink_Shield_Back_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\equipment.002_ToonLink_Shield_Handle_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\eye.002_Material.json" />
-    <None Include="Assets\Material\eye.002_ToonLink_DoubleEyeWhithBackground_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\eye.002_ToonLink_LeftEyeBackground_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\eye.002_ToonLink_RightEyeBackground_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\eyebrow0.002_Material.json" />
-    <None Include="Assets\Material\eyebrow0.002_ToonLink_EyeBrow1_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\eyebrow0.002_ToonLink_EyeBrow2_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\eyebrow0.002_ToonLink_EyeBrow3_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\eyebrow0.002_ToonLink_EyeBrow4_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\eyebrow0.002_ToonLink_EyeBrow5_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\eyebrow0.002_ToonLink_EyeBrow6_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\eyebrow1.002_Material.json" />
-    <None Include="Assets\Material\eyebrow1.002_ToonLink_DownEye_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\eyelid.002_Material.json" />
-    <None Include="Assets\Material\eyelid.002_ToonLink_Blink_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\eyelid.002_ToonLink_Harfblink1_StaticMesh__MaterialInstance.json" />
-    <None Include="Assets\Material\eyelid.002_ToonLink_Harfblink2_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\eyelid.002_ToonLink_Harfblink3_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\hair.002_Material.json" />
-    <None Include="Assets\Material\hair.002_ToonLink_Hair_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\mouth0.002_Material.json" />
-    <None Include="Assets\Material\mouth0.002_ToonLink_Mouse1_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\mouth0.002_ToonLink_Mouth11_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\mouth1.002_Material.json" />
-    <None Include="Assets\Material\mouth1.002_ToonLink_Mouth10_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\mouth10.002_Material.json" />
-    <None Include="Assets\Material\mouth10.002_ToonLink_Mouth5_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\mouth10.002_ToonLink_Mouth6_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\mouth2.002_Material.json" />
-    <None Include="Assets\Material\mouth2.002_ToonLink_Mouth18_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\mouth3.002_Material.json" />
-    <None Include="Assets\Material\mouth3.002_ToonLink_Mouth12_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\mouth3.002_ToonLink_Mouth3_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\mouth4.002_Material.json" />
-    <None Include="Assets\Material\mouth4.002_ToonLink_Mouth13_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\mouth5.002_Material.json" />
-    <None Include="Assets\Material\mouth5.002_ToonLink_Mouth15_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\mouth6.002_Material.json" />
-    <None Include="Assets\Material\mouth6.002_ToonLink_Mouth14_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\mouth6.002_ToonLink_Mouth16_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\mouth6.002_ToonLink_Mouth17_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\mouth7.002_Material.json" />
-    <None Include="Assets\Material\mouth7.002_ToonLink_Mouth4_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\mouth7.002_ToonLink_Mouth7_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\mouth7.002_ToonLink_Mouth8_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\mouth8.002_Material.json" />
-    <None Include="Assets\Material\mouth8.002_ToonLink_Mouth2_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\mouth9.002_Material.json" />
-    <None Include="Assets\Material\mouth9.002_ToonLink_Mouth9_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\pupil.002_Material.json" />
-    <None Include="Assets\Material\pupil.002_ToonLink_Eye_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\Material\skin.002_Material.json" />
-    <None Include="Assets\Material\skin.002_ToonLink_Face_StaticMesh_MaterialInstance.json" />
-    <None Include="Assets\Material\skin.002_ToonLink_Hand_StaticMesh_MaterialInstance.json" />
     <None Include="Assets\StaticMesh\Terrain_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLinkTriangle_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Blink_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_BodyAndHat_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Buckle_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_DoubleEyeWhithBackground_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_DownEye_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_EyeBrow1_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_EyeBrow2_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_EyeBrow3_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_EyeBrow4_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_EyeBrow5_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_EyeBrow6_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Eye_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Face_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Hair_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Hand_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Harfblink1_StaticMesh_.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Harfblink2_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Harfblink3_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_LeftEyeBackground_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_MasterSword_BackHandle_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_MasterSword_Blade_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_MasterSword_Handle_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_MasterSword_Scabbard_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouse1_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth10_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth11_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth12_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth13_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth14_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth15_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth16_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth17_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth18_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth2_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth3_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth4_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth5_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth6_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth7_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth8_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Mouth9_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_RightEyeBackground_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Shield_Back_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_Shield_Handle_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\ToonLink_StaticMesh.json" />
     <None Include="Assets\StaticMesh\Tree_StaticMesh.json" />
     <None Include="Assets\StaticMesh\Tree_Trunk_StaticMesh.json" />
     <None Include="Assets\StaticMesh\Windmill_Body_StaticMesh.json" />
@@ -187,6 +97,62 @@
     <None Include="Assets\Texture\Mouth9_png.json" />
     <None Include="Assets\Texture\Pupil_png.json" />
     <None Include="Assets\Texture\Skin_png.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Assets\ShaderResource\TerrainPixelShader.psh">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS_Main</EntryPointName>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS_Main</EntryPointName>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\TerrainVertexShader.vsh">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS_Main</EntryPointName>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).vso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).vso</ObjectFileOutput>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\Engine\ForestPearlEngine\Assets\ShaderResource\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\Engine\ForestPearlEngine\Assets\ShaderResource\</AdditionalIncludeDirectories>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VS_Main</EntryPointName>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\TreePixelShader.psh">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS_Main</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS_Main</EntryPointName>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\WindmillWingBody.psh">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS_Main</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS_Main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+    </FxCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

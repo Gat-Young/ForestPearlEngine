@@ -35,5 +35,8 @@ class FPMaterialInterface : public FPObject
 		virtual FPVector4* GetDiffuse() = 0;
 		virtual FPVector4* GetAmbient() = 0;
 
+		//TwoSide
+		virtual void SetTwoSided(bool isTwoSide) = 0;
+		virtual bool* GetTwoSided() = 0;
 		virtual void UpdateMaterial(float DeltaTime) {};
 };

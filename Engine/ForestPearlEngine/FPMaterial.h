@@ -17,6 +17,9 @@ class FPMaterial : public FPMaterialInterface
 		std::string VertexShaderPath;
 		std::string PixelShaderPath;
 
+		//Two Side 여부 <Two Side 체크시 해당 메시는 Cull 하지 않으며 Back Normal을 사용> (기본값 : False)
+		bool TwoSided = false;
+
 		//Texture List <Slot, Data>
 		std::unordered_map<int, FPTexture2D> TextureList;
 		std::unordered_map<int, FPTextureItem> TextureItmeList;
@@ -56,6 +59,9 @@ class FPMaterial : public FPMaterialInterface
 
 		FPConstantBufferRenderData* GetVertexConstantBufferRenderData() override;
 		FPConstantBufferRenderData* GetPixelConstantBufferRenderData() override;
+
+		void SetTwoSided(bool isTwoSide) override;
+		bool* GetTwoSided()override;
 
 		//상속 받은 구현체에서 반드시 Super를 호출 할 것
 		virtual void UpdateMaterial(float DeltaTime) override;

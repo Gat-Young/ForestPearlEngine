@@ -172,9 +172,11 @@ void Renderer::CreateMeshRenderList()
 		Material.Diffuse = *(RenderItemData.Diffuse);
 		Material.Ambient = *(RenderItemData.Ambient);
 
+		MeshRenderData.TwoSided = *(RenderItemData.TwoSided);
+
 		//Texture에 대한 처리 진행
 		//List 초기화
-		MeshRenderData.TextureList.clear();
+		MeshRenderData.TextureList.clear(); 
 		MeshRenderData.SamplerList.clear();
 
 		int SelectedSampler[Sampler_MAX_] = { 0, };
@@ -372,7 +374,6 @@ void Renderer::CreateNormalRenderList()
 
 		RenderingData::NormalDebugItem NormalItem;
 		NormalItem.NormalLength = NormalRenderData.NormalLength;
-
 		//모델링 행렬 계산
 		FPMatrix WorldMatrix = ((NormalRenderData.Scale) * (NormalRenderData.Rotation) * (NormalRenderData.Location));
 
@@ -391,6 +392,11 @@ void Renderer::CreateNormalRenderList()
 		//VB 설정
 		FPConstantBufferRenderDataUtil::AddConstantBuffer(NormalRenderData.VertexConstBuffer, 0, NormalItem);
 
+		this->NormalRenderList.push_back(NormalRenderData);
+
+		//뒷면 노말
+		NormalItem.NormalSign = -1.0f;
+		FPConstantBufferRenderDataUtil::UpdateConstantBuffer(NormalRenderData.VertexConstBuffer, 0, NormalItem);
 		this->NormalRenderList.push_back(NormalRenderData);
 	}
 }
@@ -458,8 +464,6 @@ void Renderer::MeshRenderPass()
 
 	Device.OMSetBlendState(BS_ADD);
 
-	//렌더링 모드 전환
-	Device.UpdateRSSetState(bFill, bCull);
 
 	//기하 위상 구조 설정
 	Device.IASetPrimitiveTopology(Topology::TRIANGLELIST);
@@ -490,6 +494,9 @@ void Renderer::MeshRenderPass()
 			std::cout << RenderItem.VertexShaderPath << "\n";
 			std::cout << RenderItem.PixelShaderPath << "\n";
 			*/
+
+			//렌더링 모드 전환
+			Device.UpdateRSSetState(bFill, !(RenderItem.TwoSided));
 
 			std::tuple<void*, void*, void*> VertexShaderData = AssetManager->GetVertexShader(RenderItem.VertexShaderPath);
 			std::pair<void*, void*> PixelShaderData = AssetManager->GetPixelShader(RenderItem.PixelShaderPath);

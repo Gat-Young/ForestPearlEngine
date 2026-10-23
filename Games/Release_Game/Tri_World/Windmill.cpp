@@ -15,9 +15,7 @@ void Windmill::Initialize()
 {
 	Body = new FPStaticMeshComponent(this, "Windmill_Body_StaticMesh");
 	SetRootComponent((FPSceneComponent*)Body);
-	
-	FPVector4 Color = { 1.000f, 0.412f, 0.706f, 1.0f };
-	Body->GetMaterial().SetBaseColor(Color);
+
 
 	FPAController* Controller = GetWorld()->GetController(0);
 	Controller->GetInputComponent().BindMethod("IA_SetMoveTriangel", this, EKeyState::Pressed, &Windmill::Move);

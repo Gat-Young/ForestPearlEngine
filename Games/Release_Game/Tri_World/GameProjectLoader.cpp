@@ -57,6 +57,8 @@ void LoadAssets()
 	//Shader Load
 	AssetLoader->LoadPixelShader("WindmillWingBody_PixelShader.json", AssetOwner::User);
 
+	AssetLoader->LoadPixelShader("TreePixelShader.json", AssetOwner::User);
+
 	//Texture Load
 
 	//ToonLink Texture
@@ -86,6 +88,9 @@ void LoadAssets()
 	AssetLoader->LoadTexture("Windmill/Windmill_dds.json", AssetOwner::User);
 	AssetLoader->LoadTexture("Windmill/Windmill_a_jpg.json", AssetOwner::User);
 
+	//Tree Texture
+	AssetLoader->LoadTexture("Tree/Tree01s_dds.json", AssetOwner::User);
+
 	//Material Load
 
 	//ToonLink Material
@@ -110,14 +115,19 @@ void LoadAssets()
 	AssetLoader->LoadMaterial("Windmill/WindmillBody_Material.json", AssetOwner::User);
 	AssetLoader->LoadMaterial("Windmill/WindmillWing_Material.json", AssetOwner::User);
 
+	//Tree Material
+	AssetLoader->LoadMaterial("Tree/Tree_Material.json", AssetOwner::User);
+
 	//Static_Mesh Load
 	AssetLoader->LoadStaticMesh("Terrain_StaticMesh.json", AssetOwner::User);
-	AssetLoader->LoadStaticMesh("Tree_StaticMesh.json", AssetOwner::User);
-	AssetLoader->LoadStaticMesh("Tree_Trunk_StaticMesh.json", AssetOwner::User);
 
 	//Windmill Static Mesh
 	AssetLoader->LoadStaticMesh("Windmill/Windmill_Body_StaticMesh.json", AssetOwner::User);
 	AssetLoader->LoadStaticMesh("Windmill/Windmill_Wing_StaticMesh.json", AssetOwner::User);
+
+	//Tree Static Mesh
+	AssetLoader->LoadStaticMesh("Tree/Tree_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("Tree/Tree_Trunk_StaticMesh.json", AssetOwner::User);
 
 	//Link Static Mesh
 	AssetLoader->LoadStaticMesh("ToonLink/ToonLink_BodyAndHat_StaticMesh.json", AssetOwner::User);

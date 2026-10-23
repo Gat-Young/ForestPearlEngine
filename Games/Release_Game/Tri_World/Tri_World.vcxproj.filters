@@ -267,5 +267,8 @@
     <FxCompile Include="Assets\ShaderResource\WindmillWingBody.psh">
       <Filter>Assets\ShaderResource</Filter>
     </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\TreePixelShader.psh">
+      <Filter>Assets\ShaderResource</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

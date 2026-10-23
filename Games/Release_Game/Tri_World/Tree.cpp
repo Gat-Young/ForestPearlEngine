@@ -12,10 +12,7 @@ void Tree::Initialize()
 	TreeLeaf->SetupAttachment(RootComponent);
 	TreeTrunk = new FPStaticMeshComponent(this, "Tree_Trunk_StaticMesh");
 	TreeTrunk->SetupAttachment(RootComponent);
-	
-	FPVector4 Color = { 0.000f, 0.392f, 0.000f, 1.0f };
-	TreeLeaf->GetMaterial().SetBaseColor(Color);
-	TreeTrunk->GetMaterial().SetBaseColor(Color);
+
 
 }
 

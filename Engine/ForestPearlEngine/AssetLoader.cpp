@@ -376,6 +376,9 @@ void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsse
 
 	MaterialData.Diffuse = ReadColor(Material.at("Diffuse"));
 
+	//Two Side
+	MaterialData.TwoSided = Material.value("TwoSided",false);
+
 	// Texture ¹è¿­
 	if (JsonMaterialData.contains("Texture") && JsonMaterialData.at("Texture").is_array())
 	{

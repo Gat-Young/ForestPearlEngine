@@ -900,6 +900,7 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 	Material->SetBaseColor(BaseColor);
 	Material->SetDiffuse(Diffuse);
 	Material->SetAmbient(Ambient);
+	Material->SetTwoSided(MaterialData.TwoSided);
 
 	for (auto& [Slot, TextureName, SamplerType] : MaterialData.Textures)
 	{

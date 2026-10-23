@@ -241,6 +241,9 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 	const json DiffuseJson = MakeColorJson(Material.fbx.diffuse_color, 1.0, 1.0, 1.0, 1.0);
 	const json AmbientJson = MakeColorJson(Material.fbx.ambient_color, 0.1, 0.1, 0.1, 1.0);
 
+	// FBX의 Two Sided(양면) 설정. 엔진 FPMaterial::TwoSided와 동일한 의미(체크 시 Cull 없이 Back Normal도 사용).
+	const bool bTwoSided = Material.features.double_sided.enabled;
+
 	// 기본 Material : 재질당 한 번만 저장 (색상 정보만, Texture 없음)
 	const std::string BaseMaterialName = SanitizeFileName(MaterialName.empty() ? "Material" : MaterialName) + "_Material";
 
@@ -253,6 +256,7 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 		BaseMaterialBody["Ambient"] = AmbientJson;
 		BaseMaterialBody["BaseColor"] = BaseColorJson;
 		BaseMaterialBody["Diffuse"] = DiffuseJson;
+		BaseMaterialBody["TwoSided"] = bTwoSided;
 
 		json BaseMaterialFileJson;
 		BaseMaterialFileJson["Material"] = BaseMaterialBody;
@@ -275,6 +279,7 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 	MaterialInstanceBody["Ambient"] = AmbientJson;
 	MaterialInstanceBody["BaseColor"] = BaseColorJson;
 	MaterialInstanceBody["Diffuse"] = DiffuseJson;
+	MaterialInstanceBody["TwoSided"] = bTwoSided;
 
 	json MaterialInstanceFileJson;
 	MaterialInstanceFileJson["Material"] = MaterialInstanceBody;

@@ -14,29 +14,23 @@ void TripleWingWindmill::Initialize()
 	Body = new FPStaticMeshComponent(this, "Windmill_Body_StaticMesh");
 	SetRootComponent((FPSceneComponent*)Body);
 
-	FPVector4 Color = { 1.000f, 0.412f, 0.706f, 1.0f };
-	Body->GetMaterial().SetBaseColor(Color);
 
 	Wing1 = new FPStaticMeshComponent(this, "Windmill_Wing_StaticMesh");
 	Wing1->SetRelativeScale3D(FPVector3(1.5f, 1.5f, 1.5f));
 	Wing1->SetupAttachment(Body, "UpScaleWingPoint1");
 
-	Color = { 1.000f, 0.843f, 0.000f, 1.0f };
-	Wing1->GetMaterial().SetBaseColor(Color);
 
 	Wing2 = new FPStaticMeshComponent(this, "Windmill_Wing_StaticMesh");
 	Wing2->SetRelativeScale3D(FPVector3(1.0f, 1.0f, 1.0f));
 	Wing2->SetupAttachment(Body, "UpScaleWingPoint2");
 
-	Color = { 1.000f, 0.843f, 0.000f, 1.0f };
-	Wing2->GetMaterial().SetBaseColor(Color);
+
 
 	Wing3 = new FPStaticMeshComponent(this, "Windmill_Wing_StaticMesh");
 	Wing3->SetRelativeScale3D(FPVector3(0.5f, 0.5f, 0.5f));
 	Wing3->SetupAttachment(Body, "UpScaleWingPoint3");
 
-	Color = { 1.000f, 0.843f, 0.000f, 1.0f };
-	Wing3->GetMaterial().SetBaseColor(Color);
+
 
 	FPAController* Controller = GetWorld()->GetController(0);
 	Controller->GetInputComponent().BindMethod("IA_SetMoveTriangel", this, EKeyState::Pressed, &TripleWingWindmill::Move);

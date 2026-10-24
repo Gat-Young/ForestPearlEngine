@@ -22,6 +22,63 @@ COLOR_VERTEX ReadColor(const json& ColorJson)
 	return Color;
 }
 
+//GameSetting Data를 저장
+void FPAssetLoader::LoadGameSetting(std::string GameSettingPath)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::string Path = FPPathManager::Get().GetAssetPath("GameSetting/" + GameSettingPath);
+	std::ifstream File(Path);
+
+	if (!File.is_open())
+	{
+		std::cerr << "GameSetting 파일 열기 실패: " << Path << '\n';
+	}
+
+	try
+	{
+		FPGameSettingData OutSetting;
+
+		json JsonData;
+		File >> JsonData;
+
+		const auto& GameSetting = JsonData.at("GameSetting");
+		const auto& Graphics = GameSetting.at("Graphics");
+		const auto& Resolution = Graphics.at("Resolution");
+
+		// 게임 이름
+		OutSetting.GameName = GameSetting.at("GameName").get<std::string>();
+
+		// 그래픽 옵션
+		OutSetting.MSAA = Graphics.at("MSAA").get<int>();
+		if ((OutSetting.MSAA % 2 != 0) || OutSetting.MSAA > 8)
+		{
+			std::cout << "MSAA를 1로 설정 합니다." << "\n";
+			OutSetting.MSAA = 1;
+		}
+
+		OutSetting.AnisotropicFiltering = Graphics.at("AnisotropicFiltering").get<int>();
+		if ((OutSetting.AnisotropicFiltering % 2 != 0) || OutSetting.AnisotropicFiltering > 16)
+		{
+			std::cout << "AnisotropicFiltering을 1로 설정합니다." << "\n";
+			OutSetting.AnisotropicFiltering = 1;
+		}
+
+		// 해상도
+		OutSetting.Width = Resolution.at("Width").get<int>();
+		OutSetting.Height = Resolution.at("Height").get<int>();
+
+		// 전체 화면
+		OutSetting.FullScreen = Graphics.at("FullScreen").get<bool>();
+
+		AssetManager->UpdateGameSettingData(OutSetting);
+	}
+	catch (const json::exception& e)
+	{
+		std::cerr << "GameSetting JSON 읽기 실패: " << e.what() << '\n';
+	}
+}
+
 //Level 정보를 저장
 void FPAssetLoader::LoadLevelData(std::string LevelName, std::string LevelPath, AssetOwner EngineAsset)
 {

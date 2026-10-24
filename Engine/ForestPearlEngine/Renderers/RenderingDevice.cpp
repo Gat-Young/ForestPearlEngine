@@ -40,6 +40,10 @@ RenderingDevice& RenderingDevice::GetRenderingDevice()
 	return RenderingDeviceSingleton;
 }
 
+HRESULT RenderingDevice::SetMSAA(int MSAA) { this->dwAA = MSAA; return S_OK; }
+HRESULT RenderingDevice::SetAF(int AF) { this->dwAF = AF; return S_OK; }
+
+
 // DisplayMode 설정
 HRESULT RenderingDevice::SetDisplayMode(HWND hwnd)
 {
@@ -1217,8 +1221,8 @@ void RenderingDevice::RasterStateCreate()
 	rd.SlopeScaledDepthBias = 0;
 	rd.DepthClipEnable = true;
 	rd.ScissorEnable = false;
-	rd.MultisampleEnable = false;
-	rd.AntialiasedLineEnable = false;
+	rd.MultisampleEnable = true;	//MS-AA 적용.★
+	rd.AntialiasedLineEnable = true;	//Line 그리기시 AA 적용 여부 (옵션)★
 
 	//레스터라이저 객체 생성
 	Device->CreateRasterizerState(&rd, &RState[RS_SOLID]);
@@ -1364,10 +1368,19 @@ HRESULT RenderingDevice::CreateWICTextureFromFile(std::string& FilePath, void** 
 {
 	HRESULT hr = S_OK;
 	ID3D11Device* DevicePointer = Device.Get();
+	ID3D11DeviceContext* DeviceContextPointer = DeviceContext.Get();
 	ID3D11ShaderResourceView* TextureRV = nullptr;
 
 	std::wstring TexturePath(FilePath.begin(), FilePath.end());
-	hr = DirectX::CreateWICTextureFromFile(DevicePointer, TexturePath.c_str(), nullptr, &TextureRV);
+	//hr = DirectX::CreateWICTextureFromFile(DevicePointer, TexturePath.c_str(), nullptr, &TextureRV);
+
+	hr = DirectX::CreateWICTextureFromFileEx(DevicePointer, DeviceContextPointer, TexturePath.c_str(), 0, 				//Mip-map 텍스처 생성.
+		D3D11_USAGE_DEFAULT,
+		D3D11_BIND_SHADER_RESOURCE,
+		0,
+		D3D11_RESOURCE_MISC_GENERATE_MIPS,		//밉멥 생성 플래그.★
+		WIC_LOADER_DEFAULT,
+		nullptr, &TextureRV);
 	if (FAILED(hr))
 	{
 		std::cout << FilePath << " 텍스처 로드 실패" << "\n";
@@ -1382,10 +1395,13 @@ HRESULT RenderingDevice::CreateDDSTextureFromFile(std::string& FilePath, void** 
 {
 	HRESULT hr = S_OK;
 	ID3D11Device* DevicePointer = Device.Get();
+	ID3D11DeviceContext* DeviceContextPointer = DeviceContext.Get();
 	ID3D11ShaderResourceView* TextureRV = nullptr;
 
 	std::wstring TexturePath(FilePath.begin(), FilePath.end());
-	hr = DirectX::CreateDDSTextureFromFile(DevicePointer, TexturePath.c_str(), nullptr, &TextureRV);
+	hr = DirectX::CreateDDSTextureFromFile(DevicePointer, DeviceContextPointer, TexturePath.c_str(), nullptr, &TextureRV);
+
+
 	if (FAILED(hr))
 	{
 		std::cout << FilePath << " 텍스처 로드 실패" << "\n";

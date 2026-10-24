@@ -50,6 +50,7 @@
     <ClCompile Include="WindmillWing.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\GameSetting\GameSetting.json" />
     <None Include="Assets\Level\ToonLink.json" />
     <None Include="Assets\Level\Triworld.json" />
     <None Include="Assets\Material\clothes.002_Material.json" />

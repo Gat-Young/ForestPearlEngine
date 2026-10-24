@@ -131,6 +131,9 @@ class RenderingDevice
 
 		HRESULT SetDisplayMode(HWND hwnd);
 
+		HRESULT SetMSAA(int MSAA);
+		HRESULT SetAF(int AF);
+
 		HRESULT CreateFactory();
 
 		HRESULT CreateHighSpecDevice();

@@ -1,0 +1,14 @@
+{
+  "GameSetting": {
+    "GameName": "Tri_World",
+    "Graphics": {
+      "MSAA": 8,
+      "AnisotropicFiltering": 16,
+      "Resolution": {
+        "Width": 960,
+        "Height": 600
+      },
+      "FullScreen": false
+    }
+  }
+}

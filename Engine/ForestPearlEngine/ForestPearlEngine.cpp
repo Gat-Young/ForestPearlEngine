@@ -29,6 +29,7 @@ bool ForestPearlEngine::PreInitialize()
     RegistProjectName();
 
     FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
+    GameProjectSetting->ProjectSetting();
 
     //扩档快 积己
     Hwnd = CreateFPEWindow(
@@ -55,6 +56,9 @@ bool ForestPearlEngine::PreInitialize()
 
     // RenderDevice 积己
     RenderDevice = &RenderingDevice::GetRenderingDevice();
+    RenderDevice->SetMSAA(GameProjectSetting->GetMSAA());
+    RenderDevice->SetAF(GameProjectSetting->GetAF());
+
     //Render 殿废
     Render = new Renderer(*RenderDevice);
     Render->InitializeRenderer(Hwnd);

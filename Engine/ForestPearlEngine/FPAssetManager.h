@@ -12,6 +12,10 @@ class FPMaterialInterface;
 class FPAssetManager : public FPGameInstanceSubSystem
 {
 private:
+	//GameSetting Data
+	//무조건 1개만 보유
+	FPGameSettingData* GameSettingData = nullptr;
+
 	//Data List
 	std::unordered_map<std::string, FPTextureInfo> LoadedTextureData;
 	std::unordered_map<std::string, FPMaterialData> LoadedMaterialData;
@@ -123,6 +127,11 @@ public:
 	FPMaterialData& GetMaterialData(std::string MaterialName);
 	void AddMaterialData(std::string MaterialName, FPMaterialData& MaterialData);
 	bool HasMaterialData(std::string MaterialName);
+
+	//GameSetting
+	bool HasGameSettingData();
+	void UpdateGameSettingData(FPGameSettingData& GameSettingData);
+	FPGameSettingData* GetGameSettingData();
 
 	//Level
 	bool HasLevelData(std::string LevelName);

@@ -13,6 +13,9 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 		FPAssetLoader() = default;
 		~FPAssetLoader() = default;
 
+		//GameSetting
+		void LoadGameSetting(std::string GameSettingPath);
+
 		//Level Load
 		void LoadLevelData(std::string LevelName, std::string LevelPath, AssetOwner EngineAsset);
 

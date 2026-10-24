@@ -7,6 +7,21 @@
 #include <unordered_map>
 #include <tuple>
 
+//Project Setting
+struct FPGameSettingData
+{
+	std::string GameName;
+
+	// Graphics
+	int MSAA = 1;
+	int AnisotropicFiltering = 1;
+
+	int Width = 960;
+	int Height = 600;
+
+	bool FullScreen = false;
+};
+
 enum AssetOwner
 {
 	Engine,

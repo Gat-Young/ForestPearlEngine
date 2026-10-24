@@ -27,6 +27,7 @@
       {
         "Name": "Field_micro02_dds",
         "Slot": 0,
+        "TextureFilter": "Filter_Tri_Linear",
         "SamplerType": "Sampler_Wrap"
       }
     ]

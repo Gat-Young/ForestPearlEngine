@@ -361,6 +361,9 @@ json FbxToStaticMeshJsonTranslator::ExportMaterialTextures(const ufbx_material& 
 		json TextureRef;
 		TextureRef["Name"] = TextureName;
 		TextureRef["Slot"] = Slot;
+		// FBX에는 필터링 방식(Point/Bi-Linear/Tri-Linear/Anistropy) 정보가 없어 기본값으로 고정한다.
+		// 엔진 AssetLoader는 TextureFilter + "_" + SamplerType을 합쳐 StringToSamplerType으로 넘긴다. (AssetLoader.cpp 참고)
+		TextureRef["TextureFilter"] = "Filter_Tri_Linear";
 		TextureRef["SamplerType"] = DetermineSamplerType(Texture.wrap_u);
 
 		TextureArray.push_back(TextureRef);

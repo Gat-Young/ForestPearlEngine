@@ -386,7 +386,9 @@ void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsse
 		{
 			std::string Name = Texture.at("Name").get<std::string>();
 			unsigned int Slot = Texture.at("Slot").get<unsigned int>();
-			FPSamplerType SamplerType = StringToSamplerType(Texture.at("SamplerType").get<std::string>());
+			std::string TextureFilter = Texture.at("TextureFilter").get<std::string>();
+			std::string Sampler = Texture.at("SamplerType").get<std::string>();
+			FPSamplerType SamplerType = StringToSamplerType(TextureFilter + "_" + Sampler);
 
 			MaterialData.Textures.push_back({Slot, Name, SamplerType});
 		}

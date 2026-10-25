@@ -16,10 +16,8 @@
 void RegistProjectName()
 {
 	FPPathManager::Get().Initialize("Tri_World");
-	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
-	GameProjectSetting->SetWinWidth(960);
-	GameProjectSetting->SetWinHeight(600);
-	GameProjectSetting->ProjectSetting();
+	FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
+	AssetLoader->LoadGameSetting("GameSetting.json");
 }
 
 void LoadLevel()

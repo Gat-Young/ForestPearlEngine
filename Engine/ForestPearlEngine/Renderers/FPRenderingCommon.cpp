@@ -22,17 +22,52 @@ Topology StringToTopology(std::string Topo)
 
 FPSamplerType StringToSamplerType(const std::string& Name)
 {
-	static const std::unordered_map<std::string, FPSamplerType> SamplerMap =
-	{
-		{ "Sampler_CLAMP",               Sampler_CLAMP },
-		{ "Sampler_Wrap",                Sampler_Wrap },
-		{ "Sampler_Mirror",              Sampler_Mirror },
-		{ "Sampler_Mirror_Once",         Sampler_Mirror_Once },
-		{ "Sampler_BorderColor_RED",     Sampler_BorderColor_RED },
-		{ "Sampler_BorderColor_BLUE",    Sampler_BorderColor_BLUE },
-		{ "Sampler_BorderColor_GREEN",   Sampler_BorderColor_GREEN },
-		{ "Sampler_BorderColor_MAGENTA", Sampler_BorderColor_MAGENTA }
-	};
+    static const std::unordered_map<std::string, FPSamplerType> SamplerMap =
+    {
+        // Point
+        { "Filter_Point_Sampler_CLAMP",               Filter_Point_Sampler_CLAMP },
+        { "Filter_Point_Sampler_Wrap",                Filter_Point_Sampler_Wrap },
+        { "Filter_Point_Sampler_Mirror",              Filter_Point_Sampler_Mirror },
+        { "Filter_Point_Sampler_Mirror_Once",         Filter_Point_Sampler_Mirror_Once },
+        { "Filter_Point_Sampler_Border",              Filter_Point_Sampler_Border },
+        { "Filter_Point_Sampler_BorderColor_RED",     Filter_Point_Sampler_BorderColor_RED },
+        { "Filter_Point_Sampler_BorderColor_BLUE",    Filter_Point_Sampler_BorderColor_BLUE },
+        { "Filter_Point_Sampler_BorderColor_GREEN",   Filter_Point_Sampler_BorderColor_GREEN },
+        { "Filter_Point_Sampler_BorderColor_MAGENTA", Filter_Point_Sampler_BorderColor_MAGENTA },
+
+        // Bi-Linear
+        { "Filter_Bi_Linear_Sampler_CLAMP",               Filter_Bi_Linear_Sampler_CLAMP },
+        { "Filter_Bi_Linear_Sampler_Wrap",                Filter_Bi_Linear_Sampler_Wrap },
+        { "Filter_Bi_Linear_Sampler_Mirror",              Filter_Bi_Linear_Sampler_Mirror },
+        { "Filter_Bi_Linear_Sampler_Mirror_Once",         Filter_Bi_Linear_Sampler_Mirror_Once },
+        { "Filter_Bi_Linear_Sampler_Border",              Filter_Bi_Linear_Sampler_Border },
+        { "Filter_Bi_Linear_Sampler_BorderColor_RED",     Filter_Bi_Linear_Sampler_BorderColor_RED },
+        { "Filter_Bi_Linear_Sampler_BorderColor_BLUE",    Filter_Bi_Linear_Sampler_BorderColor_BLUE },
+        { "Filter_Bi_Linear_Sampler_BorderColor_GREEN",   Filter_Bi_Linear_Sampler_BorderColor_GREEN },
+        { "Filter_Bi_Linear_Sampler_BorderColor_MAGENTA", Filter_Bi_Linear_Sampler_BorderColor_MAGENTA },
+
+        // Tri-Linear (Mip-Map On)
+        { "Filter_Tri_Linear_Sampler_CLAMP",               Filter_Tri_Linear_Sampler_CLAMP },
+        { "Filter_Tri_Linear_Sampler_Wrap",                Filter_Tri_Linear_Sampler_Wrap },
+        { "Filter_Tri_Linear_Sampler_Mirror",              Filter_Tri_Linear_Sampler_Mirror },
+        { "Filter_Tri_Linear_Sampler_Mirror_Once",         Filter_Tri_Linear_Sampler_Mirror_Once },
+        { "Filter_Tri_Linear_Sampler_Border",              Filter_Tri_Linear_Sampler_Border },
+        { "Filter_Tri_Linear_Sampler_BorderColor_RED",     Filter_Tri_Linear_Sampler_BorderColor_RED },
+        { "Filter_Tri_Linear_Sampler_BorderColor_BLUE",    Filter_Tri_Linear_Sampler_BorderColor_BLUE },
+        { "Filter_Tri_Linear_Sampler_BorderColor_GREEN",   Filter_Tri_Linear_Sampler_BorderColor_GREEN },
+        { "Filter_Tri_Linear_Sampler_BorderColor_MAGENTA", Filter_Tri_Linear_Sampler_BorderColor_MAGENTA },
+
+        // Anistropy
+        { "Filter_Anistropy_Linear_Sampler_CLAMP",               Filter_Anistropy_Linear_Sampler_CLAMP },
+        { "Filter_Anistropy_Linear_Sampler_Wrap",                Filter_Anistropy_Linear_Sampler_Wrap },
+        { "Filter_Anistropy_Linear_Sampler_Mirror",              Filter_Anistropy_Linear_Sampler_Mirror },
+        { "Filter_Anistropy_Linear_Sampler_Mirror_Once",         Filter_Anistropy_Linear_Sampler_Mirror_Once },
+        { "Filter_Anistropy_Linear_Sampler_Border",              Filter_Anistropy_Linear_Sampler_Border },
+        { "Filter_Anistropy_Linear_Sampler_BorderColor_RED",     Filter_Anistropy_Linear_Sampler_BorderColor_RED },
+        { "Filter_Anistropy_Linear_Sampler_BorderColor_BLUE",    Filter_Anistropy_Linear_Sampler_BorderColor_BLUE },
+        { "Filter_Anistropy_Linear_Sampler_BorderColor_GREEN",   Filter_Anistropy_Linear_Sampler_BorderColor_GREEN },
+        { "Filter_Anistropy_Linear_Sampler_BorderColor_MAGENTA", Filter_Anistropy_Linear_Sampler_BorderColor_MAGENTA }
+    };
 
 	auto it = SamplerMap.find(Name);
 
@@ -41,6 +76,6 @@ FPSamplerType StringToSamplerType(const std::string& Name)
 		return it->second;
 	}
 
-	//기본값은 무조건 Clamp
-	return Sampler_CLAMP;
+	//기본값은 무조건 Filter_Tri_Linear_Sampler_Clamp
+	return Filter_Tri_Linear_Sampler_CLAMP;
 }

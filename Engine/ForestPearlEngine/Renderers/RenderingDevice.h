@@ -85,6 +85,7 @@ class RenderingDevice
 
 		DXGI_MODE_DESC1 DisplayMode;
 
+		//해당 설정을 Project Setting 에서 할 수 있도록 변경
 		//AA & AF Option
 		DWORD dwAA = 4;				//AA off 는 1로, AA 적용시 배수 지정 (최대 8)
 		DWORD dwAF = 8;				//Anisotropic Filter 배수. ( 최대 16 )
@@ -129,6 +130,9 @@ class RenderingDevice
 		static RenderingDevice& GetRenderingDevice();
 
 		HRESULT SetDisplayMode(HWND hwnd);
+
+		HRESULT SetMSAA(int MSAA);
+		HRESULT SetAF(int AF);
 
 		HRESULT CreateFactory();
 

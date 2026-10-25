@@ -15,6 +15,9 @@ class FPGameProjectSetting : public FPGameInstanceSubSystem
 		int DisplayWidth;
 		int DisplayHeight;
 		float DisplayAspect = 960.0f / 600.0f;		//기본 가로:세로 비율
+		int MSAA = 1;
+		int AF = 1;
+		bool FullScreen = false;
 
 		HWND hwnd;
 
@@ -31,6 +34,9 @@ class FPGameProjectSetting : public FPGameInstanceSubSystem
 		void SetWinHeight(int WinHeight);
 		void SetDisplayWidth(int DisplayWidth);
 		void SetDisplayHeight(int DisplayHeight);
+		void SetMSAA(int MSAA);
+		void SetAF(int AF);
+		void SetFullScreen(bool FullScreen);
 		void ProjectSetting();
 
 		std::wstring GetWinClassName();
@@ -40,6 +46,9 @@ class FPGameProjectSetting : public FPGameInstanceSubSystem
 		int GetDisplayWidth();
 		int GetDeisplayHeight();
 		float GetDisplayAspect();
+		int GetMSAA();
+		int GetAF();
+		bool GetFullScreen();
 
 		void CalculateDisplaySize();
 };

@@ -34,6 +34,9 @@
     <Filter Include="Assets\ShaderResource">
       <UniqueIdentifier>{69e05fcd-f062-4c7d-890a-5276a7080604}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\GameSetting">
+      <UniqueIdentifier>{670e47c6-0eab-415a-9cd6-96d7d145dfb7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UI.h">
@@ -261,6 +264,9 @@
     </None>
     <None Include="Assets\Level\ToonLink.json">
       <Filter>Level</Filter>
+    </None>
+    <None Include="Assets\GameSetting\GameSetting.json">
+      <Filter>Assets\GameSetting</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

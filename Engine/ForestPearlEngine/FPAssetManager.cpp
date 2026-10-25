@@ -841,6 +841,31 @@ bool FPAssetManager::HasMaterialData(std::string MaterialName)
 	return false;
 }
 
+bool FPAssetManager::HasGameSettingData()
+{
+	if (GameSettingData != nullptr)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void FPAssetManager::UpdateGameSettingData(FPGameSettingData& GameSettingData)
+{
+	if (!HasGameSettingData())
+	{
+		this->GameSettingData = new FPGameSettingData();
+	}
+
+	*(this->GameSettingData) = GameSettingData;
+}
+
+FPGameSettingData* FPAssetManager::GetGameSettingData()
+{
+	return GameSettingData;
+}
+
 
 ////////////////////////////
 //

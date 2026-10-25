@@ -7,6 +7,21 @@
 #include <unordered_map>
 #include <tuple>
 
+//Project Setting
+struct FPGameSettingData
+{
+	std::string GameName;
+
+	// Graphics
+	int MSAA = 1;
+	int AnisotropicFiltering = 1;
+
+	int Width = 960;
+	int Height = 600;
+
+	bool FullScreen = false;
+};
+
 enum AssetOwner
 {
 	Engine,
@@ -107,14 +122,49 @@ struct FPStaticMeshData
 
 enum FPSamplerType
 {
-	Sampler_CLAMP,
-	Sampler_Wrap,
-	Sampler_Mirror,
-	Sampler_Mirror_Once,
-	Sampler_BorderColor_RED,
-	Sampler_BorderColor_BLUE,
-	Sampler_BorderColor_GREEN,
-	Sampler_BorderColor_MAGENTA,
+	//Point
+	Filter_Point_Sampler_CLAMP,
+	Filter_Point_Sampler_Wrap,
+	Filter_Point_Sampler_Mirror,
+	Filter_Point_Sampler_Mirror_Once,
+	Filter_Point_Sampler_Border,
+	Filter_Point_Sampler_BorderColor_RED,
+	Filter_Point_Sampler_BorderColor_BLUE,
+	Filter_Point_Sampler_BorderColor_GREEN,
+	Filter_Point_Sampler_BorderColor_MAGENTA,
+
+	//Bi-Linear
+	Filter_Bi_Linear_Sampler_CLAMP,
+	Filter_Bi_Linear_Sampler_Wrap,
+	Filter_Bi_Linear_Sampler_Mirror,
+	Filter_Bi_Linear_Sampler_Mirror_Once,
+	Filter_Bi_Linear_Sampler_Border,
+	Filter_Bi_Linear_Sampler_BorderColor_RED,
+	Filter_Bi_Linear_Sampler_BorderColor_BLUE,
+	Filter_Bi_Linear_Sampler_BorderColor_GREEN,
+	Filter_Bi_Linear_Sampler_BorderColor_MAGENTA,
+
+	//Tri-Linear (Mip-Map On)
+	Filter_Tri_Linear_Sampler_CLAMP,
+	Filter_Tri_Linear_Sampler_Wrap,
+	Filter_Tri_Linear_Sampler_Mirror,
+	Filter_Tri_Linear_Sampler_Mirror_Once,
+	Filter_Tri_Linear_Sampler_Border,
+	Filter_Tri_Linear_Sampler_BorderColor_RED,
+	Filter_Tri_Linear_Sampler_BorderColor_BLUE,
+	Filter_Tri_Linear_Sampler_BorderColor_GREEN,
+	Filter_Tri_Linear_Sampler_BorderColor_MAGENTA,
+
+	//Anistropy
+	Filter_Anistropy_Linear_Sampler_CLAMP,
+	Filter_Anistropy_Linear_Sampler_Wrap,
+	Filter_Anistropy_Linear_Sampler_Mirror,
+	Filter_Anistropy_Linear_Sampler_Mirror_Once,
+	Filter_Anistropy_Linear_Sampler_Border,
+	Filter_Anistropy_Linear_Sampler_BorderColor_RED,
+	Filter_Anistropy_Linear_Sampler_BorderColor_BLUE,
+	Filter_Anistropy_Linear_Sampler_BorderColor_GREEN,
+	Filter_Anistropy_Linear_Sampler_BorderColor_MAGENTA,
 
 	Sampler_MAX_
 };

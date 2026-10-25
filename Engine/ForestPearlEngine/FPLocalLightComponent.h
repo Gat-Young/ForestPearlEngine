@@ -3,5 +3,4 @@
 
 class FPLocalLightComponent : public FPLightComponent
 {
-
 };

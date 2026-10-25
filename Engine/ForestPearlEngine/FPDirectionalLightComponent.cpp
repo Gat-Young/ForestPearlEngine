@@ -1,71 +1,26 @@
 #include "FPDirectionalLightComponent.h"
-#include "FPGameInstance.h"
 
 #include <iostream>
 
-void FPDirectionalLightComponent::RegistLightRenderList()
-{
-	//Light Render List에 등록
-	FPLightRenderList* LightRenderList = static_cast<FPLightRenderList*>(FPGameInstance::Get().GetLightRenderList());
-	RenderItem = LightRenderList->RegistRenderList();
-
-	if (RenderItem == nullptr) { std::cout << "[DirectionalLightComponent] : 등록 받은 렌더 아이템이 없습니다." << "\n"; return; }
-
-	RenderItem->LightType = &(this->DirectionalLightConstantBuffer.LightType);
-	RenderItem->Active = &(this->isActive);
-	RenderItem->Range = &(this->DirectionalLightConstantBuffer.Range);
-	RenderItem->Direction = &(this->DirectionalLightConstantBuffer.Direction);
-	RenderItem->Diffuse = &(this->DirectionalLightConstantBuffer.Diffuse);
-	RenderItem->Ambient = &(this->DirectionalLightConstantBuffer.Ambient);
-	RenderItem->Specular = &(this->DirectionalLightConstantBuffer.Specular);
-	RenderItem->Attenuation = &(this->DirectionalLightConstantBuffer.Attenuation);
-	RenderItem->LightColor = &(this->DirectionalLightConstantBuffer.LightColor);
-	RenderItem->Location = &(this->WorldTransform.LocationMatrix);
-	RenderItem->Rotation = &(this->WorldTransform.RotationMatrix);
-	RenderItem->Scale = &(this->WorldTransform.ScaleMatrix);
-	RenderItem->VertexConstBuffer = &(this->VertexConstantBuffer);
-	RenderItem->PixelConstBuffer = &(this->PixelConstantBuffer);
-}
-
 FPDirectionalLightComponent::FPDirectionalLightComponent(FPActor* Ownder) : FPLightComponent(Owner)
 {
+	FPLightConstantBuffer DirectionLightSetting;
+	DirectionLightSetting.Direction = { 0.0f, 1.0f, 0.0f };
+	DirectionLightSetting.Range = 1000.0f;
+	DirectionLightSetting.Diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
+	DirectionLightSetting.Ambient = { 0.2f, 0.2f, 0.2f, 1.0f };
+	DirectionLightSetting.Specular = { 1.0f, 1.0f, 1.0f, 1.0f };
+	DirectionLightSetting.Attenuation = { 1.0f, 1.0f, 1.0f, 1.0f };
+	DirectionLightSetting.LightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	DirectionLightSetting.LightType = LightType_Direction;
+
+	LightConstantBuffer = DirectionLightSetting;
+
 	//상수 버퍼를 정점 상수 버퍼에 등록
-	FPConstantBufferRenderDataUtil::AddConstantBuffer(VertexConstantBuffer, 0, DirectionalLightConstantBuffer);
+	FPConstantBufferRenderDataUtil::AddConstantBuffer(VertexConstantBuffer, 0, LightConstantBuffer);
 	RegistLightRenderList();
 }
 
 FPDirectionalLightComponent::~FPDirectionalLightComponent()
 {
-}
-
-//Set한 이후 버퍼 데이터를 업데이트
-void FPDirectionalLightComponent::SetDirection(FPVector3& Dir)
-{
-	//방향은 Normalize 음? 이건 근데 Forward 줘도 되는 부분이 아닌가? 뭐 다르게 가져가면 그건 그거 대로 좋은 걸 지도?
-	DirectionalLightConstantBuffer.Direction = -Dir.Normalize();
-	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, DirectionalLightConstantBuffer);
-}
-
-void FPDirectionalLightComponent::SetRange(float Ran)
-{
-	DirectionalLightConstantBuffer.Range = Ran;
-	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, DirectionalLightConstantBuffer);
-}
-
-void FPDirectionalLightComponent::SetDiffuse(FPVector4& Diffuse)
-{
-	DirectionalLightConstantBuffer.Diffuse = Diffuse;
-	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, DirectionalLightConstantBuffer);
-}
-
-void FPDirectionalLightComponent::SetAmbient(FPVector4& Ambient)
-{
-	DirectionalLightConstantBuffer.Ambient = Ambient;
-	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, DirectionalLightConstantBuffer);
-}
-
-void FPDirectionalLightComponent::SetLightColor(FPVector4& LightColor)
-{
-	DirectionalLightConstantBuffer.LightColor = LightColor;
-	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, DirectionalLightConstantBuffer);
 }

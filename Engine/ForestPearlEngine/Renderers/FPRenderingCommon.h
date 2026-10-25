@@ -373,7 +373,9 @@ enum FPLightType
 	LightType_Direction,
 	LightType_Point,
 	LightType_Spot,
-	LightType_Rect
+	LightType_Rect,
+
+	LightType_None,
 };
 
 struct FPLightRenderItem

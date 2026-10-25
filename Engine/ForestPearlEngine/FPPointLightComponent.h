@@ -3,5 +3,6 @@
 
 class FPPointLightComponent : public FPLocalLightComponent
 {
+	protected:
 
 };

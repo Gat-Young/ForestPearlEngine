@@ -11,7 +11,10 @@ class FPDirectionalLightComponent : public FPLightComponent
 			float Range = 1000.0f;
 			FPVector4 Diffuse = {1.0f, 1.0f, 1.0f, 1.0f};
 			FPVector4 Ambient = {0.2f, 0.2f, 0.2f, 1.0f};
+			FPVector4 Specular = {1.0f, 1.0f, 1.0f, 1.0f};
+			FPVector4 Attenuation = {1.0f, 1.0f, 1.0f, 1.0f };
 			FPVector4 LightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+			unsigned int LightType = LightType_Direction;
 		};
 
 		FPDirectionalLightConstantBuffer DirectionalLightConstantBuffer;

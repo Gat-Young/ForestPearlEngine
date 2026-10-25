@@ -144,7 +144,7 @@ void Renderer::CreateMeshRenderList()
 
 		//////////////////////////////////////////////////
 		// 
-		// Light RenderList 계산
+		// Light RenderList 계산 (여기 변경 필요)
 		//
 		int MAX_LIGHT = 8;
 		int LightRenderLoopSize = min(MAX_LIGHT, LightRenderList.size());
@@ -153,7 +153,7 @@ void Renderer::CreateMeshRenderList()
 		//Light 정보
 		for (LightCount =0; LightCount < LightRenderLoopSize; ++LightCount)
 		{
-			RenderingData::DirectionLightItem DirLight;
+			RenderingData::LightItem DirLight;
 			FPVector4 LightDir = { LightRenderList[LightCount].Direction.x, LightRenderList[LightCount].Direction.y, LightRenderList[LightCount].Direction.z, 0.0f };
 			DirLight.Direction = (LightDir.Normalize() * WorldMatrix.MatrixInverse()).Normalize(); //Local로 변환
 			

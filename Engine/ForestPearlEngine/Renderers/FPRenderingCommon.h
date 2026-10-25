@@ -368,6 +368,14 @@ struct FPViewPort
 	FPConstantBufferRenderData* PixelConstBuffer = nullptr;
 };
 
+enum FPLightType
+{
+	LightType_Direction,
+	LightType_Point,
+	LightType_Spot,
+	LightType_Rect
+};
+
 struct FPLightRenderItem
 {
 	bool* Active = nullptr;
@@ -376,7 +384,10 @@ struct FPLightRenderItem
 	float* Range = nullptr;
 	FPVector4* Diffuse = nullptr;
 	FPVector4* Ambient = nullptr;
+	FPVector4* Specular = nullptr;
+	FPVector4* Attenuation = nullptr;
 	FPVector4* LightColor = nullptr;
+	unsigned int* LightType = nullptr;
 
 	FPMatrix* Location = nullptr;
 	FPMatrix* Rotation = nullptr;
@@ -473,14 +484,18 @@ namespace RenderingData
 		std::vector<FPViewPort> ViewPort;
 	};
 
-	struct alignas(16) DirectionLightItem
+	struct alignas(16) LightItem
 	{
 		FPVector4 Direction;
 		float Range;
 		float padding[3];
 		FPVector4 Diffuse;
 		FPVector4 Ambient;
+		FPVector4 Specular;
+		FPVector4 Attenuation;
 		FPVector4 LightColor;
+		unsigned int LightType;
+		unsigned int padding[3];
 	};
 
 	struct alignas(16) MaterialItem
@@ -506,7 +521,10 @@ namespace RenderingData
 		float Range;
 		FPVector4 Diffuse;
 		FPVector4 Ambient;
+		FPVector4 Specular;
+		FPVector4 Attenuation;
 		FPVector4 LightColor;
+		unsigned int LightType;
 
 		FPMatrix Location;
 		FPMatrix Rotation;

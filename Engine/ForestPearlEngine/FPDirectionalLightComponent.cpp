@@ -11,11 +11,14 @@ void FPDirectionalLightComponent::RegistLightRenderList()
 
 	if (RenderItem == nullptr) { std::cout << "[DirectionalLightComponent] : 등록 받은 렌더 아이템이 없습니다." << "\n"; return; }
 
+	RenderItem->LightType = &(this->DirectionalLightConstantBuffer.LightType);
 	RenderItem->Active = &(this->isActive);
 	RenderItem->Range = &(this->DirectionalLightConstantBuffer.Range);
 	RenderItem->Direction = &(this->DirectionalLightConstantBuffer.Direction);
 	RenderItem->Diffuse = &(this->DirectionalLightConstantBuffer.Diffuse);
 	RenderItem->Ambient = &(this->DirectionalLightConstantBuffer.Ambient);
+	RenderItem->Specular = &(this->DirectionalLightConstantBuffer.Specular);
+	RenderItem->Attenuation = &(this->DirectionalLightConstantBuffer.Attenuation);
 	RenderItem->LightColor = &(this->DirectionalLightConstantBuffer.LightColor);
 	RenderItem->Location = &(this->WorldTransform.LocationMatrix);
 	RenderItem->Rotation = &(this->WorldTransform.RotationMatrix);

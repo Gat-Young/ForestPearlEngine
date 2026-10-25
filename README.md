@@ -21,6 +21,7 @@
 [상수 버퍼](#상수-버퍼) ·
 [입력](#-input-시스템) ·
 [에셋](#-assets-구조) ·
+[GameSetting](#gamesetting) ·
 [Material](#material-json) ·
 [FBX 변환 도구](#fbx-변환-도구-fbxtostaticmeshjsontranslator) ·
 [빌드](#-build-시스템) ·
@@ -41,9 +42,10 @@
 | | 핵심 기능 | 설명 |
 |:-:|---|---|
 | 🧩 | **Actor / Component 프레임워크** | `FPObject → FPActor → FPPawn / FPAController / FPAGameMode`, 계층형 `FPSceneComponent` 트랜스폼 |
-| 🎨 | **DX11 렌더러** | `Renderer`(프레임 흐름) + `RenderingDevice`(D3D11 래퍼) 2계층, **Render List → Render Pass(Mesh / Gizmo / Normal / UI)** 구조, 슬롯 규약이 있는 **상수 버퍼 바인딩**, MSAA x4, Priority 정렬, 멀티 뷰포트 |
+| 🎨 | **DX11 렌더러** | `Renderer`(프레임 흐름) + `RenderingDevice`(D3D11 래퍼) 2계층, **Render List → Render Pass(Mesh / Gizmo / Normal / UI)** 구조, 슬롯 규약이 있는 **상수 버퍼 바인딩**, `GameSetting.json` 기반 MSAA(스왑체인·깊이버퍼 SampleDesc), Priority 정렬, 멀티 뷰포트 |
 | 💡 | **Lambert Light** | `FPDirectionalLightComponent`가 Light Render List에 등록 → 메시마다 **Local 공간 방향**으로 변환해 VS 상수 버퍼로 전달, 정점 단위 Lambert 계산 (최대 8개) |
-| 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS) → Material **텍스처 슬롯**(PS `t#`) + 샘플러 8종. 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환 |
+| 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 샘플러 36종(AF 단계는 `GameSetting.json`). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환 |
+| ⚙️ | **GameSetting** | `Assets/GameSetting/GameSetting.json` → `FPAssetLoader::LoadGameSetting`이 읽어 `FPGameSettingData`로 저장 → `FPGameProjectSetting::ProjectSetting()`이 창 크기 · MSAA · AF · 전체화면 값을 반영, `RenderingDevice::SetMSAA/SetAF`로 렌더러에 전달 |
 | 🎭 | **데이터 기반 Material** | Material도 JSON(`LoadMaterial`)으로 정의. 재질 1개당 **기본 Material** + 메시마다 색상 복제·텍스처 배열을 가진 **Material Instance** 두 단계로 저장하고, `FPAssetManager::MakeMaterial`이 실행 중 `FPMaterial` 인스턴스로 변환 (없으면 `DefaultMaterial` 사용) |
 | 🪟 | **Two Sided Material** | Material JSON의 `"TwoSided"`(기본 `false`)로 메시별 양면 렌더링 지정. `MeshRenderPass`가 **메시마다** Rasterizer State의 Cull을 `!TwoSided`로 결정하고, 기본 PS는 `SV_IsFrontFace`를 입력으로 받음. Normal Line은 뒷면 노멀(주황)도 함께 표시 |
 | 🧪 | **FBX → JSON 변환 도구** | `Tool/FBXToStaticMeshJsonTranslator` 콘솔 툴이 FBX 폴더를 통째로 읽어 **StaticMesh / Material / Material Instance / Texture** JSON을 한 번에 생성 (ToonLink 데모 모델 전체가 이 도구로 변환됨) |
@@ -103,8 +105,8 @@ Engine/ForestPearlEngine/
 ├── FPGameInstanceSubSystem.h         # SubSystem 공통 베이스
 ├── FPGameTimer.h / .cpp              # [SubSystem] 고해상도 타이머 (DeltaTime)
 ├── FPGameProjectClassRegistry.h/.cpp # [SubSystem] 클래스 이름 → 팩토리
-├── FPGameProjectSetting.h / .cpp     # [SubSystem] 윈도우/디스플레이 설정
-├── FPAssetLoader.h / AssetLoader.cpp # [SubSystem] FBX · JSON(Level/StaticMesh/Material/Texture) · Shader 설명 데이터 로딩
+├── FPGameProjectSetting.h / .cpp     # [SubSystem] 윈도우/디스플레이/그래픽(MSAA·AF·전체화면) 설정, GameSetting.json 값으로 채워짐
+├── FPAssetLoader.h / AssetLoader.cpp # [SubSystem] GameSetting · FBX · JSON(Level/StaticMesh/Material/Texture) · Shader 설명 데이터 로딩
 ├── FPAssetManager.h / .cpp           # [SubSystem] 로딩된 에셋 보관소. `AllAssetDataCreate()`가 설명 데이터를 GPU 리소스로 일괄 생성, `MakeMaterial`로 Material JSON → `FPMaterial` 변환
 ├── FPMeshRenderList.h / .cpp         # [SubSystem] 메시 RenderItem 목록
 ├── FPGizmoRenderList.h / .cpp        # [SubSystem] 기즈모 GizmoRenderItem 목록
@@ -321,15 +323,15 @@ FPAssetLoader* AssetLoader =
 | `FPGameTimer` | `GetGameTimer()` | `QueryPerformanceCounter` 기반. `DeltaTime()`(초), `DeltaTimeMS()`, `TotalTime()`, `Start/Stop/Reset` |
 | `FPGameProjectClassRegistry` | `GetClassRegister()` | `Register<T>("이름")`, `Create("이름")`, `HasFactory("이름")`. 이름은 **클래스 이름과 동일**해야 함 ([등록 규칙](#클래스-등록-규칙)) |
 | `FPInputSystem` | `GetInputSystem()` | Raw Input / XInput 수집, 입력 큐 |
-| `FPAssetManager` | `GetAssetManager()` | Mesh · VertexBuffer(Position / Normal / Color / UV) · IndexBuffer · StaticMesh · **Texture** · **Material** · Level · GameMode · Shader 저장소. `AllAssetDataCreate()`로 설명 데이터 → GPU 리소스 일괄 생성 |
-| `FPAssetLoader` | `GetAssetLoader()` | FBX / Level JSON / StaticMesh JSON / Texture JSON / **Material JSON** / Shader 로딩 (실제 GPU 리소스 생성은 `AllAssetDataCreate()`가 나중에 수행) |
+| `FPAssetManager` | `GetAssetManager()` | Mesh · VertexBuffer(Position / Normal / Color / UV) · IndexBuffer · StaticMesh · **Texture** · **Material** · **GameSetting**(`FPGameSettingData`, 전역 1개) · Level · GameMode · Shader 저장소. `AllAssetDataCreate()`로 설명 데이터 → GPU 리소스 일괄 생성 |
+| `FPAssetLoader` | `GetAssetLoader()` | **GameSetting JSON** / FBX / Level JSON / StaticMesh JSON / Texture JSON / **Material JSON** / Shader 로딩 (실제 GPU 리소스 생성은 `AllAssetDataCreate()`가 나중에 수행) |
 | `FPMeshRenderList` | `GetMeshRenderList()` | 메시 `RenderItem` 등록/해제 |
 | `FPGizmoRenderList` | `GetGizmoRenderList()` | 기즈모 `GizmoRenderItem` 등록/해제 |
 | `FPMeshNormalRenderList` | `GetNormalRenderList()` | Normal Line `NormalRenderItem` 등록/해제 |
 | `FPLightRenderList` | `GetLightRenderList()` | 라이트 `FPLightRenderItem` 등록/해제 |
 | `FPTextRenderList` | `GetTextRenderList()` | 텍스트 `UIContextItem` 등록/해제 |
 | `FPCameraList` | `GetCameraList()` | `CameraItem` 등록/해제 |
-| `FPGameProjectSetting` | `GetGameProjectSetting()` | 윈도우 클래스/타이틀, 창 크기(기본 960×600), 클라이언트 영역 크기, Aspect |
+| `FPGameProjectSetting` | `GetGameProjectSetting()` | 윈도우 클래스/타이틀, 창 크기(기본 960×600), 클라이언트 영역 크기, Aspect, **MSAA / AF / FullScreen**(`GameSetting.json`에서 `ProjectSetting()`이 읽어 채움) |
 | `FPViewPortClient` | `GetViewPortClient()` | `MainGameViewPort` / `UIViewPort` / `TripleWaySplitViewPort` |
 
 ### 엔진 구성 요소 전체 목록
@@ -425,7 +427,7 @@ sequenceDiagram
 
 | 단계 | 함수 | 내용 |
 |:-:|---|---|
-| 1 | `PreInitialize()` | GameInstance 생성 → `RegistProjectName()` → 윈도우 생성 → ViewPort 생성 → Raw Input 등록 → Renderer 초기화 → `CreateSamplers()` / `CreateBlendStateObject()` → 엔진 에셋 로드 → `LoadLevel()` → `LoadClassRegist()` → `LoadAssets()` → `AssetManager->AllAssetDataCreate()` |
+| 1 | `PreInitialize()` | GameInstance 생성 → `RegistProjectName()`(`LoadGameSetting("GameSetting.json")`) → `GameProjectSetting->ProjectSetting()`(창 크기/MSAA/AF/전체화면 반영) → 윈도우 생성 → ViewPort 생성 → Raw Input 등록 → `RenderDevice->SetMSAA/SetAF()` → Renderer 초기화(스왑체인·깊이버퍼가 이 MSAA 값으로 생성) → `CreateSamplers()`(AF 값으로 Anisotropic 샘플러 생성) / `CreateBlendStateObject()` → 엔진 에셋 로드 → `LoadLevel()` → `LoadClassRegist()` → `LoadAssets()` → `AssetManager->AllAssetDataCreate()` |
 | 2 | `Initialize()` | `OpenLevel(ReturnStartLevel())` → `World::Initialize()` → `World::BeginPlay()` |
 | 3 | `GameLoop()` | 아래 프레임 루프 |
 | 4 | `Finalize()` | `World::Finalize()`(Actor 삭제) → `Renderer::Finalize()` |
@@ -742,14 +744,14 @@ struct FPViewPort            // 뷰포트 1개
 | 1 | `SetDisplayMode` | 클라이언트 영역 크기, `R8G8B8A8_UNORM` |
 | 2 | `CreateFactory` | `CreateDXGIFactory2` (Debug 구성은 Debug 플래그) |
 | 3 | `CreateHighSpecDevice` | 어댑터를 열거해 소프트웨어 어댑터를 제외하고 **전용 VRAM이 가장 큰 GPU** 선택. Feature Level 11.1 → 11.0 |
-| 4 | `CreateSwapChain` | `CreateSwapChainForHwnd`, MSAA x4, 창 모드, VSync 60Hz |
+| 4 | `CreateSwapChain` | `CreateSwapChainForHwnd`, `SampleDesc = { dwAA, 0 }`(`SetMSAA()`로 미리 설정된 값, 기본 4), 창 모드, VSync 60Hz |
 | 5 | `SetBackBufferToRenderTargetView` | BackBuffer → RenderTargetView |
-| 6 | `CreateDepthStencil` | `D32_FLOAT`, MSAA x4 |
+| 6 | `CreateDepthStencil` | `D32_FLOAT`, `SampleDesc = { dwAA, 0 }`(스왑체인과 동일한 MSAA 값이어야 함) |
 | 7 | `OMSetRenderTargets` | RTV + DSV 바인딩 |
 | 8 | `GetDeviceInfo` | Feature Level 문자열, 어댑터 / 모니터 / VRAM 정보 수집 |
 | 9 | `CreateSpriteBatch / CreateSpriteFont` | DirectXTK. 게임 에셋의 `Font/굴림9k.sfont` 사용 |
 | 10 | `CreateDepthStencilStateCreate` | `DEPTH_ON` / `DEPTH_OFF` / `DEPTH_WRITE_OFF` |
-| 11 | `RasterStateCreate` | `SOLID` / `WIREFRAME` / `CULLBACK` / `WIRECULLBACK` (CCW가 앞면) |
+| 11 | `RasterStateCreate` | `SOLID` / `WIREFRAME` / `CULLBACK` / `WIRECULLBACK` (CCW가 앞면). `MultisampleEnable` / `AntialiasedLineEnable`을 `true`로 설정해 MSAA를 활성화 |
 | 12 | `CreateVertexShaderConstBuffer(320)`<br/>`CreatePixelShaderConstBuffer(320)` | 320 byte 상수 버퍼를 **VS 14개 · PS 14개** 생성 후 `b0 ~ b13`에 바인딩 |
 
 ### 상수 버퍼
@@ -1056,14 +1058,14 @@ flowchart LR
 
 | 구성 요소 | 파일 | 설명 |
 |---|---|---|
-| `FPTexture` / `FPTexture2D` | `FPTexture.h`, `FPTexture2D.h/.cpp` | Material 슬롯 1개가 가지는 값. **텍스처 이름**(`FPAssetManager` 키)과 `FPSamplerType`. `FPTexture2D`의 기본값은 `"Default_Texture512"` + `Sampler_CLAMP` |
+| `FPTexture` / `FPTexture2D` | `FPTexture.h`, `FPTexture2D.h/.cpp` | Material 슬롯 1개가 가지는 값. **텍스처 이름**(`FPAssetManager` 키)과 `FPSamplerType` |
 | `FPTextureInfo` | `FPAssetManager.h` | `LoadTexture`가 JSON에서 읽은 **설명 데이터**(`Name` / `Path` / `Type` / `Owner`). 이 시점에는 아직 GPU 리소스가 없음 |
 | `FPTextureData` | `Define/FPDataDefine.h` | `MakeTexture`가 만든 실제 텍스처. `TextureResource`(`ID3D11ShaderResourceView*`), `TextureDESC`(`D3D11_TEXTURE2D_DESC*`) |
 | `FPTextureItem` | `Renderers/FPRenderingCommon.h` | `RenderItem`이 Material의 텍스처 목록을 가리키는 포인터 묶음 (`std::string* TexturePath`, `FPSamplerType* SamplerType`) |
 | `RenderingData::FPTextureItem` · `FPSamplerItem` | `Renderers/FPRenderingCommon.h` | Render List의 값 복사본. `{ Slot, 텍스처 이름, SamplerType }`, `{ Slot, SamplerType }` |
 | `FPAssetManager` | `FPAssetManager.h/.cpp` | `AddTextureInfoData` · `GetTextureInfoData` · `HasTextureInfoData`(설명 데이터), `MakeTexture`(GPU 리소스 생성), `AddTextureData` · `GetTextureData` · `HasTextureData`(생성된 텍스처) |
 | `FPAssetLoader::LoadTexture` | `AssetLoader.cpp` | Texture JSON을 읽어 `FPTextureInfo`로 등록 (실제 `WIC` / `DDS` 로드는 `AllAssetDataCreate()`가 나중에 수행) |
-| `RenderingDevice` | `RenderingDevice.h/.cpp` | `CreateWICTextureFromFile` · `CreateDDSTextureFromFile`(DirectXTK), `GetTextureDesc`, `PSSetShaderResources`, `CreateSamplers`, `PSSetSamplers` |
+| `RenderingDevice` | `RenderingDevice.h/.cpp` | `CreateWICTextureFromFile` · `CreateDDSTextureFromFile`(DirectXTK, **Mipmap 자동 생성**), `GetTextureDesc`, `PSSetShaderResources`, `CreateSamplers`, `PSSetSamplers` |
 
 #### 바인딩 규칙
 
@@ -1074,22 +1076,36 @@ flowchart LR
 | 샘플러 번호 | 텍스처 슬롯과 **1:1이 아닙니다.** Render List를 만들 때 그 메시가 쓰는 샘플러 종류를 `FPSamplerType` 값 오름차순으로 중복 없이 모아 `s0, s1, …`에 차례로 배정합니다 |
 | 갱신 시점 | `CreateMeshRenderList`에서 `Active`인 메시의 텍스처 · 샘플러 목록을 복사하고, `MeshRenderPass`가 **메시마다** `PSSetShaderResources` / `PSSetSamplers`를 호출 |
 
-샘플러 번호 예: 슬롯 0 = `Sampler_Wrap`, 슬롯 1 = `Sampler_CLAMP`이면 → `s0` = Clamp, `s1` = Wrap (열거형 순서). 한 메시가 샘플러를 하나만 쓰면 항상 `s0`입니다.
+샘플러 번호 예: 슬롯 0 = `Filter_Tri_Linear_Sampler_Wrap`, 슬롯 1 = `Filter_Tri_Linear_Sampler_CLAMP`이면 → `s0` = CLAMP, `s1` = Wrap (열거형 순서). 한 메시가 샘플러를 하나만 쓰면 항상 `s0`입니다.
 
-| `FPSamplerType` | 주소 모드 | 비고 |
+`FPSamplerType`은 **필터 4단계 × 주소 모드 9종 = 36개** 값입니다 (`Sampler_MAX_`가 전체 개수). JSON에서는 `TextureFilter`(필터)와 `SamplerType`(주소 모드)을 따로 쓰고, `StringToSamplerType`이 `TextureFilter + "_" + SamplerType`으로 합쳐 아래 열거형 이름을 찾습니다. 못 찾으면 **기본값 `Filter_Tri_Linear_Sampler_CLAMP`** 로 떨어집니다.
+
+| 필터(`TextureFilter`) | D3D11 필터 | 비고 |
+|---|---|---|
+| `Filter_Point` | `MIN_MAG_MIP_POINT` | |
+| `Filter_Bi_Linear` | `MIN_MAG_LINEAR_MIP_POINT` | |
+| `Filter_Tri_Linear` | `MIN_MAG_MIP_LINEAR` | **기본값**. Mipmap 보간까지 사용 |
+| `Filter_Anistropy_Linear` | `ANISOTROPIC`, `MaxAnisotropy = dwAF` | `dwAF`는 `GameSetting.json`의 `AnisotropicFiltering` 값 |
+
+| 주소 모드(`SamplerType`) | D3D11 주소 모드 | 비고 |
 |---|---|---|
 | `Sampler_CLAMP` | Clamp | 기본값 |
 | `Sampler_Wrap` | Wrap | 타일링 |
 | `Sampler_Mirror` | Mirror | |
 | `Sampler_Mirror_Once` | Mirror Once | |
+| `Sampler_Border` | Border(흰색) | |
 | `Sampler_BorderColor_RED` / `BLUE` / `GREEN` / `MAGENTA` | Border | 범위 밖 UV는 해당 색 |
 
-모든 샘플러는 `MIN_MAG_MIP_LINEAR`, Anisotropy 1입니다.
+실제 enum 값은 두 이름을 이어붙인 `Filter_Tri_Linear_Sampler_CLAMP`, `Filter_Anistropy_Linear_Sampler_Wrap` 같은 형태입니다 (`Renderers/FPRenderingCommon.h`).
 
 > [!IMPORTANT]
-> 샘플러 상태 객체 8개는 `RenderingDevice::CreateSamplers()`가 만들며, `ForestPearlEngine::PreInitialize()`에서 `Renderer::InitializeRenderer()` **직후**, 엔진 에셋 로드(`LoadEngineAssets`) 전에 호출합니다.
+> 샘플러 상태 객체 36개는 `RenderingDevice::CreateSamplers()`가 만들며, `ForestPearlEngine::PreInitialize()`에서 `Renderer::InitializeRenderer()` **직후**, 엔진 에셋 로드(`LoadEngineAssets`) 전에 호출합니다.
 > 이 함수는 `ID3D11Device`로 `CreateSamplerState`를 호출하므로 **D3D 디바이스가 만들어진 뒤**(`InitializeRenderer`의 `CreateHighSpecDevice` 이후)여야 합니다. 앞으로 부팅 순서를 바꿀 때도 이 순서를 지켜야 합니다.
+> Anisotropic 샘플러의 `MaxAnisotropy`는 `RenderingDevice::SetAF()`로 미리 설정해 둔 `dwAF` 값을 쓰므로, **`SetAF()` → `CreateSamplers()`** 순서를 지켜야 합니다 (`ForestPearlEngine::PreInitialize()`가 이 순서로 호출).
 > 호출되지 않으면 `PSSetSamplers`가 `nullptr`을 바인딩해, `SetTexture(…, SamplerType)`로 고른 샘플러가 반영되지 않습니다.
+
+> [!NOTE]
+> **Mipmap** — `CreateWICTextureFromFile` / `CreateDDSTextureFromFile`은 이제 `ID3D11DeviceContext`를 함께 넘겨 `D3D11_RESOURCE_MISC_GENERATE_MIPS`로 로드하므로, 텍스처를 로드할 때 Mip 체인이 자동 생성됩니다. `Filter_Tri_Linear_*` / `Filter_Anistropy_Linear_*` 샘플러가 실제로 Mip 보간 효과를 받습니다.
 
 #### 기본 셰이더
 
@@ -1196,7 +1212,7 @@ flowchart LR
     "TwoSided":  false
   },
   "Texture": [
-    { "Name": "Hair_png", "Slot": 0, "SamplerType": "Sampler_Wrap" }
+    { "Name": "Hair_png", "Slot": 0, "TextureFilter": "Filter_Tri_Linear", "SamplerType": "Sampler_Wrap" }
   ]
 }
 ```
@@ -1207,7 +1223,7 @@ flowchart LR
 | `Material.VertexShader` / `PixelShader` | `FPAssetManager`에 로드돼 있어야 하는 셰이더 이름 (확장자 없이) |
 | `Material.Ambient` / `BaseColor` / `Diffuse` | `FPMaterial::SetAmbient/BaseColor/Diffuse`로 그대로 전달되는 `{r,g,b,a}` 색 |
 | `Material.TwoSided` | 양면 렌더링 여부. 생략하면 `false`. `true`이면 `MeshRenderPass`가 이 메시를 Cull 없이 그림 ([Two Sided Material](#two-sided-material)) |
-| `Texture[]` | `{ Name, Slot, SamplerType }` 배열. `MakeMaterial`이 각 항목마다 `AddTexture(Slot)` + `SetTexture(Slot, Name, SamplerType)`를 호출 (생략하면 텍스처 없는 기본 Material) |
+| `Texture[]` | `{ Name, Slot, TextureFilter, SamplerType }` 배열. `AssetLoader`가 `TextureFilter + "_" + SamplerType`을 합쳐 `FPSamplerType`으로 변환하고, `MakeMaterial`이 각 항목마다 `AddTexture(Slot)` + `SetTexture(Slot, Name, SamplerType)`를 호출 (생략하면 텍스처 없는 기본 Material). `TextureFilter` / `SamplerType`을 생략하거나 조합이 열거형에 없으면 기본값 `Filter_Tri_Linear_Sampler_CLAMP`로 떨어짐 ([Texture](#texture) 참고) |
 
 > [!IMPORTANT]
 > `LoadAssets()`에서는 **Texture → Material → StaticMesh** 순서로 호출해야 합니다. `MakeMaterial`이 `Texture[].Name`을 그대로 `FPMaterial`에 박아 두고, 실제 조회(`GetTextureData`)는 `MeshRenderPass`가 그릴 때 일어나기 때문에 느슨하게라도 이 순서를 지키는 편이 안전합니다.
@@ -1357,6 +1373,7 @@ Debug 경로는 작업 디렉터리(`Runners/Runner`) 기준 상대 경로입니
 
 ```text
 Assets/
+├── GameSetting/   GameSetting.json       창 크기 · MSAA · AF · 전체화면 (게임 에셋 루트 고정, `AssetOwner` 구분 없음)
 ├── Font/          *.sfont               DirectXTK SpriteFont (굴림9k.sfont 필수)
 ├── Level/         *.json                레벨 = GameMode + Actor 배치
 ├── Model/         <모델>/*.fbx          원본 메시 (StaticMesh JSON이 Name/NodeName으로 참조)
@@ -1371,6 +1388,7 @@ Assets/
 
 | 로더 함수 | 기준 폴더 | 예 |
 |---|---|---|
+| `LoadGameSetting(file)` | `GameSetting/` | `"GameSetting.json"`. `AssetOwner` 인자가 없고 항상 게임 에셋 루트에서 읽음. `RegistProjectName()`에서 다른 `Load*()`보다 먼저 호출 ([GameSetting](#gamesetting) 참고) |
 | `LoadStaticMesh(file, owner)` | `StaticMesh/` | `"Tree_StaticMesh.json"` (FBX는 JSON의 `NodeName`으로 `AllAssetDataCreate()`가 자동으로 찾아 로드) |
 | `LoadMaterial(file, owner)` | `Material/` | `"hair.002_Material.json"` ([Material JSON](#material-json)) |
 | `LoadLevelData(name, file, owner)` | `Level/` | `"TriWorld", "TriWorld.json"` |
@@ -1378,6 +1396,48 @@ Assets/
 | `LoadVertexShader(file, owner)` / `LoadPixelShader(file, owner)` | `Shader/`(JSON) → `ShaderResource/bin/`(컴파일된 `.vso` / `.pso`) | `"TerrainVertexShader.json"` ([셰이더 JSON](#셰이더-json)) |
 
 > FBX를 직접 가리키는 로더 함수는 더 이상 없습니다. `FPAssetManager::LoadFbxData(FPStaticMeshData&)`가 **내부용**(비공개)으로 바뀌어, `AllAssetDataCreate()`가 로드된 StaticMesh 설명 데이터마다 자동으로 호출합니다.
+
+### GameSetting
+
+다른 `Load*()`보다 먼저, `RegistProjectName()`에서 `FPAssetLoader::LoadGameSetting("GameSetting.json")`으로 읽습니다. `AssetOwner`가 없고 항상 게임 에셋 루트(`Assets/GameSetting/`)에서 찾습니다.
+
+```json
+// Assets/GameSetting/GameSetting.json (Tri_World)
+{
+  "GameSetting": {
+    "GameName": "Tri_World",
+    "Graphics": {
+      "MSAA": 8,
+      "AnisotropicFiltering": 16,
+      "Resolution": {
+        "Width": 960,
+        "Height": 600
+      },
+      "FullScreen": false
+    }
+  }
+}
+```
+
+| 키 | 설명 |
+|---|---|
+| `GameName` | 창 클래스/타이틀로 쓰임 (`FPGameProjectSetting::WinClassName` / `WinName`) |
+| `Graphics.MSAA` | 스왑체인·깊이버퍼 `SampleDesc.Count`. **짝수이고 8 이하**가 아니면 `1`(AA off)로 대체 |
+| `Graphics.AnisotropicFiltering` | Anisotropic 샘플러의 `MaxAnisotropy`. **짝수이고 16 이하**가 아니면 `1`로 대체 |
+| `Graphics.Resolution.Width` / `Height` | 창 크기(`WinWidth` / `WinHeight`), `DisplayAspect` 계산에도 사용 |
+| `Graphics.FullScreen` | 전체화면 여부 (`FPGameProjectSetting::FullScreen`) |
+
+```mermaid
+flowchart LR
+    GSJ["GameSetting/GameSetting.json"] -->|"LoadGameSetting"| GSD["FPAssetManager<br/>FPGameSettingData"]
+    GSD -->|"GetGameSettingData"| PS["FPGameProjectSetting::ProjectSetting()<br/>창 크기 · MSAA · AF · FullScreen"]
+    PS -->|"GetMSAA / GetAF"| RD["RenderingDevice::SetMSAA / SetAF<br/>(dwAA · dwAF)"]
+    RD -->|"CreateSwapChain / CreateDepthStencil"| SC["SwapChain · DepthStencil<br/>SampleDesc = dwAA"]
+    RD -->|"CreateSamplers"| SMP["Anisotropic 샘플러<br/>MaxAnisotropy = dwAF"]
+```
+
+> [!IMPORTANT]
+> `RenderDevice->SetMSAA()` / `SetAF()`는 `Renderer::InitializeRenderer()`(스왑체인·깊이버퍼 생성) **전에**, `CreateSamplers()`는 그 **후에** 호출해야 값이 반영됩니다. `ForestPearlEngine::PreInitialize()`가 이미 이 순서로 호출하므로, 부팅 순서를 바꿀 때는 이 제약을 지켜야 합니다.
 
 ### 로딩 파이프라인
 
@@ -1497,7 +1557,7 @@ FBXToStaticMeshJsonTranslator.exe [FBX입력폴더] [Json출력폴더]
 | FBX 스캔 | 입력 폴더의 모든 `.fbx`를 읽어, **메시를 가진 노드마다** StaticMesh JSON 하나를 생성 (`Name` = 파일명 그대로, `NodeName` = FBX 노드 이름) |
 | 소켓 | 메시가 없는 자식 노드(로케이터/더미)는 `Sockets[]`로 변환 |
 | Material | 메시에 연결된 첫 머티리얼마다 **기본 Material**(`<재질명>_Material.json`, 재질당 1번만 저장)과 **Material Instance**(`<재질명>_<StaticMesh이름>_MaterialInstance.json`, 메시마다 저장)를 함께 기록. 둘 다 `VertexShader` / `PixelShader`는 FBX에 정보가 없으므로 `DefaultVertexShader` / `DefaultPixelShader`로 채움 |
-| Texture | 머티리얼에 연결된 텍스처를 **실제 이미지 파일 기준으로 중복 없이** Texture JSON으로 저장 (DDS면 `"DDS"`, 그 외엔 `"WIC"`). FBX 텍스처의 Wrap 설정(Repeat/Clamp)을 `Sampler_Wrap` / `Sampler_CLAMP`로 변환 |
+| Texture | 머티리얼에 연결된 텍스처를 **실제 이미지 파일 기준으로 중복 없이** Texture JSON으로 저장 (DDS면 `"DDS"`, 그 외엔 `"WIC"`). Material Instance의 `Texture[]` 항목에는 FBX 텍스처의 Wrap 설정(Repeat/Clamp)을 `"SamplerType": "Sampler_Wrap"` / `"Sampler_CLAMP"`로, 필터는 FBX에 정보가 없어 항상 `"TextureFilter": "Filter_Tri_Linear"`로 채움 |
 
 - FBX 머티리얼의 **Two Sided(`double_sided`)** 설정이 켜져 있으면 두 Material JSON에 `"TwoSided": true`를 기록합니다 (엔진 `FPMaterial::TwoSided`와 같은 의미).
 - 빌드된 실행 파일이 `Tool/FBXToStaticMeshJsonTranslator/EXE/`에 포함되어 있습니다.
@@ -1697,6 +1757,7 @@ x64/Release/
 1. 게임 프로젝트를 `Games/Release_Game/<이름>/`에 두고 솔루션에 추가합니다.
 2. `ForestPearlEngine` 프로젝트의 **참조**를 해당 게임 프로젝트 하나로 교체합니다.
 3. 게임의 `RegistProjectName()`에서 `FPPathManager::Get().Initialize("<이름>")`을 폴더 이름과 같게 지정합니다.
+4. `Assets/GameSetting/GameSetting.json`을 반드시 추가하고 `RegistProjectName()`에서 `LoadGameSetting("GameSetting.json")`을 호출합니다 ([GameSetting](#gamesetting) 참고). 파일이 없으면 `FPGameProjectSetting::ProjectSetting()`이 `nullptr`인 `FPGameSettingData`를 참조해 죽습니다.
 
 > `Runners/Runner/ReleaseGameProject.props`에는 `GameProjectName`, `GameAssetDir` 매크로가 정의되어 있으나, 현재 패키징은 이 파일이 아니라 엔진 프로젝트의 참조를 기준으로 동작합니다.
 
@@ -1719,7 +1780,7 @@ x64/Release/
 
 | 함수 | 호출 시점 | 할 일 |
 |---|---|---|
-| `RegistProjectName()` | 윈도우 생성 전 | 프로젝트 이름, 창 크기 |
+| `RegistProjectName()` | 윈도우 생성 전 | 프로젝트 이름, `GameSetting.json` 로드(창 크기 · MSAA · AF · 전체화면) |
 | `LoadLevel()` | 렌더러 초기화 후 | Level JSON 등록 |
 | `LoadClassRegist()` | `LoadLevel` 다음 | 클래스 등록 |
 | `LoadAssets()` | `LoadClassRegist` 다음 | FBX, StaticMesh, Shader 로드 |
@@ -1736,11 +1797,10 @@ void RegistProjectName()
 {
     FPPathManager::Get().Initialize("Tri_World");          // 폴더 이름과 동일
 
-    FPGameProjectSetting* Setting =
-        static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
-    Setting->SetWinWidth(960);
-    Setting->SetWinHeight(600);
-    Setting->ProjectSetting();                             // 창 제목 = 프로젝트 이름
+    // Assets/GameSetting/GameSetting.json → FPGameSettingData로 로드
+    // (창 크기 · MSAA · AF · 전체화면. ProjectSetting()은 엔진이 나중에 직접 호출)
+    FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
+    AssetLoader->LoadGameSetting("GameSetting.json");
 }
 
 void LoadLevel()
@@ -2178,7 +2238,7 @@ Mesh = new FPStaticMeshComponent(this, "Plane_StaticMesh");     // 엔진 기본
 FPMaterialInterface& Material = Mesh->GetMaterial();
 std::string TextureName = "Brick";                               // 변수로 전달 (아래 표 참고)
 Material.SetTexture(0, TextureName);                             // 슬롯 0의 텍스처 교체
-Material.SetTexture(0, TextureName, Sampler_Wrap);               // 샘플러까지 지정
+Material.SetTexture(0, TextureName, Filter_Tri_Linear_Sampler_Wrap);  // 샘플러까지 지정 (필터_주소모드)
 
 Material.AddTexture(1);                                          // 슬롯 추가 (PS t1)
 std::string Detail = "Checker_dds";
@@ -2190,7 +2250,7 @@ Material.SetTexture(1, Detail);
 | `SetTexture(Slot, Name)` | 슬롯의 텍스처 이름을 바꿈 |
 | `SetTexture(Slot, Name, SamplerType)` | 텍스처와 샘플러를 함께 바꿈 |
 | `SetTextureSampler(Slot, SamplerType)` | 샘플러만 바꿈 |
-| `AddTexture(Slot)` | 슬롯 추가. 기본값은 `Default_Texture512` + `Sampler_CLAMP` |
+| `AddTexture(Slot)` | 슬롯 추가. 기본값은 `Default_Texture512` + `Filter_Tri_Linear_Sampler_CLAMP` |
 | `DeleteTexture(Slot)` | 슬롯 제거 |
 
 엔진이 기본 제공하는 에셋: 메시 `Plane_StaticMesh`(`Primitive_Model/Plane.fbx`), 텍스처 `Default_Texture512` · `Checker_bmp` · `Checker_dds`. 샘플은 `Games/Release_Game/Lambert_Light/Plane.cpp`입니다.
@@ -2215,7 +2275,7 @@ SamplerState Smpler    : register(s0);   // 사용하는 샘플러 종류 중 �
 | **텍스처는 Material 단위다** | 같은 Material 객체를 여러 메시에 `SetMaterial`하면 텍스처도 함께 바뀝니다. 기본 Material은 컴포넌트마다 따로 만들어지므로 `GetMaterial()`로 바꿔도 해당 메시에만 적용됩니다 |
 | **셰이더의 `t#`는 Material 슬롯과 같다** | 슬롯 `n` → `t(n)`. 셰이더가 읽는 슬롯은 모두 `AddTexture`로 만들어 두세요. Pass는 텍스처를 **해제하지 않으므로**, 슬롯이 없는 메시를 그리면 직전 메시의 텍스처가 남아 보일 수 있습니다 |
 | **샘플러 `s#`는 슬롯이 아니라 종류 순서다** | 한 메시에서 샘플러를 하나만 쓰면 `s0`입니다. 둘 이상 섞을 때는 [바인딩 규칙](#바인딩-규칙)의 순서를 따르세요 |
-| **샘플러는 엔진이 부팅 때 만든 8종만 쓸 수 있다** | `CreateSamplers()`는 `PreInitialize()`에서 렌더러 초기화 직후 호출됩니다. 게임 코드에서 따로 호출할 필요는 없습니다 ([Texture](#texture) 참고) |
+| **샘플러는 엔진이 부팅 때 만든 36종(필터 4 × 주소모드 9)만 쓸 수 있다** | `CreateSamplers()`는 `PreInitialize()`에서 렌더러 초기화 직후 호출됩니다. Anisotropic 샘플러의 단계는 `GameSetting.json`의 `AnisotropicFiltering`으로 정해지며, 게임 코드에서 따로 호출할 필요는 없습니다 ([Texture](#texture) 참고) |
 | **메시(`MeshRenderPass`)에서만 동작한다** | Gizmo · Normal · UI Pass는 텍스처를 바인딩하지 않습니다 |
 | **큰 텍스처는 DDS(밉맵 포함)로 변환해 쓴다** | `Tool/DXTexViewer/DxTex.exe`로 변환할 수 있습니다. 슬롯 수만큼 SRV 바인딩이 *메시 × 카메라*마다 일어나므로 쓰지 않는 슬롯은 `DeleteTexture`로 지우세요 |
 
@@ -2271,6 +2331,7 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 - 에셋은 모델별 폴더(`Terrain/` · `Tree/` · `Windmill/` · `ToonLink/`)로 정리되었고, 로더 호출도 `"Terrain/Terrain_Material.json"`처럼 하위 폴더 경로를 포함합니다.
 - `Windmill_Body.fbx` / `Windmill_Wing.fbx`는 `Windmill.fbx` 하나로 합쳐졌고 StaticMesh JSON의 `NodeName`(`Windmill_Body` · `Windmill_Wing`)으로 각각 찾습니다.
 - `Player`의 SpringArm 길이는 `50`으로 복원되었습니다.
+- 모든 텍스처는 필터가 `Filter_Tri_Linear`(기본값)이고 주소 모드만 위 표의 값을 씁니다. 그래픽 옵션은 `Assets/GameSetting/GameSetting.json`에서 `MSAA: 8`, `AnisotropicFiltering: 16`, `Resolution: 960×600`으로 설정되어 있습니다 ([GameSetting](#gamesetting) 참고).
 
 **Socket 정의**
 
@@ -2378,7 +2439,7 @@ Tri_World처럼 *레벨 하나를 열어 종료할 때까지 유지*하는 흐�
 | `FPGizmoComponent` | `Material`, 직접 만든 VertexBuffer | 렌더 목록 해제만 수행 |
 | `FPViewPortClient` | `FPViewPort` 5개, `FPConstantBufferRenderData` 4개 | `= default` |
 | `FPAssetManager` | `void*`로 보관하는 VertexBuffer(스트림 4종) · IndexBuffer, Shader 객체, Shader 바이트코드, 텍스처 SRV와 `new`로 만든 `D3D11_TEXTURE2D_DESC`(`FPTextureData`) | `= default` |
-| `RenderingDevice` | 상수 버퍼 28개(VS 14 · PS 14), DepthStencilState 3개, SamplerState 8개(생성 시), 열거한 `IDXGIAdapter1`, `IDXGIAdapter4` | 없음 |
+| `RenderingDevice` | 상수 버퍼 28개(VS 14 · PS 14), DepthStencilState 3개, SamplerState 36개(생성 시), 열거한 `IDXGIAdapter1`, `IDXGIAdapter4` | 없음 |
 | `ForestPearlEngine` | `Renderer` | `Finalize()`만 호출 |
 | `FPGameplayStatics::GetActorOfClass` · `GetAllActorsOfClass` | 타입 비교용 임시 인스턴스의 `RootComponent` — **호출할 때마다** 1개 | — |
 | `FPWorld::CreateClassInstnce<T>` | `dynamic_cast`가 실패한 객체 (`release()` 후 버려짐) | — |

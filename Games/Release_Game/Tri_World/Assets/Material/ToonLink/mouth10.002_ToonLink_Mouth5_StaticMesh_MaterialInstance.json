@@ -27,13 +27,13 @@
         {
             "Name": "Mouth10_png",
             "Slot": 0,
-            "TextureFilter": "Filter_Tri_Linear",
+            "TextureFilter": "Filter_Anistropy_Linear",
             "SamplerType": "Sampler_Wrap"
         },
         {
             "Name": "Mouth10_png",
             "Slot": 1,
-            "TextureFilter": "Filter_Tri_Linear",
+            "TextureFilter": "Filter_Anistropy_Linear",
             "SamplerType": "Sampler_Wrap"
         }
     ]

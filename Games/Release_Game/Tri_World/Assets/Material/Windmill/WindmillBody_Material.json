@@ -27,13 +27,13 @@
       {
         "Name": "Windmill_jpg",
         "Slot": 0,
-        "TextureFilter": "Filter_Tri_Linear",
+        "TextureFilter": "Filter_Anistropy_Linear",
         "SamplerType": "Sampler_CLAMP"
       },
       {
         "Name": "Windmill_a_jpg",
         "Slot": 1,
-        "TextureFilter": "Filter_Tri_Linear",
+        "TextureFilter": "Filter_Anistropy_Linear",
         "SamplerType": "Sampler_CLAMP"
       }
     ]

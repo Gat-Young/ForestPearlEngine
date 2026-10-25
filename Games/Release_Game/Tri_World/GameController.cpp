@@ -11,6 +11,9 @@
 #include "Axis.h"
 #include "Grid.h"
 
+//Directional Light 변경
+#include "ADirectionalLight.h"
+
 #include <iostream>
 
 void GameController::Initialize()
@@ -74,6 +77,8 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_SetDepthStencilBuffer", VK_F5, ModifyInfoTriger);
 	GetInputComponent().AddMappingKey("IA_SetNormalLine", VK_F6, ModifyInfoTriger);
 
+	GetInputComponent().AddMappingKey("IA_SetDirectionLightColor", VK_F7, ModifyInfoTriger);
+
 	GetInputComponent().AddMappingKey("IA_AttachHead", 'Z', ModifyInfoTriger);
 	GetInputComponent().AddMappingKey("IA_AttachShield", 'X', ModifyInfoTriger);
 
@@ -96,6 +101,9 @@ void GameController::Initialize()
 	GetInputComponent().BindMethod("IA_SetGrid", this, EKeyState::Down, &GameController::SetGridOn);
 	GetInputComponent().BindMethod("IA_SetAxis", this, EKeyState::Down, &GameController::SetAxisOn);
 	GetInputComponent().BindMethod("IA_SetNormalLine", this, EKeyState::Down, &GameController::SetNormalLine);
+
+	//Direction Light 바인딩
+	GetInputComponent().BindMethod("IA_SetDirectionLightColor", this, EKeyState::Down, &GameController::SetDirectionalLight);
 
 
 	__super::Initialize();
@@ -243,6 +251,26 @@ void GameController::SetNormalLine(FInputValue Value)
 	{
 		UI* GameUI = static_cast<UI*>(Actor);
 		GameUI->SetNormalLine(Value);
+	}
+	ActorList.clear();
+}
+
+void GameController::SetDirectionalLight(struct FInputValue Value)
+{
+	std::vector<FPActor*> ActorList;
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "ADirectionalLight", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		ADirectionalLight* DirectionLight = static_cast<ADirectionalLight*>(Actor);
+		DirectionLight->SetDirectionalLightColor();
+	}
+	ActorList.clear();
+
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "UI", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		UI* GameUI = static_cast<UI*>(Actor);
+		GameUI->SetDirectionalLightColor(Value);
 	}
 	ActorList.clear();
 }

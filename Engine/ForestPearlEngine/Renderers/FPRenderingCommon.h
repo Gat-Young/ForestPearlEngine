@@ -376,6 +376,7 @@ struct FPLightRenderItem
 	float* Range = nullptr;
 	FPVector4* Diffuse = nullptr;
 	FPVector4* Ambient = nullptr;
+	FPVector4* LightColor = nullptr;
 
 	FPMatrix* Location = nullptr;
 	FPMatrix* Rotation = nullptr;
@@ -479,6 +480,7 @@ namespace RenderingData
 		float padding[3];
 		FPVector4 Diffuse;
 		FPVector4 Ambient;
+		FPVector4 LightColor;
 	};
 
 	struct alignas(16) MaterialItem
@@ -504,6 +506,7 @@ namespace RenderingData
 		float Range;
 		FPVector4 Diffuse;
 		FPVector4 Ambient;
+		FPVector4 LightColor;
 
 		FPMatrix Location;
 		FPMatrix Rotation;

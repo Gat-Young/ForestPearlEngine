@@ -151,6 +151,8 @@ class RenderingDevice
 
 		HRESULT SetViewPort(float TopLeftX, float TopLeftY, float Width, float Height, float MinDepth, float MaxDepth);
 
+		//Background Color º¯°æ
+		HRESULT SetBackGroundColor(float R, float G, float B, float A);
 		void ClearBackBuffer();
 
 		void RenderTargetPresent();

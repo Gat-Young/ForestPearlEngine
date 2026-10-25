@@ -25,6 +25,7 @@ struct LIGHT
     float Range;
     float4 Diffuse;
     float4 Ambient;
+    float4 LightColor;
 };
 
 cbuffer DirectionLightConstBuffer : register(b2)
@@ -81,7 +82,9 @@ VSOutput VS_Main(
     Diff = LambertLight(N, L, Light.Diffuse, Light.Ambient, Material.Diffuse, Material.Ambient);
     
     o.pos = pos;
-    o.col = Material.BaseColor * Diff;
+    o.col = Light.LightColor;
+    //o.col = Material.BaseColor * Light.LightColor * Diff;
+    //o.col = Material.BaseColor * Diff;
     
     uv.x = uv.x * 20;
     uv.y = uv.y * 20;

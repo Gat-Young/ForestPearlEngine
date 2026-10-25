@@ -35,4 +35,6 @@ class GameController : public FPAController
 		void SetActiveDepthStencilBuffer(struct FInputValue Value);
 		void SetGridOn(struct FInputValue Value);
 		void SetAxisOn(struct FInputValue Value);
+
+		void SetDirectionalLight(struct FInputValue Value);
 };

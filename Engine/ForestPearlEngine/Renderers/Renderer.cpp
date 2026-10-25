@@ -142,6 +142,10 @@ void Renderer::CreateMeshRenderList()
 		FPMatrix WorldMatrix = ((MeshRenderData.Scale) * (MeshRenderData.Rotation) * (MeshRenderData.Location));
 	
 
+		//////////////////////////////////////////////////
+		// 
+		// Light RenderList 계산
+		//
 		int MAX_LIGHT = 8;
 		int LightRenderLoopSize = min(MAX_LIGHT, LightRenderList.size());
 		int LightCount = 0;
@@ -157,6 +161,7 @@ void Renderer::CreateMeshRenderList()
 			DirLight.Diffuse = LightRenderList[LightCount].Diffuse;
 
 			DirLight.Ambient = LightRenderList[LightCount].Ambient;
+			DirLight.LightColor = LightRenderList[LightCount].LightColor;
 
 
 			//VertexBuffer에 등록
@@ -332,6 +337,7 @@ void Renderer::CreateLightRenderList()
 		LightRenderingData.Range = *(LightItem.Range);
 		LightRenderingData.Diffuse = *(LightItem.Diffuse);
 		LightRenderingData.Ambient = *(LightItem.Ambient);
+		LightRenderingData.LightColor = *(LightItem.LightColor);
 
 		LightRenderingData.Location = *(LightItem.Location);
 		LightRenderingData.Rotation = *(LightItem.Rotation);

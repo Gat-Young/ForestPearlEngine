@@ -16,6 +16,7 @@ void FPDirectionalLightComponent::RegistLightRenderList()
 	RenderItem->Direction = &(this->DirectionalLightConstantBuffer.Direction);
 	RenderItem->Diffuse = &(this->DirectionalLightConstantBuffer.Diffuse);
 	RenderItem->Ambient = &(this->DirectionalLightConstantBuffer.Ambient);
+	RenderItem->LightColor = &(this->DirectionalLightConstantBuffer.LightColor);
 	RenderItem->Location = &(this->WorldTransform.LocationMatrix);
 	RenderItem->Rotation = &(this->WorldTransform.RotationMatrix);
 	RenderItem->Scale = &(this->WorldTransform.ScaleMatrix);
@@ -57,5 +58,11 @@ void FPDirectionalLightComponent::SetDiffuse(FPVector4& Diffuse)
 void FPDirectionalLightComponent::SetAmbient(FPVector4& Ambient)
 {
 	DirectionalLightConstantBuffer.Ambient = Ambient;
+	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, DirectionalLightConstantBuffer);
+}
+
+void FPDirectionalLightComponent::SetLightColor(FPVector4& LightColor)
+{
+	DirectionalLightConstantBuffer.LightColor = LightColor;
 	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, DirectionalLightConstantBuffer);
 }

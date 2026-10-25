@@ -11,6 +11,7 @@ class FPDirectionalLightComponent : public FPLightComponent
 			float Range = 1000.0f;
 			FPVector4 Diffuse = {1.0f, 1.0f, 1.0f, 1.0f};
 			FPVector4 Ambient = {0.2f, 0.2f, 0.2f, 1.0f};
+			FPVector4 LightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 		};
 
 		FPDirectionalLightConstantBuffer DirectionalLightConstantBuffer;
@@ -29,4 +30,5 @@ class FPDirectionalLightComponent : public FPLightComponent
 		void SetRange(float Ran);
 		void SetDiffuse(FPVector4& Diffuse);
 		void SetAmbient(FPVector4& Ambient);
+		void SetLightColor(FPVector4& LightColor);
 };

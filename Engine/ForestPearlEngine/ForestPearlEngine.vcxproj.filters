@@ -470,6 +470,12 @@
     <ClCompile Include="Renderers\FPRenderingCommon.cpp">
       <Filter>Renderers</Filter>
     </ClCompile>
+    <ClCompile Include="FPPointLightComponent.cpp">
+      <Filter>Component\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="FPLocalLightComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\StaticMesh\Cube_StaticMesh.json">

@@ -218,9 +218,11 @@
     <ClCompile Include="FPLightComponent.cpp" />
     <ClCompile Include="FPLightComponentBase.cpp" />
     <ClCompile Include="FPLightRenderList.cpp" />
+    <ClCompile Include="FPLocalLightComponent.cpp" />
     <ClCompile Include="FPMaterial.cpp" />
     <ClCompile Include="FPMovementCompoent.cpp" />
     <ClCompile Include="FPMovementComponent.cpp" />
+    <ClCompile Include="FPPointLightComponent.cpp" />
     <ClCompile Include="FPSceneComponent.cpp" />
     <ClCompile Include="FPGameProjectClassRegistry.cpp" />
     <ClCompile Include="FPGameTimer.cpp" />

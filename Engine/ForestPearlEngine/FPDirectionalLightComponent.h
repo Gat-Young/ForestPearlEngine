@@ -6,6 +6,6 @@ class FPDirectionalLightComponent : public FPLightComponent
 	protected:
 
 	public:
-		FPDirectionalLightComponent(FPActor* Ownder);
+		FPDirectionalLightComponent(FPActor* Owner);
 		~FPDirectionalLightComponent();
 };

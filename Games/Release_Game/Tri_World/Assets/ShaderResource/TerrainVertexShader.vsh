@@ -52,7 +52,6 @@ VSOutput VS_Main(
     
     o.pos = pos;
     o.col = CalculateLight(posv, nrm, mWV, mView);
-    
     uv.x = uv.x * 20;
     uv.y = uv.y * 20;
     

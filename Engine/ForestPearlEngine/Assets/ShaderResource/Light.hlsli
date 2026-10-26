@@ -22,7 +22,7 @@
 struct LIGHT
 {
     uint LightType;
-    uint Padding[3];
+    float3 Padding;
     float4 LightPosition;
     float4 Direction;
     float Range;
@@ -66,7 +66,7 @@ float4 RectLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightD
 
 float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView)
 {
-    float4 Col = { 1.0f, 1.0f, 1.0f, 1.0f };
+    float4 Col = { 0.0f, 0.0f, 0.0f, 1.0f };
     
     for (int i = 0; i < LightCnt; ++i)
     {
@@ -90,8 +90,9 @@ float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView)
         }
 
     }
-    
-    return Col * Material.BaseColor;
+
+    float4 Result = Col * Material.BaseColor;
+    return float4(Result.rgb, Material.BaseColor.a);
 }
 
 
@@ -105,6 +106,7 @@ float4 DirLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightDa
     
     Diff = LambertLight(N, L, LightData.Diffuse, LightData.Ambient, Material.Diffuse, Material.Ambient);
     
+    //return Diff;
     return Diff * LightData.LightColor;
 }
 

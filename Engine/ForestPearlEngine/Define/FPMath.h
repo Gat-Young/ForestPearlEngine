@@ -106,6 +106,17 @@ struct FPVector4
 			w = DirectX::XMVectorGetW(Vector);
 	}
 
+	FPVector4 operator -() const
+	{
+		FPVector4 ret;
+		ret.x = -x;
+		ret.y = -y;
+		ret.z = -z;
+		ret.w = -w;
+		return ret;
+	}
+
+
 	FPVector4 operator *(const float& rhs) const
 	{
 		FPVector4 ret;

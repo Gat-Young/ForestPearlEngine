@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-FPDirectionalLightComponent::FPDirectionalLightComponent(FPActor* Ownder) : FPLightComponent(Owner)
+FPDirectionalLightComponent::FPDirectionalLightComponent(FPActor* Owner) : FPLightComponent(Owner)
 {
 	FPLightConstantBuffer DirectionLightSetting;
 	DirectionLightSetting.Direction = { 0.0f, 1.0f, 0.0f };

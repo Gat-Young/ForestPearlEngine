@@ -33,8 +33,7 @@ void FPLightComponentBase::RegistLightRenderList()
 //Set한 이후 버퍼 데이터를 업데이트
 void FPLightComponentBase::SetDirection(FPVector3& Dir)
 {
-	//방향은 Normalize 음? 이건 근데 Forward 줘도 되는 부분이 아닌가? 뭐 다르게 가져가면 그건 그거 대로 좋은 걸 지도?
-	LightConstantBuffer.Direction = -Dir.Normalize();
+	LightConstantBuffer.Direction = (Dir.Normalize());
 	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, LightConstantBuffer);
 }
 

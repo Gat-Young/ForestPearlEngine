@@ -154,7 +154,7 @@ void Renderer::CreateMeshRenderList()
 		LightBuffer.LightCnt = LightRenderLoopSize;
 
 		//Light 정보
-		for (LightCount =0; LightCount < LightRenderLoopSize; ++LightCount)
+		for (LightCount = 0; LightCount < LightRenderLoopSize; ++LightCount)
 		{
 			RenderingData::LightDataItem LightData;
 
@@ -163,7 +163,7 @@ void Renderer::CreateMeshRenderList()
 			LightData.LightPosition = LightRenderList[LightCount].Location.Matrix.r[3];
 
 			FPVector4 LightDir = { LightRenderList[LightCount].Direction.x, LightRenderList[LightCount].Direction.y, LightRenderList[LightCount].Direction.z, 0.0f };
-			LightData.Direction = (LightDir.Normalize() * WorldMatrix.MatrixInverse()).Normalize(); //Local로 변환
+			LightData.Direction = -((LightDir.Normalize() * WorldMatrix.MatrixInverse()).Normalize()); //Local로 변환
 			
 			LightData.Range = LightRenderList[LightCount].Range;
 			LightData.Diffuse = LightRenderList[LightCount].Diffuse;
@@ -174,7 +174,63 @@ void Renderer::CreateMeshRenderList()
 
 
 			LightBuffer.Light[LightCount] = LightData;
+
+			
+			/*
+			std::cout << "\n========== LightDataItem ==========\n";
+
+			RenderingData::LightDataItem& Data = LightData;
+			std::cout << "LightCount : " << LightCount << "\n";
+			std::cout << "LightType : " << Data.LightType << "\n";
+			
+			std::cout << "LightPosition : ("
+				<< Data.LightPosition.x << ", "
+				<< Data.LightPosition.y << ", "
+				<< Data.LightPosition.z << ", "
+				<< Data.LightPosition.w << ")\n";
+
+			std::cout << "Direction : ("
+				<< Data.Direction.x << ", "
+				<< Data.Direction.y << ", "
+				<< Data.Direction.z << ", "
+				<< Data.Direction.w << ")\n";
+
+			std::cout << "Range : " << Data.Range << "\n";
+
+			std::cout << "Diffuse : ("
+				<< Data.Diffuse.x << ", "
+				<< Data.Diffuse.y << ", "
+				<< Data.Diffuse.z << ", "
+				<< Data.Diffuse.w << ")\n";
+
+			std::cout << "Ambient : ("
+				<< Data.Ambient.x << ", "
+				<< Data.Ambient.y << ", "
+				<< Data.Ambient.z << ", "
+				<< Data.Ambient.w << ")\n";
+
+			std::cout << "Specular : ("
+				<< Data.Specular.x << ", "
+				<< Data.Specular.y << ", "
+				<< Data.Specular.z << ", "
+				<< Data.Specular.w << ")\n";
+
+			std::cout << "Attenuation : ("
+				<< Data.Attenuation.x << ", "
+				<< Data.Attenuation.y << ", "
+				<< Data.Attenuation.z << ", "
+				<< Data.Attenuation.w << ")\n";
+				
+			std::cout << "LightColor : ("
+				<< Data.LightColor.x << ", "
+				<< Data.LightColor.y << ", "
+				<< Data.LightColor.z << ", "
+				<< Data.LightColor.w << ")\n";
+
+			std::cout << "===================================\n";
+			*/
 		}
+
 		//VertexBuffer에 등록 2번은 Light
 		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, 0, LightBuffer);
 

@@ -1,10 +1,11 @@
 #include "ADirectionalLight.h"
 #include "ForestPearlEngine/FPDirectionalLightComponent.h"
+#include <iostream>
 
 ADirectionalLight::ADirectionalLight()
 {
 	LightComponent = new FPDirectionalLightComponent(this);
-	FPVector3 Dir{ 0.43f, -0.64f, 0.64f };
+	FPVector3 Dir{ 1.0f, -1.0f, 1.0f };
 	LightComponent->SetDirection(Dir);
 }
 
@@ -37,5 +38,7 @@ void ADirectionalLight::SetDirectionalLightColor()
 	if (NowLight == 2) { LightColor = { 0.0f, 0.0f, 0.301961f, 1.0f }; }
 	if (NowLight == 3) { LightColor = { 0.301961f, 0.301961f, 0.701961f, 1.0f }; }
 
+	//std::cout << LightColor.x << "," << LightColor.y << "," << LightColor.z << "," << LightColor.w << "\n";
+ 
 	LightComponent->SetLightColor(LightColor);
 }

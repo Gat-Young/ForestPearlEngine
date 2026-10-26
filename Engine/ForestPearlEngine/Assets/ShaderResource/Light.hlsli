@@ -77,7 +77,7 @@ float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView)
                 break;
             
 	        case LightType_Point     :
-                //Col += PointLight(posv, nrm, mWV, mView, Light[i]);
+                Col += PointLight(posv, nrm, mWV, mView, Light[i]);
                 break;
             
 	        case LightType_Spot      :
@@ -112,9 +112,29 @@ float4 DirLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightDa
 
 float4 PointLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData)
 {
-    //미구현이므로 Light 연산을 하지 않음
-    float4 Col = { 0.0f, 0.0f, 0.0f, 0.0f };
-    return Col;
+    float4 ViewLightPosition = mul(mView, LightData.LightPosition);
+    float4 L = ViewLightPosition - posv;
+    
+    matrix Inverse_mWV = transpose(mWV);
+    float4 N = mul(mWV, nrm);
+    
+    N = normalize(N);
+    
+    float Distance = max(length(L), 0.01);
+    
+    //광원 도달 거리 벗어남
+    if (Distance > LightData.Range)
+        return 0;
+    
+    //정규화
+    L /= Distance;
+    
+    //거리 감쇠 공식
+    float att = 1 / (LightData.Attenuation.x + LightData.Attenuation.y * Distance + LightData.Attenuation.z * Distance * Distance);
+    
+    float Diff = LambertLight(N, L, LightData.Diffuse, LightData.Ambient, Material.Diffuse, Material.Ambient) * att;
+    
+    return Diff * LightData.LightColor;
 }
 float4 SpotLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData)
 {

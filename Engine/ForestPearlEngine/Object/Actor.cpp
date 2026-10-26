@@ -13,10 +13,10 @@ void FPActor::Tick()
     if (RootComponent != nullptr) RootComponent->Tick();
 }
 
-bool FPActor::AttachToComponent(FPSceneComponent* Parent)
+bool FPActor::AttachToComponent(FPSceneComponent* Parent, std::string SocketName)
 {
     if (RootComponent == nullptr) return false;
-    RootComponent->SetupAttachment(Parent);
+    RootComponent->SetupAttachment(Parent, SocketName);
     return true;
 }
 

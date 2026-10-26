@@ -79,6 +79,8 @@ void GameController::Initialize()
 
 	GetInputComponent().AddMappingKey("IA_SetDirectionLightColor", VK_F7, ModifyInfoTriger);
 
+	GetInputComponent().AddMappingKey("IA_OnTorchLight", '1', ModifyInfoTriger);
+
 	GetInputComponent().AddMappingKey("IA_AttachHead", 'Z', ModifyInfoTriger);
 	GetInputComponent().AddMappingKey("IA_AttachShield", 'X', ModifyInfoTriger);
 

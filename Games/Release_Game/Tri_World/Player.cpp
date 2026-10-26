@@ -11,6 +11,7 @@
 #include "WindmillWing.h"
 #include "TripleWindmillWing.h"
 #include "ForestPearlEngine/FPMaterialInterface.h"
+#include "ATorchLight.h"
 #include <iostream>
 
 void Player::Initialize()
@@ -96,6 +97,7 @@ void Player::Initialize()
 	Controller->GetInputComponent().BindMethod("IA_SetScaleWing", this, EKeyState::Pressed, &Player::SetScaleWing);
 	Controller->GetInputComponent().BindMethod("IA_AttachHead", this, EKeyState::Down, &Player::AttachHead);
 	Controller->GetInputComponent().BindMethod("IA_AttachShield", this, EKeyState::Down, &Player::AttachShield);
+	Controller->GetInputComponent().BindMethod("IA_OnTorchLight", this, EKeyState::Down, &Player::OnTorch);
 	Controller->Possess(this);
 
 }
@@ -183,6 +185,18 @@ void Player::AttachShield(FInputValue Value)
 	{
 		OneWindmillWing->AttachShield(Value);
 	}
+}
+
+void Player::OnTorch(FInputValue Value)
+{
+	//TorchLight가 없다면
+	if(TorchLight == nullptr)
+	{ 
+		//Torch Light 생성, 손에 붙임
+		TorchLight =static_cast<ATorchLight*>(this->GetWorld()->SpawnActor("ATorchLight", "PlayerTorch"));
+		TorchLight->AttachToComponent(Hand, "TorchPoint");
+	}
+	TorchLight->OnTorch();
 }
 
 FPSceneComponent* Player::GetShieldPivot()

@@ -11,6 +11,7 @@ class FPSpringArmComponent;
 class FPCameraComponent;
 class WindmillWing;
 class TripleWindmillWing;
+class ATorchLight;
 
 class Player : public FPPawn
 {
@@ -33,6 +34,8 @@ class Player : public FPPawn
 		FPStaticMeshComponent* Mouth;
 		FPStaticMeshComponent* Shield_Back;
 		FPStaticMeshComponent* Shidld_Hand;
+
+		ATorchLight* TorchLight = nullptr;
 
 		FPSceneComponent* ShieldPivot;
 		FPSpringArmComponent* SpringArm;
@@ -58,6 +61,8 @@ class Player : public FPPawn
 		void SetScaleWing(FInputValue Value);
 		void AttachHead(FInputValue Value);
 		void AttachShield(FInputValue Value);
+
+		void OnTorch(FInputValue Value);
 
 		FPSceneComponent* GetShieldPivot();
 };

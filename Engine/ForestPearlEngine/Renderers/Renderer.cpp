@@ -146,27 +146,37 @@ void Renderer::CreateMeshRenderList()
 		// 
 		// Light RenderList 계산 (여기 변경 필요)
 		//
-		int MAX_LIGHT = 8;
+		int MAX_LIGHT = 64;
 		int LightRenderLoopSize = min(MAX_LIGHT, LightRenderList.size());
 		int LightCount = 0;
+
+		RenderingData::LightItem LightBuffer;
+		LightBuffer.LightCnt = LightRenderLoopSize;
 
 		//Light 정보
 		for (LightCount =0; LightCount < LightRenderLoopSize; ++LightCount)
 		{
-			RenderingData::LightItem DirLight;
+			RenderingData::LightDataItem LightData;
+
+			LightData.LightType = LightRenderList[LightCount].LightType;
+
+			LightData.LightPosition = LightRenderList[LightCount].Location.Matrix.r[3];
+
 			FPVector4 LightDir = { LightRenderList[LightCount].Direction.x, LightRenderList[LightCount].Direction.y, LightRenderList[LightCount].Direction.z, 0.0f };
-			DirLight.Direction = (LightDir.Normalize() * WorldMatrix.MatrixInverse()).Normalize(); //Local로 변환
+			LightData.Direction = (LightDir.Normalize() * WorldMatrix.MatrixInverse()).Normalize(); //Local로 변환
 			
-			DirLight.Range = LightRenderList[LightCount].Range;
-			DirLight.Diffuse = LightRenderList[LightCount].Diffuse;
+			LightData.Range = LightRenderList[LightCount].Range;
+			LightData.Diffuse = LightRenderList[LightCount].Diffuse;
+			LightData.Ambient = LightRenderList[LightCount].Ambient;
+			LightData.Specular = LightRenderList[LightCount].Specular;
+			LightData.Attenuation = LightRenderList[LightCount].Attenuation;
+			LightData.LightColor = LightRenderList[LightCount].LightColor;
 
-			DirLight.Ambient = LightRenderList[LightCount].Ambient;
-			DirLight.LightColor = LightRenderList[LightCount].LightColor;
 
-
-			//VertexBuffer에 등록
-			FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, LightCount, DirLight);
+			LightBuffer.Light[LightCount] = LightData;
 		}
+		//VertexBuffer에 등록 2번은 Light
+		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, 0, LightBuffer);
 
 		//Material 처리
 		MeshRenderData.VertexShaderPath = *(RenderItemData.VertexShaderPath);
@@ -222,7 +232,8 @@ void Renderer::CreateMeshRenderList()
 		}
 		//Texture 처리 End.
 
-		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, LightCount, Material);
+		//3번은 Material
+		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, 1, Material);
 		this->MeshRenderList.push_back(MeshRenderData);
 	}
 
@@ -333,10 +344,13 @@ void Renderer::CreateLightRenderList()
 		}
 
 		RenderingData::LightRenderItem LightRenderingData;
+		LightRenderingData.LightType = *(LightItem.LightType);
 		LightRenderingData.Direction = *(LightItem.Direction);
 		LightRenderingData.Range = *(LightItem.Range);
 		LightRenderingData.Diffuse = *(LightItem.Diffuse);
 		LightRenderingData.Ambient = *(LightItem.Ambient);
+		LightRenderingData.Specular = *(LightItem.Specular);
+		LightRenderingData.Attenuation = *(LightItem.Attenuation);
 		LightRenderingData.LightColor = *(LightItem.LightColor);
 
 		LightRenderingData.Location = *(LightItem.Location);

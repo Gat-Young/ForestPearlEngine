@@ -22,8 +22,9 @@
 struct LIGHT
 {
     uint LightType;
-    float3 Padding;
+    uint Padding[3];
     float4 LightPosition;
+    float4 Direction;
     float Range;
     float3 Padding_2;
     float4 Diffuse;
@@ -58,10 +59,10 @@ cbuffer MaterialConstBuffer : register(b3)
 float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView);
 
 //조명 계산 함수
-float4 DirLight(float4 posv, float4 nrm, matrix mWV, matrix mView);
-float4 PointLight(float4 posv, float4 nrm, matrix mWV, matrix mView);
-float4 SpotLight(float4 posv, float4 nrm, matrix mWV, matrix mView);
-float4 RectLight(float4 posv, float4 nrm, matrix mWV, matrix mView);
+float4 DirLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData);
+float4 PointLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData);
+float4 SpotLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData);
+float4 RectLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData);
 
 float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView)
 {
@@ -72,19 +73,19 @@ float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView)
         switch (Light[i].LightType)
         {
 	        case LightType_Direction :
-                Col += DirLight(posv, nrm, mWV, mView);
+                Col += DirLight(posv, nrm, mWV, mView, Light[i]);
                 break;
             
 	        case LightType_Point     :
-                Col += PointLight(posv, nrm, mWV, mView);
+                //Col += PointLight(posv, nrm, mWV, mView, Light[i]);
                 break;
             
 	        case LightType_Spot      :
-                Col += SpotLight(posv, nrm, mWV, mView);
+                //Col += SpotLight(posv, nrm, mWV, mView, Light[i]);
                 break;
             
 	        case LightType_Rect      :
-                Col += RectLight(posv, nrm, mWV, mView);
+                //Col += RectLight(posv, nrm, mWV, mView, Light[i]);
                 break;
         }
 
@@ -94,31 +95,35 @@ float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView)
 }
 
 
-float4 DirLight(float4 posv, float4 nrm, matrix mWV, matrix mView)
+float4 DirLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData)
 {
     float4 Diff = 1;
     
     float4 N = nrm;
-    float4 L = Light.Direction;
+    float4 L = LightData.Direction;
     
     
-    Diff = LambertLight(N, L, Light.Diffuse, Light.Ambient, Material.Diffuse, Material.Ambient);
+    Diff = LambertLight(N, L, LightData.Diffuse, LightData.Ambient, Material.Diffuse, Material.Ambient);
     
-    return Diff;
+    return Diff * LightData.LightColor;
 }
 
-float4 PointLight(float4 posv, float4 nrm, matrix mWV, matrix mView)
-{
-    
-}
-float4 SpotLight(float4 posv, float4 nrm, matrix mWV, matrix mView)
-{
-    
-}
-float4 RectLight(float4 posv, float4 nrm, matrix mWV, matrix mView)
+float4 PointLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData)
 {
     //미구현이므로 Light 연산을 하지 않음
-    float4 Col = { 1.0f, 1.0f, 1.0f, 1.0f };
+    float4 Col = { 0.0f, 0.0f, 0.0f, 0.0f };
+    return Col;
+}
+float4 SpotLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData)
+{
+    //미구현이므로 Light 연산을 하지 않음
+    float4 Col = { 0.0f, 0.0f, 0.0f, 0.0f };
+    return Col;
+}
+float4 RectLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData)
+{
+    //미구현이므로 Light 연산을 하지 않음
+    float4 Col = { 0.0f, 0.0f, 0.0f, 0.0f };
     return Col;
 }
 

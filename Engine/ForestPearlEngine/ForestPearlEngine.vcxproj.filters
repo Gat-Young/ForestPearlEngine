@@ -523,6 +523,9 @@
     <None Include="Assets\Shader\NormalDebugPixelShader.json">
       <Filter>Assets\Shader\PS</Filter>
     </None>
+    <None Include="Assets\ShaderResource\Light.hlsli">
+      <Filter>Assets\ShaderResource\Common\Lighting</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\ShaderResource\DefaultPixelShader.psh">

@@ -262,6 +262,7 @@
   <ItemGroup>
     <None Include="Assets\Material\DefaultMaterial.json" />
     <None Include="Assets\ShaderResource\LambertLight.hlsli" />
+    <None Include="Assets\ShaderResource\Light.hlsli" />
     <None Include="Assets\ShaderResource\NormalCalculate.hlsli" />
     <None Include="Assets\Shader\DefaultGizmoPixelShader.json" />
     <None Include="Assets\Shader\DefaultGizmoVertexShader.json" />

@@ -399,8 +399,7 @@ HRESULT RenderingDevice::CreateVertexShaderConstBuffer(UINT Size)
 	{
 		hr = CreateConstBuffer(Size, &ConstBuffer);
 	}
-	//Light용 상수 버퍼 만들기
-	hr = CreateConstBuffer(9232, &VertexLightConstBuffer);
+
 	return hr;
 }
 
@@ -411,8 +410,7 @@ HRESULT RenderingDevice::CreatePixelShaderConstBuffer(UINT Size)
 	{
 		hr = CreateConstBuffer(Size, &ConstBuffer);
 	}
-	//Light용 상수 버퍼 만들기
-	hr = CreateConstBuffer(9232, &PixelLightConstBuffer);
+
 	return hr;
 }
 

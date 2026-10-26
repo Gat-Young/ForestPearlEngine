@@ -113,6 +113,7 @@ class RenderingDevice
 
 		//ConstBuffer
 		DWORD MAX_BufferSize = 14;
+
 		std::vector<ID3D11Buffer*> VertexShaderConstBuffer;
 		std::vector<ID3D11Buffer*> PixelShaderConstBuffer;
 

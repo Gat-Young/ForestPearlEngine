@@ -486,18 +486,28 @@ namespace RenderingData
 		std::vector<FPViewPort> ViewPort;
 	};
 
-	struct alignas(16) LightItem
+	constexpr unsigned int Light_MAX = 64;
+
+	struct alignas(16) LightDataItem
 	{
+		unsigned int LightType;
+		unsigned int padding[3];
+		FPVector4 LightPosition;
 		FPVector4 Direction;
 		float Range;
-		float padding[3];
+		float padding_2[3];
 		FPVector4 Diffuse;
 		FPVector4 Ambient;
 		FPVector4 Specular;
 		FPVector4 Attenuation;
 		FPVector4 LightColor;
-		unsigned int LightType;
-		unsigned int padding[3];
+	};
+
+	struct alignas(16) LightItem
+	{
+		unsigned int LightCnt = 0;
+		unsigned int Padding[3];
+		LightDataItem Light[Light_MAX];
 	};
 
 	struct alignas(16) MaterialItem

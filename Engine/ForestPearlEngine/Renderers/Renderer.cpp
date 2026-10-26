@@ -443,9 +443,9 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 	Device.RasterStateCreate();
 
-	//320B의 ConstBuffer 생성
-	Device.CreateVertexShaderConstBuffer(320);
-	Device.CreatePixelShaderConstBuffer(320);
+	//9232B의 ConstBuffer 생성
+	Device.CreateVertexShaderConstBuffer(9232);
+	Device.CreatePixelShaderConstBuffer(9232);
 
 	//상수 버퍼 14개씩 Set
 	for (int i = 0; i < 14; ++i)

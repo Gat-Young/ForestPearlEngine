@@ -103,6 +103,12 @@ void FPMaterial::SetAmbient(FPVector4& Ambient)
 	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, MaterialVertexConstantBuffer);
 }
 
+void FPMaterial::SetEmissive(FPVector4& Emissive)
+{
+	MaterialVertexConstantBuffer.Emissive = Emissive;
+	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, MaterialVertexConstantBuffer);
+}
+
 FPVector4* FPMaterial::GetBaseColor()
 {
 	return &MaterialVertexConstantBuffer.BaseColor;
@@ -116,6 +122,11 @@ FPVector4* FPMaterial::GetDiffuse()
 FPVector4* FPMaterial::GetAmbient()
 {
 	return &MaterialVertexConstantBuffer.Ambient;
+}
+
+FPVector4* FPMaterial::GetEmissive()
+{
+	return &MaterialVertexConstantBuffer.Emissive;
 }
 
 std::unordered_map<int, FPTextureItem>* FPMaterial::GetTextureList()

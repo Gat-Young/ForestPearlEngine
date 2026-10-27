@@ -37,4 +37,5 @@ class GameController : public FPAController
 		void SetAxisOn(struct FInputValue Value);
 
 		void SetDirectionalLight(struct FInputValue Value);
+		void OnTorch(struct FInputValue Value);
 };

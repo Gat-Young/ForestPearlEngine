@@ -72,6 +72,9 @@ void UI::Initialize()
 
 	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
 	LightText = TextComponets.back();
+
+	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
+	TorchText = TextComponets.back();
 }
 
 
@@ -159,6 +162,9 @@ void UI::SystemInfo(int x, int y, FPVector4 col)
 	}
 	LightText->SetTextData(&bShow, x, y += 14, col, text);
 
+	_stprintf_s(text, _T("Torch: 1 (%s)"), ((TorchOn == true) ? _T("ON") : _T("OFF")));
+	TorchText->SetTextData(&bShow, x, y += 14, col, text);
+
 }
 
 void UI::AdapterInfo(int index, int x, int& y, FPVector4 col)
@@ -236,4 +242,9 @@ void UI::SetDirectionalLightColor(FInputValue Value)
 {
 	LightCnt++;
 	LightCnt %= LightCntMAX;
+}
+
+void UI::OnTorch(struct FInputValue Value)
+{
+	TorchOn = !TorchOn;
 }

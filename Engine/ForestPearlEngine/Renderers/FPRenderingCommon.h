@@ -38,7 +38,7 @@ struct POSITION_VERTEX
 //Color
 struct COLOR_VERTEX
 {
-	float r, g, b, a;	//Vertex 색상
+	float r = 0, g = 0, b = 0, a = 0;	//Vertex 색상
 };
 
 //Normal
@@ -209,6 +209,7 @@ struct FPMaterialData
 	COLOR_VERTEX BaseColor;
 	COLOR_VERTEX Ambient;
 	COLOR_VERTEX Diffuse;
+	COLOR_VERTEX Emissive;
 
 	//<Slot, Name, Samplertypr>
 	std::vector<std::tuple<unsigned int, std::string, FPSamplerType> > Textures;
@@ -287,6 +288,7 @@ struct RenderItem
 	FPVector4* BaseColor = nullptr;
 	FPVector4* Diffuse = nullptr;
 	FPVector4* Ambient = nullptr;
+	FPVector4* Emissive = nullptr;
 
 	std::unordered_map<int, FPTextureItem>* TextureList;
 
@@ -515,16 +517,36 @@ namespace RenderingData
 		FPVector4 BaseColor;
 		FPVector4 Diffuse;
 		FPVector4 Ambient;
+		FPVector4 Emissive;
 	};
 
 	//상수 버퍼용 구조체 : 셰이더 내부 연산에 사용될 데이터들
 	struct alignas(16) MVPConstBuffer
 	{
 		DirectX::XMMATRIX WorldMatrix;
+		DirectX::XMMATRIX InverseWorldMatrix;
+		DirectX::XMMATRIX TranseposeWorldMatrix;
+		DirectX::XMMATRIX InverseTranseposeWorldMatrix;
+
 		DirectX::XMMATRIX ViewMatrix;
+		DirectX::XMMATRIX InverseViewMatrix;
+		DirectX::XMMATRIX TranseposeViewMatrix;
+		DirectX::XMMATRIX InverseTranseposeViewMatrix;
+
 		DirectX::XMMATRIX ProjMatrix;
+		DirectX::XMMATRIX InverseProjMatrix;
+		DirectX::XMMATRIX TranseposeProjMatrix;
+		DirectX::XMMATRIX InverseTranseposeProjMatrix;
+
 		DirectX::XMMATRIX WVMatrix;
+		DirectX::XMMATRIX InverseWVMatrix;
+		DirectX::XMMATRIX TranseposeWVMatrix;
+		DirectX::XMMATRIX InverseTranseposeWVMatrix;
+
 		DirectX::XMMATRIX WVPMatrix;
+		DirectX::XMMATRIX InverseWVPMatrix;
+		DirectX::XMMATRIX TranseposeWVPMatrix;
+		DirectX::XMMATRIX InverseTranseposeWVPMatrix;
 	};
 
 	struct LightRenderItem

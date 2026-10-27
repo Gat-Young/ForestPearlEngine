@@ -24,6 +24,7 @@ void GameController::Initialize()
 	FModifyInfo ModifyInfoS = { ESwizzle::YZX , ENegative::Negative };
 	FModifyInfo ModifyInfoTriger = { ESwizzle::XYZ , ENegative::Positive };
 
+	// Axis : KeyBoard
 	GetInputComponent().AddMappingKey("IA_SetMoveTriangel", 'W', ModifyInfoW);
 	GetInputComponent().AddMappingKey("IA_SetMoveTriangel", 'A', ModifyInfoA);
 	GetInputComponent().AddMappingKey("IA_SetMoveTriangel", 'S', ModifyInfoS);
@@ -46,6 +47,8 @@ void GameController::Initialize()
 
 	GetInputComponent().AddMappingKey("IA_SetScaleWing", VK_OEM_COMMA, ModifyInfoA);
 	GetInputComponent().AddMappingKey("IA_SetScaleWing", VK_OEM_PERIOD, ModifyInfoD);
+
+	GetInputComponent().AddMappingKey("IA_ZoomCamera", static_cast<USHORT>(CUSTOM_MOUSE_INPUT::MOUSE_WHEEL), ModifyInfoA);
 
 	// Axis : Game Pad 
 	GetInputComponent().AddMappingKey("IA_SetMoveTriangel", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_LSTICK), ModifyInfoD);
@@ -107,6 +110,8 @@ void GameController::Initialize()
 	//Direction Light 바인딩
 	GetInputComponent().BindMethod("IA_SetDirectionLightColor", this, EKeyState::Down, &GameController::SetDirectionalLight);
 
+	//Torch 바인딩
+	GetInputComponent().BindMethod("IA_OnTorchLight", this, EKeyState::Down, &GameController::OnTorch);
 
 	__super::Initialize();
 }
@@ -273,6 +278,18 @@ void GameController::SetDirectionalLight(struct FInputValue Value)
 	{
 		UI* GameUI = static_cast<UI*>(Actor);
 		GameUI->SetDirectionalLightColor(Value);
+	}
+	ActorList.clear();
+}
+
+void GameController::OnTorch(struct FInputValue Value)
+{
+	std::vector<FPActor*> ActorList;
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "UI", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		UI* GameUI = static_cast<UI*>(Actor);
+		GameUI->OnTorch(Value);
 	}
 	ActorList.clear();
 }

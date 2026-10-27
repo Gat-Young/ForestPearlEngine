@@ -922,9 +922,12 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 	FPVector4 BaseColor{ MaterialData.BaseColor.r, MaterialData.BaseColor.g, MaterialData.BaseColor.b, MaterialData.BaseColor.a };
 	FPVector4 Diffuse{ MaterialData.Diffuse.r, MaterialData.Diffuse.g, MaterialData.Diffuse.b, MaterialData.Diffuse.a };
 	FPVector4 Ambient{ MaterialData.Ambient.r, MaterialData.Ambient.g, MaterialData.Ambient.b, MaterialData.Ambient.a };
+	FPVector4 Emissive{ MaterialData.Emissive.r, MaterialData.Emissive.g, MaterialData.Emissive.b, MaterialData.Emissive.a };
+
 	Material->SetBaseColor(BaseColor);
 	Material->SetDiffuse(Diffuse);
 	Material->SetAmbient(Ambient);
+	Material->SetEmissive(Emissive);
 	Material->SetTwoSided(MaterialData.TwoSided);
 
 	for (auto& [Slot, TextureName, SamplerType] : MaterialData.Textures)

@@ -58,6 +58,7 @@ class Player : public FPPawn
 
 		void Move(FInputValue value);
 		void CameraMove(FInputValue value);
+		void CameraZoom(FInputValue Value);
 		void SetScaleWing(FInputValue Value);
 		void AttachHead(FInputValue Value);
 		void AttachShield(FInputValue Value);

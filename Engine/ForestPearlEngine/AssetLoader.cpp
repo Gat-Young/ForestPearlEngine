@@ -433,6 +433,8 @@ void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsse
 
 	MaterialData.Diffuse = ReadColor(Material.at("Diffuse"));
 
+	MaterialData.Emissive = ReadColor(Material.at("Emissive"));
+
 	//Two Side
 	MaterialData.TwoSided = Material.value("TwoSided",false);
 

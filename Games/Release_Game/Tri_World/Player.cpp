@@ -80,6 +80,7 @@ void Player::Initialize()
 	SpringArm = new FPSpringArmComponent(this);
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->TargetArmLength = 50.0f;
+	SpringArm->SetRelativeLocation({ 0.0f, 1.2f, 0.0f });
 	SpringArm->SetRelativeRotation({ 30.0f, 0.0f, 0.0f });
 	SpringArm->bUsePawnControlRotation = true;
 
@@ -98,6 +99,7 @@ void Player::Initialize()
 	Controller->GetInputComponent().BindMethod("IA_AttachHead", this, EKeyState::Down, &Player::AttachHead);
 	Controller->GetInputComponent().BindMethod("IA_AttachShield", this, EKeyState::Down, &Player::AttachShield);
 	Controller->GetInputComponent().BindMethod("IA_OnTorchLight", this, EKeyState::Down, &Player::OnTorch);
+	Controller->GetInputComponent().BindMethod("IA_ZoomCamera", this, EKeyState::Pressed, &Player::CameraZoom);
 	Controller->Possess(this);
 
 }
@@ -144,6 +146,14 @@ void Player::CameraMove(FInputValue value)
 
 	AddControllerYawInput(-move_x);
 	AddControllerPitchInput(move_y);
+}
+
+void Player::CameraZoom(FInputValue Value)
+{
+	std::cout << "CameraZoom : " << Value.X << " : " << Value.Y << "\n";
+	float mov = 30.0f;
+	float mov_size = Value.Y * mov * (GetWorld()->GetGameTimer()->DeltaTime());
+	SpringArm->TargetArmLength = SpringArm->TargetArmLength + mov_size;
 }
 
 void Player::SetScaleWing(FInputValue Value)

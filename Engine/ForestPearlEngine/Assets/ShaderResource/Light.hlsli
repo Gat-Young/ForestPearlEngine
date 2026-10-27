@@ -48,6 +48,7 @@ struct MATERIAL
     float4 BaseColor;
     float4 Diffuse;
     float4 Ambient;
+    float4 Emissive;
 };
 
 cbuffer MaterialConstBuffer : register(b3)
@@ -56,47 +57,47 @@ cbuffer MaterialConstBuffer : register(b3)
 };
 
 //조명 처리 함수.
-float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView);
+float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix mInverseTranseposeWV);
 
 //조명 계산 함수
-float4 DirLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData);
-float4 PointLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData);
-float4 SpotLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData);
-float4 RectLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData);
+float4 DirLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix mInverseTranseposeWV, LIGHT LightData);
+float4 PointLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix mInverseTranseposeWV, LIGHT LightData);
+float4 SpotLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix mInverseTranseposeWV, LIGHT LightData);
+float4 RectLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix mInverseTranseposeWV, LIGHT LightData);
 
-float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView)
+float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix mInverseTranseposeWV)
 {
     float4 Col = { 0.0f, 0.0f, 0.0f, 1.0f };
     
-    for (int i = 0; i < LightCnt; ++i)
+    for (uint i = 0; i < LightCnt; ++i)
     {
         switch (Light[i].LightType)
         {
 	        case LightType_Direction :
-                Col += DirLight(posv, nrm, mWV, mView, Light[i]);
+                Col += DirLight(posv, nrm, mWV, mView, mInverseTranseposeWV,Light[i]);
                 break;
             
 	        case LightType_Point     :
-                Col += PointLight(posv, nrm, mWV, mView, Light[i]);
+                Col += PointLight(posv, nrm, mWV, mView, mInverseTranseposeWV,Light[i]);
                 break;
             
 	        case LightType_Spot      :
-                //Col += SpotLight(posv, nrm, mWV, mView, Light[i]);
+                //Col += SpotLight(posv, nrm, mWV, mView, mInverseTranseposeWV,Light[i]);
                 break;
             
 	        case LightType_Rect      :
-                //Col += RectLight(posv, nrm, mWV, mView, Light[i]);
+                //Col += RectLight(posv, nrm, mWV, mView, mInverseTranseposeWV, Light[i]);
                 break;
         }
 
     }
 
-    float4 Result = Col * Material.BaseColor;
+    float4 Result = (Col + Material.Emissive) * Material.BaseColor;
     return float4(Result.rgb, Material.BaseColor.a);
 }
 
 
-float4 DirLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData)
+float4 DirLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix mInverseTranseposeWV, LIGHT LightData)
 {
     float4 Diff = 1;
     
@@ -110,15 +111,15 @@ float4 DirLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightDa
     return Diff * LightData.LightColor;
 }
 
-float4 PointLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData)
+float4 PointLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix mInverseTranseposeWV, LIGHT LightData)
 {
     float4 ViewLightPosition = mul(mView, LightData.LightPosition);
     float4 L = ViewLightPosition - posv;
     
-    matrix Inverse_mWV = transpose(mWV);
-    float4 N = mul(mWV, nrm);
-    
+    float4 N = mul(mInverseTranseposeWV, nrm);
+    N.w = 0;                                    //4성분 되면서 w가 0이 아니게 될 수 있음.
     N = normalize(N);
+
     
     float Distance = max(length(L), 0.01);
     
@@ -130,19 +131,24 @@ float4 PointLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT Light
     L /= Distance;
     
     //거리 감쇠 공식
-    float att = 1 / (LightData.Attenuation.x + LightData.Attenuation.y * Distance + LightData.Attenuation.z * Distance * Distance);
+    float Under_att = (LightData.Attenuation.x + LightData.Attenuation.y * Distance + LightData.Attenuation.z * Distance * Distance);
+    
+    if (Under_att == 0)
+        Under_att = 1;
+    
+    float att = 1 / Under_att;
     
     float Diff = LambertLight(N, L, LightData.Diffuse, LightData.Ambient, Material.Diffuse, Material.Ambient) * att;
     
     return Diff * LightData.LightColor;
 }
-float4 SpotLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData)
+float4 SpotLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix mInverseTranseposeWV, LIGHT LightData)
 {
     //미구현이므로 Light 연산을 하지 않음
     float4 Col = { 0.0f, 0.0f, 0.0f, 0.0f };
     return Col;
 }
-float4 RectLight(float4 posv, float4 nrm, matrix mWV, matrix mView, LIGHT LightData)
+float4 RectLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix mInverseTranseposeWV, LIGHT LightData)
 {
     //미구현이므로 Light 연산을 하지 않음
     float4 Col = { 0.0f, 0.0f, 0.0f, 0.0f };

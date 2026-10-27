@@ -7,10 +7,30 @@
 cbuffer ObejctConstBuffer : register(b0)
 {
     matrix mWorld;
+    matrix mInverseWorld;
+    matrix mTranseposeWorld;
+    matrix mInverseTranseposeWorld;
+    
     matrix mView;
+    matrix mInverseView;
+    matrix mTranseposeView;
+    matrix mInverseTranseposeView;
+    
     matrix mProj;
+    matrix mInverseProj;
+    matrix mTranseposeProj;
+    matrix mInverseTranseposeProj;
+    
     matrix mWV;
+    matrix mInverseWV;
+    matrix mTranseposeWV;
+    matrix mInverseTranseposeWV;
+    
     matrix mWVP;
+    matrix mInverseWVP;
+    matrix mTranseposeWVP;
+    matrix mInverseTranseposeWVP;
+    
 };
 
 cbuffer ViewPortConstBuffer : register(b1)

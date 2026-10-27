@@ -21,13 +21,14 @@ bool FPMaterial::HasTexture(int Slot)
 	return true;
 }
 
-void FPMaterial::SetTexture(int Slot, std::string& TextureName, FPSamplerType SamplerType)
+void FPMaterial::SetTexture(int Slot, std::string& TextureName, FPSamplerType SamplerType, FPTextureType TextureType)
 {
 	if (Slot >= 128) { std::cout << "설정할 수 있는 텍스처 최대 크기를 넘었습니다.\n"; return; }
 	if (HasTexture(Slot))
 	{
 		TextureList[Slot].SetTexture(TextureName);
 		TextureList[Slot].SetSamplerType(SamplerType);
+		TextureList[Slot].SetTextureType(TextureType);
 	}
 }
 
@@ -49,11 +50,15 @@ void FPMaterial::SetTextureSampler(int Slot, FPSamplerType SamplerType)
 	}
 }
 
-void FPMaterial::AddTexture(int Slot)
+void FPMaterial::AddTexture(int Slot, std::string& TextureName, FPSamplerType SamplerType, FPTextureType TextureType)
 {
 	if (HasTexture(Slot)) { std::cout << "이미 Texture가 Slot에 존재 합니다.\n"; return; }
-	TextureList[Slot] = FPTexture2D{};
-	TextureItmeList[Slot] = FPTextureItem{TextureList[Slot].GetTexture(), TextureList[Slot].GetSamplerType()};
+	if (Slot >= 128) { std::cout << "설정할 수 있는 텍스처 최대 크기를 넘었습니다.\n"; return; }
+	TextureList[Slot] = FPTexture{};
+	TextureList[Slot].SetTexture(TextureName);
+	TextureList[Slot].SetSamplerType(SamplerType);
+	TextureList[Slot].SetTextureType(TextureType);
+	TextureItmeList[Slot] = FPTextureItem{TextureList[Slot].GetTexture(), TextureList[Slot].GetSamplerType(), TextureList[Slot].GetTextureType()};
 }
 
 void FPMaterial::DeleteTexture(int Slot)

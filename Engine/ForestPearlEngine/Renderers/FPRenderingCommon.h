@@ -196,6 +196,32 @@ struct FPTextureInfo
 	AssetOwner Owner;
 };
 
+//Texture Array Info
+struct FPTextureArrayInfo
+{
+	std::string Name;
+	unsigned int Width;
+	unsigned int Height;
+	unsigned int ArraySize;
+
+	std::vector<std::string> SourceTextures;
+	AssetOwner Owner;
+};
+
+enum FPTextureType
+{
+	Texture2D,
+	Texture2DArray
+};
+
+struct FPMaterial_TextureData
+{
+	unsigned int Slot;
+	std::string Name;
+	FPTextureType TextureType;
+	FPSamplerType SamplerType;
+};
+
 //Material 데이터 구조체
 struct FPMaterialData
 {
@@ -212,7 +238,7 @@ struct FPMaterialData
 	COLOR_VERTEX Emissive;
 
 	//<Slot, Name, Samplertypr>
-	std::vector<std::tuple<unsigned int, std::string, FPSamplerType> > Textures;
+	std::vector<FPMaterial_TextureData> Textures;
 };
 
 //VertexShader 데이터 구조체
@@ -266,6 +292,7 @@ struct FPTextureItem
 {
 	std::string* TexturePath;
 	FPSamplerType* SamplerType;
+	FPTextureType* TextureType;
 };
 
 struct RenderItem

@@ -165,6 +165,7 @@
     <ClInclude Include="FPStreamableRenderAssetr.h" />
     <ClInclude Include="FPTexture.h" />
     <ClInclude Include="FPTexture2D.h" />
+    <ClInclude Include="FPTexture2DArray.h" />
     <ClInclude Include="FPViewPortClient.h" />
     <ClInclude Include="FPWorld.h" />
     <ClInclude Include="framework.h" />
@@ -256,6 +257,7 @@
     <ClCompile Include="Systems\InputSystem.cpp" />
     <ClCompile Include="FPTextComponent.cpp" />
     <ClCompile Include="FPTextRenderList.cpp" />
+    <ClCompile Include="FPTexture2DArray.cpp" />
     <ClCompile Include="Utility\FPGameplayStatics.cpp" />
     <ClCompile Include="Utility\FPPathManager.cpp" />
   </ItemGroup>

@@ -33,12 +33,14 @@
         {
             "Name": "Eye_png",
             "Slot": 0,
+            "Type": "Texture2D",
             "TextureFilter": "Filter_Anistropy_Linear",
             "SamplerType": "Sampler_Wrap"
         },
         {
             "Name": "Eye_png",
             "Slot": 1,
+            "Type": "Texture2D",
             "TextureFilter": "Filter_Anistropy_Linear",
             "SamplerType": "Sampler_Wrap"
         }

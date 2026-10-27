@@ -321,6 +321,9 @@
     <ClInclude Include="FPTexture2D.h">
       <Filter>RenderAsset</Filter>
     </ClInclude>
+    <ClInclude Include="FPTexture2DArray.h">
+      <Filter>RenderAsset</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
@@ -464,9 +467,6 @@
     <ClCompile Include="FPMeshNormalRenderList.cpp">
       <Filter>FPGameInstance\RenderList\Source</Filter>
     </ClCompile>
-    <ClCompile Include="FPTexture2D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Renderers\FPRenderingCommon.cpp">
       <Filter>Renderers</Filter>
     </ClCompile>
@@ -475,6 +475,12 @@
     </ClCompile>
     <ClCompile Include="FPLocalLightComponent.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FPTexture2D.cpp">
+      <Filter>RenderAsset</Filter>
+    </ClCompile>
+    <ClCompile Include="FPTexture2DArray.cpp">
+      <Filter>RenderAsset</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

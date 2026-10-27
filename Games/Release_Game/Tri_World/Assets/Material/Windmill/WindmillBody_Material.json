@@ -33,12 +33,14 @@
       {
         "Name": "Windmill_jpg",
         "Slot": 0,
+        "Type": "Texture2D",
         "TextureFilter": "Filter_Anistropy_Linear",
         "SamplerType": "Sampler_CLAMP"
       },
       {
         "Name": "Windmill_a_jpg",
         "Slot": 1,
+        "Type": "Texture2D",
         "TextureFilter": "Filter_Anistropy_Linear",
         "SamplerType": "Sampler_CLAMP"
       }

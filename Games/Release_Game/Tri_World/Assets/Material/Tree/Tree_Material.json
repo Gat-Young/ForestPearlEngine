@@ -33,6 +33,7 @@
       {
         "Name": "Tree01s_dds",
         "Slot": 0,
+        "Type": "Texture2D",
         "TextureFilter": "Filter_Anistropy_Linear",
         "SamplerType": "Sampler_CLAMP"
       }

@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include "FPMaterialInterface.h"
-#include "FPTexture2D.h"
+#include "FPTexture.h"
 #include <unordered_map>
 
 class FPMaterial : public FPMaterialInterface
@@ -22,7 +22,7 @@ class FPMaterial : public FPMaterialInterface
 		bool TwoSided = false;
 
 		//Texture List <Slot, Data>
-		std::unordered_map<int, FPTexture2D> TextureList;
+		std::unordered_map<int, FPTexture> TextureList;
 		std::unordered_map<int, FPTextureItem> TextureItmeList;
 
 		//공용 마테리얼 Vertex 버퍼
@@ -37,10 +37,10 @@ class FPMaterial : public FPMaterialInterface
 	public:
 		FPMaterial();
 		//Texture 운용 함수
-		void SetTexture(int Slot, std::string& TextureName, FPSamplerType SamplerType) override;
+		void SetTexture(int Slot, std::string& TextureName, FPSamplerType SamplerType, FPTextureType TextureType) override;
 		void SetTexture(int Slot, std::string& TextureName) override;
 		void SetTextureSampler(int Slot, FPSamplerType SamplerType) override;
-		void AddTexture(int Slot) override;
+		void AddTexture(int Slot, std::string& TextureName, FPSamplerType SamplerType, FPTextureType TextureType) override;
 		void DeleteTexture(int Slot) override;
 
 		void SetVertexShader(std::string VertexShaderPath) override;

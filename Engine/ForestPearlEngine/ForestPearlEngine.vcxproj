@@ -218,9 +218,11 @@
     <ClCompile Include="FPLightComponent.cpp" />
     <ClCompile Include="FPLightComponentBase.cpp" />
     <ClCompile Include="FPLightRenderList.cpp" />
+    <ClCompile Include="FPLocalLightComponent.cpp" />
     <ClCompile Include="FPMaterial.cpp" />
     <ClCompile Include="FPMovementCompoent.cpp" />
     <ClCompile Include="FPMovementComponent.cpp" />
+    <ClCompile Include="FPPointLightComponent.cpp" />
     <ClCompile Include="FPSceneComponent.cpp" />
     <ClCompile Include="FPGameProjectClassRegistry.cpp" />
     <ClCompile Include="FPGameTimer.cpp" />
@@ -260,6 +262,7 @@
   <ItemGroup>
     <None Include="Assets\Material\DefaultMaterial.json" />
     <None Include="Assets\ShaderResource\LambertLight.hlsli" />
+    <None Include="Assets\ShaderResource\Light.hlsli" />
     <None Include="Assets\ShaderResource\NormalCalculate.hlsli" />
     <None Include="Assets\Shader\DefaultGizmoPixelShader.json" />
     <None Include="Assets\Shader\DefaultGizmoVertexShader.json" />

@@ -12,6 +12,7 @@
 #include "TripleWindmillWing.h"
 #include "TripleWingWindmill.h"
 #include "ADirectionalLight.h"
+#include "ATorchLight.h"
 
 void RegistProjectName()
 {
@@ -43,7 +44,7 @@ void LoadClassRegist()
 	ClassRegistry->Register<TripleWindmillWing>("TripleWindmillWing");
 	ClassRegistry->Register<TripleWingWindmill>("TripleWingWindmill");
 	ClassRegistry->Register<ADirectionalLight>("ADirectionalLight");
-
+	ClassRegistry->Register<ATorchLight>("ATorchLight");
 
 	//Material Class µî·Ï
 }

@@ -43,7 +43,7 @@
 |:-:|---|---|
 | 🧩 | **Actor / Component 프레임워크** | `FPObject → FPActor → FPPawn / FPAController / FPAGameMode`, 계층형 `FPSceneComponent` 트랜스폼 |
 | 🎨 | **DX11 렌더러** | `Renderer`(프레임 흐름) + `RenderingDevice`(D3D11 래퍼) 2계층, **Render List → Render Pass(Mesh / Gizmo / Normal / UI)** 구조, 슬롯 규약이 있는 **상수 버퍼 바인딩**, `GameSetting.json` 기반 MSAA(스왑체인·깊이버퍼 SampleDesc), Priority 정렬, 멀티 뷰포트 |
-| 💡 | **Lambert Light** | `FPDirectionalLightComponent`가 Light Render List에 등록 → 메시마다 **Local 공간 방향**으로 변환해 VS 상수 버퍼로 전달, 정점 단위 Lambert 계산 (최대 8개) |
+| 💡 | **통합 Light (Directional · Point)** | `FPLightComponentBase` 계열이 Light Render List에 등록 → 메시마다 **최대 64개**를 하나의 `LIGHT` 상수 버퍼(`b2`, 9232 byte)로 묶어 전달. 정점 셰이더(`Light.hlsli`)에서 Directional(Local 공간) · Point(View 공간, 거리 감쇠, 비균등 스케일 대응 노멀) Lambert 계산. 라이트 색(`LightColor`) · **Emissive** 지원. 토치 예제 `ATorchLight` |
 | 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 샘플러 36종(AF 단계는 `GameSetting.json`). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환 |
 | ⚙️ | **GameSetting** | `Assets/GameSetting/GameSetting.json` → `FPAssetLoader::LoadGameSetting`이 읽어 `FPGameSettingData`로 저장 → `FPGameProjectSetting::ProjectSetting()`이 창 크기 · MSAA · AF · 전체화면 값을 반영, `RenderingDevice::SetMSAA/SetAF`로 렌더러에 전달 |
 | 🎭 | **데이터 기반 Material** | Material도 JSON(`LoadMaterial`)으로 정의. 재질 1개당 **기본 Material** + 메시마다 색상 복제·텍스처 배열을 가진 **Material Instance** 두 단계로 저장하고, `FPAssetManager::MakeMaterial`이 실행 중 `FPMaterial` 인스턴스로 변환 (없으면 `DefaultMaterial` 사용) |
@@ -51,7 +51,7 @@
 | 🧪 | **FBX → JSON 변환 도구** | `Tool/FBXToStaticMeshJsonTranslator` 콘솔 툴이 FBX 폴더를 통째로 읽어 **StaticMesh / Material / Material Instance / Texture** JSON을 한 번에 생성 (ToonLink 데모 모델 전체가 이 도구로 변환됨) |
 | 🌫️ | **Alpha Blend** *(초기 구현)* | `MeshRenderPass`가 매 프레임 표준 알파 블렌드 상태(`src·a + dst·(1−a)`, Alpha-to-Coverage)를 걸고 기본 PS가 텍스처 알파를 그대로 출력. 모든 메시에 일괄 적용되며 Z-Order 정렬은 아직 없음 |
 | 🧭 | **Normal Line 디버그** | 별도 `NormalRenderPass`. 정점 1개를 인스턴스 1개로 `DrawInstanced`해 노멀 선(초록)을 그림 (`F6`) |
-| 🎮 | **Input 시스템** | Raw Input(키보드·마우스) + XInput(게임패드) → Input Mapping Context → Input Action → 멤버 함수 바인딩 |
+| 🎮 | **Input 시스템** | Raw Input(키보드·마우스 버튼 · **휠 · 이동**) + XInput(게임패드) → Input Mapping Context → Input Action → 멤버 함수 바인딩 |
 | 🕹️ | **Possess** | 컨트롤러가 Pawn을 빙의(Possess)하며, 빙의된 Pawn의 바인딩만 입력을 받음 |
 | 🔩 | **Socket Attach** | StaticMesh JSON에 정의한 Socket에 컴포넌트/액터를 부착 |
 | 📷 | **SpringArm + Camera** | 컨트롤러 회전을 따라가는 3인칭 카메라 |
@@ -141,10 +141,12 @@ Engine/ForestPearlEngine/
 ├── FPGizmoGridComponent.h / .cpp     # Grid 라인 메시
 ├── FPGizmoAxisComponent.h / .cpp     # Axis 라인 메시
 ├── FPGizmoNormalLineComponent.h/.cpp # StaticMesh의 Normal Line (NormalRenderItem 등록). StaticMeshComponent가 자동 생성
-├── FPLightComponentBase.h / .cpp     # 라이트 베이스 (FPLightRenderItem 등록)
+├── FPLightComponentBase.h / .cpp     # 라이트 베이스 (공통 상수 · FPLightRenderItem 등록 · Set* 함수)
 ├── FPLightComponent.h / .cpp         # 라이트 공통
-├── FPDirectionalLightComponent.h/.cpp# Directional Light (Direction / Range / Diffuse / Ambient)
-├── FP{Local,Point,Spot,Rect,Sky}LightComponent.h  # 선언만 있는 골격
+├── FPDirectionalLightComponent.h/.cpp# Directional Light
+├── FPLocalLightComponent.h / .cpp    # 위치가 있는 라이트의 베이스
+├── FPPointLightComponent.h / .cpp    # Point Light (Range / Attenuation)
+├── FP{Spot,Rect,Sky}LightComponent.h # 선언만 있는 골격
 ├── FPTextComponent.h / .cpp          # 2D 텍스트
 ├── FPMovementComponent.h / .cpp      # 이동 컴포넌트 (골격만 존재)
 ├── FPMovementCompoent.cpp            #   └ 빈 파일
@@ -188,8 +190,9 @@ Engine/ForestPearlEngine/
 │   ├── TextureResource/              # 이미지 원본 (*.dds · checker.bmp)
 │   ├── Shader/                       # 셰이더 등록 JSON (Name · Path · InputLayout) — Default* · DefaultGizmo* · NormalDebug*
 │   └── ShaderResource/               # HLSL 소스와 컴파일 결과(bin/)
-│       ├── DefaultVertexShader.vsh   # 기본 Mesh VS (WVP 변환 + Lambert Light 정점 계산)
+│       ├── DefaultVertexShader.vsh   # 기본 Mesh VS (WVP 변환 + Light.hlsli의 CalculateLight)
 │       ├── DefaultPixelShader.psh    # 기본 Mesh PS (정점 색 × 텍스처 t0 / s0, SV_IsFrontFace 입력)
+│       ├── Light.hlsli               # 통합 Light 상수 버퍼(b2 · b3) + Directional / Point 계산
 │       ├── LambertLight.hlsli        # LambertLight() 계산 함수
 │       ├── DefaultGizmoVertexShader.vsh / DefaultGizmoPixelShader.psh  # Grid / Axis 기즈모용 (라이트 없음)
 │       ├── NormalDebugVertexShader.vsh / NormalDebugPixelShader.psh    # Normal Line용
@@ -229,7 +232,8 @@ Games/Release_Game/Tri_World/
 ├── Tree.h / .cpp                  # Actor (나무)
 ├── Grid.h / .cpp                  # Actor (Gizmo Grid)
 ├── Axis.h / .cpp                  # Actor (Gizmo Axis)
-├── ADirectionalLight.h / .cpp     # Actor (Directional Light)
+├── ADirectionalLight.h / .cpp     # Actor (Directional Light, F7로 색 순환)
+├── ATorchLight.h / .cpp           # Actor (Point Light + 구 + Emissive, 1번 키로 On/Off)
 ├── UI.h / .cpp                    # Actor (텍스트 UI)
 └── Assets/
     ├── Font/            Consolas10.sfont, 굴림9k.sfont
@@ -296,6 +300,8 @@ classDiagram
     FPSceneComponent <|-- FPLightComponentBase
     FPLightComponentBase <|-- FPLightComponent
     FPLightComponent <|-- FPDirectionalLightComponent
+    FPLightComponent <|-- FPLocalLightComponent
+    FPLocalLightComponent <|-- FPPointLightComponent
     FPMeshComponent <|-- FPStaticMeshComponent
     FPGizmoComponent <|-- FPGizmoGridComponent
     FPGizmoComponent <|-- FPGizmoAxisComponent
@@ -347,9 +353,9 @@ FPAssetLoader* AssetLoader =
 | `FPAGameMode` | `FPAGameMode.h/.cpp` | `ControllerList`(클래스 이름)로 Controller 생성 후 Tick. 0번이 Player Controller |
 | `FPAController` | `FPAController.h/.cpp` | `FPInputComponent` 소유, `Possess / UnPossess / GetPawn`, `AddYaw/Pitch/RollInput`(−180~180 정규화) |
 | `FPObject` | `Object/Object.h` | `Outer`, `GetWorld()` |
-| `FPActor` | `Object/Actor.h/.cpp` | `RootComponent`, `Initialize / BeginPlay / Tick`, `AttachToActor / AttachToComponent / DetachFromActor`, `SetRootComponent`, World Transform Get/Set |
+| `FPActor` | `Object/Actor.h/.cpp` | `RootComponent`, `Initialize / BeginPlay / Tick`, `AttachToActor(Parent, Socket = "") / AttachToComponent(Parent, Socket = "") / DetachFromActor`, `SetRootComponent`, World Transform Get/Set |
 | `FPPawn` | `Object/FPPawn.h/.cpp` | `PossessedBy / UnPossesed`, `GetController`, `AddControllerYaw/Pitch/RollInput` |
-| `FPGameplayStatics` | `Utility/FPGameplayStatics.h/.cpp` | `GetActorOfClass`, `GetAllActorsOfClass`, `GetAllActors` |
+| `FPGameplayStatics` | `Utility/FPGameplayStatics.h/.cpp` | `GetActorOfClass`, `GetAllActorsOfClass`, `GetAllActors`. 클래스 이름은 `FPGameProjectClassRegistry::GetClassType()`이 돌려주는 `std::type_index`로 비교하며, 등록되지 않은 이름이면 `nullptr`을 반환 |
 | `FPPathManager` | `Utility/FPPathManager.h/.cpp` | 구성(Debug/Release)에 따른 에셋 경로, `StringToWString` |
 | `MCLOG` | `MCLOG.h` | `MCLOG(LogMC, "fmt %d", v)` → `Log: [Class::Func] 메시지` |
 
@@ -622,8 +628,8 @@ flowchart LR
 | Render List 생성 함수 | 하는 일 |
 |---|---|
 | `CreateCamList` | `Active`인 카메라만 복사. `TripleCam`이면 `TripleWaySplitViewPort`, 아니면 `MainGameViewPort`를 카메라에 붙이고 ViewPort의 상수 버퍼 데이터도 함께 복사 |
-| `CreateMeshRenderList` | `Active`인 `RenderItem`을 값으로 복사(Transform · 셰이더 이름)하고, **라이트(최대 8개)를 메시의 Local 공간으로 변환**해 VS 상수 버퍼에 등록한 뒤 Material(`BaseColor` / `Diffuse` / `Ambient`)을 이어서 등록. `Priority` 오름차순 정렬 |
-| `CreateLightRenderList` | `Active`인 라이트를 값으로 복사 (Direction · Range · Diffuse · Ambient · Transform) |
+| `CreateMeshRenderList` | `Active`인 `RenderItem`을 값으로 복사(Transform · 셰이더 이름)하고, **활성 라이트 최대 64개를 `LightItem` 하나로 묶어** VS 상수 버퍼 슬롯 0(`b2`)에, Material(`BaseColor` / `Diffuse` / `Ambient` / `Emissive`)을 슬롯 1(`b3`)에 등록. Directional은 메시의 Local 방향으로 변환하고, Point는 월드 위치를 함께 전달. `Priority` 오름차순 정렬 |
+| `CreateLightRenderList` | `Active`인 라이트를 값으로 복사 (LightType · Direction · Range · Diffuse · Ambient · Specular · Attenuation · LightColor · Transform) |
 | `CreateGizmoRenderList` | `GizmoRenderItem`에 대해 동일 |
 | `CreateNormalRenderList` | `Active`인 `NormalRenderItem`을 복사하고, 오브젝트마다 **Normal Matrix**(`transpose(inverse(World))`)와 `NormalLength`를 VS 상수 버퍼 슬롯 0으로 등록. World 행렬식이 0이거나 비정상이면 해당 항목 제외 |
 | `CreateUIRenderList` | `active`인 텍스트만 복사하고 `UIViewPort`를 붙인 뒤 `Priority` 오름차순 정렬 |
@@ -700,14 +706,15 @@ struct RenderItem            // Mesh용. Material 색을 포인터로 직접 들
     FPConstantBufferRenderData* PixelConstBuffer;
 };
 
-// GizmoRenderItem : RenderItem에서 색 포인터(BaseColor / Diffuse / Ambient)가 빠진 구조. 상수 버퍼 데이터를 그대로 사용
+// GizmoRenderItem : RenderItem에서 색 포인터(BaseColor / Diffuse / Ambient / Emissive)가 빠진 구조. 상수 버퍼 데이터를 그대로 사용
 // NormalRenderItem: Active, MeshPath, NormalLength*, Location / Rotation / Scale, 셰이더 이름 (상수 버퍼는 렌더러가 생성)
 
-struct FPLightRenderItem     // 라이트 1개
+struct FPLightRenderItem     // 라이트 1개 (Directional · Point 공용, LightType으로 구분)
 {
-    bool* Active;
+    bool* Active;          unsigned int* LightType;     // LightType_Direction / Point / Spot / Rect
     FPVector3* Direction;  float* Range;
     FPVector4* Diffuse;    FPVector4* Ambient;
+    FPVector4* Specular;   FPVector4* Attenuation;  FPVector4* LightColor;
     FPMatrix* Location; FPMatrix* Rotation; FPMatrix* Scale;
 };
 
@@ -752,7 +759,7 @@ struct FPViewPort            // 뷰포트 1개
 | 9 | `CreateSpriteBatch / CreateSpriteFont` | DirectXTK. 게임 에셋의 `Font/굴림9k.sfont` 사용 |
 | 10 | `CreateDepthStencilStateCreate` | `DEPTH_ON` / `DEPTH_OFF` / `DEPTH_WRITE_OFF` |
 | 11 | `RasterStateCreate` | `SOLID` / `WIREFRAME` / `CULLBACK` / `WIRECULLBACK` (CCW가 앞면). `MultisampleEnable` / `AntialiasedLineEnable`을 `true`로 설정해 MSAA를 활성화 |
-| 12 | `CreateVertexShaderConstBuffer(320)`<br/>`CreatePixelShaderConstBuffer(320)` | 320 byte 상수 버퍼를 **VS 14개 · PS 14개** 생성 후 `b0 ~ b13`에 바인딩 |
+| 12 | `CreateVertexShaderConstBuffer(9232)`<br/>`CreatePixelShaderConstBuffer(9232)` | **9232 byte** 상수 버퍼를 **VS 14개 · PS 14개** 생성 후 `b0 ~ b13`에 바인딩 (Light 블록 `16 + 64 × 144` byte를 담기 위해 320 byte에서 확장) |
 
 ### 상수 버퍼
 
@@ -761,7 +768,7 @@ struct FPViewPort            // 뷰포트 1개
 | 항목 | 내용 |
 |---|---|
 | 개수 | VS용 14개 + PS용 14개 (`b0 ~ b13`). VS와 PS의 번호 체계는 **서로 독립** |
-| 크기 | 버퍼 1개당 **320 byte** 고정 (`D3D11_USAGE_DYNAMIC`, CPU Write) |
+| 크기 | 버퍼 1개당 **9232 byte** 고정 (`D3D11_USAGE_DYNAMIC`, CPU Write). 슬롯마다 같은 크기이므로 28개를 합치면 약 253 KB — 커밋 메모대로 최적화는 추후 과제 |
 | 바인딩 | 초기화 때, 그리고 **모든 Render Pass 시작 때** 14개 전부 VS / PS에 바인딩 |
 | 갱신 | `Map(WRITE_DISCARD)` → `memcpy(Buffer + Offset, Size)` → `Unmap` |
 | 데이터 보관 | `FPConstantBufferRenderData` — 바이트 배열 `Buffer` + 슬롯 목록 `ConstantBuffers[]` (`{ Slot, Offset, Size }`) |
@@ -786,9 +793,9 @@ namespace FPConstantBufferRenderDataUtil
 
 | 셰이더 | 레지스터 | 소유 | 내용 | 갱신 단위 |
 |:-:|:-:|---|---|---|
-| VS | `b0` | **엔진 예약** (Object) | `World`, `View`, `Proj`, `WV`, `WVP` (5 × 64 = 320 byte) | 오브젝트 × 뷰포트 |
+| VS | `b0` | **엔진 예약** (Object) | `World` · `View` · `Proj` · `WV` · `WVP` 5종 각각에 대해 **원본 · Inverse · Transpose · InverseTranspose** 4개씩 = 행렬 20개 (20 × 64 = **1280 byte**, `MVPConstBuffer`) | 오브젝트 × 뷰포트 |
 | VS | `b1` | **엔진 예약** (ViewPort) | 뷰포트의 Vertex 상수. 기본 구조체 `VertexConst { AniOn, BlendOn }` | 뷰포트 |
-| VS | `b2 ~ b13` | **Material** (Gizmo) / **Renderer** (Mesh, Normal) | Gizmo: Material의 Vertex 상수, 등록 슬롯 `k` → `b(2 + k)`.<br/>Mesh: `b2 ~ b(1+N)` = Light N개(최대 8), 바로 다음 `b(2+N)` = Material 색.<br/>Normal: `b2` = Normal Matrix + 길이 ([Light · Normal](#lambert-light--normal-line)) | 오브젝트 |
+| VS | `b2 ~ b13` | **Material** (Gizmo) / **Renderer** (Mesh, Normal) | Gizmo: Material의 Vertex 상수, 등록 슬롯 `k` → `b(2 + k)`.<br/>Mesh: `b2` = **Light 블록**(`LightCnt` + 최대 64개, 9232 byte), `b3` = Material 색(`BaseColor` · `Diffuse` · `Ambient` · `Emissive`).<br/>Normal: `b2` = Normal Matrix + 길이 ([Light · Normal](#lambert-light--normal-line)) | 오브젝트 |
 | PS | `b0` | **엔진 예약** (ViewPort) | 뷰포트의 Pixel 상수 (`Slot k` → `b(k)`). 현재 엔진 기본 뷰포트는 사용하지 않음 | 뷰포트 |
 | PS | `b1 ~ b13` | **Material** (Gizmo) | Material의 Pixel 상수. 등록 슬롯 `k` → `b(1 + k)`. Mesh · Normal Pass는 PS 상수를 등록하지 않음 | 오브젝트 |
 
@@ -807,7 +814,7 @@ Material이 `AddConstantBuffer`로 등록하는 `Slot`은 셰이더 레지스터
 > ViewPort용 PS 상수 버퍼는 `MeshRenderPass`와 `GizmoRenderPass` 모두 `b(Slot)`으로 갱신됩니다. 따라서 PS `b0`은 ViewPort가, `b1`부터는 Material이 사용해 서로 겹치지 않습니다.
 > 뷰포트 상수 버퍼는 엔진 영역이므로 게임 코드에서 추가하지 마세요. 현재 엔진 기본 뷰포트는 VS `b1`만 사용하고 PS 상수 버퍼는 등록하지 않습니다.
 
-`World = Scale × Rotation × Location`, `WVP = World × View × Proj` 로 CPU에서 계산해 `b0`에 전달합니다. 행렬은 전치 없이 전달되므로 셰이더에서는 `mul(mWVP, pos)` 순서로 사용합니다 ([`DefaultVertexShader.vsh`](Engine/ForestPearlEngine/Assets/Shader/DefaultVertexShader.vsh) 참고).
+`World = Scale × Rotation × Location`, `WVP = World × View × Proj` 로 CPU에서 계산하고, **가능한 모든 행렬의 Inverse · Transpose · InverseTranspose를 함께** `b0`에 전달합니다 (`mInverseTranseposeWV`는 Point Light의 노멀 변환에 사용). 원본 행렬은 전치 없이 전달되므로 셰이더에서는 `mul(mWVP, pos)` 순서로 사용합니다. 셰이더의 `ObejctConstBuffer` 선언은 `MVPConstBuffer`의 멤버 순서(World 4종 → View 4종 → Proj 4종 → WV 4종 → WVP 4종)와 같아야 하며, 기본 Mesh · Gizmo · Normal Debug 셰이더가 이 순서로 확장되었습니다 ([`DefaultVertexShader.vsh`](Engine/ForestPearlEngine/Assets/ShaderResource/DefaultVertexShader.vsh) 참고).
 
 #### 갱신 흐름
 
@@ -866,55 +873,123 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    DL["FPDirectionalLightComponent<br/>Direction · Range · Diffuse · Ambient"] -->|"등록"| LL["FPLightRenderList"]
+    DL["FPDirectionalLightComponent<br/>FPPointLightComponent"] -->|"등록"| LL["FPLightRenderList"]
     LL --> CL["CreateLightRenderList<br/>Active 라이트 값 복사"]
-    CL --> CM["CreateMeshRenderList<br/>메시마다 Light Dir를 Local로 변환<br/>VS b2.. Light, 이어서 Material"]
-    CM --> MP["MeshRenderPass<br/>DefaultVertexShader: Lambert 정점 계산"]
+    CL --> CM["CreateMeshRenderList<br/>메시마다 LightItem(최대 64개) 구성<br/>VS b2 Light, b3 Material"]
+    CM --> MP["MeshRenderPass<br/>DefaultVertexShader: CalculateLight 정점 계산"]
     SM["FPStaticMeshComponent"] -->|"자동 생성"| NL["FPGizmoNormalLineComponent"]
     NL -->|"등록"| NR["FPMeshNormalRenderList"]
     NR --> CN["CreateNormalRenderList<br/>Normal Matrix 계산"]
     CN --> NP["NormalRenderPass<br/>bNormal = true 일 때만"]
 ```
 
-#### Lambert Light
+#### Light (Directional · Point)
 
-| 항목 | 내용 |
+Light는 **컴포넌트 → `FPLightRenderList` → `CreateLightRenderList`(값 복사) → `CreateMeshRenderList`(메시마다 `LIGHT` 상수 버퍼 하나로 묶음) → `DefaultVertexShader`의 `CalculateLight()`** 순서로 처리됩니다. 계산은 모두 **정점 셰이더**에서 이루어지고, 픽셀 셰이더는 보간된 색을 출력할 뿐입니다.
+
+| 클래스 | 설명 |
 |---|---|
-| 컴포넌트 | `FPDirectionalLightComponent`(`FPLightComponentBase` → `FPLightComponent` 상속). 생성 시 `FPLightRenderList`에 등록. `SetDirection / SetRange / SetDiffuse / SetAmbient / SetActive` |
-| 기본값 | Direction `(0, 1, 0)`, Range `1000`, Diffuse `(1,1,1,1)`, Ambient `(0.2,0.2,0.2,1)` |
-| 계산 위치 | **정점 셰이더**(정점 단위). 픽셀 셰이더는 보간된 색을 출력할 뿐입니다 |
-| 방향 공간 | **Local(오브젝트) 공간.** 엔진이 메시마다 `Direction`을 정규화 → `World` 역행렬을 곱해 로컬로 바꾼 뒤 다시 정규화해 전달합니다. 셰이더는 모델의 노멀(`NORMAL`)을 변환하지 않고 그대로 `dot(N, L)`에 사용합니다 |
-| 라이트 개수 | 활성 라이트 중 **최대 8개**를 메시마다 상수 버퍼 `LIGHT`로 등록 (`Direction`, `Range`, `Diffuse`, `Ambient`) |
-| Material | `FPMaterial`의 `BaseColor` · `Diffuse` · `Ambient`. `RenderItem`이 값의 주소를 들고 있고, 렌더러가 Light 다음 슬롯에 `MATERIAL`로 등록합니다 |
-| 노멀 | `NORMAL_VERTEX`(`nx, ny, nz`) 스트림(Input Slot 1)에 저장됩니다. FBX 로딩 시 노드의 `node_to_world`로 변환 후 정규화해 저장합니다 |
+| `FPLightComponentBase` | 모든 라이트의 공통 베이스. `FPLightConstantBuffer`(Direction · Range · Diffuse · Ambient · Specular · Attenuation · LightColor · LightType)를 들고 `FPLightRenderList`에 등록(`RegistLightRenderList`)합니다. `SetActive` · `SetDirection` · `SetRange` · `SetDiffuse` · `SetAmbient` · `SetSpecular` · `SetAttenuation` · `SetLightColor` |
+| `FPLightComponent` → `FPDirectionalLightComponent` | `LightType_Direction`. 생성자에서 기본값을 채우고 렌더 목록에 등록 |
+| `FPLightComponent` → `FPLocalLightComponent` → `FPPointLightComponent` | `LightType_Point`. 위치(컴포넌트의 월드 위치)와 `Range` · `Attenuation`을 사용 |
+| `FPSpotLightComponent` · `FPRectLightComponent` · `FPSkyLightComponent` | 헤더만 있는 골격. `FPLightType`에는 `LightType_Spot` · `LightType_Rect`가 정의되어 있지만 셰이더는 아직 계산하지 않음(결과 0) |
 
-```hlsl
-// LambertLight.hlsli
-float4 Diff = max(dot(N, L), 0) * LightDiffuse * MaterialDiffuse;
-float4 Amb  = LightAmbient * MaterialAmbient;
-return saturate(Diff + Amb);                       // 최종 색 = Material.BaseColor * 이 값
+| 기본값 | Directional | Point |
+|---|---|---|
+| Direction | `(0, 1, 0)` | `(0, 0, 0)` (사용 안 함) |
+| Range | `1000` | `10` |
+| Diffuse | `(1, 1, 1, 1)` | `(1, 1, 1, 1)` |
+| Ambient | `(0.2, 0.2, 0.2, 1)` | `(0, 0, 0, 1)` |
+| Specular · Attenuation · LightColor | `(1, 1, 1, 1)` | `(1, 1, 1, 1)` |
+
+> `SetDirection`은 이제 방향을 **정규화만** 합니다. 이전처럼 부호를 반전하지 않으며, 렌더러가 메시마다 "광원 쪽을 향하는 방향"으로 뒤집어 전달합니다 (`Direction = (0, -1, 0)`처럼 **빛이 나아가는 방향**을 그대로 넣으면 됩니다).
+
+**Light 상수 버퍼 (`b2`)**
+
+라이트마다 `LightDataItem`(144 byte)을 만들고 최대 `Light_MAX = 64`개를 `LightItem` 하나로 묶어 VS `b2`에 전달합니다. 크기는 `16 + 64 × 144 = 9232 byte`입니다 ([상수 버퍼 크기가 9232 byte로 확장](#상수-버퍼)된 이유).
+
+```cpp
+// Renderers/FPRenderingCommon.h
+struct alignas(16) LightDataItem {
+    unsigned int LightType; unsigned int padding[3];   // HLSL 배열 요소는 16 byte 단위로 해석되므로 패딩 필수
+    FPVector4 LightPosition;                           // 라이트의 월드 위치 (Location 행렬의 4행)
+    FPVector4 Direction;
+    float Range; float padding_2[3];
+    FPVector4 Diffuse, Ambient, Specular, Attenuation, LightColor;
+};
+struct alignas(16) LightItem { unsigned int LightCnt; unsigned int Padding[3]; LightDataItem Light[Light_MAX]; };
 ```
 
 ```hlsl
-// DefaultVertexShader.vsh — 상수 버퍼 배치 (라이트 1개일 때)
-cbuffer ObejctConstBuffer     : register(b0) { matrix mWorld, mView, mProj, mWV, mWVP; };
-cbuffer ViewPortConstBuffer   : register(b1) { };
-cbuffer DirectionLightConstBuffer : register(b2) { LIGHT Light; };      // 라이트 k → b(2 + k)
-cbuffer MaterialConstBuffer   : register(b3) { MATERIAL Material; };    // Material → b(2 + 라이트 수)
+// Assets/ShaderResource/Light.hlsli — 기본 Mesh VS가 포함
+cbuffer LightConstBuffer    : register(b2) { uint LightCnt; float3 Padding; LIGHT Light[Light_MAX]; };  // 9232 byte
+cbuffer MaterialConstBuffer : register(b3) { MATERIAL Material; };   // BaseColor · Diffuse · Ambient · Emissive
+float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix mInverseTranseposeWV);
 ```
 
 > [!IMPORTANT]
-> Material 슬롯 위치가 **라이트 수에 따라 달라집니다.** 기본 셰이더는 라이트 1개를 전제로 `b2` = Light, `b3` = Material을 선언합니다. 라이트가 0개이면 Material이 `b2`로 올라오고, 2개 이상이면 `b4` 이후로 밀립니다. 라이트 수가 달라질 수 있다면 셰이더도 맞춰 수정해야 합니다.
+> 이전에는 라이트마다 슬롯을 하나씩 차지해 Material 슬롯이 라이트 수에 따라 밀렸지만, 지금은 **`b2` = Light 블록(항상 1개), `b3` = Material로 고정**입니다. 라이트가 0개여도(`LightCnt = 0`) 위치는 바뀌지 않습니다.
+
+**계산 방식 (`Light.hlsli`)**
+
+| 항목 | 내용 |
+|---|---|
+| 합성 | `LightCnt`만큼 반복해 라이트별 결과를 더하고, 최종 색 = `(Σ라이트 + Material.Emissive) × Material.BaseColor`, 알파 = `BaseColor.a` |
+| Directional | **Local(오브젝트) 공간.** 렌더러가 메시마다 `Direction`을 정규화 → `World` 역행렬 곱 → 정규화 → **부호 반전**해 전달하고, 셰이더는 모델 노멀을 변환하지 않고 `Lambert(N, L)`에 사용. 결과 × `LightColor` |
+| Point | **View 공간.** `posv = mul(mWV, pos)`, 광원 위치는 `mul(mView, LightPosition)`. 노멀은 `normalize(mul(mInverseTranseposeWV, nrm))`(`w = 0`)로 변환해 **비균등 스케일에서도 노멀이 올바르게** 계산됨. `Distance > Range`이면 0, 감쇠 `att = 1 / (Attenuation.x + y·d + z·d²)`(분모가 0이면 1). 결과 = Lambert × `att` × `LightColor` |
+| Spot · Rect | 타입 정의만 있고 호출이 주석 처리되어 있어 **기여하지 않음** |
+| 클램프 | `LambertLight()`가 더 이상 `saturate`하지 않아 라이트가 여러 개면 1을 넘을 수 있음 (최종 출력에서 잘림) |
+| 노멀 | `NORMAL_VERTEX`(`nx, ny, nz`) 스트림(Input Slot 1). FBX 로딩 시 노드의 `node_to_world`로 변환 후 정규화해 저장 |
+
+> [!NOTE]
+> `CreateMeshRenderList`는 **메시마다** 9232 byte의 `LIGHT` 블록을 만들어 `RenderingData::MeshRenderItem`에 복사하므로 메시 수 × 프레임에 비례해 비용이 듭니다 (커밋 메모: "최적화는 추후에 진행"). 활성 라이트가 적을수록 `LightCnt`만큼만 셰이더가 반복하지만, 복사 크기는 항상 고정입니다.
+
+**Emissive (자체 발광)**
+
+Material에 `Emissive`(`FPVector4`)가 추가되었습니다. `FPMaterialInterface::SetEmissive / GetEmissive`, `RenderItem::Emissive`, `MATERIAL` 상수 버퍼(`b3`, 이제 64 byte)로 전달되며 라이트 합에 **더해진 뒤** `BaseColor`가 곱해집니다. 라이트의 영향을 받지 않고 밝게 보이게 할 때 씁니다. Material JSON의 `Emissive` 키 설명은 [Material JSON](#material-json)을 참고하세요.
 
 ```cpp
 // Games/Release_Game/Tri_World/ADirectionalLight.cpp
 ADirectionalLight::ADirectionalLight()
 {
     LightComponent = new FPDirectionalLightComponent(this);
-    FPVector3 Dir{ 0.43f, -0.64f, 0.64f };            // 정규화된 방향 (Tri_World)
+    FPVector3 Dir{ 1.0f, -1.0f, 1.0f };               // 빛이 나아가는 방향 (SetDirection이 정규화)
     LightComponent->SetDirection(Dir);
 }
+
+void ADirectionalLight::SetDirectionalLightColor()    // F7 : 조명 색을 순환 (흰색 → 주황 → 짙은 파랑 → 연한 남색)
+{
+    NowLight = (NowLight + 1) % MaxLight;
+    FPVector4 LightColor = /* NowLight에 해당하는 색 */;
+    LightComponent->SetLightColor(LightColor);
+}
 ```
+
+**Point Light 사용 예 — `ATorchLight`** (`Games/Release_Game/Tri_World/ATorchLight.cpp`)
+
+```cpp
+ATorchLight::ATorchLight()
+{
+    LightComponent = new FPPointLightComponent(this);            // 월드 위치 = 컴포넌트 위치
+    LightComponent->SetupAttachment(RootComponent);
+    LightProbe = new FPStaticMeshComponent(this, "Sphere_StaticMesh");   // 불꽃 대신 구
+    LightProbe->SetupAttachment(RootComponent);
+
+    FPVector4 Color = { 1, 0.5f, 0, 1 };
+    LightComponent->SetLightColor(Color);                          // Set* 함수는 FPVector4& (lvalue)를 받음
+    FPVector4 Attenuation = { 0.0f, 0.05f, 0.05f, 1.0f };          // 1 / (0 + 0.05d + 0.05d²)
+    LightComponent->SetAttenuation(Attenuation);
+    LightComponent->SetRange(100.0f);
+
+    LightProbe->GetMaterial().SetBaseColor(Color);
+    FPVector4 EmissiveColor = { 1, 1, 1, 1 };                      // 라이트와 무관하게 밝게
+    LightProbe->GetMaterial().SetEmissive(EmissiveColor);
+    LightProbe->GetMaterial().SetTwoSided(true);
+}
+void ATorchLight::OnTorch() { isActive = !isActive; LightComponent->SetActive(isActive); LightProbe->SetActive(isActive); }
+```
+
+`Player::OnTorch()`가 `1`번 키에서 처음 한 번 `SpawnActor("ATorchLight", "PlayerTorch")`로 토치를 만들고 `AttachToComponent(Hand, "TorchPoint")`로 손(`ToonLink_Hand_StaticMesh.json`에 추가된 `TorchPoint` Socket)에 붙인 뒤, 이후에는 켜고 끄기만 합니다. `ATorchLight`는 `LoadClassRegist()`에 `Register<ATorchLight>("ATorchLight")`로 등록되어 있습니다.
 
 Level JSON에 `"class": "ADirectionalLight"`로 배치하며, 클래스는 `LoadClassRegist()`에서 등록해야 합니다. 메시 색은 `Mesh->GetMaterial().SetBaseColor(Color)`로 지정합니다.
 
@@ -957,7 +1032,7 @@ if (input.VertexID == 1) WorldPosition += WorldNormal * NormalLength;
 | 항목 | 내용 |
 |---|---|
 | 입력 레이아웃 | 속성마다 **별도 슬롯, 오프셋 0** — `POSITION`(float3, 슬롯 0), `NORMAL`(float3, 슬롯 1), `COLOR`(float4, 슬롯 2), `TEXCOORD`(float2, 슬롯 3). Normal Line 셰이더만 `POSITION`(0) · `NORMAL`(1)을 **Per-Instance**로 읽음 |
-| 기본 Mesh 셰이더 | `DefaultVertexShader.vso` — WVP 변환 + **Lambert Light를 정점 단위로 계산**(`b0` Object, `b2` Light, `b3` Material). `DefaultPixelShader.pso`는 보간된 정점 색에 **텍스처(`t0` / `s0`)를 곱해** 출력 |
+| 기본 Mesh 셰이더 | `DefaultVertexShader.vso` — WVP 변환 + **통합 Light(Directional · Point)를 정점 단위로 계산**(`b0` Object, `b2` Light 블록, `b3` Material). `DefaultPixelShader.pso`는 보간된 정점 색에 **텍스처(`t0` / `s0`)를 곱해** 출력 |
 | 기본 Gizmo 셰이더 | `DefaultGizmoVertexShader.vso` / `DefaultGizmoPixelShader.pso` — WVP 변환 후 정점 색 출력 (`b0`만 사용, 라이트 없음). Position · Color 스트림만 바인딩. `FPGizmoGridComponent` · `FPGizmoAxisComponent`가 사용 |
 | Normal Line 셰이더 | `NormalDebugVertexShader.vso` / `NormalDebugPixelShader.pso` — [Lambert Light · Normal Line](#lambert-light--normal-line) 참고. 전용 Input Layout을 쓰므로 `LoadNormalDebugVertexShader()`로 로드 |
 | 로드 방식 1 | 사전 컴파일된 오브젝트 로드 — `LoadVertexShader("X.vso", owner)` |
@@ -1196,6 +1271,7 @@ flowchart LR
     "Ambient":   { "r": 0.05, "g": 0.05, "b": 0.05, "a": 1.0 },
     "BaseColor": { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 },
     "Diffuse":   { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 },
+    "Emissive":  { "r": 0.0,  "g": 0.0,  "b": 0.0,  "a": 0.0 },
     "TwoSided":  false
   }
 }
@@ -1209,6 +1285,7 @@ flowchart LR
     "Ambient":   { "r": 0.05, "g": 0.05, "b": 0.05, "a": 1.0 },
     "BaseColor": { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 },
     "Diffuse":   { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 },
+    "Emissive":  { "r": 0.0,  "g": 0.0,  "b": 0.0,  "a": 0.0 },
     "TwoSided":  false
   },
   "Texture": [
@@ -1222,6 +1299,7 @@ flowchart LR
 | `Material.Name` | 등록 이름. StaticMesh JSON의 `Material.Name`과 다른 Material JSON이 이 이름으로 서로 참조 |
 | `Material.VertexShader` / `PixelShader` | `FPAssetManager`에 로드돼 있어야 하는 셰이더 이름 (확장자 없이) |
 | `Material.Ambient` / `BaseColor` / `Diffuse` | `FPMaterial::SetAmbient/BaseColor/Diffuse`로 그대로 전달되는 `{r,g,b,a}` 색 |
+| `Material.Emissive` | 자체 발광 색 `{r,g,b,a}`. `FPMaterial::SetEmissive`로 전달되어 라이트 합에 더해진 뒤 `BaseColor`가 곱해짐. **`LoadMaterial`이 필수 키로 읽으므로 빠뜨리면 Material 로드가 실패합니다** (기존 JSON에는 모두 추가됨) |
 | `Material.TwoSided` | 양면 렌더링 여부. 생략하면 `false`. `true`이면 `MeshRenderPass`가 이 메시를 Cull 없이 그림 ([Two Sided Material](#two-sided-material)) |
 | `Texture[]` | `{ Name, Slot, TextureFilter, SamplerType }` 배열. `AssetLoader`가 `TextureFilter + "_" + SamplerType`을 합쳐 `FPSamplerType`으로 변환하고, `MakeMaterial`이 각 항목마다 `AddTexture(Slot)` + `SetTexture(Slot, Name, SamplerType)`를 호출 (생략하면 텍스처 없는 기본 Material). `TextureFilter` / `SamplerType`을 생략하거나 조합이 열거형에 없으면 기본값 `Filter_Tri_Linear_Sampler_CLAMP`로 떨어짐 ([Texture](#texture) 참고) |
 
@@ -1275,8 +1353,18 @@ flowchart LR
 |---|---|---|
 | 키보드 | `WM_INPUT` → `HandleKeyboardInput` | 상태 변화 시 `Down` / `Up`. 운영체제 키 반복 입력은 무시 |
 | 키보드(누르고 있음) | `TickInputSystem` | `Pressed` 바인딩이 있는 키에 한해 매 프레임 `Pressed` 생성 |
-| 마우스 | `WM_INPUT` → `HandleMouseInput` | 좌/우 버튼 `Down` · `Up`, 휠 버튼 `Down`. 값은 커서 위치를 800×600 기준 −1~1로 정규화한 `X`, `Y` |
+| 마우스 | `WM_INPUT` → `HandleMouseInput` | 좌/우 버튼 `Down` · `Up`, 휠 버튼 `Down` · `Up`. 값은 커서 위치를 800×600 기준 −1~1로 정규화한 `X`, `Y`. **휠 · 이동은 아래 커스텀 키 코드**로 `Pressed` 이벤트 생성 |
 | 게임패드 | `TickInputSystem` → `HandleGamepadInput` | 0번 컨트롤러. 버튼 `Down` / `Pressed` / `Up`, 스틱·트리거는 `Pressed` |
+
+**마우스 커스텀 키 코드 (`CUSTOM_MOUSE_INPUT`)** — 휠 · 이동은 표준 `VK_` 코드가 없어 게임패드처럼 `0x100` 이상의 커스텀 `VKey`로 식별합니다.
+
+| 코드 | 이름 | 값 |
+|:-:|---|---|
+| `0x0112` | `MOUSE_WHEEL` (세로 휠) | `Y` = `Float` = 휠 델타 ÷ 120 (위로 +, 아래로 −) |
+| `0x0113` | `MOUSE_HWHEEL` (가로 휠) | `X` = `Float` = 휠 델타 ÷ 120 |
+| `0x0114` | `MOUSE_MOVE` (마우스 이동) | `X`, `Y` = 이번 입력의 상대 이동량(픽셀). 절대좌표 장치는 직전 좌표와의 차이 |
+
+휠 · 이동 이벤트는 항상 `EKeyState::Pressed`로 큐에 쌓이므로 `Pressed`로 바인딩합니다. 예: `AddMappingKey("IA_ZoomCamera", static_cast<USHORT>(CUSTOM_MOUSE_INPUT::MOUSE_WHEEL), …)`.
 
 모든 이벤트는 하나의 구조체로 큐에 쌓입니다.
 
@@ -1559,6 +1647,7 @@ FBXToStaticMeshJsonTranslator.exe [FBX입력폴더] [Json출력폴더]
 | Material | 메시에 연결된 첫 머티리얼마다 **기본 Material**(`<재질명>_Material.json`, 재질당 1번만 저장)과 **Material Instance**(`<재질명>_<StaticMesh이름>_MaterialInstance.json`, 메시마다 저장)를 함께 기록. 둘 다 `VertexShader` / `PixelShader`는 FBX에 정보가 없으므로 `DefaultVertexShader` / `DefaultPixelShader`로 채움 |
 | Texture | 머티리얼에 연결된 텍스처를 **실제 이미지 파일 기준으로 중복 없이** Texture JSON으로 저장 (DDS면 `"DDS"`, 그 외엔 `"WIC"`). Material Instance의 `Texture[]` 항목에는 FBX 텍스처의 Wrap 설정(Repeat/Clamp)을 `"SamplerType": "Sampler_Wrap"` / `"Sampler_CLAMP"`로, 필터는 FBX에 정보가 없어 항상 `"TextureFilter": "Filter_Tri_Linear"`로 채움 |
 
+- `Emissive`는 FBX 값과 무관하게 항상 `(0, 0, 0, 0)`으로 기록합니다 (필요하면 JSON에서 직접 수정).
 - FBX 머티리얼의 **Two Sided(`double_sided`)** 설정이 켜져 있으면 두 Material JSON에 `"TwoSided": true`를 기록합니다 (엔진 `FPMaterial::TwoSided`와 같은 의미).
 - 빌드된 실행 파일이 `Tool/FBXToStaticMeshJsonTranslator/EXE/`에 포함되어 있습니다.
 - 출력 폴더 아래 `StaticMesh/`, `Material/`, `Texture/` 하위 폴더가 자동으로 만들어집니다.
@@ -1856,7 +1945,7 @@ std::string ReturnStartLevel() { return "TriWorld"; }
 
 | 잘못된 등록 | 결과 |
 |---|---|
-| 사용하는 이름이 등록되어 있지 않음 | Level 로드 · Controller 생성 · `SpawnActor`에서 `nullptr` 역참조로 종료. GameMode는 콘솔에 `…의 Class가 존재하지 않음`을 출력한 뒤 World 초기화에서 종료. `GetActorOfClass`는 `std::bad_typeid` 예외 |
+| 사용하는 이름이 등록되어 있지 않음 | Level 로드 · Controller 생성 · `SpawnActor`에서 `nullptr` 역참조로 종료. GameMode는 콘솔에 `…의 Class가 존재하지 않음`을 출력한 뒤 World 초기화에서 종료. `GetActorOfClass`는 `nullptr` 반환(`GetAllActorsOfClass`는 빈 결과) |
 | 다른 클래스의 이름으로 등록 | 엉뚱한 클래스가 생성되고, 이름을 믿고 `static_cast`한 코드가 잘못된 타입을 다룸 |
 | 같은 이름으로 두 번 등록 | 경고 없이 나중 등록이 앞의 것을 덮어씀 |
 | Material 이름이 등록되어 있지 않음 | 기본 `FPMaterial` 사용 (오류 없음) |
@@ -2055,8 +2144,9 @@ Controller가 소유합니다. `GetWorld()->GetController(0)->GetInputComponent(
 // 액터를 다른 액터의 Root 메시 Socket에 부착
 AttachToActor(Body, "WingPoint1");
 
-// 액터를 특정 컴포넌트에 부착
+// 액터를 특정 컴포넌트에 부착 (Socket 이름은 생략 가능)
 AttachToComponent(ShieldPivot);
+AttachToComponent(Hand, "TorchPoint");     // 컴포넌트의 Socket에 부착
 
 // 컴포넌트를 Socket에 부착
 Wing1->SetupAttachment(Body, "UpScaleWingPoint1");
@@ -2169,7 +2259,7 @@ StaticMesh JSON의 `"Material"`로 지정하려면 `Registry->Register<PulseMate
 
 | 규칙 | 이유 / 어기면 |
 |---|---|
-| **구조체 1개의 크기는 320 byte 이하** | 슬롯의 GPU 버퍼가 320 byte 고정입니다. 크기 검사가 없어 더 큰 구조체는 `Map`된 메모리를 넘어 `memcpy`합니다 (메모리 손상). 큰 데이터는 구조체를 나눠 슬롯 여러 개로 등록하세요 |
+| **구조체 1개의 크기는 9232 byte 이하** | 슬롯의 GPU 버퍼가 9232 byte 고정입니다 (Light 블록을 담기 위해 확장). 크기 검사가 없어 더 큰 구조체는 `Map`된 메모리를 넘어 `memcpy`합니다 (메모리 손상). 큰 데이터는 구조체를 나눠 슬롯 여러 개로 등록하세요 |
 | **구조체에 `alignas(16)`을 붙이고 크기를 16 byte 배수로** | HLSL `cbuffer`는 16 byte 단위로 패킹됩니다. 모자라는 부분은 `float Pad[n]`으로 명시해 두면 C++ · HLSL 레이아웃을 맞추기 쉽습니다 |
 | **멤버 순서 · 타입을 HLSL `cbuffer`와 완전히 일치** | 컴파일러가 둘을 대조하지 않습니다. 순서가 다르면 값이 엉뚱한 변수로 들어갑니다 |
 | **하나의 `float4`(16 byte) 경계를 넘는 멤버를 두지 않는다** | `float3` 뒤에는 `float`이 같은 16 byte 안으로 들어가고, `float2` 다음 `float3`은 다음 16 byte로 넘어갑니다. 헷갈리면 모두 `float4` 단위로 설계하세요 |
@@ -2210,7 +2300,7 @@ StaticMesh JSON의 `"Material"`로 지정하려면 `Registry->Register<PulseMate
 
 **⑤ 체크리스트**
 
-- [ ] 구조체가 `alignas(16)`이고 `sizeof`가 16의 배수이며 320 이하인가?
+- [ ] 구조체가 `alignas(16)`이고 `sizeof`가 16의 배수이며 9232 이하인가?
 - [ ] 멤버 순서 · 타입이 HLSL `cbuffer`와 같은가? (`bool`, 배열, `float3` 패킹 확인)
 - [ ] `AddConstantBuffer`를 0번부터 빈틈없이 등록했고, `register(b#)`가 VS `b(2+k)` / PS `b(1+k)`와 맞는가?
 - [ ] 셰이더가 선언한 `cbuffer`를 전부 Material이 등록했는가?
@@ -2305,8 +2395,8 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 | `Tree` | 300 | `FPActor` | StaticMesh × 2 (잎 · 줄기) | 나무. `Tree_Material`(Two Sided, `Tree01s_dds`, `TreePixelShader`) |
 | `Grid` | 1 | `FPActor` | Gizmo | 128×128 그리드 |
 | `Axis` | 1 | `FPActor` | Gizmo | 월드 축 |
-| `ADirectionalLight` | 1 | `FPActor` | DirectionalLight | 씬 전체를 비추는 Directional Light. Direction `(0.43, -0.64, 0.64)` |
-| `UI` | 1 | `FPActor` | Text × 19 | FPS, 도움말, GPU / 해상도 / 렌더 상태 |
+| `ADirectionalLight` | 1 | `FPActor` | DirectionalLight | 씬 전체를 비추는 Directional Light. Direction `(1, -1, 1)`(정규화됨). <kbd>F7</kbd>로 `LightColor`를 4색(흰색 · 주황 · 짙은 파랑 · 연한 남색) 순환 |
+| `UI` | 1 | `FPActor` | Text × 21 | FPS, 도움말, GPU / 해상도 / 렌더 상태, 조명 색(F7) · Torch(1) 상태 |
 | `Player` | 1 | `FPPawn` | StaticMesh + ShieldPivot + SpringArm + Camera | 시작 시 Possess. 제자리에서 계속 회전 |
 | `Windmill` | 2 | `FPPawn` | StaticMesh (몸체) | 이동 / 회전 / 크기 조절. `WindmillBody_Material`(`Windmill_jpg` t0 + `Windmill_a_jpg` t1, `WindmillWingBody_PixelShader`) |
 | `WindmillWing` | 1 | `FPPawn` | StaticMesh (날개) | `Windmill`의 `WingPoint1` Socket에 부착. Player에게 옮겨 붙일 수 있음. `WindmillWing_Material`(Two Sided) |
@@ -2332,6 +2422,8 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 - `Windmill_Body.fbx` / `Windmill_Wing.fbx`는 `Windmill.fbx` 하나로 합쳐졌고 StaticMesh JSON의 `NodeName`(`Windmill_Body` · `Windmill_Wing`)으로 각각 찾습니다.
 - `Player`의 SpringArm 길이는 `50`으로 복원되었습니다.
 - 모든 텍스처는 필터가 `Filter_Tri_Linear`(기본값)이고 주소 모드만 위 표의 값을 씁니다. 그래픽 옵션은 `Assets/GameSetting/GameSetting.json`에서 `MSAA: 8`, `AnisotropicFiltering: 16`, `Resolution: 960×600`으로 설정되어 있습니다 ([GameSetting](#gamesetting) 참고).
+
+> `ATorchLight`는 Level JSON에는 없고, `Player`가 <kbd>1</kbd> 키를 처음 누를 때 `SpawnActor`로 생성해 손의 `TorchPoint` Socket에 붙입니다 ([Light](#light-directional--point) 참고). 배경색은 라이트 색에 따라 바뀌지 않습니다 (논리적으로 맞지 않는다는 판단 — 커밋 메모).
 
 **Socket 정의**
 
@@ -2364,9 +2456,12 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 | <kbd>F4</kbd> | 뒷면 제거 전환 | 전체 |
 | <kbd>F5</kbd> | 깊이 테스트 전환 | 전체 |
 | <kbd>F6</kbd> | Normal Line 표시 전환 | 전체 |
+| <kbd>F7</kbd> | Directional Light 색 순환 (4색) | `ADirectionalLight`, `UI` |
+| <kbd>1</kbd> | 손에 토치(Point Light) 생성 · 켜기 / 끄기 | Player, `UI` |
+| **마우스 휠** | 카메라 줌 (SpringArm 길이 증감) | Player |
 | <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> | `IA_SetMoveWindmill`에 매핑만 되어 있음 (바인딩된 동작 없음) | — |
 
-- **마우스** — 엔진은 좌 / 우 / 휠 버튼 입력을 수집하지만, Tri_World에는 마우스에 매핑된 조작이 없습니다.
+- **마우스** — 엔진은 좌 / 우 / 휠 버튼과 휠 · 이동 입력을 수집합니다. Tri_World는 **세로 휠만** `IA_ZoomCamera`로 매핑해 `Player::CameraZoom`을 호출합니다 (`TargetArmLength += 휠값 × 30 × DeltaTime`).
 - **Possess 전환** — 키보드에는 매핑되어 있지 않습니다. 게임패드 D-Pad를 사용합니다.
 
 #### 🎮 게임패드 (Xbox / XInput)
@@ -2405,6 +2500,9 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 | `IA_SetAxis` | F3 | — | Down | `GameController::SetAxisOn` |
 | `IA_SetDepthStencilBuffer` | F5 | — | Down | `GameController::SetActiveDepthStencilBuffer` |
 | `IA_SetNormalLine` | F6 | — | Down | `GameController::SetNormalLine` |
+| `IA_SetDirectionLightColor` | F7 | — | Down | `GameController::SetDirectionalLight` (`ADirectionalLight`와 `UI` 갱신) |
+| `IA_OnTorchLight` | 1 | — | Down | `GameController::OnTorch`, `Player::OnTorch` |
+| `IA_ZoomCamera` | 마우스 휠 | — | Pressed | `Player::CameraZoom` |
 
 </details>
 
@@ -2441,7 +2539,6 @@ Tri_World처럼 *레벨 하나를 열어 종료할 때까지 유지*하는 흐�
 | `FPAssetManager` | `void*`로 보관하는 VertexBuffer(스트림 4종) · IndexBuffer, Shader 객체, Shader 바이트코드, 텍스처 SRV와 `new`로 만든 `D3D11_TEXTURE2D_DESC`(`FPTextureData`) | `= default` |
 | `RenderingDevice` | 상수 버퍼 28개(VS 14 · PS 14), DepthStencilState 3개, SamplerState 36개(생성 시), 열거한 `IDXGIAdapter1`, `IDXGIAdapter4` | 없음 |
 | `ForestPearlEngine` | `Renderer` | `Finalize()`만 호출 |
-| `FPGameplayStatics::GetActorOfClass` · `GetAllActorsOfClass` | 타입 비교용 임시 인스턴스의 `RootComponent` — **호출할 때마다** 1개 | — |
 | `FPWorld::CreateClassInstnce<T>` | `dynamic_cast`가 실패한 객체 (`release()` 후 버려짐) | — |
 | 게임 코드 (`UI` 등) | 직접 `new`한 `FPTextComponent` | 없음 |
 
@@ -2485,7 +2582,7 @@ Tri_World처럼 *레벨 하나를 열어 종료할 때까지 유지*하는 흐�
 | 액터 · 컴포넌트를 런타임에 `delete`하지 않는다. 숨길 때는 `SetActive(false)` | 1, 3번 |
 | 한 번의 실행에서 레벨은 하나만 연다 (`OpenLevel`을 다시 호출하지 않는다) | 이전 레벨이 누수되고 렌더 목록에 남음 |
 | `FPGameInstance::UnLoadData()`를 직접 호출하지 않는다 | 종료 시 엔진이 `Finalize()`를 호출하므로 이중 `delete` |
-| `GetActorOfClass` 계열은 `BeginPlay()`에서 한 번 호출해 멤버에 보관한다. `Tick()`에서 매 프레임 호출하지 않는다 | 호출마다 임시 인스턴스의 컴포넌트가 누수됨 |
+| `GetActorOfClass` 계열은 `BeginPlay()`에서 한 번 호출해 멤버에 보관하는 편이 좋다 | 호출마다 월드의 액터 목록 전체를 순회합니다 (임시 인스턴스를 만들지 않으므로 이전의 누수는 없어졌습니다) |
 | `SetRootComponent()`는 `Initialize()`에서 다른 컴포넌트를 붙이기 전에 가장 먼저 호출한다 | 기본 루트가 `delete`됨 |
 | `SetMaterial()`은 메시 컴포넌트를 만든 직후에 호출한다 | 렌더 항목 포인터 무효화 |
 | `SetStaticMesh()` · `SetVertexShader()`를 반복 호출하지 않는다 | 이전 리소스가 해제되지 않음 |

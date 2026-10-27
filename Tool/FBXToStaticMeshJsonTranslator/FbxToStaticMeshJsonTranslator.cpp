@@ -241,6 +241,9 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 	const json DiffuseJson = MakeColorJson(Material.fbx.diffuse_color, 1.0, 1.0, 1.0, 1.0);
 	const json AmbientJson = MakeColorJson(Material.fbx.ambient_color, 0.1, 0.1, 0.1, 1.0);
 
+	// Emissive(자체 발광)는 FBX 값과 무관하게 항상 0으로 시작한다. (필요하면 추후 머티리얼 에디터에서 수동으로 조절)
+	const json EmissiveJson = MakeColorJson({}, 0.0, 0.0, 0.0, 0.0);
+
 	// FBX의 Two Sided(양면) 설정. 엔진 FPMaterial::TwoSided와 동일한 의미(체크 시 Cull 없이 Back Normal도 사용).
 	const bool bTwoSided = Material.features.double_sided.enabled;
 
@@ -256,6 +259,7 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 		BaseMaterialBody["Ambient"] = AmbientJson;
 		BaseMaterialBody["BaseColor"] = BaseColorJson;
 		BaseMaterialBody["Diffuse"] = DiffuseJson;
+		BaseMaterialBody["Emissive"] = EmissiveJson;
 		BaseMaterialBody["TwoSided"] = bTwoSided;
 
 		json BaseMaterialFileJson;
@@ -279,6 +283,7 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 	MaterialInstanceBody["Ambient"] = AmbientJson;
 	MaterialInstanceBody["BaseColor"] = BaseColorJson;
 	MaterialInstanceBody["Diffuse"] = DiffuseJson;
+	MaterialInstanceBody["Emissive"] = EmissiveJson;
 	MaterialInstanceBody["TwoSided"] = bTwoSided;
 
 	json MaterialInstanceFileJson;

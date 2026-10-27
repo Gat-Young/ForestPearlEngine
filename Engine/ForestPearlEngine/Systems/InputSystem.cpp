@@ -101,9 +101,53 @@ void FPInputSystem::HandleMouseInput(RAWINPUT* RawInput)
 
     RAWMOUSE& m = RawInput->data.mouse;
 
+    // 마우스 휠 입력 처리 (세로/가로). usButtonData는 휠 플래그가 설정된 경우에만 유효하며, 부호 있는 델타값이다.
+    if (m.usButtonFlags & RI_MOUSE_WHEEL)
+    {
+        std::cout << "Mouse Wheel" << "\n";
+        float WheelValue = static_cast<float>(static_cast<SHORT>(m.usButtonData)) / WHEEL_DELTA;
+
+        FInputValue WheelInputValue = { 0.0f, WheelValue, 0.0f, true, WheelValue };
+        FKeyInputInfo WheelKeyInputInfo = { static_cast<USHORT>(CUSTOM_MOUSE_INPUT::MOUSE_WHEEL), EKeyState::Pressed, WheelInputValue };
+        InputQueue.push(WheelKeyInputInfo);
+        return;
+    }
+    else if (m.usButtonFlags & RI_MOUSE_HWHEEL)
+    {
+        float WheelValue = static_cast<float>(static_cast<SHORT>(m.usButtonData)) / WHEEL_DELTA;
+
+        FInputValue WheelInputValue = { WheelValue, 0.0f, 0.0f, true, WheelValue };
+        FKeyInputInfo WheelKeyInputInfo = { static_cast<USHORT>(CUSTOM_MOUSE_INPUT::MOUSE_HWHEEL), EKeyState::Pressed, WheelInputValue };
+        InputQueue.push(WheelKeyInputInfo);
+        return;
+    }
+
     bool isAbsolute = (m.usFlags & MOUSE_MOVE_ABSOLUTE) != 0;
     static int  rawDeltaX = 0, rawDeltaY = 0;
     static int  mouseX = 0, mouseY = 0;
+
+    // 마우스 이동 처리. 버튼 상태와 같은 RAWINPUT 메시지에 함께 올 수 있으므로 버튼 분기와 독립적으로 처리한다.
+    if (m.lLastX != 0 || m.lLastY != 0)
+    {
+        if (isAbsolute)
+        {
+            // 절대좌표 디바이스(터치/RDP 등)는 직전 절대좌표와의 차이를 델타로 사용한다.
+            rawDeltaX = static_cast<int>(m.lLastX) - mouseX;
+            rawDeltaY = static_cast<int>(m.lLastY) - mouseY;
+            mouseX = static_cast<int>(m.lLastX);
+            mouseY = static_cast<int>(m.lLastY);
+        }
+        else
+        {
+            // 일반 마우스는 lLastX/lLastY 자체가 해당 틱의 상대 이동 델타이다.
+            rawDeltaX = static_cast<int>(m.lLastX);
+            rawDeltaY = static_cast<int>(m.lLastY);
+        }
+
+        FInputValue MoveInputValue = { static_cast<float>(rawDeltaX), static_cast<float>(rawDeltaY), 0.0f, true, 0.0f };
+        FKeyInputInfo MoveKeyInputInfo = { static_cast<USHORT>(CUSTOM_MOUSE_INPUT::MOUSE_MOVE), EKeyState::Pressed, MoveInputValue };
+        InputQueue.push(MoveKeyInputInfo);
+    }
 
     USHORT VKey;
     EKeyState ChangedKeyState = EKeyState::None;
@@ -132,6 +176,11 @@ void FPInputSystem::HandleMouseInput(RAWINPUT* RawInput)
     {
         VKey = VK_MBUTTON;
         ChangedKeyState = EKeyState::Down;
+    }
+    else if (m.usButtonFlags & RI_MOUSE_MIDDLE_BUTTON_UP)
+    {
+        VKey = VK_MBUTTON;
+        ChangedKeyState = EKeyState::Up;
     }
     else
     {

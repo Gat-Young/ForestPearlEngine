@@ -37,6 +37,14 @@ enum class XBOX_GAMEPAD
 	GAMEPAD_RIGHT_TRIGER = 0x0111
 };
 
+// 마우스 휠/이동은 표준 VK_ 코드가 없어 게임패드와 동일한 방식(0x100 이상 커스텀 VKey)으로 식별한다.
+enum class CUSTOM_MOUSE_INPUT
+{
+	MOUSE_WHEEL = 0x0112,	// 세로 휠 (RI_MOUSE_WHEEL)
+	MOUSE_HWHEEL = 0x0113,	// 가로 휠 (RI_MOUSE_HWHEEL)
+	MOUSE_MOVE = 0x0114	// 마우스 이동 (상대 델타, lLastX/lLastY)
+};
+
 struct FKeyInputInfo
 {
 	USHORT VKey;

@@ -30,10 +30,12 @@ class FPMaterialInterface : public FPObject
 		virtual void SetBaseColor(FPVector4& BaseColor) = 0;
 		virtual void SetDiffuse(FPVector4& Diffuse) = 0;
 		virtual void SetAmbient(FPVector4& Ambient) = 0;
+		virtual void SetEmissive(FPVector4& Emissive) = 0;
 
 		virtual FPVector4* GetBaseColor() = 0;
 		virtual FPVector4* GetDiffuse() = 0;
 		virtual FPVector4* GetAmbient() = 0;
+		virtual FPVector4* GetEmissive() = 0;
 
 		//TwoSide
 		virtual void SetTwoSided(bool isTwoSide) = 0;

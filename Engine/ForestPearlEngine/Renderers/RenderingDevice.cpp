@@ -296,6 +296,16 @@ HRESULT RenderingDevice::SetViewPort(float TopLeftX, float TopLeftY, float Width
 	return hr;
 }
 
+HRESULT RenderingDevice::SetBackGroundColor(float R, float G, float B, float A)
+{
+	BackGroundColor.x = R;
+	BackGroundColor.y = G;
+	BackGroundColor.z = B;
+	BackGroundColor.w = A;
+
+	return S_OK;
+}
+
 void RenderingDevice::ClearBackBuffer()
 {
 	DeviceContext->ClearRenderTargetView(RenderTargetView.Get(), (float*)&BackGroundColor);
@@ -389,6 +399,7 @@ HRESULT RenderingDevice::CreateVertexShaderConstBuffer(UINT Size)
 	{
 		hr = CreateConstBuffer(Size, &ConstBuffer);
 	}
+
 	return hr;
 }
 
@@ -399,6 +410,7 @@ HRESULT RenderingDevice::CreatePixelShaderConstBuffer(UINT Size)
 	{
 		hr = CreateConstBuffer(Size, &ConstBuffer);
 	}
+
 	return hr;
 }
 

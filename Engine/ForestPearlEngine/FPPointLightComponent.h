@@ -3,5 +3,8 @@
 
 class FPPointLightComponent : public FPLocalLightComponent
 {
-
+	protected:
+	public:
+		FPPointLightComponent(FPActor* Owner);
+		~FPPointLightComponent();
 };

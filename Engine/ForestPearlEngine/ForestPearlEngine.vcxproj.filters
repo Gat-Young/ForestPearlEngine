@@ -470,6 +470,12 @@
     <ClCompile Include="Renderers\FPRenderingCommon.cpp">
       <Filter>Renderers</Filter>
     </ClCompile>
+    <ClCompile Include="FPPointLightComponent.cpp">
+      <Filter>Component\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="FPLocalLightComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\StaticMesh\Cube_StaticMesh.json">
@@ -516,6 +522,9 @@
     </None>
     <None Include="Assets\Shader\NormalDebugPixelShader.json">
       <Filter>Assets\Shader\PS</Filter>
+    </None>
+    <None Include="Assets\ShaderResource\Light.hlsli">
+      <Filter>Assets\ShaderResource\Common\Lighting</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -8,6 +8,9 @@ class ADirectionalLight : public FPActor
 	private:
 		FPDirectionalLightComponent* LightComponent;
 
+		int NowLight = 0;
+		int MaxLight = 4;
+
 	public:
 		ADirectionalLight();
 		~ADirectionalLight();
@@ -15,4 +18,6 @@ class ADirectionalLight : public FPActor
 		virtual void Initialize() override;
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
+
+		void SetDirectionalLightColor();
 };

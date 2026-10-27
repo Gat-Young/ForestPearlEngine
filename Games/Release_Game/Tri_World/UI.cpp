@@ -69,6 +69,12 @@ void UI::Initialize()
 
 	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
 	NormalText = TextComponets.back();
+
+	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
+	LightText = TextComponets.back();
+
+	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
+	TorchText = TextComponets.back();
 }
 
 
@@ -141,6 +147,24 @@ void UI::SystemInfo(int x, int y, FPVector4 col)
 	_stprintf_s(text, _T("Normal:F6 (%s)"), ((bNormal == true) ? _T("ON") : _T("OFF")));
 	NormalText->SetTextData(&bShow, x, y += 14, col, text);
 
+
+	if (LightCnt == 0) {
+		_stprintf_s(text, _T("½Ã°£ ±¤¿ø º¯°æ:F7 (%s)"), _T("³·"));
+	}
+	if (LightCnt == 1) {
+		_stprintf_s(text, _T("½Ã°£ ±¤¿ø º¯°æ:F7 (%s)"), _T("¼®¾ç"));
+	}
+	if (LightCnt == 2) {
+		_stprintf_s(text, _T("½Ã°£ ±¤¿ø º¯°æ:F7 (%s)"), _T("ÇÑ ¹ã"));
+	}
+	if (LightCnt == 3) {
+		_stprintf_s(text, _T("½Ã°£ ±¤¿ø º¯°æ:F7 (%s)"), _T("»õº®"));
+	}
+	LightText->SetTextData(&bShow, x, y += 14, col, text);
+
+	_stprintf_s(text, _T("Torch: 1 (%s)"), ((TorchOn == true) ? _T("ON") : _T("OFF")));
+	TorchText->SetTextData(&bShow, x, y += 14, col, text);
+
 }
 
 void UI::AdapterInfo(int index, int x, int& y, FPVector4 col)
@@ -212,4 +236,15 @@ void UI::SetFill(struct FInputValue Value)
 void UI::SetNormalLine(FInputValue Value)
 {
 	bNormal = !(bNormal);
+}
+
+void UI::SetDirectionalLightColor(FInputValue Value)
+{
+	LightCnt++;
+	LightCnt %= LightCntMAX;
+}
+
+void UI::OnTorch(struct FInputValue Value)
+{
+	TorchOn = !TorchOn;
 }

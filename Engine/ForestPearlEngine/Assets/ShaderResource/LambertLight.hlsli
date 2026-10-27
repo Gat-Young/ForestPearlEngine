@@ -14,8 +14,8 @@ float4 LambertLight(float4 Normal, float4 Direction, float4 LightDiffuse, float4
     float4 Amb = LightAmbient * MaterialAmbient;
     
     //광량의 합을 1로 재한
-    return saturate(Diff + Amb);
+    //return saturate(Diff + Amb);
     
-    //return Diff + Amb;
+    return Diff + Amb;
 }
 #endif

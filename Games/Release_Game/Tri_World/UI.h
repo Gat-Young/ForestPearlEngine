@@ -44,12 +44,19 @@ class UI : public FPActor
 
 		FPTextComponent* NormalText;
 
+		FPTextComponent* LightText;
+
+		FPTextComponent* TorchText;
+
 		bool GridOn = true;
 		bool AxisOn = true;
 		bool ZEnable = true;
 		bool isCull = true;
 		bool isFill = true;
 		bool bNormal = false;
+		bool TorchOn = false;
+		int LightCnt = 0;
+		int LightCntMAX = 4;
 
 	public:
 		virtual void Initialize() override;
@@ -69,4 +76,7 @@ class UI : public FPActor
 		void SetCull(struct FInputValue Value);
 		void SetFill(struct FInputValue Value);
 		void SetNormalLine(struct FInputValue Value);
+
+		void SetDirectionalLightColor(struct FInputValue Value);
+		void OnTorch(struct FInputValue Value);
 };

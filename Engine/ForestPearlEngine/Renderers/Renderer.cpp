@@ -142,26 +142,97 @@ void Renderer::CreateMeshRenderList()
 		FPMatrix WorldMatrix = ((MeshRenderData.Scale) * (MeshRenderData.Rotation) * (MeshRenderData.Location));
 	
 
-		int MAX_LIGHT = 8;
+		//////////////////////////////////////////////////
+		// 
+		// Light RenderList 계산 (여기 변경 필요)
+		//
+		int MAX_LIGHT = 64;
 		int LightRenderLoopSize = min(MAX_LIGHT, LightRenderList.size());
 		int LightCount = 0;
 
+		RenderingData::LightItem LightBuffer;
+		LightBuffer.LightCnt = LightRenderLoopSize;
+
 		//Light 정보
-		for (LightCount =0; LightCount < LightRenderLoopSize; ++LightCount)
+		for (LightCount = 0; LightCount < LightRenderLoopSize; ++LightCount)
 		{
-			RenderingData::DirectionLightItem DirLight;
+			RenderingData::LightDataItem LightData;
+
+			LightData.LightType = LightRenderList[LightCount].LightType;
+
+			LightData.LightPosition = LightRenderList[LightCount].Location.Matrix.r[3];
+
 			FPVector4 LightDir = { LightRenderList[LightCount].Direction.x, LightRenderList[LightCount].Direction.y, LightRenderList[LightCount].Direction.z, 0.0f };
-			DirLight.Direction = (LightDir.Normalize() * WorldMatrix.MatrixInverse()).Normalize(); //Local로 변환
+			LightData.Direction = -((LightDir.Normalize() * WorldMatrix.MatrixInverse()).Normalize()); //Local로 변환
 			
-			DirLight.Range = LightRenderList[LightCount].Range;
-			DirLight.Diffuse = LightRenderList[LightCount].Diffuse;
+			LightData.Range = LightRenderList[LightCount].Range;
+			LightData.Diffuse = LightRenderList[LightCount].Diffuse;
+			LightData.Ambient = LightRenderList[LightCount].Ambient;
+			LightData.Specular = LightRenderList[LightCount].Specular;
+			LightData.Attenuation = LightRenderList[LightCount].Attenuation;
+			LightData.LightColor = LightRenderList[LightCount].LightColor;
 
-			DirLight.Ambient = LightRenderList[LightCount].Ambient;
 
+			LightBuffer.Light[LightCount] = LightData;
 
-			//VertexBuffer에 등록
-			FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, LightCount, DirLight);
+			
+			/*
+			std::cout << "\n========== LightDataItem ==========\n";
+
+			RenderingData::LightDataItem& Data = LightData;
+			std::cout << "LightCount : " << LightCount << "\n";
+			std::cout << "LightType : " << Data.LightType << "\n";
+			
+			std::cout << "LightPosition : ("
+				<< Data.LightPosition.x << ", "
+				<< Data.LightPosition.y << ", "
+				<< Data.LightPosition.z << ", "
+				<< Data.LightPosition.w << ")\n";
+
+			std::cout << "Direction : ("
+				<< Data.Direction.x << ", "
+				<< Data.Direction.y << ", "
+				<< Data.Direction.z << ", "
+				<< Data.Direction.w << ")\n";
+
+			std::cout << "Range : " << Data.Range << "\n";
+
+			std::cout << "Diffuse : ("
+				<< Data.Diffuse.x << ", "
+				<< Data.Diffuse.y << ", "
+				<< Data.Diffuse.z << ", "
+				<< Data.Diffuse.w << ")\n";
+
+			std::cout << "Ambient : ("
+				<< Data.Ambient.x << ", "
+				<< Data.Ambient.y << ", "
+				<< Data.Ambient.z << ", "
+				<< Data.Ambient.w << ")\n";
+
+			std::cout << "Specular : ("
+				<< Data.Specular.x << ", "
+				<< Data.Specular.y << ", "
+				<< Data.Specular.z << ", "
+				<< Data.Specular.w << ")\n";
+
+			std::cout << "Attenuation : ("
+				<< Data.Attenuation.x << ", "
+				<< Data.Attenuation.y << ", "
+				<< Data.Attenuation.z << ", "
+				<< Data.Attenuation.w << ")\n";
+				
+			std::cout << "LightColor : ("
+				<< Data.LightColor.x << ", "
+				<< Data.LightColor.y << ", "
+				<< Data.LightColor.z << ", "
+				<< Data.LightColor.w << ")\n";
+
+			std::cout << "===================================\n";
+			*/
 		}
+
+		//VertexBuffer에 등록 2번은 Light
+		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, 0, LightBuffer);
 
 		//Material 처리
 		MeshRenderData.VertexShaderPath = *(RenderItemData.VertexShaderPath);
@@ -171,6 +242,7 @@ void Renderer::CreateMeshRenderList()
 		Material.BaseColor = *(RenderItemData.BaseColor);
 		Material.Diffuse = *(RenderItemData.Diffuse);
 		Material.Ambient = *(RenderItemData.Ambient);
+		Material.Emissive = *(RenderItemData.Emissive);
 
 		MeshRenderData.TwoSided = *(RenderItemData.TwoSided);
 
@@ -217,7 +289,8 @@ void Renderer::CreateMeshRenderList()
 		}
 		//Texture 처리 End.
 
-		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, LightCount, Material);
+		//3번은 Material
+		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, 1, Material);
 		this->MeshRenderList.push_back(MeshRenderData);
 	}
 
@@ -328,10 +401,14 @@ void Renderer::CreateLightRenderList()
 		}
 
 		RenderingData::LightRenderItem LightRenderingData;
+		LightRenderingData.LightType = *(LightItem.LightType);
 		LightRenderingData.Direction = *(LightItem.Direction);
 		LightRenderingData.Range = *(LightItem.Range);
 		LightRenderingData.Diffuse = *(LightItem.Diffuse);
 		LightRenderingData.Ambient = *(LightItem.Ambient);
+		LightRenderingData.Specular = *(LightItem.Specular);
+		LightRenderingData.Attenuation = *(LightItem.Attenuation);
+		LightRenderingData.LightColor = *(LightItem.LightColor);
 
 		LightRenderingData.Location = *(LightItem.Location);
 		LightRenderingData.Rotation = *(LightItem.Rotation);
@@ -437,9 +514,9 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 	Device.RasterStateCreate();
 
-	//320B의 ConstBuffer 생성
-	Device.CreateVertexShaderConstBuffer(320);
-	Device.CreatePixelShaderConstBuffer(320);
+	//9232B의 ConstBuffer 생성
+	Device.CreateVertexShaderConstBuffer(9232);
+	Device.CreatePixelShaderConstBuffer(9232);
 
 	//상수 버퍼 14개씩 Set
 	for (int i = 0; i < 14; ++i)
@@ -575,14 +652,32 @@ void Renderer::MeshRenderPass()
 				//Mesh에서 가져오는 정보
 				//HLSL은 열벡터 기준이므로 HLSL에서는 연산을 반대로 할 것
 				MVPCB.WorldMatrix = ((RenderItem.Scale) * (RenderItem.Rotation) * (RenderItem.Location)).Matrix;
+				MVPCB.InverseWorldMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WorldMatrix);
+				MVPCB.TranseposeWorldMatrix = DirectX::XMMatrixTranspose(MVPCB.WorldMatrix);
+				MVPCB.InverseTranseposeWorldMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWorldMatrix);
+
 				MVPCB.ViewMatrix = (CamItem.View).Matrix;
+				MVPCB.InverseViewMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.ViewMatrix);
+				MVPCB.TranseposeViewMatrix = DirectX::XMMatrixTranspose(MVPCB.ViewMatrix);
+				MVPCB.InverseTranseposeViewMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseViewMatrix);
+
 				MVPCB.ProjMatrix = (CamItem.Projection).Matrix;
+				MVPCB.InverseProjMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.ProjMatrix);
+				MVPCB.TranseposeProjMatrix = DirectX::XMMatrixTranspose(MVPCB.ProjMatrix);
+				MVPCB.InverseTranseposeProjMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseProjMatrix);
+
 				MVPCB.WVMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix;
+				MVPCB.InverseWVMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WVMatrix);
+				MVPCB.TranseposeWVMatrix = DirectX::XMMatrixTranspose(MVPCB.WVMatrix);
+				MVPCB.InverseTranseposeWVMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWVMatrix);
 
 				MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
+				MVPCB.InverseWVPMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WVPMatrix);
+				MVPCB.TranseposeWVPMatrix = DirectX::XMMatrixTranspose(MVPCB.WVPMatrix);
+				MVPCB.InverseTranseposeWVPMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWVPMatrix);
 
 				//Object 상수 버퍼 갱신
-				Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 320);
+				Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
 
 
 				//ViewPort Shader ConstBuffer가 있다면 갱신
@@ -702,15 +797,32 @@ void Renderer::GizmoRenderPass()
 
 				//HLSL은 열벡터 기준이므로 HLSL에서는 연산을 반대로 할 것
 				MVPCB.WorldMatrix = ((RenderItem.Scale) * (RenderItem.Rotation) * (RenderItem.Location)).Matrix;
+				MVPCB.InverseWorldMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WorldMatrix);
+				MVPCB.TranseposeWorldMatrix = DirectX::XMMatrixTranspose(MVPCB.WorldMatrix);
+				MVPCB.InverseTranseposeWorldMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWorldMatrix);
+
 				MVPCB.ViewMatrix = (CamItem.View).Matrix;
+				MVPCB.InverseViewMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.ViewMatrix);
+				MVPCB.TranseposeViewMatrix = DirectX::XMMatrixTranspose(MVPCB.ViewMatrix);
+				MVPCB.InverseTranseposeViewMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseViewMatrix);
+
 				MVPCB.ProjMatrix = (CamItem.Projection).Matrix;
+				MVPCB.InverseProjMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.ProjMatrix);
+				MVPCB.TranseposeProjMatrix = DirectX::XMMatrixTranspose(MVPCB.ProjMatrix);
+				MVPCB.InverseTranseposeProjMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseProjMatrix);
+
 				MVPCB.WVMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix;
+				MVPCB.InverseWVMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WVMatrix);
+				MVPCB.TranseposeWVMatrix = DirectX::XMMatrixTranspose(MVPCB.WVMatrix);
+				MVPCB.InverseTranseposeWVMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWVMatrix);
 
 				MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
+				MVPCB.InverseWVPMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WVPMatrix);
+				MVPCB.TranseposeWVPMatrix = DirectX::XMMatrixTranspose(MVPCB.WVPMatrix);
+				MVPCB.InverseTranseposeWVPMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWVPMatrix);
 
 				//Object 상수 버퍼 갱신
-				Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 320);
-
+				Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
 
 				//ViewPort Shader ConstBuffer가 있다면 갱신
 				//vertex
@@ -826,15 +938,32 @@ void Renderer::NormalRenderPass()
 
 				//HLSL은 열벡터 기준이므로 HLSL에서는 연산을 반대로 할 것
 				MVPCB.WorldMatrix = ((RenderItem.Scale) * (RenderItem.Rotation) * (RenderItem.Location)).Matrix;
+				MVPCB.InverseWorldMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WorldMatrix);
+				MVPCB.TranseposeWorldMatrix = DirectX::XMMatrixTranspose(MVPCB.WorldMatrix);
+				MVPCB.InverseTranseposeWorldMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWorldMatrix);
+
 				MVPCB.ViewMatrix = (CamItem.View).Matrix;
+				MVPCB.InverseViewMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.ViewMatrix);
+				MVPCB.TranseposeViewMatrix = DirectX::XMMatrixTranspose(MVPCB.ViewMatrix);
+				MVPCB.InverseTranseposeViewMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseViewMatrix);
+
 				MVPCB.ProjMatrix = (CamItem.Projection).Matrix;
+				MVPCB.InverseProjMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.ProjMatrix);
+				MVPCB.TranseposeProjMatrix = DirectX::XMMatrixTranspose(MVPCB.ProjMatrix);
+				MVPCB.InverseTranseposeProjMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseProjMatrix);
+
 				MVPCB.WVMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix;
+				MVPCB.InverseWVMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WVMatrix);
+				MVPCB.TranseposeWVMatrix = DirectX::XMMatrixTranspose(MVPCB.WVMatrix);
+				MVPCB.InverseTranseposeWVMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWVMatrix);
 
 				MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
+				MVPCB.InverseWVPMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WVPMatrix);
+				MVPCB.TranseposeWVPMatrix = DirectX::XMMatrixTranspose(MVPCB.WVPMatrix);
+				MVPCB.InverseTranseposeWVPMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWVPMatrix);
 
 				//Object 상수 버퍼 갱신
-				Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 320);
-
+				Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
 
 				//ViewPort Shader ConstBuffer가 있다면 갱신
 				//vertex

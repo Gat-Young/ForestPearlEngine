@@ -11,6 +11,7 @@
 #include "WindmillWing.h"
 #include "TripleWindmillWing.h"
 #include "ForestPearlEngine/FPMaterialInterface.h"
+#include "ATorchLight.h"
 #include <iostream>
 
 void Player::Initialize()
@@ -79,6 +80,7 @@ void Player::Initialize()
 	SpringArm = new FPSpringArmComponent(this);
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->TargetArmLength = 50.0f;
+	SpringArm->SetRelativeLocation({ 0.0f, 1.2f, 0.0f });
 	SpringArm->SetRelativeRotation({ 30.0f, 0.0f, 0.0f });
 	SpringArm->bUsePawnControlRotation = true;
 
@@ -96,6 +98,8 @@ void Player::Initialize()
 	Controller->GetInputComponent().BindMethod("IA_SetScaleWing", this, EKeyState::Pressed, &Player::SetScaleWing);
 	Controller->GetInputComponent().BindMethod("IA_AttachHead", this, EKeyState::Down, &Player::AttachHead);
 	Controller->GetInputComponent().BindMethod("IA_AttachShield", this, EKeyState::Down, &Player::AttachShield);
+	Controller->GetInputComponent().BindMethod("IA_OnTorchLight", this, EKeyState::Down, &Player::OnTorch);
+	Controller->GetInputComponent().BindMethod("IA_ZoomCamera", this, EKeyState::Pressed, &Player::CameraZoom);
 	Controller->Possess(this);
 
 }
@@ -144,6 +148,14 @@ void Player::CameraMove(FInputValue value)
 	AddControllerPitchInput(move_y);
 }
 
+void Player::CameraZoom(FInputValue Value)
+{
+	std::cout << "CameraZoom : " << Value.X << " : " << Value.Y << "\n";
+	float mov = 30.0f;
+	float mov_size = Value.Y * mov * (GetWorld()->GetGameTimer()->DeltaTime());
+	SpringArm->TargetArmLength = SpringArm->TargetArmLength + mov_size;
+}
+
 void Player::SetScaleWing(FInputValue Value)
 {
 	if (OneWindmillWing != nullptr)
@@ -183,6 +195,18 @@ void Player::AttachShield(FInputValue Value)
 	{
 		OneWindmillWing->AttachShield(Value);
 	}
+}
+
+void Player::OnTorch(FInputValue Value)
+{
+	//TorchLight가 없다면
+	if(TorchLight == nullptr)
+	{ 
+		//Torch Light 생성, 손에 붙임
+		TorchLight =static_cast<ATorchLight*>(this->GetWorld()->SpawnActor("ATorchLight", "PlayerTorch"));
+		TorchLight->AttachToComponent(Hand, "TorchPoint");
+	}
+	TorchLight->OnTorch();
 }
 
 FPSceneComponent* Player::GetShieldPivot()

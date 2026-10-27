@@ -3,6 +3,7 @@
 #include "../FPWorld.h"
 #include "../FPGameInstance.h"
 #include "../FPGameProjectClassRegistry.h"
+#include <typeindex>
 #include <typeinfo>
 #include <utility>
 #include <vector>
@@ -10,15 +11,23 @@
 
 FPActor* FPGameplayStatics::GetActorOfClass(FPWorld* World, std::string ClassName)
 {
-	std::vector<FPActor*> Acotrs = World->GetGameActorList();
+	std::vector<FPActor*> Actors = World->GetGameActorList();
 
 	FPGameProjectClassRegistry* ClassRegister = static_cast<FPGameProjectClassRegistry*>(FPGameInstance::Get().GetClassRegister());
-	std::unique_ptr<FPObject> Object = ClassRegister->Create(ClassName);
-	FPActor* TargetActor = dynamic_cast<FPActor*>(Object.get());
 
-	for (FPActor* LevelActor : Acotrs)
+	const std::type_index* TargetType = ClassRegister->GetClassType(ClassName);
+
+	if (TargetType == nullptr)
 	{
-		if (typeid(*LevelActor) == typeid(*TargetActor))
+		return nullptr;
+	}
+
+	for (FPActor* LevelActor : Actors)
+	{
+		if (LevelActor == nullptr)
+			continue;
+
+		if (std::type_index(typeid(*LevelActor)) == *TargetType)
 		{
 			return LevelActor;
 		}
@@ -34,12 +43,21 @@ void FPGameplayStatics::GetAllActorsOfClass(FPWorld* World, std::string ClassNam
 	std::vector<FPActor*> Acotrs = World->GetGameActorList();
 
 	FPGameProjectClassRegistry* ClassRegister = static_cast<FPGameProjectClassRegistry*>(FPGameInstance::Get().GetClassRegister());
-	std::unique_ptr<FPObject> Object = ClassRegister->Create(ClassName);
-	FPActor* TargetActor = dynamic_cast<FPActor*>(Object.get());
+
+	const std::type_index* TargetType = ClassRegister->GetClassType(ClassName);
+
+	if (TargetType == nullptr)
+	{
+		return;
+	}
+
 
 	for (FPActor* LevelActor : Acotrs)
 	{
-		if (typeid(*LevelActor) == typeid(*TargetActor))
+		if (LevelActor == nullptr)
+			continue;
+
+		if (std::type_index(typeid(*LevelActor)) == *TargetType)
 		{
 			OutActors.push_back(LevelActor);
 		}

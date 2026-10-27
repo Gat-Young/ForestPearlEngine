@@ -95,6 +95,27 @@ struct FPVector4
 	float y = 0;
 	float z = 0;
 	float w = 0;
+	
+	FPVector4() {}
+
+	FPVector4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
+	FPVector4(DirectX::XMVECTOR Vector)  {
+		x = DirectX::XMVectorGetX(Vector);
+			y = DirectX::XMVectorGetY(Vector);
+			z = DirectX::XMVectorGetZ(Vector);
+			w = DirectX::XMVectorGetW(Vector);
+	}
+
+	FPVector4 operator -() const
+	{
+		FPVector4 ret;
+		ret.x = -x;
+		ret.y = -y;
+		ret.z = -z;
+		ret.w = -w;
+		return ret;
+	}
+
 
 	FPVector4 operator *(const float& rhs) const
 	{

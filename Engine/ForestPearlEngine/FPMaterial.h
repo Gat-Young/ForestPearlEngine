@@ -11,6 +11,7 @@ class FPMaterial : public FPMaterialInterface
 		FPVector4 BaseColor;
 		FPVector4 Diffuse;
 		FPVector4 Ambient;
+		FPVector4 Emissive;
 	};
 
 	protected:
@@ -50,10 +51,12 @@ class FPMaterial : public FPMaterialInterface
 		void SetBaseColor(FPVector4& BaseColor) override;
 		void SetDiffuse(FPVector4& Diffuse) override;
 		void SetAmbient(FPVector4& Ambient) override;
+		void SetEmissive(FPVector4& Emissive) override;
 
 		FPVector4* GetBaseColor() override;
 		FPVector4* GetDiffuse() override;
 		FPVector4* GetAmbient() override;
+		FPVector4* GetEmissive() override;
 
 		std::unordered_map<int, FPTextureItem>* GetTextureList() override;
 

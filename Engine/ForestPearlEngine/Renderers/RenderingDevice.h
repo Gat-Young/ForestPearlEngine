@@ -113,6 +113,7 @@ class RenderingDevice
 
 		//ConstBuffer
 		DWORD MAX_BufferSize = 14;
+
 		std::vector<ID3D11Buffer*> VertexShaderConstBuffer;
 		std::vector<ID3D11Buffer*> PixelShaderConstBuffer;
 
@@ -151,6 +152,8 @@ class RenderingDevice
 
 		HRESULT SetViewPort(float TopLeftX, float TopLeftY, float Width, float Height, float MinDepth, float MaxDepth);
 
+		//Background Color º¯°æ
+		HRESULT SetBackGroundColor(float R, float G, float B, float A);
 		void ClearBackBuffer();
 
 		void RenderTargetPresent();

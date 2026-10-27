@@ -1,47 +1,40 @@
 //
 // 기본 VertexShader 소스
 
-//Lambert Light
-#include "LambertLight.hlsli"
+#include "Light.hlsli"
 
 //상수 버퍼
 cbuffer ObejctConstBuffer : register(b0)
 {
     matrix mWorld;
+    matrix mInverseWorld;
+    matrix mTranseposeWorld;
+    matrix mInverseTranseposeWorld;
+    
     matrix mView;
+    matrix mInverseView;
+    matrix mTranseposeView;
+    matrix mInverseTranseposeView;
+    
     matrix mProj;
+    matrix mInverseProj;
+    matrix mTranseposeProj;
+    matrix mInverseTranseposeProj;
+    
     matrix mWV;
+    matrix mInverseWV;
+    matrix mTranseposeWV;
+    matrix mInverseTranseposeWV;
+    
     matrix mWVP;
+    matrix mInverseWVP;
+    matrix mTranseposeWVP;
+    matrix mInverseTranseposeWVP;
+    
 };
-
 cbuffer ViewPortConstBuffer : register(b1)
 {
 
-};
-
-struct LIGHT
-{
-    float4 Direction;
-    float Range;
-    float4 Diffuse;
-    float4 Ambient;
-};
-
-cbuffer DirectionLightConstBuffer : register(b2)
-{
-    LIGHT Light;
-};
-
-struct MATERIAL
-{
-    float4 BaseColor;
-    float4 Diffuse;
-    float4 Ambient;
-};
-
-cbuffer MaterialConstBuffer : register(b3)
-{
-    MATERIAL Material;
 };
 
 //VS 출력 구조체
@@ -69,20 +62,15 @@ VSOutput VS_Main(
     //입력된 정보 그대로 출력..
     VSOutput o = (VSOutput) 0;
 
+        
+    //View 변환
+    float4 posv = mul(mWV, pos);
+    
     //변환
-    pos = mul(mWVP, pos);
-
-    float4 Diff = 1;
-    
-    float4 N = nrm;
-    float4 L = Light.Direction;
-    
-    
-    Diff = LambertLight(N, L, Light.Diffuse, Light.Ambient, Material.Diffuse, Material.Ambient);
+     pos = mul(mWVP, pos);
     
     o.pos = pos;
-    o.col = Material.BaseColor * Diff;
-    
+    o.col = CalculateLight(posv, nrm, mWV, mView, mInverseTranseposeWV);
     uv.x = uv.x * 20;
     uv.y = uv.y * 20;
     

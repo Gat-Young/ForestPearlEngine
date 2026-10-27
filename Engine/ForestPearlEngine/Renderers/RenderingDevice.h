@@ -172,6 +172,10 @@ class RenderingDevice
 
 		HRESULT GetTextureDesc(void* TextureResourceView, void** Desc);
 
+		//TextureArray용
+		HRESULT CheckTextureArrayData(UINT Texture2DArrayWidth, UINT Texture2DArrayHeight, std::vector<void*>* CheckTexture, std::vector<UINT>* TextureMiplevels, std::vector<void*>* TextureSources, UINT* MinMiplevels, void** OutBaseDesc, void** OutBaseSRVDesc);
+		HRESULT CreateTextureArray2D(UINT Width, UINT Height, UINT ArraySize, std::vector<void*>* TextureSources,std::vector<UINT>* SourceMipLevels,void* BaseDesc, void* BaseSRVDesc, UINT MinMiplevels, void** Texture2DArraySRV);
+
 		HRESULT PSSetShaderResources(UINT Slot, UINT NumViews, void* ShaderResourceView);
 
 		//VB 만들기

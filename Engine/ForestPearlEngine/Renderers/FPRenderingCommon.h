@@ -187,6 +187,11 @@ struct FPTextureData
 	void* TextureDESC = nullptr;
 };
 
+struct FPTextureArrayData
+{
+	void* TextureArraySRV = nullptr;
+};
+
 //Texture Info
 struct FPTextureInfo
 {

@@ -1453,6 +1453,199 @@ HRESULT RenderingDevice::GetTextureDesc(void* TextureResourceView, void** Desc)
 	return hr;
 }
 
+HRESULT RenderingDevice::CheckTextureArrayData(UINT Texture2DArrayWidth, UINT Texture2DArrayHeight, std::vector<void*>* CheckTexture, std::vector<UINT>* TextureMiplevels, std::vector<void*>* TextureSources, UINT* MinMiplevels, void** OutBaseDesc, void** OutBaseSRVDesc)
+{
+	D3D11_TEXTURE2D_DESC BaseDesc = {};
+	D3D11_SHADER_RESOURCE_VIEW_DESC BaseSRVDesc = {};
+
+	UINT MinMipLevels = (std::numeric_limits<UINT>::max)();
+
+	for (int i = 0; i < (*CheckTexture).size(); ++i)
+	{
+		ID3D11ShaderResourceView* SourceSRV = static_cast<ID3D11ShaderResourceView*>((*(CheckTexture))[i]);
+
+		if (!SourceSRV) { std::cout << "[CheckTextureArrayData] : 유효하지 않은 SRV" << "\n"; return E_FAIL; }
+
+		//GPU 리소스 획득
+		ID3D11Resource* Resource;
+		SourceSRV->GetResource(&Resource);
+
+		//SRV에서 실제 리소스 획득
+		ID3D11Texture2D* SourceTexture;
+		
+		HRESULT hr = Resource->QueryInterface(__uuidof(ID3D11Texture2D),reinterpret_cast<void**>(&SourceTexture));
+
+		// GetResource()로 획득한 참조 해제
+		Resource->Release();
+		Resource = nullptr;
+
+		if (FAILED(hr))
+		{
+			std::cout << "[CheckTextureArrayData] : Texture2D 리소스가 아님!" << "\n";
+			return hr;
+		}
+
+		//Texture 정보 조회
+
+		D3D11_TEXTURE2D_DESC Desc = {};
+		SourceTexture->GetDesc(&Desc);
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+		SourceSRV->GetDesc(&SRVDesc);
+
+		//MSAA 미지원
+		if (Desc.SampleDesc.Count != 1)
+		{
+			std::cout << "[CheckTextureArrayData] : Texture Array는 NSAA 미지원" << "\n";
+			return E_FAIL;
+		}
+
+		//단일 Texture 2D만 허용
+		if (Desc.ArraySize != 1 || SRVDesc.ViewDimension != D3D11_SRV_DIMENSION_TEXTURE2D)
+		{
+			std::cout << "[CheckTextureArrayData] : Texture Array는 단일 Texture2D만 지원" << "\n";
+			return E_FAIL;
+		}
+
+		//해상도 확인
+		if (Desc.Width != Texture2DArrayWidth || Desc.Height != Texture2DArrayHeight)
+		{
+			std::cout << "[CheckTextureArrayData] : Texture가 TextureArray2D 해상도와 디릅니다!" << "\n";
+			return E_FAIL;
+		}
+
+		//MipMap 검증
+		if (Desc.MipLevels == 0)
+		{
+			std::cout << "[CheckTextureArrayData] : Texture가 정상적인 Texture가 아닙니다!" << "\n";
+			return E_FAIL;
+		}
+
+		if (i == 0)
+		{
+			// 첫 번째 텍스처를 기준으로 설정
+			BaseDesc = Desc;
+			BaseSRVDesc = SRVDesc;
+		}
+		else
+		{
+			// 포맷 검증
+			if (Desc.Format != BaseDesc.Format || SRVDesc.Format != BaseSRVDesc.Format)
+			{
+				std::cout << "[CheckTextureArrayData] : Texture끼리 Format이 다릅니다." << "\n";
+				return E_FAIL;
+			}
+		}
+
+		//최소 MipLevels 계산
+		MinMipLevels = (std::min)(MinMipLevels, Desc.MipLevels);
+		TextureMiplevels->push_back(Desc.MipLevels);
+		TextureSources->push_back(SourceTexture);
+	}
+
+	D3D11_TEXTURE2D_DESC* BucketBaseDesc = new D3D11_TEXTURE2D_DESC();
+	D3D11_SHADER_RESOURCE_VIEW_DESC* BucketBaseSRVDesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
+
+	(*BucketBaseDesc) = BaseDesc;
+	(*BucketBaseSRVDesc) = BaseSRVDesc;
+
+	(*OutBaseDesc) = BucketBaseDesc;
+	(*OutBaseSRVDesc) = BucketBaseSRVDesc;
+	*(MinMiplevels) = MinMipLevels;
+}
+
+HRESULT RenderingDevice::CreateTextureArray2D(UINT Width, UINT Height, UINT ArraySize, std::vector<void*>* TextureSources, std::vector<UINT>* SourceMipLevels, void* BaseDesc, void* BaseSRVDesc, UINT MinMiplevels, void** Texture2DArraySRV)
+{
+	D3D11_TEXTURE2D_DESC* InBaseDesc = static_cast<D3D11_TEXTURE2D_DESC*>(BaseDesc);
+	D3D11_SHADER_RESOURCE_VIEW_DESC* InBaseSRVDesc = static_cast<D3D11_SHADER_RESOURCE_VIEW_DESC*>(BaseSRVDesc);
+
+	ID3D11Texture2D* NewTexture = nullptr;
+	ID3D11ShaderResourceView* NewSRV = nullptr;
+
+	D3D11_TEXTURE2D_DESC ArrayDesc = {};
+
+	ArrayDesc.Width = Width;
+	ArrayDesc.Height = Height;
+
+	// 최소 공통 MipLevels 사용
+	ArrayDesc.MipLevels = MinMiplevels;
+
+	ArrayDesc.ArraySize = ArraySize;
+	ArrayDesc.Format = InBaseDesc->Format;
+
+	ArrayDesc.SampleDesc.Count = 1;
+	ArrayDesc.SampleDesc.Quality = 0;
+
+	ArrayDesc.Usage = D3D11_USAGE_DEFAULT;
+	ArrayDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	ArrayDesc.CPUAccessFlags = 0;
+	ArrayDesc.MiscFlags = 0;
+
+	HRESULT hr = Device->CreateTexture2D(&ArrayDesc,nullptr, &NewTexture);
+
+	if (FAILED(hr))
+	{
+		std::cout << "[CreateTextureArray2D] : Texture2D 만들기 실패!" << "\n";
+		return hr;
+	}
+
+	// 각 Slice의 공통 MipLevels 복사
+	for (UINT Slice = 0; Slice < ArraySize; ++Slice)
+	{
+		for (UINT Mip = 0; Mip < MinMiplevels; ++Mip)
+		{
+			// 대상 Texture2DArray의 서브리소스
+			UINT DestSubresource = D3D11CalcSubresource(
+				Mip,
+				Slice,
+				ArrayDesc.MipLevels
+			);
+
+			// 원본 Texture2D의 서브리소스
+			UINT SrcSubresource = D3D11CalcSubresource(
+				Mip,
+				0,
+				(*SourceMipLevels)[Slice]
+			);
+
+			DeviceContext->CopySubresourceRegion(
+				NewTexture,
+				DestSubresource,
+				0, 0, 0,
+				static_cast<ID3D11Resource*>((*TextureSources)[Slice]),
+				SrcSubresource,
+				nullptr
+			);
+		}
+	}
+
+	//Texture2DArray SRV 생성
+	D3D11_SHADER_RESOURCE_VIEW_DESC ViewDesc = {};
+
+	ViewDesc.Format = InBaseSRVDesc->Format;
+
+	ViewDesc.ViewDimension =
+		D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+
+	ViewDesc.Texture2DArray.MostDetailedMip = 0;
+
+	// 최소 MipLevels만 노출
+	ViewDesc.Texture2DArray.MipLevels = MinMiplevels;
+
+	ViewDesc.Texture2DArray.FirstArraySlice = 0;
+	ViewDesc.Texture2DArray.ArraySize = ArraySize;
+
+	hr = Device->CreateShaderResourceView(NewTexture,&ViewDesc,&NewSRV);
+
+	if (FAILED(hr))
+	{
+		std::cout << "[CreateTextureArray2D] : SRV 만들기 실패!" << "\n";
+		return hr;
+	}
+
+	(*Texture2DArraySRV) = NewSRV;
+}
+
 HRESULT RenderingDevice::PSSetShaderResources(UINT Slot, UINT NumViews, void* ShaderResourceView)
 {
 	ID3D11ShaderResourceView* pShaderResourceView = static_cast<ID3D11ShaderResourceView*>(ShaderResourceView);

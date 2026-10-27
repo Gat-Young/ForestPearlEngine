@@ -614,10 +614,12 @@ void Renderer::MeshRenderPass()
 			
 			for (const RenderingData::FPTextureItem& TextureItem : TextureList)
 			{
+				void* TextureData = nullptr;
 				//Texture °¡Á®¿È
-				FPTextureData& TextureData = AssetManager->GetTextureData(TextureItem.TexturePath);
+				if (TextureItem.TextureType == Texture2D) { TextureData = AssetManager->GetTextureData(TextureItem.TexturePath).TextureResource; }
+				if (TextureItem.TextureType == Texture2DArray) { TextureData = AssetManager->GetTextureArrayData(TextureItem.TexturePath).TextureArraySRV; }
 
-				Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData.TextureResource);
+				Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData);
 			}
 			//Texture ¼ÂÆÃ End.
 

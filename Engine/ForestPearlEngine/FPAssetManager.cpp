@@ -116,6 +116,12 @@ void FPAssetManager::AllAssetDataCreate()
 		MakeTexture(Asset);
 	}
 
+	//Texture Array 생성
+	for (auto& [AssetName, Asset] : LoadedTextureArrayData)
+	{
+		MakeTextureArray(Asset);
+	}
+
 	//Fbx Load
 	for (auto& [AssetName, Asset] : LoadedStaticMeshData)
 	{
@@ -795,6 +801,66 @@ void FPAssetManager::MakeTexture(FPTextureInfo& TextureInfo)
 	RenderingDevice::GetRenderingDevice().GetTextureDesc(Data.TextureResource, &Data.TextureDESC);
 
 	AddTextureData(TextureInfo.Name, Data);
+}
+
+FPTextureArrayData& FPAssetManager::GetTextureArrayData(std::string TextureArrayName)
+{
+	return this->TextureArrayData[TextureArrayName];
+}
+
+void FPAssetManager::AddTextureArrayData(std::string TextureArrayName, FPTextureArrayData& TextureArrayData)
+{
+	this->TextureArrayData[TextureArrayName] = TextureArrayData;
+}
+
+bool FPAssetManager::HasTextureArrayData(std::string TextureArrayName)
+{
+	if (TextureArrayData.count(TextureArrayName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void FPAssetManager::MakeTextureArray(FPTextureArrayInfo& TextureInfo)
+{
+	FPTextureArrayData Data;
+
+	//1. Texture Array 기본 속성이 적합한지 판단
+	if (TextureInfo.ArraySize == 0 || TextureInfo.ArraySize != TextureInfo.SourceTextures.size() || TextureInfo.ArraySize > 2048)
+	{
+		std::cout << "배열 크기가 0이거나 배열크기가 텍스처 배열 최대개수(2048)를 초과했거나 배열 크기와 리소스 개수 불일치!" << "\n";
+		return;
+	}
+
+	//2. 해상도 범위 체크
+	if (TextureInfo.Width <= 0 || TextureInfo.Height <= 0 || TextureInfo.Width > 16384 || TextureInfo.Height > 16384)
+	{
+		std::cout << "해상도 범위 오류 under 0 or over 16384" << "\n";
+		return;
+	}
+
+	//원본 텍스처 배열 보관
+	std::vector<void*> CheckTexture;
+	std::vector<UINT> TextureMiplevels;
+	std::vector<void*> TextureSources;
+	void* BaseDesc = nullptr;
+	void* BaseSRVDesc = nullptr;
+	UINT MinMaplevels;
+
+	//Texture Data에서 Resource를 찾아서 TextureSources 배열에 넣음 (가능한 경우인지 체크 + 최소 Mip level을 찾음)
+	for (int i = 0; i < TextureInfo.ArraySize; ++i)
+	{
+		CheckTexture.push_back(GetTextureData(TextureInfo.SourceTextures[i]).TextureResource);
+	}
+
+	RenderingDevice::GetRenderingDevice().CheckTextureArrayData(TextureInfo.Width, TextureInfo.Height, &CheckTexture, &TextureMiplevels ,&TextureSources, &MinMaplevels, &BaseDesc, &BaseSRVDesc);
+
+	//Texture2DArray 생성
+	RenderingDevice::GetRenderingDevice().CreateTextureArray2D(TextureInfo.Width, TextureInfo.Height, TextureInfo.ArraySize , &TextureSources, &TextureMiplevels ,BaseDesc, BaseSRVDesc, MinMaplevels,  &Data.TextureArraySRV);
+
+	AddTextureArrayData(TextureInfo.Name, Data);
 }
 
 ////////////////////////////

@@ -44,7 +44,8 @@
 | 🧩 | **Actor / Component 프레임워크** | `FPObject → FPActor → FPPawn / FPAController / FPAGameMode`, 계층형 `FPSceneComponent` 트랜스폼 |
 | 🎨 | **DX11 렌더러** | `Renderer`(프레임 흐름) + `RenderingDevice`(D3D11 래퍼) 2계층, **Render List → Render Pass(Mesh / Gizmo / Normal / UI)** 구조, 슬롯 규약이 있는 **상수 버퍼 바인딩**, `GameSetting.json` 기반 MSAA(스왑체인·깊이버퍼 SampleDesc), Priority 정렬, 멀티 뷰포트 |
 | 💡 | **통합 Light (Directional · Point)** | `FPLightComponentBase` 계열이 Light Render List에 등록 → 메시마다 **최대 64개**를 하나의 `LIGHT` 상수 버퍼(`b2`, 9232 byte)로 묶어 전달. 정점 셰이더(`Light.hlsli`)에서 Directional(Local 공간) · Point(View 공간, 거리 감쇠, 비균등 스케일 대응 노멀) Lambert 계산. 라이트 색(`LightColor`) · **Emissive** 지원. 토치 예제 `ATorchLight` |
-| 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 샘플러 36종(AF 단계는 `GameSetting.json`). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환 |
+| 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 샘플러 36종(AF 단계는 `GameSetting.json`). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환. 슬롯마다 `FPTextureType`(`Texture2D` / `Texture2DArray`)을 함께 지정 |
+| 🗂️ | **Texture2DArray** *(실험적)* | `LoadTexture2DArray`가 JSON(`Width/Height/ArraySize/SourceTextures[]`)을 읽어 이미 로드된 Texture2D들을 **`RenderingDevice::CheckTextureArrayData`로 포맷·해상도 검증 후 `CreateTextureArray2D`로 한 장의 `Texture2DArray` SRV로 합침**. `MeshRenderPass`는 Material 텍스처 슬롯의 `FPTextureType`에 따라 `GetTextureData`(Texture2D) 또는 `GetTextureArrayData`(Texture2DArray)에서 바인딩할 SRV를 고름. 아직 어떤 게임의 `LoadAssets()`에서도 호출되지 않는 템플릿 단계 |
 | ⚙️ | **GameSetting** | `Assets/GameSetting/GameSetting.json` → `FPAssetLoader::LoadGameSetting`이 읽어 `FPGameSettingData`로 저장 → `FPGameProjectSetting::ProjectSetting()`이 창 크기 · MSAA · AF · 전체화면 값을 반영, `RenderingDevice::SetMSAA/SetAF`로 렌더러에 전달 |
 | 🎭 | **데이터 기반 Material** | Material도 JSON(`LoadMaterial`)으로 정의. 재질 1개당 **기본 Material** + 메시마다 색상 복제·텍스처 배열을 가진 **Material Instance** 두 단계로 저장하고, `FPAssetManager::MakeMaterial`이 실행 중 `FPMaterial` 인스턴스로 변환 (없으면 `DefaultMaterial` 사용) |
 | 🪟 | **Two Sided Material** | Material JSON의 `"TwoSided"`(기본 `false`)로 메시별 양면 렌더링 지정. `MeshRenderPass`가 **메시마다** Rasterizer State의 Cull을 `!TwoSided`로 결정하고, 기본 PS는 `SV_IsFrontFace`를 입력으로 받음. Normal Line은 뒷면 노멀(주황)도 함께 표시 |
@@ -153,8 +154,9 @@ Engine/ForestPearlEngine/
 ├── InputValue.h                      # FInputValue
 │
 ├── FPStreamableRenderAssetr.h        # 렌더 에셋 베이스
-├── FPTexture.h                       # 텍스처 값(이름 + SamplerType)
+├── FPTexture.h                       # 텍스처 값(이름 + SamplerType + FPTextureType)
 ├── FPTexture2D.h / .cpp              # Texture2D (기본 Default_Texture512 + Clamp)
+├── FPTexture2DArray.h / .cpp         # Texture2DArray (FPTexture 서브클래스, 골격만 존재)
 ├── FPStaticMesh.h / .cpp             # StaticMesh 에셋 (VB, Socket, Material)
 ├── FPMaterialInterface.h             # Material 인터페이스
 ├── FPMaterial.h / .cpp               # 기본 Material (Default Shader, Texture 슬롯)
@@ -187,6 +189,7 @@ Engine/ForestPearlEngine/
 │   ├── StaticMesh/                   # Cube / Sphere / Plane _StaticMesh.json
 │   ├── Material/                     # DefaultMaterial.json (Material JSON 미지정 시 fallback)
 │   ├── Texture/                      # 텍스처 JSON (Default_Texture512 · Checker_bmp · Checker_dds)
+│   ├── Texture2DArray/               # Texture2DArray JSON (Texture2DArrayTemplate.json — 샘플 템플릿)
 │   ├── TextureResource/              # 이미지 원본 (*.dds · checker.bmp)
 │   ├── Shader/                       # 셰이더 등록 JSON (Name · Path · InputLayout) — Default* · DefaultGizmo* · NormalDebug*
 │   └── ShaderResource/               # HLSL 소스와 컴파일 결과(bin/)
@@ -309,6 +312,7 @@ classDiagram
     FPStreamableRenderAsset <|-- FPStaticMesh
     FPStreamableRenderAsset <|-- FPTexture
     FPTexture <|-- FPTexture2D
+    FPTexture <|-- FPTexture2DArray
 ```
 
 `FPObject`는 `Outer` 포인터로 소유 체인을 형성합니다 (`Actor → World → GameInstance`).
@@ -1125,7 +1129,7 @@ struct FPMeshData { std::string Name;
 flowchart LR
     J["Texture/*.json"] -->|"LoadTexture"| TI["FPAssetManager<br/>FPTextureInfo<br/>Name · Path · Type"]
     TI -->|"AllAssetDataCreate<br/>MakeTexture - WIC / DDS"| AM["FPAssetManager<br/>FPTextureData<br/>SRV + Texture2D Desc"]
-    MAT["FPMaterial<br/>TextureList - 슬롯 → FPTexture2D<br/>이름 + SamplerType"] -->|"GetTextureList"| RI["RenderItem<br/>TextureList 포인터"]
+    MAT["FPMaterial<br/>TextureList - 슬롯 → FPTexture<br/>이름 + SamplerType + TextureType"] -->|"GetTextureList"| RI["RenderItem<br/>TextureList 포인터"]
     RI -->|"CreateMeshRenderList<br/>값 복사"| RL["MeshRenderItem<br/>TextureList · SamplerList"]
     RL -->|"MeshRenderPass"| PS["PSSetShaderResources t슬롯<br/>PSSetSamplers s번호"]
     AM -->|"GetTextureData 이름"| PS
@@ -1133,14 +1137,40 @@ flowchart LR
 
 | 구성 요소 | 파일 | 설명 |
 |---|---|---|
-| `FPTexture` / `FPTexture2D` | `FPTexture.h`, `FPTexture2D.h/.cpp` | Material 슬롯 1개가 가지는 값. **텍스처 이름**(`FPAssetManager` 키)과 `FPSamplerType` |
+| `FPTexture` / `FPTexture2D` | `FPTexture.h`, `FPTexture2D.h/.cpp` | Material 슬롯 1개가 가지는 값. **텍스처 이름**(`FPAssetManager` 키) · `FPSamplerType` · `FPTextureType`(`Texture2D` / `Texture2DArray`) |
 | `FPTextureInfo` | `FPAssetManager.h` | `LoadTexture`가 JSON에서 읽은 **설명 데이터**(`Name` / `Path` / `Type` / `Owner`). 이 시점에는 아직 GPU 리소스가 없음 |
 | `FPTextureData` | `Define/FPDataDefine.h` | `MakeTexture`가 만든 실제 텍스처. `TextureResource`(`ID3D11ShaderResourceView*`), `TextureDESC`(`D3D11_TEXTURE2D_DESC*`) |
-| `FPTextureItem` | `Renderers/FPRenderingCommon.h` | `RenderItem`이 Material의 텍스처 목록을 가리키는 포인터 묶음 (`std::string* TexturePath`, `FPSamplerType* SamplerType`) |
-| `RenderingData::FPTextureItem` · `FPSamplerItem` | `Renderers/FPRenderingCommon.h` | Render List의 값 복사본. `{ Slot, 텍스처 이름, SamplerType }`, `{ Slot, SamplerType }` |
+| `FPTextureItem` | `Renderers/FPRenderingCommon.h` | `RenderItem`이 Material의 텍스처 목록을 가리키는 포인터 묶음 (`std::string* TexturePath`, `FPSamplerType* SamplerType`, `FPTextureType* TextureType`) |
+| `RenderingData::FPTextureItem` · `FPSamplerItem` | `Renderers/FPRenderingCommon.h` | Render List의 값 복사본. `{ Slot, 텍스처 이름, SamplerType, TextureType }`, `{ Slot, SamplerType }` |
 | `FPAssetManager` | `FPAssetManager.h/.cpp` | `AddTextureInfoData` · `GetTextureInfoData` · `HasTextureInfoData`(설명 데이터), `MakeTexture`(GPU 리소스 생성), `AddTextureData` · `GetTextureData` · `HasTextureData`(생성된 텍스처) |
 | `FPAssetLoader::LoadTexture` | `AssetLoader.cpp` | Texture JSON을 읽어 `FPTextureInfo`로 등록 (실제 `WIC` / `DDS` 로드는 `AllAssetDataCreate()`가 나중에 수행) |
 | `RenderingDevice` | `RenderingDevice.h/.cpp` | `CreateWICTextureFromFile` · `CreateDDSTextureFromFile`(DirectXTK, **Mipmap 자동 생성**), `GetTextureDesc`, `PSSetShaderResources`, `CreateSamplers`, `PSSetSamplers` |
+
+#### Texture2DArray *(실험적)*
+
+여러 장의 Texture2D를 **하나의 `Texture2DArray` SRV**로 합쳐 슬롯 하나에 바인딩하는 기능입니다. 아직 `Texture2DArrayTemplate.json` 템플릿만 있고, 어떤 게임의 `LoadAssets()`에서도 `LoadTexture2DArray`를 호출하지 않으며, 커밋 메시지(`Multi Texture로 테스트 필요`)대로 실제 멀티 텍스처 검증은 남아 있습니다.
+
+```json
+// Assets/Texture2DArray/Texture2DArrayTemplate.json
+{
+  "Name": "Terrain_Texture2DArray",
+  "Width": 512,
+  "Height": 512,
+  "ArraySize": 4,
+  "SourceTextures": [ "Grass_Texture", "Stone_Texture", "Sand_Texture", "Snow_Texture" ]
+}
+```
+
+| 단계 | 함수 | 내용 |
+|---|---|---|
+| 1. 로드 | `FPAssetLoader::LoadTexture2DArray` | JSON을 읽어 `FPTextureArrayInfo`(`Name` / `Width` / `Height` / `ArraySize` / `SourceTextures[]`)로 등록. 이름이 중복되면 콘솔 경고만 출력하고 무시 |
+| 2. 생성 | `FPAssetManager::MakeTextureArray` | `AllAssetDataCreate()`가 **Texture 생성 다음**에 호출. `ArraySize == 0`이거나 `SourceTextures.size()`와 다르거나 2048을 넘으면, 해상도가 0 이하거나 16384를 넘으면 중단 |
+| 3. 검증 | `RenderingDevice::CheckTextureArrayData` | `SourceTextures[]`가 이미 `GetTextureData`로 만들어진 `ID3D11Texture2D`인지, MSAA가 아닌지, 지정한 `Width/Height`·서로 같은 포맷인지 확인하고 **가장 작은 MipLevels**를 계산 |
+| 4. 병합 | `RenderingDevice::CreateTextureArray2D` | 검증을 통과하면 `ArraySize`장 짜리 `Texture2DArray`를 만들고, 각 소스 텍스처를 `CopySubresourceRegion`으로 슬라이스마다 복사한 뒤 `D3D11_SRV_DIMENSION_TEXTURE2DARRAY` SRV 생성 |
+| 5. 사용 | `FPMaterial::AddTexture(Slot, Name, SamplerType, Texture2DArray)` | Material 슬롯에 `FPTextureType::Texture2DArray`로 지정하면 `MeshRenderPass`가 `GetTextureData` 대신 `GetTextureArrayData`에서 SRV를 가져와 바인딩 |
+
+> [!NOTE]
+> `AllAssetDataCreate()`의 순서는 **Texture → Texture Array → FBX(StaticMesh) → Shader**입니다. `MakeTextureArray`가 `GetTextureData`로 원본 텍스처를 조회하므로, Texture2DArray의 `SourceTextures[]`는 반드시 먼저 로드된 Texture2D 이름이어야 합니다.
 
 #### 바인딩 규칙
 
@@ -1289,7 +1319,7 @@ flowchart LR
     "TwoSided":  false
   },
   "Texture": [
-    { "Name": "Hair_png", "Slot": 0, "TextureFilter": "Filter_Tri_Linear", "SamplerType": "Sampler_Wrap" }
+    { "Name": "Hair_png", "Slot": 0, "Type": "Texture2D", "TextureFilter": "Filter_Tri_Linear", "SamplerType": "Sampler_Wrap" }
   ]
 }
 ```
@@ -1301,7 +1331,7 @@ flowchart LR
 | `Material.Ambient` / `BaseColor` / `Diffuse` | `FPMaterial::SetAmbient/BaseColor/Diffuse`로 그대로 전달되는 `{r,g,b,a}` 색 |
 | `Material.Emissive` | 자체 발광 색 `{r,g,b,a}`. `FPMaterial::SetEmissive`로 전달되어 라이트 합에 더해진 뒤 `BaseColor`가 곱해짐. **`LoadMaterial`이 필수 키로 읽으므로 빠뜨리면 Material 로드가 실패합니다** (기존 JSON에는 모두 추가됨) |
 | `Material.TwoSided` | 양면 렌더링 여부. 생략하면 `false`. `true`이면 `MeshRenderPass`가 이 메시를 Cull 없이 그림 ([Two Sided Material](#two-sided-material)) |
-| `Texture[]` | `{ Name, Slot, TextureFilter, SamplerType }` 배열. `AssetLoader`가 `TextureFilter + "_" + SamplerType`을 합쳐 `FPSamplerType`으로 변환하고, `MakeMaterial`이 각 항목마다 `AddTexture(Slot)` + `SetTexture(Slot, Name, SamplerType)`를 호출 (생략하면 텍스처 없는 기본 Material). `TextureFilter` / `SamplerType`을 생략하거나 조합이 열거형에 없으면 기본값 `Filter_Tri_Linear_Sampler_CLAMP`로 떨어짐 ([Texture](#texture) 참고) |
+| `Texture[]` | `{ Name, Slot, Type, TextureFilter, SamplerType }` 배열. `AssetLoader`가 `TextureFilter + "_" + SamplerType`을 합쳐 `FPSamplerType`으로, `Type`(`"Texture2D"` / `"Texture2DArray"`)을 `StringToTextureType`으로 변환하고, `MakeMaterial`이 각 항목마다 `AddTexture(Slot, Name, SamplerType, TextureType)`를 호출해 슬롯 추가와 값 지정을 한 번에 처리 (생략하면 텍스처 없는 기본 Material). `TextureFilter` / `SamplerType`을 생략하거나 조합이 열거형에 없으면 기본값 `Filter_Tri_Linear_Sampler_CLAMP`, `Type`을 생략하거나 모르는 값이면 `Texture2D`로 떨어짐 ([Texture](#texture) 참고) |
 
 > [!IMPORTANT]
 > `LoadAssets()`에서는 **Texture → Material → StaticMesh** 순서로 호출해야 합니다. `MakeMaterial`이 `Texture[].Name`을 그대로 `FPMaterial`에 박아 두고, 실제 조회(`GetTextureData`)는 `MeshRenderPass`가 그릴 때 일어나기 때문에 느슨하게라도 이 순서를 지키는 편이 안전합니다.
@@ -2328,19 +2358,18 @@ Mesh = new FPStaticMeshComponent(this, "Plane_StaticMesh");     // 엔진 기본
 FPMaterialInterface& Material = Mesh->GetMaterial();
 std::string TextureName = "Brick";                               // 변수로 전달 (아래 표 참고)
 Material.SetTexture(0, TextureName);                             // 슬롯 0의 텍스처 교체
-Material.SetTexture(0, TextureName, Filter_Tri_Linear_Sampler_Wrap);  // 샘플러까지 지정 (필터_주소모드)
+Material.SetTexture(0, TextureName, Filter_Tri_Linear_Sampler_Wrap, Texture2D);  // 샘플러 · 타입까지 지정 (필터_주소모드)
 
-Material.AddTexture(1);                                          // 슬롯 추가 (PS t1)
 std::string Detail = "Checker_dds";
-Material.SetTexture(1, Detail);
+Material.AddTexture(1, Detail, Filter_Tri_Linear_Sampler_CLAMP, Texture2D);  // 슬롯 추가 + 텍스처 · 샘플러 · 타입을 한 번에 지정 (PS t1)
 ```
 
 | 함수 (`FPMaterialInterface`) | 설명 |
 |---|---|
-| `SetTexture(Slot, Name)` | 슬롯의 텍스처 이름을 바꿈 |
-| `SetTexture(Slot, Name, SamplerType)` | 텍스처와 샘플러를 함께 바꿈 |
+| `SetTexture(Slot, Name)` | 슬롯의 텍스처 이름만 바꿈 |
+| `SetTexture(Slot, Name, SamplerType, TextureType)` | 텍스처 · 샘플러 · `FPTextureType`(`Texture2D` / `Texture2DArray`)을 함께 바꿈 |
 | `SetTextureSampler(Slot, SamplerType)` | 샘플러만 바꿈 |
-| `AddTexture(Slot)` | 슬롯 추가. 기본값은 `Default_Texture512` + `Filter_Tri_Linear_Sampler_CLAMP` |
+| `AddTexture(Slot, Name, SamplerType, TextureType)` | 슬롯 추가와 동시에 텍스처 · 샘플러 · 타입을 지정 (슬롯만 만들어 두는 오버로드는 더 이상 없음) |
 | `DeleteTexture(Slot)` | 슬롯 제거 |
 
 엔진이 기본 제공하는 에셋: 메시 `Plane_StaticMesh`(`Primitive_Model/Plane.fbx`), 텍스처 `Default_Texture512` · `Checker_bmp` · `Checker_dds`. 샘플은 `Games/Release_Game/Lambert_Light/Plane.cpp`입니다.
@@ -2358,7 +2387,7 @@ SamplerState Smpler    : register(s0);   // 사용하는 샘플러 종류 중 �
 | 항목 | 이유 / 어기면 |
 |---|---|
 | **`SetTexture`에는 문자열 리터럴이 아니라 `std::string` 변수를 넘긴다** | 인자가 `std::string&`(비 const 참조)라서 `SetTexture(0, "Brick")`은 컴파일되지 않습니다 |
-| **`AddTexture(Slot)`로 만든 슬롯에만 `SetTexture`가 동작한다** | 없는 슬롯에 호출하면 **아무 일도 일어나지 않고 메시지도 없습니다.** 슬롯 0만 자동으로 존재합니다 |
+| **`AddTexture`로 만든 슬롯에만 `SetTexture`가 동작한다** | 없는 슬롯에 `SetTexture`를 호출하면 **아무 일도 일어나지 않고 메시지도 없습니다.** 슬롯 0만 자동으로 존재하며, 같은 슬롯에 `AddTexture`를 두 번 호출하면 콘솔 메시지만 출력하고 무시됩니다 |
 | **슬롯은 `0 ~ 127`** | 128 이상은 메시지를 출력하고 무시됩니다 |
 | **텍스처 이름은 `LoadTexture`의 첫 인자와 같아야 한다** | 로드하지 않은 이름을 지정하면 빈 항목이 만들어져 `nullptr` 리소스가 바인딩되고, 기본 PS에서는 메시가 검게 보입니다. `LoadAssets()`에서 먼저 로드하세요 |
 | **`GetMaterial()`은 컴포넌트가 가진 Material을 반환한다** | StaticMesh JSON의 `Material.Name`이 [Material JSON](#material-json)으로 `MakeMaterial`을 거쳐 자동으로 채워지므로(없으면 `DefaultMaterial`) 보통 널 참조가 나지 않습니다. 코드로 직접 교체하려면 컴포넌트 생성 **직후** `SetMaterial()`을 호출하세요 |

@@ -603,6 +603,7 @@ namespace RenderingData
 		int Slot;
 		std::string TexturePath;
 		FPSamplerType SamplerType;
+		FPTextureType TextureType;
 	};
 
 	struct FPSamplerItem

@@ -821,6 +821,30 @@ bool FPAssetManager::HasTextureInfoData(std::string TextureName)
 	return false;
 }
 
+////////////////////////////
+//
+// Texture Array Info
+//
+FPTextureArrayInfo& FPAssetManager::GetTextureArrayInfoData(std::string TextureArrayName)
+{
+	return this->LoadedTextureArrayData[TextureArrayName];
+}
+
+void FPAssetManager::AddTextureArrayInfoData(std::string TextureArrayName, FPTextureArrayInfo& TextureArrayData)
+{
+	this->LoadedTextureArrayData[TextureArrayName] = TextureArrayData;
+}
+
+bool FPAssetManager::HasTextureArrayInfoData(std::string TextureArrayName)
+{
+	if (LoadedTextureArrayData.count(TextureArrayName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 FPMaterialData& FPAssetManager::GetMaterialData(std::string MaterialName)
 {
 	return this->LoadedMaterialData[MaterialName];

@@ -258,6 +258,7 @@ void Renderer::CreateMeshRenderList()
 			int Slot = TextureItem.first;
 			std::string TexturePath = *(TextureItem.second.TexturePath);
 			FPSamplerType SamplerType = *(TextureItem.second.SamplerType);
+			FPTextureType TextureType = *(TextureItem.second.TextureType);
 
 			//Sampler 선택
 			SelectedSampler[SamplerType] = 1;
@@ -267,6 +268,7 @@ void Renderer::CreateMeshRenderList()
 			RenderTextureItem.Slot = Slot;
 			RenderTextureItem.TexturePath = TexturePath;
 			RenderTextureItem.SamplerType = SamplerType;
+			RenderTextureItem.TextureType = TextureType;
 
 			//Texture Item 추가
 			MeshRenderData.TextureList.push_back(RenderTextureItem);

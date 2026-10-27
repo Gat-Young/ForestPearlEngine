@@ -40,6 +40,7 @@ private:
 
 	//Texture
 	std::unordered_map<std::string, FPTextureData> TextureData;
+	std::unordered_map<std::string, FPTextureData> TextureArrayData;
 
 	std::string ConvertUfbxString(ufbx_string String);
 	struct FPMeshData ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node* Node);
@@ -123,6 +124,11 @@ public:
 	FPTextureInfo& GetTextureInfoData(std::string TextureName);
 	void AddTextureInfoData(std::string TextureName, FPTextureInfo& TextureData);
 	bool HasTextureInfoData(std::string TextureName);
+
+	//Texture Array Info
+	FPTextureArrayInfo& GetTextureArrayInfoData(std::string TextureArrayName);
+	void AddTextureArrayInfoData(std::string TextureArrayName, FPTextureArrayInfo& TextureArrayData);
+	bool HasTextureArrayInfoData(std::string TextureArrayName);
 
 	//Material
 	FPMaterialData& GetMaterialData(std::string MaterialName);

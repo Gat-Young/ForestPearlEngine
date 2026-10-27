@@ -386,6 +386,58 @@ void FPAssetLoader::LoadTexture(std::string TexturePath, AssetOwner EngineAsset)
 	AssetManager->AddTextureInfoData(TextureInfo.Name, TextureInfo);
 }
 
+void FPAssetLoader::LoadTexture2DArray(std::string Texture2DArrayPath, AssetOwner EngineAsset)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::ifstream File(FPPathManager::Get().GetAssetPath("Texture2DArray/" + Texture2DArrayPath));
+	if (EngineAsset == AssetOwner::Engine) File = std::ifstream(FPPathManager::Get().GetEngineAssetPath("Texture2DArray/" + Texture2DArrayPath));
+
+	if (!File.is_open())
+	{
+		std::cerr << Texture2DArrayPath << "파일 열기 실패\n";
+		return;
+	}
+
+	json JsonTextureArrayData;
+
+	try
+	{
+		File >> JsonTextureArrayData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPTextureArrayInfo TextureArrayInfo;
+
+	TextureArrayInfo.Name = JsonTextureArrayData["Name"].get<std::string>();
+	TextureArrayInfo.Width = JsonTextureArrayData["Width"].get<unsigned int>();
+	TextureArrayInfo.Height = JsonTextureArrayData["Height"].get<unsigned int>();
+	TextureArrayInfo.ArraySize = JsonTextureArrayData["ArraySize"].get<unsigned int>();
+
+	for (const auto& SourceTexture : JsonTextureArrayData["SourceTextures"])
+	{
+		TextureArrayInfo.SourceTextures.push_back(SourceTexture.get<std::string>());
+	}
+
+	TextureArrayInfo.Owner = EngineAsset;
+
+	if (AssetManager->HasTextureArrayInfoData(TextureArrayInfo.Name))
+	{
+		std::cout << "같은 이름의 Texture2DArray가 존재합니다." << "\n";
+		return;
+	}
+
+	//AssetManager에 Load한 정보 등록
+	AssetManager->AddTextureArrayInfoData(TextureArrayInfo.Name, TextureArrayInfo);
+}
+
 //Material Data Loader
 void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsset)
 {

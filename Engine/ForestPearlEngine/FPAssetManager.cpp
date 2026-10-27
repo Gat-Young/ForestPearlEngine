@@ -930,11 +930,9 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 	Material->SetEmissive(Emissive);
 	Material->SetTwoSided(MaterialData.TwoSided);
 
-	for (auto& [Slot, TextureName, SamplerType] : MaterialData.Textures)
+	for (auto& [Slot, TextureName, TextureType, SamplerType] : MaterialData.Textures)
 	{
-
-		Material->AddTexture(Slot);
-		Material->SetTexture(Slot, TextureName, SamplerType);
+		Material->AddTexture(Slot, TextureName, SamplerType, TextureType);
 	}
 
 	return Material;

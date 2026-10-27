@@ -1,0 +1,12 @@
+{
+  "Name": "Terrain_Texture2DArray",
+  "Width": 512,
+  "Height": 512,
+  "ArraySize": 4,
+  "SourceTextures": [
+    "Grass_Texture",
+    "Stone_Texture",
+    "Sand_Texture",
+    "Snow_Texture"
+  ]
+}

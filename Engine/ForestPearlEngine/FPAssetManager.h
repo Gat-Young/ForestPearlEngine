@@ -18,6 +18,7 @@ private:
 
 	//Data List
 	std::unordered_map<std::string, FPTextureInfo> LoadedTextureData;
+	std::unordered_map<std::string, FPTextureArrayInfo> LoadedTextureArrayData;
 	std::unordered_map<std::string, FPMaterialData> LoadedMaterialData;
 	std::unordered_map<std::string, FPStaticMeshData> LoadedStaticMeshData;
 	std::unordered_map<std::string, FPVertexShaderData> LoadedVertexShaderData;

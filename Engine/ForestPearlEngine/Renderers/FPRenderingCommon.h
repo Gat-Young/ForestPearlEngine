@@ -214,6 +214,8 @@ enum FPTextureType
 	Texture2DArray
 };
 
+FPTextureType StringToTextureType(const std::string& Name);
+
 struct FPMaterial_TextureData
 {
 	unsigned int Slot;

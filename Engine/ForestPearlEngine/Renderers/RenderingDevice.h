@@ -4,11 +4,14 @@
 #include <wrl/client.h>
 #include <tchar.h>
 #include <vector>
+#include <set>
 
 #include <d3d11.h>
 #include <dxgi1_6.h>
 #pragma comment(lib, "D3D11")
 #pragma comment(lib, "dxgi.lib")
+#include <d3d11shader.h>
+#include <d3dcompiler.h>
 #include <DirectXMath.h>
 using namespace DirectX;
 #include <WICTextureLoader.h>
@@ -197,6 +200,11 @@ class RenderingDevice
 		HRESULT UpdateVertexShaderSubresource(UINT Slot, const uint8_t* pSrcData, UINT Offset, UINT Size);
 		HRESULT UpdatePixelShaderSubresource(UINT Slot, const uint8_t* pSrcData, UINT Offset, UINT Size);
 
+		//Shader Reflection
+		HRESULT ReflectionShader(void* VScode, void* PScode, const std::set<std::pair<FPShaderType, std::string> >& ManagedCBs, FPShaderReflectionData* OutReflectionData, FPConstantBufferRenderData* OutVS, FPConstantBufferRenderData* OutPS);
+
+		//Rendering Device에서만 호출 할 듯?
+		HRESULT AppendMaterialParameter(ID3D11ShaderReflectionType* ReflectedType, const std::string& MemberName, size_t RelativeOffset, size_t ConstantBufferSize, size_t BufferStart, FPShaderType Stage, const std::string& ConstantBufferName, FPShaderReflectionData& Layout);
 		//입력 레이아웃 생성
 		HRESULT CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, ID3DBlob* InVSCode, ID3D11InputLayout** ReturnLayout);
 

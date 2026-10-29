@@ -1,5 +1,6 @@
 #include "FPAssetManager.h"
 #include <iostream>
+#include <set>
 #include "Utility/FPPathManager.h"
 #include "FPGameInstance.h"
 #include "FPMaterial.h"
@@ -1008,22 +1009,41 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 	FPMaterial* Material = new FPMaterial();
 	Material->SetVertexShader(MaterialData.VertexShader);
 	Material->SetPixelShader(MaterialData.PixelShader);
-
-	FPVector4 BaseColor{ MaterialData.BaseColor.r, MaterialData.BaseColor.g, MaterialData.BaseColor.b, MaterialData.BaseColor.a };
-	FPVector4 Diffuse{ MaterialData.Diffuse.r, MaterialData.Diffuse.g, MaterialData.Diffuse.b, MaterialData.Diffuse.a };
-	FPVector4 Ambient{ MaterialData.Ambient.r, MaterialData.Ambient.g, MaterialData.Ambient.b, MaterialData.Ambient.a };
-	FPVector4 Emissive{ MaterialData.Emissive.r, MaterialData.Emissive.g, MaterialData.Emissive.b, MaterialData.Emissive.a };
-
-	Material->SetBaseColor(BaseColor);
-	Material->SetDiffuse(Diffuse);
-	Material->SetAmbient(Ambient);
-	Material->SetEmissive(Emissive);
 	Material->SetTwoSided(MaterialData.TwoSided);
+	
+	const FPVertexShaderData& VS = GetVertexShaderData(MaterialData.VertexShader);
+	const FPPixelShaderData& PS = GetPixelShaderData(MaterialData.PixelShader);
 
-	for (auto& [Slot, TextureName, TextureType, SamplerType] : MaterialData.Textures)
+	//Relflection 분석을 위한 구조체
+
+	//input
+	void* VScode = std::get<1>(GetVertexShader(VS.Name));
+	void* PScode = std::get<1>(GetPixelShader(PS.Name));
+	std::set<std::pair<FPShaderType, std::string> > ManagedCBs;			//실수형 파라미터의 정보를 담은 자료구조
+	for (const FPFloatParameterData& P : MaterialData.Parameters) ManagedCBs.insert({ P.Type, P.ConstantBufferName });
+
+	//Reflection 결과 pointer를 활용해 객체에 바로 데이터를 갱신
+	FPShaderReflectionData* ReflectionData = Material->GetReflectionData();
+	FPConstantBufferRenderData* VertexConstantBuffer = Material->GetVertexConstantBufferRenderData();
+	FPConstantBufferRenderData* PixelConstantBuffer = Material->GetPixelConstantBufferRenderData();
+
+	HRESULT hr = S_OK;
+	//Reflection 분석은 RenderingDevice가 담당
+	hr = RenderingDevice::GetRenderingDevice().ReflectionShader(VScode, PScode, ManagedCBs, ReflectionData, VertexConstantBuffer, PixelConstantBuffer);
+	if (FAILED(hr)) { std::cout << "마테리얼 셰이더 리플렉션 Fail!" << "\n"; }
+
+	for (const FPFloatParameterData& P : MaterialData.Parameters)
 	{
-		Material->AddTexture(Slot, TextureName, SamplerType, TextureType);
+		if (!Material->SetParameter(P.Type, P.ConstantBufferName, P.ParameterName, P.Values))
+		{
+			std::cerr << "Material parameter missing/type mismatch: "
+				<< FPShaderTypeName(P.Type) << "." << P.ConstantBufferName
+				<< "." << P.ParameterName << "\n";
+			delete Material;
+			return nullptr;
+		}
 	}
+
 
 	return Material;
 }

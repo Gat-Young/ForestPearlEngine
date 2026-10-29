@@ -6,13 +6,6 @@
 
 class FPMaterial : public FPMaterialInterface
 {
-	struct alignas(16) FPMaterialVertexConstantBuffer
-	{
-		FPVector4 BaseColor;
-		FPVector4 Diffuse;
-		FPVector4 Ambient;
-		FPVector4 Emissive;
-	};
 
 	protected:
 		std::string VertexShaderPath;
@@ -21,12 +14,8 @@ class FPMaterial : public FPMaterialInterface
 		//Two Side 여부 <Two Side 체크시 해당 메시는 Cull 하지 않으며 Back Normal을 사용> (기본값 : False)
 		bool TwoSided = false;
 
-		//Texture List <Slot, Data>
-		std::unordered_map<int, FPTexture> TextureList;
-		std::unordered_map<int, FPTextureItem> TextureItmeList;
-
-		//공용 마테리얼 Vertex 버퍼
-		FPMaterialVertexConstantBuffer MaterialVertexConstantBuffer;
+		// 셰이더 분석 결과는 FPMaterial이 보관하며 GPU 작업은 하지 않음
+		FPShaderReflectionData ReflectionData;
 
 		//상수 버퍼 정보
 		FPConstantBufferRenderData VertexConstantBuffer;
@@ -36,30 +25,21 @@ class FPMaterial : public FPMaterialInterface
 
 	public:
 		FPMaterial();
-		//Texture 운용 함수
-		void SetTexture(int Slot, std::string& TextureName, FPSamplerType SamplerType, FPTextureType TextureType) override;
-		void SetTexture(int Slot, std::string& TextureName) override;
-		void SetTextureSampler(int Slot, FPSamplerType SamplerType) override;
-		void AddTexture(int Slot, std::string& TextureName, FPSamplerType SamplerType, FPTextureType TextureType) override;
-		void DeleteTexture(int Slot) override;
-
 		void SetVertexShader(std::string VertexShaderPath) override;
 		void SetPixelShader(std::string PixelShaderPath) override;
 		std::string* GetVertexShader() override;
 		std::string* GetPixelShader() override;
 
-		void SetBaseColor(FPVector4& BaseColor) override;
-		void SetDiffuse(FPVector4& Diffuse) override;
-		void SetAmbient(FPVector4& Ambient) override;
-		void SetEmissive(FPVector4& Emissive) override;
+		bool SetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, const std::vector<float>& Values) override;
+		bool GetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, std::vector<float>& Out) const override;
 
-		FPVector4* GetBaseColor() override;
-		FPVector4* GetDiffuse() override;
-		FPVector4* GetAmbient() override;
-		FPVector4* GetEmissive() override;
+		bool SetNamedTexture(FPShaderType ShaderType, const std::string& HLSLTexture, std::string AssetName, FPTextureType TextureType, unsigned int ArrayIndex) override;
+		bool SetNamedSampler(FPShaderType ShaderType, const std::string& HLSLSampler, FPSamplerType SamplerType, unsigned int ArrayIndex) override;
 
-		std::unordered_map<int, FPTextureItem>* GetTextureList() override;
+		bool SetParameterElement(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, unsigned int ArrayIndex, const std::vector<float>& Values) override;
+		bool GetParameterElement(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, unsigned int ArrayIndex, std::vector<float>& OutValues) const override;
 
+		FPShaderReflectionData* GetReflectionData();
 		FPConstantBufferRenderData* GetVertexConstantBufferRenderData() override;
 		FPConstantBufferRenderData* GetPixelConstantBufferRenderData() override;
 

@@ -3,6 +3,7 @@
 #include "FPAssetManager.h"
 #include <fstream>
 #include <iostream>
+#include <set>
 #include "Libraries/nlohmann/json.hpp"
 #include "Utility/FPPathManager.h"
 #include "Renderers/RenderingDevice.h"
@@ -478,34 +479,106 @@ void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsse
 
 	MaterialData.PixelShader = Material.at("PixelShader").get<std::string>();
 
-	// Color
-	MaterialData.Ambient = ReadColor(Material.at("Ambient"));
-
-	MaterialData.BaseColor = ReadColor(Material.at("BaseColor"));
-
-	MaterialData.Diffuse = ReadColor(Material.at("Diffuse"));
-
-	MaterialData.Emissive = ReadColor(Material.at("Emissive"));
-
 	//Two Side
-	MaterialData.TwoSided = Material.value("TwoSided",false);
+	MaterialData.TwoSided = Material.value("TwoSided", false);
 
-	// Texture 배열
-	if (JsonMaterialData.contains("Texture") && JsonMaterialData.at("Texture").is_array())
+
+	//Material Parameter 정보 가져오기
+	const json& Groups = Material.at("Parameters");
+
+	for (const json& Group : Groups)
 	{
-		for (const auto& Texture : JsonMaterialData.at("Texture"))
-		{
-			std::string Name = Texture.at("Name").get<std::string>();
-			unsigned int Slot = Texture.at("Slot").get<unsigned int>();
-			std::string TextureFilter = Texture.at("TextureFilter").get<std::string>();
-			std::string Sampler = Texture.at("SamplerType").get<std::string>();
-			FPSamplerType SamplerType = StringToSamplerType(TextureFilter + "_" + Sampler);
-			std::string TypeString = Texture.at("Type").get<std::string>();
-			FPTextureType TextureType = StringToTextureType(TypeString);
+		//VS, PS 인지 구분
+		const FPShaderType Stage = StringToFPShaderType(Groups.at("Type").get<std::string>());
+		if (Stage == FPShaderType::None) { std::cout << "Material의 Type은 VS or PS여야 합니다!" << "\n"; }
 
-			MaterialData.Textures.push_back({Slot, Name, TextureType, SamplerType});
+		//상수 버퍼이름 가져오기
+		const std::string CB = Group.at("ConstantBuffer").get<std::string>();
+
+		//상수 버퍼에 있는 실수 데이터(float, float2, float3, float4) 내부 요소 가져오기
+		const json Values = Group.at("Values");
+
+		for (json::const_iterator It = Values.begin(); It != Values.end(); ++It)
+		{
+			FPFloatParameterData Entry;
+			Entry.Type = Stage;
+			Entry.ConstantBufferName = CB;
+			Entry.ParameterName = It.key();
+
+			const json& Value = It.value();
+
+			if (Value.is_number())		// float 타입 처리
+			{
+				Entry.Values.push_back(Value.get<float>());
+			}
+			else if (Value.is_array())	// float2, float3, float4 처리, float[] ,float2[], float3[], float4[] 처리
+			{
+				for (const json& X : Value)
+				{
+					Entry.Values.push_back(X.get<float>());
+				}
+			}
+
+			MaterialData.Parameters.push_back(std::move(Entry));
 		}
 	}
+
+	// Texture 처리
+	if (Material.contains("Textures"))
+	{
+		const json& Textures = Material.at("Textures");
+
+		for (const json& T : Textures)
+		{
+			FPTextureParameterData Entry;
+			Entry.Type = StringToFPShaderType(T.at("Type").get<std::string>());
+			Entry.Parameter = T.at("Parameter").get<std::string>();
+			Entry.Name = T.at("Asset").get<std::string>();
+
+			const std::string TextureType = T.at("TextureType").get<std::string>();
+			if (TextureType != "Texture2D" && TextureType != "Texture2DArray") { std::cout << "Texture2D, Texture2DArray외의 Type이 사용됨"; }
+
+			Entry.TextureType = StringToTextureType(TextureType);
+
+			//Texture 배열에 대한 처리
+			json::const_iterator It = T.find("ArrayIndex");
+			if (It == T.end()) Entry.ArrayIndex = 0;
+			else
+			{
+				const uint64_t Raw = It->get<uint64_t>();
+				Entry.ArrayIndex = static_cast<unsigned int>(Raw);
+			}
+
+			MaterialData.NamedTextures.push_back(std::move(Entry));
+		}
+	}
+
+	// Sampler 처리
+	if (Material.contains("Samplers"))
+	{
+		const json& Samplers = Material.at("Samplers");
+
+		for (const json& S : Samplers)
+		{
+			FPSamplerParameterData Entry;
+			Entry.Type = StringToFPShaderType(S.at("Type").get<std::string>());
+			Entry.Parameter = S.at("Parameter").get<std::string>();
+
+			//Sampler 배열에 대한 처리
+			json::const_iterator It = S.find("ArrayIndex");
+			if (It == S.end()) Entry.ArrayIndex = 0;
+			else
+			{
+				const uint64_t Raw = It->get<uint64_t>();
+				Entry.ArrayIndex = static_cast<unsigned int>(Raw);
+			}
+
+			const std::string SamplerType = S.at("SamplerType").get<std::string>();
+
+			MaterialData.NamedSamplers.push_back(std::move(Entry));
+		}
+	}
+
 	MaterialData.Owner = EngineAsset;
 
 	AssetManager->AddMaterialData(MaterialData.Name, MaterialData);

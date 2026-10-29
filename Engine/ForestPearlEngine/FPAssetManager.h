@@ -141,6 +141,9 @@ public:
 	void AddMaterialData(std::string MaterialName, FPMaterialData& MaterialData);
 	bool HasMaterialData(std::string MaterialName);
 
+	//Material
+	FPMaterialInterface* MakeMaterial(std::string MaterialName);
+
 	//GameSetting
 	bool HasGameSettingData();
 	void UpdateGameSettingData(FPGameSettingData& GameSettingData);
@@ -155,8 +158,6 @@ public:
 	void AddGameModeData(std::string LevelName, std::string GameModeName);
 	std::string GetGameModeData(std::string LevelName);
 
-	//Material
-	FPMaterialInterface* MakeMaterial(std::string MaterialName);
 
 	//Shader
 	//Vertext

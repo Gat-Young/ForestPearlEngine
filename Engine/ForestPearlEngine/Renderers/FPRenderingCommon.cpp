@@ -97,3 +97,21 @@ FPTextureType StringToTextureType(const std::string& Name)
 
 	return Texture2D;
 }
+
+FPShaderType StringToFPShaderType(const std::string& ShaderType)
+{
+    static const std::unordered_map<std::string, FPShaderType> FPShaderTypeMap =
+    {
+        { "VS",      FPShaderType::VS },
+        { "PS", FPShaderType::PS },
+    };
+
+    auto it = FPShaderTypeMap.find(ShaderType);
+
+    if (it != FPShaderTypeMap.end())
+    {
+        return it->second;
+    }
+
+    return FPShaderType::None;
+}

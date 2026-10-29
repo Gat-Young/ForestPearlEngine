@@ -383,7 +383,7 @@
     <ClCompile Include="Utility\FPPathManager.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="AssetLoader.cpp">
+    <ClCompile Include="FPAssetLoader.cpp">
       <Filter>FPGameInstance\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FPAssetManager.cpp">

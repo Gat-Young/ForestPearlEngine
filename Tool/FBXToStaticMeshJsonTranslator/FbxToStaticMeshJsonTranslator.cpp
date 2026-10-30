@@ -4,6 +4,7 @@
 #include <cctype>
 #include <fstream>
 #include <iostream>
+#include <unordered_map>
 
 using json = nlohmann::ordered_json;
 
@@ -237,17 +238,33 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 	const ufbx_material& Material = *Mesh.materials.data[0];
 	const std::string MaterialName = ConvertUfbxString(Material.name);
 
-	const json BaseColorJson = MakeColorJson(Material.pbr.base_color, 1.0, 1.0, 1.0, 1.0);
-	const json DiffuseJson = MakeColorJson(Material.fbx.diffuse_color, 1.0, 1.0, 1.0, 1.0);
-	const json AmbientJson = MakeColorJson(Material.fbx.ambient_color, 0.1, 0.1, 0.1, 1.0);
+	const json BaseColorArray = MakeColorJson(Material.pbr.base_color, 1.0, 1.0, 1.0, 1.0);
+	const json DiffuseArray = MakeColorJson(Material.fbx.diffuse_color, 1.0, 1.0, 1.0, 1.0);
+	const json AmbientArray = MakeColorJson(Material.fbx.ambient_color, 0.1, 0.1, 0.1, 1.0);
 
 	// Emissive(자체 발광)는 FBX 값과 무관하게 항상 0으로 시작한다. (필요하면 추후 머티리얼 에디터에서 수동으로 조절)
-	const json EmissiveJson = MakeColorJson({}, 0.0, 0.0, 0.0, 0.0);
+	const json EmissiveArray = MakeColorJson({}, 0.0, 0.0, 0.0, 0.0);
+
+	// 엔진이 항상 읽는 MaterialConstBuffer 파라미터 블록. Shader Reflection은 하지 않으므로
+	// 다른 상수버퍼(UVTransformCB 등)는 만들지 않고 이 고정 블록만 생성한다. (SimpleMaterial.json 참고)
+	json MaterialConstBufferValues;
+	MaterialConstBufferValues["Material.BaseColor"] = BaseColorArray;
+	MaterialConstBufferValues["Material.Diffuse"] = DiffuseArray;
+	MaterialConstBufferValues["Material.Ambient"] = AmbientArray;
+	MaterialConstBufferValues["Material.Emissive"] = EmissiveArray;
+
+	json MaterialConstBufferParameter;
+	MaterialConstBufferParameter["Type"] = "VS";
+	MaterialConstBufferParameter["ConstantBuffer"] = "MaterialConstBuffer";
+	MaterialConstBufferParameter["Values"] = MaterialConstBufferValues;
+
+	json ParametersArray = json::array();
+	ParametersArray.push_back(MaterialConstBufferParameter);
 
 	// FBX의 Two Sided(양면) 설정. 엔진 FPMaterial::TwoSided와 동일한 의미(체크 시 Cull 없이 Back Normal도 사용).
 	const bool bTwoSided = Material.features.double_sided.enabled;
 
-	// 기본 Material : 재질당 한 번만 저장 (색상 정보만, Texture 없음)
+	// 기본 Material : 재질당 한 번만 저장 (Parameters만, Texture/Sampler 없음)
 	const std::string BaseMaterialName = SanitizeFileName(MaterialName.empty() ? "Material" : MaterialName) + "_Material";
 
 	if (ExportedMaterialNames.insert(BaseMaterialName).second)
@@ -256,11 +273,8 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 		BaseMaterialBody["Name"] = BaseMaterialName;
 		BaseMaterialBody["VertexShader"] = "DefaultVertexShader";
 		BaseMaterialBody["PixelShader"] = "DefaultPixelShader";
-		BaseMaterialBody["Ambient"] = AmbientJson;
-		BaseMaterialBody["BaseColor"] = BaseColorJson;
-		BaseMaterialBody["Diffuse"] = DiffuseJson;
-		BaseMaterialBody["Emissive"] = EmissiveJson;
 		BaseMaterialBody["TwoSided"] = bTwoSided;
+		BaseMaterialBody["Parameters"] = ParametersArray;
 
 		json BaseMaterialFileJson;
 		BaseMaterialFileJson["Material"] = BaseMaterialBody;
@@ -271,8 +285,10 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 		std::cout << "  -> Material JSON 저장 : " << BaseMaterialPath.string() << "\n";
 	}
 
-	// Material Instance : 이 메쉬 전용. 기본 머티리얼과 같은 색상 + 이 메쉬가 쓰는 Texture 배열을 포함한다.
-	const json TextureArrayJson = ExportMaterialTextures(Material, JsonOutputDirectory, ExportedTextureNames);
+	// Material Instance : 이 메쉬 전용. 기본 머티리얼과 같은 Parameters + 이 메쉬가 쓰는 Textures/Samplers 배열을 포함한다.
+	json TexturesArray;
+	json SamplersArray;
+	ExportMaterialTextures(Material, JsonOutputDirectory, ExportedTextureNames, TexturesArray, SamplersArray);
 
 	const std::string MaterialInstanceName = SanitizeFileName(MaterialName.empty() ? "Material" : MaterialName) + "_" + StaticMeshName + "_MaterialInstance";
 
@@ -280,15 +296,13 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 	MaterialInstanceBody["Name"] = MaterialInstanceName;
 	MaterialInstanceBody["VertexShader"] = "DefaultVertexShader";
 	MaterialInstanceBody["PixelShader"] = "DefaultPixelShader";
-	MaterialInstanceBody["Ambient"] = AmbientJson;
-	MaterialInstanceBody["BaseColor"] = BaseColorJson;
-	MaterialInstanceBody["Diffuse"] = DiffuseJson;
-	MaterialInstanceBody["Emissive"] = EmissiveJson;
 	MaterialInstanceBody["TwoSided"] = bTwoSided;
+	MaterialInstanceBody["Parameters"] = ParametersArray;
+	MaterialInstanceBody["Textures"] = TexturesArray;
+	MaterialInstanceBody["Samplers"] = SamplersArray;
 
 	json MaterialInstanceFileJson;
 	MaterialInstanceFileJson["Material"] = MaterialInstanceBody;
-	MaterialInstanceFileJson["Texture"] = TextureArrayJson;
 
 	const std::filesystem::path MaterialInstancePath = JsonOutputDirectory / "Material" / (MaterialInstanceName + ".json");
 	SaveJsonToFile(MaterialInstanceFileJson, MaterialInstancePath);
@@ -301,10 +315,24 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 	return MaterialRef;
 }
 
-json FbxToStaticMeshJsonTranslator::ExportMaterialTextures(const ufbx_material& Material, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedTextureNames)
+void FbxToStaticMeshJsonTranslator::ExportMaterialTextures(const ufbx_material& Material, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedTextureNames, nlohmann::ordered_json& OutTextures, nlohmann::ordered_json& OutSamplers)
 {
-	json TextureArray = json::array();
+	OutTextures = json::array();
+	OutSamplers = json::array();
 
+	// 같은 ufbx 속성(material_prop)을 여러 텍스처가 공유하는 경우(예: 레이어 텍스처)에만 ArrayIndex를 붙인다.
+	std::unordered_map<std::string, int> ParameterUseCount;
+	for (const ufbx_material_texture& MaterialTexture : Material.textures)
+	{
+		if (!MaterialTexture.texture)
+		{
+			continue;
+		}
+
+		++ParameterUseCount[ConvertUfbxString(MaterialTexture.material_prop)];
+	}
+
+	std::unordered_map<std::string, int> ParameterNextIndex;
 	int Slot = 0;
 
 	for (const ufbx_material_texture& MaterialTexture : Material.textures)
@@ -363,44 +391,55 @@ json FbxToStaticMeshJsonTranslator::ExportMaterialTextures(const ufbx_material& 
 			std::cout << "  -> Texture JSON 저장 : " << OutputPath.string() << "\n";
 		}
 
-		json TextureRef;
-		TextureRef["Name"] = TextureName;
-		TextureRef["Slot"] = Slot;
-		// 텍스처 리소스의 셰이더 바인딩 타입 (Texture2D/TextureCube 등). FBX에서 구분할 수 없어 기본값으로 고정한다.
-		TextureRef["Type"] = "Texture2D";
-		// FBX에는 필터링 방식(Point/Bi-Linear/Tri-Linear/Anistropy) 정보가 없어 기본값으로 고정한다.
-		// 엔진 AssetLoader는 TextureFilter + "_" + SamplerType을 합쳐 StringToSamplerType으로 넘긴다. (AssetLoader.cpp 참고)
-		TextureRef["TextureFilter"] = "Filter_Tri_Linear";
-		TextureRef["SamplerType"] = DetermineSamplerType(Texture.wrap_u);
+		// Shader Reflection은 하지 않으므로 실제 셰이더 변수 이름은 알 수 없다.
+		// 대신 ufbx가 알려주는 FBX 속성 이름(material_prop, 예: DiffuseColor)을 그대로 Parameter로 사용한다.
+		std::string ParameterName = ConvertUfbxString(MaterialTexture.material_prop);
+		if (ParameterName.empty())
+		{
+			ParameterName = "Texture_" + std::to_string(Slot);
+		}
 
-		TextureArray.push_back(TextureRef);
+		const bool bSharedParameter = ParameterUseCount[ParameterName] > 1;
+		const int ArrayIndex = ParameterNextIndex[ParameterName]++;
+
+		json TextureRef;
+		TextureRef["Type"] = "PS";
+		TextureRef["Parameter"] = ParameterName;
+		if (bSharedParameter)
+		{
+			TextureRef["ArrayIndex"] = ArrayIndex;
+		}
+		TextureRef["Asset"] = TextureName;
+		// 텍스처 리소스의 셰이더 바인딩 타입 (Texture2D/TextureCube 등). FBX에서 구분할 수 없어 기본값으로 고정한다.
+		TextureRef["TextureType"] = "Texture2D";
+
+		OutTextures.push_back(TextureRef);
+
+		json SamplerRef;
+		SamplerRef["Type"] = "PS";
+		SamplerRef["Parameter"] = ParameterName;
+		if (bSharedParameter)
+		{
+			SamplerRef["ArrayIndex"] = ArrayIndex;
+		}
+		// FBX에는 필터링 방식(Point/Bi-Linear/Tri-Linear/Anistropy) 정보가 없어 기본값으로 고정한다.
+		// 엔진 StringToSamplerType이 그대로 찾을 수 있도록 "Filter_Tri_Linear_" + Wrap 설정을 합친 문자열로 저장한다. (FPRenderingCommon.cpp 참고)
+		SamplerRef["SamplerType"] = "Filter_Tri_Linear_" + DetermineSamplerType(Texture.wrap_u);
+
+		OutSamplers.push_back(SamplerRef);
 
 		++Slot;
 	}
-
-	return TextureArray;
 }
 
 json FbxToStaticMeshJsonTranslator::MakeColorJson(const ufbx_material_map& ColorMap, double DefaultR, double DefaultG, double DefaultB, double DefaultA)
 {
-	json Result;
-
 	if (ColorMap.has_value)
 	{
-		Result["r"] = ColorMap.value_vec3.x;
-		Result["g"] = ColorMap.value_vec3.y;
-		Result["b"] = ColorMap.value_vec3.z;
-		Result["a"] = DefaultA;
-	}
-	else
-	{
-		Result["r"] = DefaultR;
-		Result["g"] = DefaultG;
-		Result["b"] = DefaultB;
-		Result["a"] = DefaultA;
+		return json::array({ ColorMap.value_vec3.x, ColorMap.value_vec3.y, ColorMap.value_vec3.z, DefaultA });
 	}
 
-	return Result;
+	return json::array({ DefaultR, DefaultG, DefaultB, DefaultA });
 }
 
 json FbxToStaticMeshJsonTranslator::MakeVec3Json(const ufbx_vec3& Vector)

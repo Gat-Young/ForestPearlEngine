@@ -31,7 +31,15 @@ class FPMaterial : public FPMaterialInterface
 		std::string* GetPixelShader() override;
 
 		bool SetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, const std::vector<float>& Values) override;
+		bool SetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, const FPVector4& Value) override;
+		bool SetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, const FPVector3& Value) override;
+		bool SetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, const FPVector2& Value) override;
+		bool SetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, const float& Value) override;
 		bool GetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, std::vector<float>& Out) const override;
+		bool GetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, FPVector4& Out) const override;
+		bool GetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, FPVector3& Out) const override;
+		bool GetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, FPVector2& Out) const override;
+		bool GetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, float& Out) const override;
 
 		bool SetNamedTexture(FPShaderType ShaderType, const std::string& HLSLTexture, std::string AssetName, FPTextureType TextureType, unsigned int ArrayIndex) override;
 		bool SetNamedSampler(FPShaderType ShaderType, const std::string& HLSLSampler, FPSamplerType SamplerType, unsigned int ArrayIndex) override;

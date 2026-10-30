@@ -11,7 +11,9 @@
 // 변환해주는 클래스.
 // - 지정된 입력 폴더의 FBX 파일들을 전부 읽는다.
 // - 파일마다 메쉬를 가진 노드 단위로 StaticMesh json 파일을 생성한다. (파일명 = Name + ".json")
-// - 머티리얼은 "기본 Material"(재질당 1개, 색상만) + "Material Instance"(메쉬당 1개, 색상 복제 + Texture 배열) 두 가지로 나눠서 저장한다.
+// - 머티리얼은 "기본 Material"(재질당 1개, Parameters만) + "Material Instance"(메쉬당 1개, Parameters 복제 + Textures/Samplers 배열) 두 가지로 나눠서 저장한다.
+//   (FP_Material_Refactored/Examples/SimpleMaterial.json 형식 참고. Shader Reflection은 하지 않으므로, 엔진이 항상 읽는
+//    "MaterialConstBuffer"(VS, Material.BaseColor/Diffuse/Ambient/Emissive) 파라미터 블록만 고정으로 생성한다.)
 // - 텍스처는 실제 이미지 파일 기준으로 중복 없이 한 번만 Texture.json으로 저장한다.
 class FbxToStaticMeshJsonTranslator
 {
@@ -34,19 +36,22 @@ private:
 	static nlohmann::ordered_json BuildSocketsJson(const ufbx_node& Node);
 
 	// 메쉬에 연결된 첫번째 머티리얼을 처리한다.
-	// - 기본 Material("<재질명>_Material.json")은 재질당 한 번만 저장한다.
-	// - 이 메쉬 전용 Material Instance("<재질명>_<StaticMeshName>_MaterialInstance.json")를 저장한다. (기본 머티리얼 색상 복제 + Texture 배열)
-	// - 두 json 모두 VertexShader/PixelShader는 FBX에 정보가 없으므로 기본값("DefaultVertexShader.vso" / "DefaultPixelShader.pso")으로 채운다.
+	// - 기본 Material("<재질명>_Material.json")은 재질당 한 번만 저장한다. (Parameters: MaterialConstBuffer만)
+	// - 이 메쉬 전용 Material Instance("<재질명>_<StaticMeshName>_MaterialInstance.json")를 저장한다.
+	//   (기본 머티리얼과 같은 Parameters + 이 메쉬가 쓰는 Textures/Samplers 배열)
+	// - 두 json 모두 VertexShader/PixelShader는 FBX에 정보가 없으므로 기본값("DefaultVertexShader" / "DefaultPixelShader")으로 채운다.
 	// StaticMesh json에 들어갈 "Material" 참조 항목(Material Instance 이름만 있는 형태)을 반환한다.
 	// 연결된 머티리얼이 없으면 이름이 빈 Material 항목만 반환한다.
 	static nlohmann::ordered_json ExportMeshMaterial(const ufbx_mesh& Mesh, const std::string& StaticMeshName, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedMaterialNames, std::set<std::string>& ExportedTextureNames);
 
 	// 머티리얼에 연결된 텍스처들을 실제 이미지 파일 기준으로 Texture.json으로 변환해서 저장한다. (같은 파일이면 한 번만 저장)
-	// 반환값은 Material Instance json에 들어갈 "Texture" 배열(Name, Slot, SamplerType)이다.
+	// Material Instance json에 들어갈 "Textures" / "Samplers" 배열을 OutTextures / OutSamplers로 각각 채워서 돌려준다.
+	// Shader Reflection은 하지 않으므로, 각 텍스처의 "Parameter" 이름은 ufbx가 알려주는 FBX 속성 이름(material_prop)을 그대로 사용한다.
+	// 같은 Parameter를 여러 텍스처가 공유하면(예: 레이어 텍스처) "ArrayIndex"를 붙여 구분한다.
 	// SamplerType은 FBX 텍스처의 Wrap 설정(Repeat/Clamp)을 엔진 FPSamplerType 이름으로 변환한 값이다.
-	static nlohmann::ordered_json ExportMaterialTextures(const ufbx_material& Material, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedTextureNames);
+	static void ExportMaterialTextures(const ufbx_material& Material, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedTextureNames, nlohmann::ordered_json& OutTextures, nlohmann::ordered_json& OutSamplers);
 
-	// 머티리얼의 색상 맵(ufbx_material_map)을 {r,g,b,a} json으로 변환한다.
+	// 머티리얼의 색상 맵(ufbx_material_map)을 [r,g,b,a] 배열 json으로 변환한다.
 	// 값이 지정되어 있지 않으면 기본값(Default*)을 사용한다.
 	static nlohmann::ordered_json MakeColorJson(const ufbx_material_map& ColorMap, double DefaultR, double DefaultG, double DefaultB, double DefaultA);
 

@@ -376,6 +376,9 @@ struct RenderItem
 	std::string* VertexShaderPath = nullptr;
 	std::string* PixelShaderPath = nullptr;
 
+	std::vector<FPReflectionResourceInfo>* Resources = nullptr;
+	std::vector<FPReflectionSamplerInfo>* Samplers = nullptr;
+
 	//상수 버퍼용
 	FPConstantBufferRenderData* VertexConstBuffer = nullptr;
 	FPConstantBufferRenderData* PixelConstBuffer = nullptr;
@@ -596,14 +599,6 @@ namespace RenderingData
 		LightDataItem Light[Light_MAX];
 	};
 
-	struct alignas(16) MaterialItem
-	{
-		FPVector4 BaseColor;
-		FPVector4 Diffuse;
-		FPVector4 Ambient;
-		FPVector4 Emissive;
-	};
-
 	//상수 버퍼용 구조체 : 셰이더 내부 연산에 사용될 데이터들
 	struct alignas(16) MVPConstBuffer
 	{
@@ -683,8 +678,8 @@ namespace RenderingData
 		std::string VertexShaderPath;
 		std::string PixelShaderPath;
 
-		std::vector<RenderingData::FPTextureItem> TextureList;
-		std::vector<RenderingData::FPSamplerItem> SamplerList;
+		std::vector<FPReflectionResourceInfo> Resources;
+		std::vector<FPReflectionSamplerInfo> Samplers;
 
 		FPConstantBufferRenderData VertexConstBuffer;
 		FPConstantBufferRenderData PixelConstBuffer;

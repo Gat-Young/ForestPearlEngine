@@ -1,41 +1,55 @@
 {
-  "Material": {
-    "Name": "DefaultMaterial",
-    "VertexShader": "DefaultVertexShader",
-    "PixelShader": "DefaultPixelShader",
-    "Ambient": {
-      "r": 1.0,
-      "g": 1.0,
-      "b": 1.0,
-      "a": 1.0
-    },
-    "BaseColor": {
-      "r": 1.0,
-      "g": 1.0,
-      "b": 1.0,
-      "a": 1.0
-    },
-    "Diffuse": {
-      "r": 1.0,
-      "g": 1.0,
-      "b": 1.0,
-      "a": 1.0
-    },
-    "Emissive": {
-      "r": 0.0,
-      "g": 0.0,
-      "b": 0.0,
-      "a": 0.0
-    },
-    "TwoSided": false
-  },
-    "Texture": [
-      {
-        "Name": "Default_Texture512",
-        "Slot": 0,
-        "Type": "Texture2D",
-        "TextureFilter": "Filter_Tri_Linear",
-        "SamplerType": "Sampler_CLAMP"
-      }
-    ]
+    "Material": {
+        "Name": "DefaultMaterial",
+        "VertexShader": "DefaultVertexShader",
+        "PixelShader": "DefaultPixelShader",
+        "TwoSided": false,
+        "Parameters": [
+            {
+                "Type": "VS",
+                "ConstantBuffer": "MaterialConstBuffer",
+                "Values": {
+                    "Material.BaseColor": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Diffuse": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Ambient": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Emissive": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            }
+        ],
+        "Textures": [
+            {
+                "Type": "PS",
+                "Parameter": "Texture_0",
+                "Asset": "Default_Texture512",
+                "TextureType": "Texture2D"
+            }
+        ],
+        "Samplers": [
+            {
+                "Type": "PS",
+                "Parameter": "Texture_0",
+                "SamplerType": "Filter_Tri_Linear_Sampler_CLAMP"
+            }
+        ]
+    }
 }

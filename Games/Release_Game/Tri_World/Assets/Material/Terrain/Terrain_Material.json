@@ -1,41 +1,55 @@
 {
-  "Material": {
-    "Name": "Terrain_Material",
-    "VertexShader": "TerrainVertexShader",
-    "PixelShader": "TerrainPixelShader",
-    "Ambient": {
-      "r": 1.0,
-      "g": 1.0,
-      "b": 1.0,
-      "a": 1.0
-    },
-    "BaseColor": {
-      "r": 1.0,
-      "g": 1.0,
-      "b": 1.0,
-      "a": 1.0
-    },
-    "Diffuse": {
-      "r": 1.0,
-      "g": 1.0,
-      "b": 1.0,
-      "a": 1.0
-    },
-    "Emissive": {
-      "r": 0.0,
-      "g": 0.0,
-      "b": 0.0,
-      "a": 0.0
-    },
-    "TwoSided": true
-  },
-    "Texture": [
-      {
-        "Name": "Field_micro02_dds",
-        "Slot": 0,
-        "Type": "Texture2D",
-        "TextureFilter": "Filter_Anistropy_Linear",
-        "SamplerType": "Sampler_Wrap"
-      }
-    ]
+    "Material": {
+        "Name": "Terrain_Material",
+        "VertexShader": "TerrainVertexShader",
+        "PixelShader": "TerrainPixelShader",
+        "TwoSided": true,
+        "Parameters": [
+            {
+                "Type": "VS",
+                "ConstantBuffer": "MaterialConstBuffer",
+                "Values": {
+                    "Material.BaseColor": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Diffuse": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Ambient": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Emissive": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            }
+        ],
+        "Textures": [
+            {
+                "Type": "PS",
+                "Parameter": "Texture_0",
+                "Asset": "Field_micro02_dds",
+                "TextureType": "Texture2D"
+            }
+        ],
+        "Samplers": [
+            {
+                "Type": "PS",
+                "Parameter": "Texture_0",
+                "SamplerType": "Filter_Anistropy_Linear_Sampler_Wrap"
+            }
+        ]
+    }
 }

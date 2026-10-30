@@ -113,6 +113,75 @@ bool FPMaterial::GetParameter(FPShaderType Type, const std::string& ConstantBuff
     return false;
 }
 
+bool FPMaterial::SetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, const FPVector4& Value)
+{
+    const std::vector<float> Values = { Value.x, Value.y, Value.z, Value.w };
+    return SetParameter(Type, ConstantBufferName, ParameterName, Values);
+}
+
+bool FPMaterial::SetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, const FPVector3& Value)
+{
+    const std::vector<float> Values = { Value.x, Value.y, Value.z };
+    return SetParameter(Type, ConstantBufferName, ParameterName, Values);
+}
+
+bool FPMaterial::SetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, const FPVector2& Value)
+{
+    const std::vector<float> Values = { Value.x, Value.y };
+    return SetParameter(Type, ConstantBufferName, ParameterName, Values);
+}
+
+bool FPMaterial::SetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, const float& Value)
+{
+    const std::vector<float> Values = { Value };
+    return SetParameter(Type, ConstantBufferName, ParameterName, Values);
+}
+
+bool FPMaterial::GetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, FPVector4& Out) const
+{
+    std::vector<float> Values;
+    if (!GetParameter(Type, ConstantBufferName, ParameterName, Values) || Values.size() != 4)
+    {
+        return false;
+    }
+    Out = FPVector4(Values[0], Values[1], Values[2], Values[3]);
+    return true;
+}
+
+bool FPMaterial::GetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, FPVector3& Out) const
+{
+    std::vector<float> Values;
+    if (!GetParameter(Type, ConstantBufferName, ParameterName, Values) || Values.size() != 3)
+    {
+        return false;
+    }
+    Out = FPVector3(Values[0], Values[1], Values[2]);
+    return true;
+}
+
+bool FPMaterial::GetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, FPVector2& Out) const
+{
+    std::vector<float> Values;
+    if (!GetParameter(Type, ConstantBufferName, ParameterName, Values) || Values.size() != 2)
+    {
+        return false;
+    }
+    Out.x = Values[0];
+    Out.y = Values[1];
+    return true;
+}
+
+bool FPMaterial::GetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, float& Out) const
+{
+    std::vector<float> Values;
+    if (!GetParameter(Type, ConstantBufferName, ParameterName, Values) || Values.size() != 1)
+    {
+        return false;
+    }
+    Out = Values[0];
+    return true;
+}
+
 bool FPMaterial::SetNamedTexture(FPShaderType ShaderType, const std::string& HLSLTexture, std::string AssetName, FPTextureType TextureType, unsigned int ArrayIndex)
 {
 

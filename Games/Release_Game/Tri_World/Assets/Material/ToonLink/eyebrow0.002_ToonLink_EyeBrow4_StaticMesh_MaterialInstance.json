@@ -3,46 +3,64 @@
         "Name": "eyebrow0.002_ToonLink_EyeBrow4_StaticMesh_MaterialInstance",
         "VertexShader": "DefaultVertexShader",
         "PixelShader": "DefaultPixelShader",
-        "Ambient": {
-            "r": 0.05087608844041824,
-            "g": 0.05087608844041824,
-            "b": 0.05087608844041824,
-            "a": 1.0
-        },
-        "BaseColor": {
-            "r": 0.800000011920929,
-            "g": 0.800000011920929,
-            "b": 0.800000011920929,
-            "a": 1.0
-        },
-        "Diffuse": {
-            "r": 0.800000011920929,
-            "g": 0.800000011920929,
-            "b": 0.800000011920929,
-            "a": 1.0
-        },
-        "Emissive": {
-            "r": 0.0,
-            "g": 0.0,
-            "b": 0.0,
-            "a": 0.0
-        },
-        "TwoSided": false
-    },
-    "Texture": [
-        {
-            "Name": "Eyebrow0_png",
-            "Slot": 0,
-            "Type": "Texture2D",
-            "TextureFilter": "Filter_Anistropy_Linear",
-            "SamplerType": "Sampler_Wrap"
-        },
-        {
-            "Name": "Eyebrow0_png",
-            "Slot": 1,
-            "Type": "Texture2D",
-            "TextureFilter": "Filter_Anistropy_Linear",
-            "SamplerType": "Sampler_Wrap"
-        }
-    ]
+        "TwoSided": false,
+        "Parameters": [
+            {
+                "Type": "VS",
+                "ConstantBuffer": "MaterialConstBuffer",
+                "Values": {
+                    "Material.BaseColor": [
+                        0.800000011920929,
+                        0.800000011920929,
+                        0.800000011920929,
+                        1.0
+                    ],
+                    "Material.Diffuse": [
+                        0.800000011920929,
+                        0.800000011920929,
+                        0.800000011920929,
+                        1.0
+                    ],
+                    "Material.Ambient": [
+                        0.05087608844041824,
+                        0.05087608844041824,
+                        0.05087608844041824,
+                        1.0
+                    ],
+                    "Material.Emissive": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            }
+        ],
+        "Textures": [
+            {
+                "Type": "PS",
+                "Parameter": "Texture_0",
+                "Asset": "Eyebrow0_png",
+                "TextureType": "Texture2D"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "Texture_1",
+                "Asset": "Eyebrow0_png",
+                "TextureType": "Texture2D"
+            }
+        ],
+        "Samplers": [
+            {
+                "Type": "PS",
+                "Parameter": "Texture_0",
+                "SamplerType": "Filter_Anistropy_Linear_Sampler_Wrap"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "Texture_1",
+                "SamplerType": "Filter_Anistropy_Linear_Sampler_Wrap"
+            }
+        ]
+    }
 }

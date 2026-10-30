@@ -53,4 +53,7 @@ namespace FPConstantBufferRenderDataUtil
 
 		std::memcpy(RenderData.Buffer.data() + Offset, &Data, Size);
 	}
+
+	bool GetConstantBufferOffset(const size_t& BufferOffset, const unsigned int& Components, const unsigned int& ArrayCount, const size_t& ArrayStride, size_t BufferSize, unsigned int ArrayIndex, size_t& OutOffset);
+
 }

@@ -44,9 +44,11 @@
 | 🧩 | **Actor / Component 프레임워크** | `FPObject → FPActor → FPPawn / FPAController / FPAGameMode`, 계층형 `FPSceneComponent` 트랜스폼 |
 | 🎨 | **DX11 렌더러** | `Renderer`(프레임 흐름) + `RenderingDevice`(D3D11 래퍼) 2계층, **Render List → Render Pass(Mesh / Gizmo / Normal / UI)** 구조, 슬롯 규약이 있는 **상수 버퍼 바인딩**, `GameSetting.json` 기반 MSAA(스왑체인·깊이버퍼 SampleDesc), Priority 정렬, 멀티 뷰포트 |
 | 💡 | **통합 Light (Directional · Point)** | `FPLightComponentBase` 계열이 Light Render List에 등록 → 메시마다 **최대 64개**를 하나의 `LIGHT` 상수 버퍼(`b2`, 9232 byte)로 묶어 전달. 정점 셰이더(`Light.hlsli`)에서 Directional(Local 공간) · Point(View 공간, 거리 감쇠, 비균등 스케일 대응 노멀) Lambert 계산. 라이트 색(`LightColor`) · **Emissive** 지원. 토치 예제 `ATorchLight` |
-| 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 샘플러 36종(AF 단계는 `GameSetting.json`). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환 |
+| 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 샘플러 36종(AF 단계는 `GameSetting.json`). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환. 슬롯마다 `FPTextureType`(`Texture2D` / `Texture2DArray`)을 함께 지정 |
+| 🗂️ | **Texture2DArray** *(실험적)* | `LoadTexture2DArray`가 JSON(`Width/Height/ArraySize/SourceTextures[]`)을 읽어 이미 로드된 Texture2D들을 **`RenderingDevice::CheckTextureArrayData`로 포맷·해상도 검증 후 `CreateTextureArray2D`로 한 장의 `Texture2DArray` SRV로 합침**. `MeshRenderPass`는 Material 텍스처 슬롯의 `FPTextureType`에 따라 `GetTextureData`(Texture2D) 또는 `GetTextureArrayData`(Texture2DArray)에서 바인딩할 SRV를 고름. 아직 어떤 게임의 `LoadAssets()`에서도 호출되지 않는 템플릿 단계 |
 | ⚙️ | **GameSetting** | `Assets/GameSetting/GameSetting.json` → `FPAssetLoader::LoadGameSetting`이 읽어 `FPGameSettingData`로 저장 → `FPGameProjectSetting::ProjectSetting()`이 창 크기 · MSAA · AF · 전체화면 값을 반영, `RenderingDevice::SetMSAA/SetAF`로 렌더러에 전달 |
-| 🎭 | **데이터 기반 Material** | Material도 JSON(`LoadMaterial`)으로 정의. 재질 1개당 **기본 Material** + 메시마다 색상 복제·텍스처 배열을 가진 **Material Instance** 두 단계로 저장하고, `FPAssetManager::MakeMaterial`이 실행 중 `FPMaterial` 인스턴스로 변환 (없으면 `DefaultMaterial` 사용) |
+| 🎭 | **데이터 기반 Material (Shader Reflection)** | Material JSON(`LoadMaterial`)이 셰이더의 **cbuffer 변수 · 텍스처 · 샘플러를 이름으로** 지정. `MakeMaterial`이 컴파일된 셰이더를 `D3DReflect`로 읽어 오프셋 · 슬롯(`b#` / `t#` / `s#`)을 자동 계산하고, 런타임에는 `SetParameter` / `SetNamedTexture` / `SetNamedSampler`로 이름을 통해 값을 바꿈. 재질 1개당 **기본 Material** + 메시마다 **Material Instance** 두 단계로 저장 (없으면 `DefaultMaterial` 사용) |
+| 🔍 | **Shader Reflection** | `RenderingDevice::ReflectionShader`가 VS · PS 바이트코드에서 JSON에 적힌 cbuffer의 변수 레이아웃(`float`~`float4`, 배열, `구조체.멤버`)과 PS의 `Texture2D` / `Texture2DArray` · `SamplerState` 바인딩을 수집해 `FPShaderReflectionData`로 보관. Mesh Pass는 이 정보로 **셰이더 레지스터 번호 그대로** 상수 버퍼 · 텍스처 · 샘플러를 바인딩 |
 | 🪟 | **Two Sided Material** | Material JSON의 `"TwoSided"`(기본 `false`)로 메시별 양면 렌더링 지정. `MeshRenderPass`가 **메시마다** Rasterizer State의 Cull을 `!TwoSided`로 결정하고, 기본 PS는 `SV_IsFrontFace`를 입력으로 받음. Normal Line은 뒷면 노멀(주황)도 함께 표시 |
 | 🧪 | **FBX → JSON 변환 도구** | `Tool/FBXToStaticMeshJsonTranslator` 콘솔 툴이 FBX 폴더를 통째로 읽어 **StaticMesh / Material / Material Instance / Texture** JSON을 한 번에 생성 (ToonLink 데모 모델 전체가 이 도구로 변환됨) |
 | 🌫️ | **Alpha Blend** *(초기 구현)* | `MeshRenderPass`가 매 프레임 표준 알파 블렌드 상태(`src·a + dst·(1−a)`, Alpha-to-Coverage)를 걸고 기본 PS가 텍스처 알파를 그대로 출력. 모든 메시에 일괄 적용되며 Z-Order 정렬은 아직 없음 |
@@ -106,7 +108,7 @@ Engine/ForestPearlEngine/
 ├── FPGameTimer.h / .cpp              # [SubSystem] 고해상도 타이머 (DeltaTime)
 ├── FPGameProjectClassRegistry.h/.cpp # [SubSystem] 클래스 이름 → 팩토리
 ├── FPGameProjectSetting.h / .cpp     # [SubSystem] 윈도우/디스플레이/그래픽(MSAA·AF·전체화면) 설정, GameSetting.json 값으로 채워짐
-├── FPAssetLoader.h / AssetLoader.cpp # [SubSystem] GameSetting · FBX · JSON(Level/StaticMesh/Material/Texture) · Shader 설명 데이터 로딩
+├── FPAssetLoader.h / .cpp            # [SubSystem] GameSetting · FBX · JSON(Level/StaticMesh/Material/Texture) · Shader 설명 데이터 로딩
 ├── FPAssetManager.h / .cpp           # [SubSystem] 로딩된 에셋 보관소. `AllAssetDataCreate()`가 설명 데이터를 GPU 리소스로 일괄 생성, `MakeMaterial`로 Material JSON → `FPMaterial` 변환
 ├── FPMeshRenderList.h / .cpp         # [SubSystem] 메시 RenderItem 목록
 ├── FPGizmoRenderList.h / .cpp        # [SubSystem] 기즈모 GizmoRenderItem 목록
@@ -153,8 +155,9 @@ Engine/ForestPearlEngine/
 ├── InputValue.h                      # FInputValue
 │
 ├── FPStreamableRenderAssetr.h        # 렌더 에셋 베이스
-├── FPTexture.h                       # 텍스처 값(이름 + SamplerType)
+├── FPTexture.h                       # 텍스처 값(이름 + SamplerType + FPTextureType)
 ├── FPTexture2D.h / .cpp              # Texture2D (기본 Default_Texture512 + Clamp)
+├── FPTexture2DArray.h / .cpp         # Texture2DArray (FPTexture 서브클래스, 골격만 존재)
 ├── FPStaticMesh.h / .cpp             # StaticMesh 에셋 (VB, Socket, Material)
 ├── FPMaterialInterface.h             # Material 인터페이스
 ├── FPMaterial.h / .cpp               # 기본 Material (Default Shader, Texture 슬롯)
@@ -171,7 +174,7 @@ Engine/ForestPearlEngine/
 │   ├── Renderer.h / .cpp             # Render List 생성 + Render Pass (Mesh / Gizmo / UI)
 │   ├── RenderingDevice.h / .cpp      # D3D11 Device 래퍼
 │   ├── FPRenderingCommon.h           # RenderItem / GizmoRenderItem / CameraItem / UIContextItem / FPViewPort + RenderingData 값 복사본
-│   ├── FPConstantBufferCommon.h      # 상수 버퍼 데이터 + AddConstantBuffer / UpdateConstantBuffer
+│   ├── FPConstantBufferCommon.h/.cpp # 상수 버퍼 데이터 + AddConstantBuffer / UpdateConstantBuffer + GetConstantBufferOffset(리플렉션 변수 오프셋 계산)
 │   └── Legacy/                       # 이전 세대 렌더러 (솔루션 미포함)
 │       ├── Legacy_Renderer.h / .cpp  #   FPRHI 기반 렌더러
 │       ├── FPRHI/                    #   RHI 추상 인터페이스
@@ -187,6 +190,7 @@ Engine/ForestPearlEngine/
 │   ├── StaticMesh/                   # Cube / Sphere / Plane _StaticMesh.json
 │   ├── Material/                     # DefaultMaterial.json (Material JSON 미지정 시 fallback)
 │   ├── Texture/                      # 텍스처 JSON (Default_Texture512 · Checker_bmp · Checker_dds)
+│   ├── Texture2DArray/               # Texture2DArray JSON (Texture2DArrayTemplate.json — 샘플 템플릿)
 │   ├── TextureResource/              # 이미지 원본 (*.dds · checker.bmp)
 │   ├── Shader/                       # 셰이더 등록 JSON (Name · Path · InputLayout) — Default* · DefaultGizmo* · NormalDebug*
 │   └── ShaderResource/               # HLSL 소스와 컴파일 결과(bin/)
@@ -309,6 +313,7 @@ classDiagram
     FPStreamableRenderAsset <|-- FPStaticMesh
     FPStreamableRenderAsset <|-- FPTexture
     FPTexture <|-- FPTexture2D
+    FPTexture <|-- FPTexture2DArray
 ```
 
 `FPObject`는 `Outer` 포인터로 소유 체인을 형성합니다 (`Actor → World → GameInstance`).
@@ -628,10 +633,10 @@ flowchart LR
 | Render List 생성 함수 | 하는 일 |
 |---|---|
 | `CreateCamList` | `Active`인 카메라만 복사. `TripleCam`이면 `TripleWaySplitViewPort`, 아니면 `MainGameViewPort`를 카메라에 붙이고 ViewPort의 상수 버퍼 데이터도 함께 복사 |
-| `CreateMeshRenderList` | `Active`인 `RenderItem`을 값으로 복사(Transform · 셰이더 이름)하고, **활성 라이트 최대 64개를 `LightItem` 하나로 묶어** VS 상수 버퍼 슬롯 0(`b2`)에, Material(`BaseColor` / `Diffuse` / `Ambient` / `Emissive`)을 슬롯 1(`b3`)에 등록. Directional은 메시의 Local 방향으로 변환하고, Point는 월드 위치를 함께 전달. `Priority` 오름차순 정렬 |
+| `CreateMeshRenderList` | `Active`인 `RenderItem`을 값으로 복사(Transform · 셰이더 이름)하고, **활성 라이트 최대 64개를 `LightItem` 하나로 묶어** **Material의 VS · PS 상수 버퍼 데이터(리플렉션으로 만들어진 `MaterialConstBuffer` 등)와 텍스처 · 샘플러 목록(`Resources` / `Samplers`)을 값으로 복사**한 뒤 Light 블록을 슬롯 2(`b2`)에 추가 등록. Directional은 메시의 Local 방향으로 변환하고, Point는 월드 위치를 함께 전달. `Priority` 오름차순 정렬 |
 | `CreateLightRenderList` | `Active`인 라이트를 값으로 복사 (LightType · Direction · Range · Diffuse · Ambient · Specular · Attenuation · LightColor · Transform) |
 | `CreateGizmoRenderList` | `GizmoRenderItem`에 대해 동일 |
-| `CreateNormalRenderList` | `Active`인 `NormalRenderItem`을 복사하고, 오브젝트마다 **Normal Matrix**(`transpose(inverse(World))`)와 `NormalLength`를 VS 상수 버퍼 슬롯 0으로 등록. World 행렬식이 0이거나 비정상이면 해당 항목 제외 |
+| `CreateNormalRenderList` | `Active`인 `NormalRenderItem`을 복사하고, 오브젝트마다 **Normal Matrix**(`transpose(inverse(World))`)와 `NormalLength`를 VS 상수 버퍼 슬롯 2(`b2`)로 등록. World 행렬식이 0이거나 비정상이면 해당 항목 제외 |
 | `CreateUIRenderList` | `active`인 텍스트만 복사하고 `UIViewPort`를 붙인 뒤 `Priority` 오름차순 정렬 |
 
 #### ⚠️ Render Pass 초기화가 불안정합니다
@@ -694,19 +699,20 @@ flowchart LR
 
 ```cpp
 // Renderers/FPRenderingCommon.h  ── 게임 → 렌더러 (포인터 묶음)
-struct RenderItem            // Mesh용. Material 색을 포인터로 직접 들고 있음
+struct RenderItem            // Mesh용. Material의 상수 버퍼 · 리플렉션 정보를 포인터로 들고 있음
 {
     int*  Priority;   bool* Active;
     std::string* MeshPath;                              // AssetManager의 VertexBuffer · IndexBuffer 키
     FPMatrix* Location; FPMatrix* Rotation; FPMatrix* Scale;
     std::string* VertexShaderPath; std::string* PixelShaderPath;   // Material의 셰이더 이름
-    FPVector4* BaseColor; FPVector4* Diffuse; FPVector4* Ambient;  // Material 색 (렌더러가 VS 상수 버퍼로 조립)
-    std::unordered_map<int, FPTextureItem>* TextureList;           // Material의 텍스처 슬롯 목록 (슬롯 → 이름 · SamplerType 포인터)
-    FPConstantBufferRenderData* VertexConstBuffer;      // 현재 MeshRenderPass는 읽지 않음 (아래 참고)
+    bool* TwoSided;
+    std::vector<FPReflectionResourceInfo>* Resources;   // Material 리플렉션의 텍스처 목록 (t# 슬롯 · 에셋 이름 · TextureType)
+    std::vector<FPReflectionSamplerInfo>*  Samplers;    // Material 리플렉션의 샘플러 목록 (s# 슬롯 · SamplerType)
+    FPConstantBufferRenderData* VertexConstBuffer;      // Material의 VS 상수 버퍼 (JSON에 적은 cbuffer들)
     FPConstantBufferRenderData* PixelConstBuffer;
 };
 
-// GizmoRenderItem : RenderItem에서 색 포인터(BaseColor / Diffuse / Ambient / Emissive)가 빠진 구조. 상수 버퍼 데이터를 그대로 사용
+// GizmoRenderItem : RenderItem에서 TwoSided · Resources · Samplers가 빠진 구조. 상수 버퍼 데이터를 그대로 사용
 // NormalRenderItem: Active, MeshPath, NormalLength*, Location / Rotation / Scale, 셰이더 이름 (상수 버퍼는 렌더러가 생성)
 
 struct FPLightRenderItem     // 라이트 1개 (Directional · Point 공용, LightType으로 구분)
@@ -739,7 +745,7 @@ struct FPViewPort            // 뷰포트 1개
 };
 ```
 
-`MeshRenderItem`은 값 복사본에 `TextureList`(슬롯 · 텍스처 이름 · 샘플러)와 `SamplerList`(`s#` 배정)를 추가로 가집니다 ([Texture](#texture)).
+`MeshRenderItem`은 값 복사본에 Material의 상수 버퍼 데이터와 `Resources` · `Samplers`(리플렉션된 텍스처 · 샘플러 목록)를 복사해 가집니다 ([Material JSON](#material-json), [Texture](#texture)).
 
 렌더러는 위 항목을 `RenderingData::MeshRenderItem` · `GizmoRenderItem` · `NormalRenderItem` · `LightRenderItem` · `CameraItem` · `UIContextItem` · `FPViewPort`로 **값 복사**해 Render List에 보관합니다.
 메시 / 기즈모 / Normal Line은 `MeshPath`로 `FPAssetManager`에서 스트림별 VertexBuffer 목록과 IndexBuffer 목록을, 셰이더 이름으로 VS · PS · InputLayout을 찾아 사용합니다.
@@ -782,6 +788,7 @@ namespace FPConstantBufferRenderDataUtil
 {
     template<typename T> void AddConstantBuffer   (FPConstantBufferRenderData&, unsigned int Slot, const T& Data);  // 생성자에서 등록
     template<typename T> void UpdateConstantBuffer(FPConstantBufferRenderData&, unsigned int Index, const T& Data); // 값 갱신
+    bool GetConstantBufferOffset(size_t BufferOffset, unsigned Components, unsigned ArrayCount, size_t ArrayStride, size_t BufferSize, unsigned ArrayIndex, size_t& OutOffset); // 리플렉션 변수의 오프셋 계산 (범위 검사 포함)
 }
 ```
 
@@ -795,20 +802,15 @@ namespace FPConstantBufferRenderDataUtil
 |:-:|:-:|---|---|---|
 | VS | `b0` | **엔진 예약** (Object) | `World` · `View` · `Proj` · `WV` · `WVP` 5종 각각에 대해 **원본 · Inverse · Transpose · InverseTranspose** 4개씩 = 행렬 20개 (20 × 64 = **1280 byte**, `MVPConstBuffer`) | 오브젝트 × 뷰포트 |
 | VS | `b1` | **엔진 예약** (ViewPort) | 뷰포트의 Vertex 상수. 기본 구조체 `VertexConst { AniOn, BlendOn }` | 뷰포트 |
-| VS | `b2 ~ b13` | **Material** (Gizmo) / **Renderer** (Mesh, Normal) | Gizmo: Material의 Vertex 상수, 등록 슬롯 `k` → `b(2 + k)`.<br/>Mesh: `b2` = **Light 블록**(`LightCnt` + 최대 64개, 9232 byte), `b3` = Material 색(`BaseColor` · `Diffuse` · `Ambient` · `Emissive`).<br/>Normal: `b2` = Normal Matrix + 길이 ([Light · Normal](#lambert-light--normal-line)) | 오브젝트 |
+| VS | `b2` | **엔진 예약** (Renderer) | Mesh: **Light 블록**(`LightCnt` + 최대 64개, 9232 byte).<br/>Normal: Normal Matrix + 길이 ([Light · Normal](#lambert-light--normal-line)) | 오브젝트 |
+| VS | `b3 ~ b13` | **Material** (Mesh) | Material JSON `Parameters`에 `"Type": "VS"`로 적은 cbuffer. **셰이더의 `register(b#)` 번호가 그대로 슬롯**입니다 (기본 `MaterialConstBuffer` = `b3`) | 오브젝트 |
 | PS | `b0` | **엔진 예약** (ViewPort) | 뷰포트의 Pixel 상수 (`Slot k` → `b(k)`). 현재 엔진 기본 뷰포트는 사용하지 않음 | 뷰포트 |
-| PS | `b1 ~ b13` | **Material** (Gizmo) | Material의 Pixel 상수. 등록 슬롯 `k` → `b(1 + k)`. Mesh · Normal Pass는 PS 상수를 등록하지 않음 | 오브젝트 |
+| PS | `b1 ~ b13` | **Material** (Mesh) | Material JSON `Parameters`에 `"Type": "PS"`로 적은 cbuffer. `register(b#)` 번호 그대로 | 오브젝트 |
 
-Material이 `AddConstantBuffer`로 등록하는 `Slot`은 셰이더 레지스터 번호가 **아니라** 위 표의 "Material 영역 안에서의 상대 번호"입니다.
+**Mesh Pass의 슬롯은 "절대 번호"입니다.** `FPConstantBufferInfo::Slot`이 곧 셰이더 레지스터 번호이며, 리플렉션이 cbuffer의 `BindPoint`를 그대로 슬롯으로 기록합니다. 따라서 Material cbuffer를 `register(b4)`로 선언하면 VS `b4`로 갱신됩니다. 뷰포트 상수는 슬롯 `1`, Light 블록은 슬롯 `2`로 등록되어 있습니다.
 
-| Material 등록 슬롯 | 0 | 1 | 2 | … | `k` | 최댓값 |
-|---|:-:|:-:|:-:|:-:|:-:|:-:|
-| VS 레지스터 | `b2` | `b3` | `b4` | … | `b(2+k)` | `k = 11` → `b13` |
-| PS 레지스터 | `b1` | `b2` | `b3` | … | `b(1+k)` | `k = 12` → `b13` |
-
-> [!WARNING]
-> **`MeshRenderPass`는 `FPMaterial`의 `VertexConstantBuffer` / `PixelConstantBuffer`를 더 이상 사용하지 않습니다.** `CreateMeshRenderList`가 Light와 Material 색(`BaseColor` / `Diffuse` / `Ambient`)으로 VS 상수 버퍼를 새로 구성하기 때문입니다.
-> 따라서 커스텀 Material에 `AddConstantBuffer`로 등록한 값은 **Gizmo Pass에서만** 셰이더에 전달됩니다 ([커스텀 Material과 상수 버퍼](#8-커스텀-material과-상수-버퍼) 참고).
+> [!NOTE]
+> **Mesh · Gizmo · Normal Pass 모두 같은 절대 슬롯 규칙**을 씁니다. 이전에는 Gizmo · Normal Pass만 오프셋(VS `+2`, PS `+1`, 뷰포트 `1 + Slot`)을 더해 슬롯을 계산해서, 뷰포트 상수(슬롯 `1`)가 VS `b2`에 쓰이며 Normal Matrix 버퍼를 덮어쓰는 문제가 있었습니다. 지금은 오프셋을 없애고 `FPConstantBufferInfo::Slot`을 그대로 레지스터 번호로 사용하며, Normal Matrix는 슬롯 `2`로 등록합니다 (`NormalDebugVertexShader`의 `register(b2)`와 일치). 새 Pass를 만들 때도 오프셋 없이 절대 슬롯으로 등록하세요.
 
 > [!NOTE]
 > ViewPort용 PS 상수 버퍼는 `MeshRenderPass`와 `GizmoRenderPass` 모두 `b(Slot)`으로 갱신됩니다. 따라서 PS `b0`은 ViewPort가, `b1`부터는 Material이 사용해 서로 겹치지 않습니다.
@@ -820,17 +822,17 @@ Material이 `AddConstantBuffer`로 등록하는 `Slot`은 셰이더 레지스터
 
 ```mermaid
 flowchart TD
-    A["Actor::Tick<br/>Material::UpdateMaterial"] --> B["UpdateConstantBuffer<br/>Material의 RenderData.Buffer에 memcpy"]
-    B --> C["CreateGizmoRenderList<br/>RenderData를 값으로 복사 - 스냅샷<br/>(Mesh는 Light + Material 색으로 새로 구성)"]
-    C --> D["RenderPass - 항목마다<br/>상수 버퍼 Map/memcpy<br/>VS b2+k · PS b1+k"]
-    D --> E["RenderPass - 뷰포트마다<br/>Object WVP → VS b0<br/>ViewPort 상수 → VS b1"]
+    A["MakeMaterial<br/>ReflectionShader가 cbuffer 크기만큼 CPU 버퍼 생성<br/>Parameters 초기값 SetParameter"] --> B["Actor::Tick<br/>Material.SetParameter(이름, 값)<br/>CPU 버퍼의 해당 오프셋에 memcpy"]
+    B --> C["CreateMeshRenderList<br/>Material 상수 버퍼 · Resources · Samplers를 값으로 복사 - 스냅샷<br/>+ Light 블록 추가(슬롯 2)"]
+    C --> D["MeshRenderPass - 항목마다<br/>상수 버퍼 Map/memcpy (슬롯 = register 번호)<br/>PSSetShaderResources t# · PSSetSamplers s#"]
+    D --> E["MeshRenderPass - 뷰포트마다<br/>Object → VS b0<br/>ViewPort 상수 → VS b1"]
     E --> F["Draw"]
 ```
 
 > [!NOTE]
-> 엔진은 `UpdateMaterial()`을 **자동으로 호출하지 않습니다.** 값이 매 프레임 바뀌는 Material은 액터의 `Tick()`에서 직접 호출해야 합니다.
+> 값을 바꾸는 `SetParameter`는 Material의 **CPU 버퍼**만 갱신하고, GPU로의 복사는 Pass가 합니다. `UpdateMaterial()`은 이제 비어 있어 호출할 필요가 없습니다.
 
-콘텐츠 프로그래머가 Material에서 상수 버퍼를 다룰 때의 규칙은 [커스텀 Material과 상수 버퍼](#8-커스텀-material과-상수-버퍼)를 참고하세요.
+Material 값을 다루는 방법은 [커스텀 Material과 상수 버퍼](#8-커스텀-material과-상수-버퍼)를 참고하세요.
 
 ### 메시 · 기즈모 렌더링 (`MeshRenderPass` / `GizmoRenderPass`)
 
@@ -923,7 +925,7 @@ struct alignas(16) LightItem { unsigned int LightCnt; unsigned int Padding[3]; L
 ```hlsl
 // Assets/ShaderResource/Light.hlsli — 기본 Mesh VS가 포함
 cbuffer LightConstBuffer    : register(b2) { uint LightCnt; float3 Padding; LIGHT Light[Light_MAX]; };  // 9232 byte
-cbuffer MaterialConstBuffer : register(b3) { MATERIAL Material; };   // BaseColor · Diffuse · Ambient · Emissive
+cbuffer MaterialConstBuffer : register(b3) { MATERIAL Material; };   // BaseColor · Diffuse · Ambient · Emissive — Material JSON의 Parameters로 채워짐
 float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix mInverseTranseposeWV);
 ```
 
@@ -946,7 +948,7 @@ float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix 
 
 **Emissive (자체 발광)**
 
-Material에 `Emissive`(`FPVector4`)가 추가되었습니다. `FPMaterialInterface::SetEmissive / GetEmissive`, `RenderItem::Emissive`, `MATERIAL` 상수 버퍼(`b3`, 이제 64 byte)로 전달되며 라이트 합에 **더해진 뒤** `BaseColor`가 곱해집니다. 라이트의 영향을 받지 않고 밝게 보이게 할 때 씁니다. Material JSON의 `Emissive` 키 설명은 [Material JSON](#material-json)을 참고하세요.
+`MATERIAL` 구조체(`MaterialConstBuffer`, `b3`, 64 byte)의 `Emissive`는 라이트 합에 **더해진 뒤** `BaseColor`가 곱해집니다. 라이트의 영향을 받지 않고 밝게 보이게 할 때 씁니다. 이전의 `SetEmissive` / `SetBaseColor` 등은 사라졌고, Material JSON의 `Parameters`에서 지정하거나 `SetParameter(FPShaderType::VS, "MaterialConstBuffer", "Material.Emissive", 값)`으로 바꿉니다 ([Material JSON](#material-json)).
 
 ```cpp
 // Games/Release_Game/Tri_World/ADirectionalLight.cpp
@@ -981,9 +983,9 @@ ATorchLight::ATorchLight()
     LightComponent->SetAttenuation(Attenuation);
     LightComponent->SetRange(100.0f);
 
-    LightProbe->GetMaterial().SetBaseColor(Color);
+    LightProbe->GetMaterial().SetParameter(FPShaderType::VS, "MaterialConstBuffer", "Material.BaseColor", Color);
     FPVector4 EmissiveColor = { 1, 1, 1, 1 };                      // 라이트와 무관하게 밝게
-    LightProbe->GetMaterial().SetEmissive(EmissiveColor);
+    LightProbe->GetMaterial().SetParameter(FPShaderType::VS, "MaterialConstBuffer", "Material.Emissive", EmissiveColor);
     LightProbe->GetMaterial().SetTwoSided(true);
 }
 void ATorchLight::OnTorch() { isActive = !isActive; LightComponent->SetActive(isActive); LightProbe->SetActive(isActive); }
@@ -991,7 +993,7 @@ void ATorchLight::OnTorch() { isActive = !isActive; LightComponent->SetActive(is
 
 `Player::OnTorch()`가 `1`번 키에서 처음 한 번 `SpawnActor("ATorchLight", "PlayerTorch")`로 토치를 만들고 `AttachToComponent(Hand, "TorchPoint")`로 손(`ToonLink_Hand_StaticMesh.json`에 추가된 `TorchPoint` Socket)에 붙인 뒤, 이후에는 켜고 끄기만 합니다. `ATorchLight`는 `LoadClassRegist()`에 `Register<ATorchLight>("ATorchLight")`로 등록되어 있습니다.
 
-Level JSON에 `"class": "ADirectionalLight"`로 배치하며, 클래스는 `LoadClassRegist()`에서 등록해야 합니다. 메시 색은 `Mesh->GetMaterial().SetBaseColor(Color)`로 지정합니다.
+Level JSON에 `"class": "ADirectionalLight"`로 배치하며, 클래스는 `LoadClassRegist()`에서 등록해야 합니다. 메시 색은 `Mesh->GetMaterial().SetParameter(FPShaderType::VS, "MaterialConstBuffer", "Material.BaseColor", Color)`로 지정합니다.
 
 #### Normal Line
 
@@ -1035,12 +1037,11 @@ if (input.VertexID == 1) WorldPosition += WorldNormal * NormalLength;
 | 기본 Mesh 셰이더 | `DefaultVertexShader.vso` — WVP 변환 + **통합 Light(Directional · Point)를 정점 단위로 계산**(`b0` Object, `b2` Light 블록, `b3` Material). `DefaultPixelShader.pso`는 보간된 정점 색에 **텍스처(`t0` / `s0`)를 곱해** 출력 |
 | 기본 Gizmo 셰이더 | `DefaultGizmoVertexShader.vso` / `DefaultGizmoPixelShader.pso` — WVP 변환 후 정점 색 출력 (`b0`만 사용, 라이트 없음). Position · Color 스트림만 바인딩. `FPGizmoGridComponent` · `FPGizmoAxisComponent`가 사용 |
 | Normal Line 셰이더 | `NormalDebugVertexShader.vso` / `NormalDebugPixelShader.pso` — [Lambert Light · Normal Line](#lambert-light--normal-line) 참고. 전용 Input Layout을 쓰므로 `LoadNormalDebugVertexShader()`로 로드 |
-| 로드 방식 1 | 사전 컴파일된 오브젝트 로드 — `LoadVertexShader("X.vso", owner)` |
-| 로드 방식 2 | 런타임 컴파일 — `LoadVertexShader("X.fx", "VS_Main", "vs_5_0", owner)` (행 우선 행렬 패킹) |
-| `FPMaterialInterface` | `SetTexture / SetTextureSampler / AddTexture / DeleteTexture / GetTextureList`, `SetTwoSided / GetTwoSided`, `SetVertexShader / SetPixelShader`, 셰이더 이름 Getter, `Set / GetBaseColor · Diffuse · Ambient`, `Get{Vertex,Pixel}ConstantBufferRenderData()`, `UpdateMaterial(DeltaTime)` |
-| `FPMaterial` | 생성 시 **텍스처 슬롯 0**(`Default_Texture512`)과 기본 셰이더 이름, `BaseColor` · `Diffuse` · `Ambient`(기본 모두 `{1,1,1,1}`)를 설정. 보호 멤버 `VertexConstantBuffer` / `PixelConstantBuffer`에 `AddConstantBuffer`로 상수 버퍼를 등록 (Gizmo Pass에서만 사용) |
+| 셰이더 로드 | 셰이더 JSON(`LoadVertexShader("X.json", owner)` / `LoadPixelShader`)로 등록 ([셰이더 JSON](#셰이더-json)). 컴파일된 `.vso` / `.pso`는 `AllAssetDataCreate()`가 로드 |
+| `FPMaterialInterface` | `SetParameter / GetParameter`(`float` · `FPVector2/3/4` · `std::vector<float>`), `SetParameterElement / GetParameterElement`(배열 요소), `SetNamedTexture / SetNamedSampler`, `SetTwoSided / GetTwoSided`, `SetVertexShader / SetPixelShader`, 셰이더 이름 Getter, `Get{Vertex,Pixel}ConstantBufferRenderData()`, `GetReflectionData()`, `UpdateMaterial(DeltaTime)`. 이전의 `Set/Get BaseColor · Diffuse · Ambient · Emissive`와 `SetTexture` · `AddTexture` · `DeleteTexture` · `GetTextureList`는 제거됨 |
+| `FPMaterial` | 보호 멤버 `VertexConstantBuffer` / `PixelConstantBuffer`(리플렉션이 크기를 정함)와 `ReflectionData`(`FPShaderReflectionData`: `Parameters` · `Resources` · `Samplers`)를 가짐. 생성자는 더 이상 텍스처 슬롯이나 색 상수 버퍼를 만들지 않으며, 모든 값은 `MakeMaterial`이 Material JSON에서 채움 |
 
-Material은 셰이더를 **파일 이름**(`"Demo.vso"`)으로 가리키고, 렌더러가 Pass 안에서 `FPAssetManager`에서 실제 셰이더를 찾습니다. 따라서 `LoadAssets()`에서 먼저 로드해 두어야 합니다.
+Material은 셰이더를 **등록 이름**(`"DefaultVertexShader"`)으로 가리키고, 렌더러가 Pass 안에서 `FPAssetManager`에서 실제 셰이더를 찾습니다. 따라서 `LoadAssets()`에서 먼저 로드해 두어야 합니다.
 
 Material 선택 우선순위: **컴포넌트 생성 뒤 `SetMaterial`로 직접 지정한 Material** → StaticMesh JSON의 `"Material.Name"`이 가리키는 [Material JSON](#material-json)(`MakeMaterial`이 자동 생성) → 그 이름이 없으면 엔진의 `DefaultMaterial`
 
@@ -1125,37 +1126,66 @@ struct FPMeshData { std::string Name;
 flowchart LR
     J["Texture/*.json"] -->|"LoadTexture"| TI["FPAssetManager<br/>FPTextureInfo<br/>Name · Path · Type"]
     TI -->|"AllAssetDataCreate<br/>MakeTexture - WIC / DDS"| AM["FPAssetManager<br/>FPTextureData<br/>SRV + Texture2D Desc"]
-    MAT["FPMaterial<br/>TextureList - 슬롯 → FPTexture2D<br/>이름 + SamplerType"] -->|"GetTextureList"| RI["RenderItem<br/>TextureList 포인터"]
-    RI -->|"CreateMeshRenderList<br/>값 복사"| RL["MeshRenderItem<br/>TextureList · SamplerList"]
-    RL -->|"MeshRenderPass"| PS["PSSetShaderResources t슬롯<br/>PSSetSamplers s번호"]
+    MAT["FPMaterial.ReflectionData<br/>Resources - t# · 변수 이름 · AssetName<br/>Samplers - s# · SamplerType"] -->|"RenderItem.Resources / Samplers 포인터"| RI["RenderItem"]
+    RI -->|"CreateMeshRenderList<br/>값 복사"| RL["MeshRenderItem<br/>Resources · Samplers"]
+    RL -->|"MeshRenderPass"| PS["PSSetShaderResources t#<br/>PSSetSamplers s#"]
     AM -->|"GetTextureData 이름"| PS
 ```
 
 | 구성 요소 | 파일 | 설명 |
 |---|---|---|
-| `FPTexture` / `FPTexture2D` | `FPTexture.h`, `FPTexture2D.h/.cpp` | Material 슬롯 1개가 가지는 값. **텍스처 이름**(`FPAssetManager` 키)과 `FPSamplerType` |
+| `FPTexture` / `FPTexture2D` | `FPTexture.h`, `FPTexture2D.h/.cpp` | 이전에 Material 슬롯 1개를 표현하던 클래스. Shader Reflection 도입 후 `FPMaterial`은 슬롯 목록을 들지 않으며 `FPTexture2DArray`의 베이스로만 남아 있음 |
 | `FPTextureInfo` | `FPAssetManager.h` | `LoadTexture`가 JSON에서 읽은 **설명 데이터**(`Name` / `Path` / `Type` / `Owner`). 이 시점에는 아직 GPU 리소스가 없음 |
 | `FPTextureData` | `Define/FPDataDefine.h` | `MakeTexture`가 만든 실제 텍스처. `TextureResource`(`ID3D11ShaderResourceView*`), `TextureDESC`(`D3D11_TEXTURE2D_DESC*`) |
-| `FPTextureItem` | `Renderers/FPRenderingCommon.h` | `RenderItem`이 Material의 텍스처 목록을 가리키는 포인터 묶음 (`std::string* TexturePath`, `FPSamplerType* SamplerType`) |
-| `RenderingData::FPTextureItem` · `FPSamplerItem` | `Renderers/FPRenderingCommon.h` | Render List의 값 복사본. `{ Slot, 텍스처 이름, SamplerType }`, `{ Slot, SamplerType }` |
+| `FPReflectionResourceInfo` | `Renderers/FPRenderingCommon.h` | 셰이더의 텍스처 변수 하나(배열이면 요소마다 하나). `{ Name, AssetName, TextureType, Slot(t#), BindCount }`. `AssetName`은 JSON `Textures[].Asset` 또는 `SetNamedTexture`가 채움 |
+| `FPReflectionSamplerInfo` | `Renderers/FPRenderingCommon.h` | 셰이더의 `SamplerState` 하나. `{ Name, SamplerType, Slot(s#), BindCount }`. `SamplerType`은 `SetNamedSampler`가 채우며 기본값 `Filter_Tri_Linear_Sampler_CLAMP` |
 | `FPAssetManager` | `FPAssetManager.h/.cpp` | `AddTextureInfoData` · `GetTextureInfoData` · `HasTextureInfoData`(설명 데이터), `MakeTexture`(GPU 리소스 생성), `AddTextureData` · `GetTextureData` · `HasTextureData`(생성된 텍스처) |
 | `FPAssetLoader::LoadTexture` | `AssetLoader.cpp` | Texture JSON을 읽어 `FPTextureInfo`로 등록 (실제 `WIC` / `DDS` 로드는 `AllAssetDataCreate()`가 나중에 수행) |
 | `RenderingDevice` | `RenderingDevice.h/.cpp` | `CreateWICTextureFromFile` · `CreateDDSTextureFromFile`(DirectXTK, **Mipmap 자동 생성**), `GetTextureDesc`, `PSSetShaderResources`, `CreateSamplers`, `PSSetSamplers` |
+
+#### Texture2DArray *(실험적)*
+
+여러 장의 Texture2D를 **하나의 `Texture2DArray` SRV**로 합쳐 슬롯 하나에 바인딩하는 기능입니다. 아직 `Texture2DArrayTemplate.json` 템플릿만 있고, 어떤 게임의 `LoadAssets()`에서도 `LoadTexture2DArray`를 호출하지 않으며, 커밋 메시지(`Multi Texture로 테스트 필요`)대로 실제 멀티 텍스처 검증은 남아 있습니다.
+
+```json
+// Assets/Texture2DArray/Texture2DArrayTemplate.json
+{
+  "Name": "Terrain_Texture2DArray",
+  "Width": 512,
+  "Height": 512,
+  "ArraySize": 4,
+  "SourceTextures": [ "Grass_Texture", "Stone_Texture", "Sand_Texture", "Snow_Texture" ]
+}
+```
+
+| 단계 | 함수 | 내용 |
+|---|---|---|
+| 1. 로드 | `FPAssetLoader::LoadTexture2DArray` | JSON을 읽어 `FPTextureArrayInfo`(`Name` / `Width` / `Height` / `ArraySize` / `SourceTextures[]`)로 등록. 이름이 중복되면 콘솔 경고만 출력하고 무시 |
+| 2. 생성 | `FPAssetManager::MakeTextureArray` | `AllAssetDataCreate()`가 **Texture 생성 다음**에 호출. `ArraySize == 0`이거나 `SourceTextures.size()`와 다르거나 2048을 넘으면, 해상도가 0 이하거나 16384를 넘으면 중단 |
+| 3. 검증 | `RenderingDevice::CheckTextureArrayData` | `SourceTextures[]`가 이미 `GetTextureData`로 만들어진 `ID3D11Texture2D`인지, MSAA가 아닌지, 지정한 `Width/Height`·서로 같은 포맷인지 확인하고 **가장 작은 MipLevels**를 계산 |
+| 4. 병합 | `RenderingDevice::CreateTextureArray2D` | 검증을 통과하면 `ArraySize`장 짜리 `Texture2DArray`를 만들고, 각 소스 텍스처를 `CopySubresourceRegion`으로 슬라이스마다 복사한 뒤 `D3D11_SRV_DIMENSION_TEXTURE2DARRAY` SRV 생성 |
+| 5. 사용 | Material JSON `Textures[]`의 `"TextureType": "Texture2DArray"` 또는 `FPMaterial::SetNamedTexture(..., Texture2DArray)` | 셰이더의 `Texture2DArray` 변수에 연결하면 `MeshRenderPass`가 `GetTextureData` 대신 `GetTextureArrayData`에서 SRV를 가져와 바인딩 |
+
+> [!NOTE]
+> `AllAssetDataCreate()`의 순서는 **Texture → Texture Array → FBX(StaticMesh) → Shader**입니다. `MakeTextureArray`가 `GetTextureData`로 원본 텍스처를 조회하므로, Texture2DArray의 `SourceTextures[]`는 반드시 먼저 로드된 Texture2D 이름이어야 합니다.
 
 #### 바인딩 규칙
 
 | 대상 | 규칙 |
 |---|---|
-| 텍스처 슬롯 | Material에 등록한 슬롯 `n` → PS **`t(n)`**. 슬롯은 `0 ~ 127`만 허용 |
-| 기본 슬롯 | `FPMaterial` 생성자가 **슬롯 0**을 자동 등록 (`Default_Texture512`, Clamp). 슬롯 0은 항상 존재 |
-| 샘플러 번호 | 텍스처 슬롯과 **1:1이 아닙니다.** Render List를 만들 때 그 메시가 쓰는 샘플러 종류를 `FPSamplerType` 값 오름차순으로 중복 없이 모아 `s0, s1, …`에 차례로 배정합니다 |
-| 갱신 시점 | `CreateMeshRenderList`에서 `Active`인 메시의 텍스처 · 샘플러 목록을 복사하고, `MeshRenderPass`가 **메시마다** `PSSetShaderResources` / `PSSetSamplers`를 호출 |
+| 텍스처 슬롯 | 셰이더의 **`register(t#)` 번호 그대로**(`0 ~ 127`). 리플렉션이 변수 이름으로 슬롯을 찾음 |
+| 샘플러 슬롯 | 셰이더의 **`register(s#)` 번호 그대로**(`0 ~ 15`). 이전처럼 사용 중인 샘플러 종류를 모아 `s0, s1…`로 다시 배정하지 않음 |
+| 텍스처 연결 | Material JSON `Textures[]`(`Parameter` = HLSL 변수 이름) 또는 `SetNamedTexture`. 배열 변수는 `ArrayIndex`로 요소를 지정 |
+| 기본 텍스처 | `FPMaterial`은 슬롯을 자동으로 만들지 않습니다. 기본 PS의 `TexDiff`에 `Default_Texture512`가 연결되는 것은 `DefaultMaterial.json`의 `Textures[]` 때문입니다 |
+| 갱신 시점 | `CreateMeshRenderList`가 `Resources` · `Samplers`를 복사하고, `MeshRenderPass`가 **메시마다** `PSSetShaderResources(Slot, 1, SRV)` / `PSSetSamplers(Slot, 1, SamplerType)`를 호출. `TextureType`에 따라 SRV는 `GetTextureData` 또는 `GetTextureArrayData`에서 가져옴 |
 
-샘플러 번호 예: 슬롯 0 = `Filter_Tri_Linear_Sampler_Wrap`, 슬롯 1 = `Filter_Tri_Linear_Sampler_CLAMP`이면 → `s0` = CLAMP, `s1` = Wrap (열거형 순서). 한 메시가 샘플러를 하나만 쓰면 항상 `s0`입니다.
+> [!NOTE]
+> Material JSON의 `Samplers[].SamplerType`은 `LoadMaterial`이 `StringToSamplerType`으로 `FPSamplerType`으로 변환해 `FPSamplerParameterData`에 담고, `MakeMaterial`이 `SetNamedSampler`로 해당 샘플러 변수에 적용합니다. **열거형에 없는 이름(오타 포함)이면 오류 없이 `Filter_Tri_Linear_Sampler_CLAMP`로 대체**되므로 이름을 정확히 적어야 합니다 (예: 필터 이름은 `Filter_Anistropy_Linear_…`로 철자가 `Anisotropy`가 아님에 주의).
+> 샘플러 변수의 값이 JSON에도 코드(`SetNamedSampler`)에도 지정되지 않으면 리플렉션 기본값 `Filter_Tri_Linear_Sampler_CLAMP`가 쓰입니다.
 
-`FPSamplerType`은 **필터 4단계 × 주소 모드 9종 = 36개** 값입니다 (`Sampler_MAX_`가 전체 개수). JSON에서는 `TextureFilter`(필터)와 `SamplerType`(주소 모드)을 따로 쓰고, `StringToSamplerType`이 `TextureFilter + "_" + SamplerType`으로 합쳐 아래 열거형 이름을 찾습니다. 못 찾으면 **기본값 `Filter_Tri_Linear_Sampler_CLAMP`** 로 떨어집니다.
+`FPSamplerType`은 **필터 4단계 × 주소 모드 9종 = 36개** 값입니다 (`Sampler_MAX_`가 전체 개수). Material JSON에는 `"SamplerType": "Filter_Tri_Linear_Sampler_Wrap"`처럼 **열거형 이름 전체**를 적습니다 (`LoadMaterial`이 `StringToSamplerType`으로 변환하며, 알 수 없는 이름은 `Filter_Tri_Linear_Sampler_CLAMP`로 떨어집니다).
 
-| 필터(`TextureFilter`) | D3D11 필터 | 비고 |
+| 필터(열거형 이름 앞부분) | D3D11 필터 | 비고 |
 |---|---|---|
 | `Filter_Point` | `MIN_MAG_MIP_POINT` | |
 | `Filter_Bi_Linear` | `MIN_MAG_LINEAR_MIP_POINT` | |
@@ -1177,7 +1207,7 @@ flowchart LR
 > 샘플러 상태 객체 36개는 `RenderingDevice::CreateSamplers()`가 만들며, `ForestPearlEngine::PreInitialize()`에서 `Renderer::InitializeRenderer()` **직후**, 엔진 에셋 로드(`LoadEngineAssets`) 전에 호출합니다.
 > 이 함수는 `ID3D11Device`로 `CreateSamplerState`를 호출하므로 **D3D 디바이스가 만들어진 뒤**(`InitializeRenderer`의 `CreateHighSpecDevice` 이후)여야 합니다. 앞으로 부팅 순서를 바꿀 때도 이 순서를 지켜야 합니다.
 > Anisotropic 샘플러의 `MaxAnisotropy`는 `RenderingDevice::SetAF()`로 미리 설정해 둔 `dwAF` 값을 쓰므로, **`SetAF()` → `CreateSamplers()`** 순서를 지켜야 합니다 (`ForestPearlEngine::PreInitialize()`가 이 순서로 호출).
-> 호출되지 않으면 `PSSetSamplers`가 `nullptr`을 바인딩해, `SetTexture(…, SamplerType)`로 고른 샘플러가 반영되지 않습니다.
+> 호출되지 않으면 `PSSetSamplers`가 `nullptr`을 바인딩해, JSON이나 `SetNamedSampler`로 고른 샘플러가 반영되지 않습니다.
 
 > [!NOTE]
 > **Mipmap** — `CreateWICTextureFromFile` / `CreateDDSTextureFromFile`은 이제 `ID3D11DeviceContext`를 함께 넘겨 `D3D11_RESOURCE_MISC_GENERATE_MIPS`로 로드하므로, 텍스처를 로드할 때 Mip 체인이 자동 생성됩니다. `Filter_Tri_Linear_*` / `Filter_Anistropy_Linear_*` 샘플러가 실제로 Mip 보간 효과를 받습니다.
@@ -1248,64 +1278,91 @@ float4 PS_Main(float4 pos : SV_POSITION, float4 col : COLOR0, float2 uv : TEXCOO
 
 ### Material JSON
 
-Material도 Texture처럼 **JSON으로 정의되는 에셋**입니다. `FPAssetLoader::LoadMaterial(name, owner)`가 `Material/<file>`을 읽어 `FPMaterialData`(설명 데이터)로 등록해 두면, `AllAssetDataCreate()` 이후 **StaticMesh가 실제로 생성되는 시점**(`FPAssetManager::GetStaticMeshData`)에 `MakeMaterial(이름)`이 이를 실제 `FPMaterial` 인스턴스로 변환합니다. 등록된 이름이 없으면 엔진 에셋 `DefaultMaterial`로 대체됩니다.
+Material은 **셰이더 변수 이름**으로 값을 연결하는 JSON 에셋입니다. 엔진이 셰이더를 컴파일된 바이트코드에서 **Shader Reflection**(`D3DReflect`)으로 읽어, JSON에 적은 상수 버퍼 변수 · 텍스처 · 샘플러를 이름으로 찾아 채웁니다. 슬롯 번호(`b#` / `t#` / `s#`)를 코드나 JSON에 직접 적지 않습니다.
+
+`FPAssetLoader::LoadMaterial(file, owner)`가 `Material/<file>`을 읽어 `FPMaterialData`(설명 데이터)로 등록해 두면, `AllAssetDataCreate()` 이후 **StaticMesh가 실제로 생성되는 시점**(`FPAssetManager::GetStaticMeshData`)에 `MakeMaterial(이름)`이 실제 `FPMaterial`로 변환합니다. 등록된 이름이 없으면 엔진 에셋 `DefaultMaterial`로 대체됩니다.
 
 ```mermaid
-flowchart LR
-    MJ["Material/*.json<br/>Name · Shader · Color · Texture[]"] -->|"LoadMaterial"| MD["FPAssetManager<br/>FPMaterialData"]
-    SMJ["StaticMesh/*.json<br/>Material.Name"] -->|"LoadStaticMesh"| SMD["FPStaticMeshData<br/>MaterialName"]
-    MD -->|"MakeMaterial(이름)<br/>없으면 DefaultMaterial"| FM["FPMaterial<br/>BaseColor/Diffuse/Ambient + 텍스처 슬롯"]
-    SMD -->|"GetStaticMeshData"| FM
-    FM --> SM["FPStaticMesh::SetMaterial"]
+flowchart TD
+    MJ["Material/*.json<br/>Name · VertexShader · PixelShader · TwoSided<br/>Parameters[] · Textures[] · Samplers[]"] -->|"LoadMaterial"| MD["FPMaterialData<br/>Parameters · NamedTextures · NamedSamplers"]
+    MD -->|"MakeMaterial(이름)"| S1["① VS · PS 바이트코드 조회"]
+    S1 --> S2["② ManagedCBs = JSON Parameters에 적힌 (VS/PS, cbuffer 이름)"]
+    S2 --> S3["③ RenderingDevice::ReflectionShader<br/>cbuffer 변수 오프셋 · 텍스처 · 샘플러 수집<br/>→ FPShaderReflectionData + VS/PS CPU 상수 버퍼"]
+    S3 --> S4["④ Parameters → SetParameter<br/>⑤ Textures → SetNamedTexture<br/>⑥ Samplers → SetNamedSampler"]
+    S4 --> FM["FPMaterial"]
+    S4 -.->|"하나라도 실패"| NIL["delete Material → nullptr"]
 ```
-
-실무에서는 재질 하나를 **기본 Material**(색만, 재질당 1개)과 **Material Instance**(메시마다 1개, 기본 색을 복제 + 이 메시가 쓰는 텍스처 배열)로 나눠서 두 JSON을 만들고, StaticMesh JSON은 Material Instance 쪽을 참조합니다 ([FBX 변환 도구](#fbx-변환-도구-fbxtostaticmeshjsontranslator)가 자동으로 이 구조로 생성합니다).
 
 ```json
-// Material/hair.002_Material.json — 기본 Material (색만)
+// Assets/Material/Terrain/Terrain_Material.json
 {
   "Material": {
-    "Name": "hair.002_Material",
-    "VertexShader": "DefaultVertexShader",
-    "PixelShader": "DefaultPixelShader",
-    "Ambient":   { "r": 0.05, "g": 0.05, "b": 0.05, "a": 1.0 },
-    "BaseColor": { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 },
-    "Diffuse":   { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 },
-    "Emissive":  { "r": 0.0,  "g": 0.0,  "b": 0.0,  "a": 0.0 },
-    "TwoSided":  false
+    "Name": "Terrain_Material",
+    "VertexShader": "TerrainVertexShader",
+    "PixelShader": "TerrainPixelShader",
+    "TwoSided": true,
+    "Parameters": [
+      {
+        "Type": "VS",
+        "ConstantBuffer": "MaterialConstBuffer",
+        "Values": {
+          "Material.BaseColor": [1.0, 1.0, 1.0, 1.0],
+          "Material.Diffuse":   [1.0, 1.0, 1.0, 1.0],
+          "Material.Ambient":   [1.0, 1.0, 1.0, 1.0],
+          "Material.Emissive":  [0.0, 0.0, 0.0, 0.0]
+        }
+      }
+    ],
+    "Textures": [
+      { "Type": "PS", "Parameter": "TexDiff", "Asset": "Field_micro02_dds", "TextureType": "Texture2D" }
+    ],
+    "Samplers": [
+      { "Type": "PS", "Parameter": "Smpler", "SamplerType": "Filter_Anistropy_Linear_Sampler_Wrap" }
+    ]
   }
-}
-
-// Material/hair.002_ToonLink_Hair_StaticMesh_MaterialInstance.json — 이 메시 전용 Instance (+ 텍스처)
-{
-  "Material": {
-    "Name": "hair.002_ToonLink_Hair_StaticMesh_MaterialInstance",
-    "VertexShader": "DefaultVertexShader",
-    "PixelShader": "DefaultPixelShader",
-    "Ambient":   { "r": 0.05, "g": 0.05, "b": 0.05, "a": 1.0 },
-    "BaseColor": { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 },
-    "Diffuse":   { "r": 0.8,  "g": 0.8,  "b": 0.8,  "a": 1.0 },
-    "Emissive":  { "r": 0.0,  "g": 0.0,  "b": 0.0,  "a": 0.0 },
-    "TwoSided":  false
-  },
-  "Texture": [
-    { "Name": "Hair_png", "Slot": 0, "TextureFilter": "Filter_Tri_Linear", "SamplerType": "Sampler_Wrap" }
-  ]
 }
 ```
 
-| 키 | 설명 |
-|---|---|
-| `Material.Name` | 등록 이름. StaticMesh JSON의 `Material.Name`과 다른 Material JSON이 이 이름으로 서로 참조 |
-| `Material.VertexShader` / `PixelShader` | `FPAssetManager`에 로드돼 있어야 하는 셰이더 이름 (확장자 없이) |
-| `Material.Ambient` / `BaseColor` / `Diffuse` | `FPMaterial::SetAmbient/BaseColor/Diffuse`로 그대로 전달되는 `{r,g,b,a}` 색 |
-| `Material.Emissive` | 자체 발광 색 `{r,g,b,a}`. `FPMaterial::SetEmissive`로 전달되어 라이트 합에 더해진 뒤 `BaseColor`가 곱해짐. **`LoadMaterial`이 필수 키로 읽으므로 빠뜨리면 Material 로드가 실패합니다** (기존 JSON에는 모두 추가됨) |
-| `Material.TwoSided` | 양면 렌더링 여부. 생략하면 `false`. `true`이면 `MeshRenderPass`가 이 메시를 Cull 없이 그림 ([Two Sided Material](#two-sided-material)) |
-| `Texture[]` | `{ Name, Slot, TextureFilter, SamplerType }` 배열. `AssetLoader`가 `TextureFilter + "_" + SamplerType`을 합쳐 `FPSamplerType`으로 변환하고, `MakeMaterial`이 각 항목마다 `AddTexture(Slot)` + `SetTexture(Slot, Name, SamplerType)`를 호출 (생략하면 텍스처 없는 기본 Material). `TextureFilter` / `SamplerType`을 생략하거나 조합이 열거형에 없으면 기본값 `Filter_Tri_Linear_Sampler_CLAMP`로 떨어짐 ([Texture](#texture) 참고) |
+| 키 | 필수 | 설명 |
+|---|:-:|---|
+| `Material.Name` | ✔ | 등록 이름. StaticMesh JSON의 `Material.Name`이 이 이름을 참조 |
+| `Material.VertexShader` / `PixelShader` | ✔ | `FPAssetManager`에 로드돼 있어야 하는 [셰이더 JSON](#셰이더-json)의 `Name` |
+| `Material.TwoSided` | | 양면 렌더링 여부. 생략하면 `false` ([Two Sided Material](#two-sided-material)) |
+| `Material.Parameters[]` | ✔ | 상수 버퍼 변수 값 묶음. 항목 하나 = `{ Type, ConstantBuffer, Values }`. 비어 있어도 키 자체는 있어야 함 (`at`으로 읽음) |
+| `Parameters[].Type` | ✔ | `"VS"` 또는 `"PS"` — 변수가 선언된 셰이더 단계 |
+| `Parameters[].ConstantBuffer` | ✔ | HLSL `cbuffer`의 **이름** (예: `MaterialConstBuffer`). 이 이름들만 리플렉션 대상이 됨 |
+| `Parameters[].Values` | ✔ | `{ "변수 이름": 값 }`. 값은 숫자(`float`) 또는 숫자 배열(`float2~4`, 또는 `float[]` · `float4[]`는 요소를 이어서 나열). 구조체 멤버는 `"Material.BaseColor"`처럼 **`구조체.멤버`** 로 적음 |
+| `Material.Textures[]` | | 텍스처 바인딩. `{ Type, Parameter, Asset, TextureType, ArrayIndex? }` |
+| `Textures[].Parameter` | ✔ | 셰이더의 **텍스처 변수 이름** (예: `TexDiff`). 슬롯 번호는 리플렉션이 찾음 |
+| `Textures[].Asset` | ✔ | `LoadTexture` / `LoadTexture2DArray`로 등록한 이름 |
+| `Textures[].TextureType` | ✔ | `"Texture2D"` 또는 `"Texture2DArray"` — 셰이더 변수 타입과 같아야 함 |
+| `ArrayIndex` | | HLSL 텍스처 **배열**(`Texture2D Tex[4]`)의 요소 번호. 생략하면 `0` |
+| `Material.Samplers[]` | | 샘플러 바인딩. `{ Type, Parameter, SamplerType, ArrayIndex? }`. `Parameter`는 `SamplerState` 변수 이름, `SamplerType`은 `FPSamplerType` 열거형 이름 ([Texture](#texture)) |
 
 > [!IMPORTANT]
-> `LoadAssets()`에서는 **Texture → Material → StaticMesh** 순서로 호출해야 합니다. `MakeMaterial`이 `Texture[].Name`을 그대로 `FPMaterial`에 박아 두고, 실제 조회(`GetTextureData`)는 `MeshRenderPass`가 그릴 때 일어나기 때문에 느슨하게라도 이 순서를 지키는 편이 안전합니다.
-> 데이터 기반 Material은 항상 **기본 `FPMaterial`** 클래스로 생성됩니다. 상수 버퍼를 추가로 쓰는 [커스텀 Material 서브클래스](#8-커스텀-material과-상수-버퍼)가 필요하면 `GetStaticMeshData`가 만든 Material을 가져오는 대신, 컴포넌트 생성 직후 `SetMaterial()`로 직접 교체해야 합니다.
+> 이전 버전의 `BaseColor` · `Diffuse` · `Ambient` · `Emissive` · `Texture[]`(`Slot` · `TextureFilter`) 키는 **더 이상 읽지 않습니다.** 색은 `Parameters`의 `MaterialConstBuffer` 값으로, 텍스처 슬롯은 `Textures[]`의 `Parameter` 이름으로 바뀌었습니다. 기존 JSON은 변환해야 하며, `Parameters` 키가 없으면 로드 중 예외가 발생합니다.
+
+**리플렉션 규칙** (`RenderingDevice::ReflectionShader` / `AppendMaterialParameter`)
+
+| 대상 | 규칙 |
+|---|---|
+| 읽는 cbuffer | JSON `Parameters`에 이름이 적힌 것**만**. Object(`b0`) · ViewPort(`b1`) · Light(`b2`)처럼 엔진이 관리하는 cbuffer는 JSON에 적지 않으면 무시됨. JSON에 적은 cbuffer가 해당 단계 셰이더에 없으면 실패 |
+| cbuffer 슬롯 | 셰이더의 `register(b#)`가 그대로 **절대 슬롯**이 되어 해당 버퍼에 갱신됩니다. 엔진 예약 `b0 ~ b2`를 피해야 함 |
+| cbuffer 크기 | 컴파일된 `cbuffer` 크기가 **16의 배수이고 9232 byte 이하**여야 함. CPU 쪽 버퍼가 그 크기만큼 만들어지고 0으로 초기화됨 |
+| 변수 타입 | `float` · `float2` · `float3` · `float4`와 그 **배열**만 허용 (배열 요소 간격 16 byte). 구조체는 멤버로 펼쳐 `구조체.멤버` 이름을 붙임. **행렬 · `int` · `uint` · `bool` · 구조체 배열이 하나라도 있으면 그 cbuffer 전체가 실패** |
+| 이름 중복 | 같은 (단계, cbuffer, 변수) · 텍스처 · 샘플러 이름이 겹치면 실패 |
+| 값 개수 | `SetParameter`의 값 개수가 `Components × ArrayCount`와 같아야 함 (`float4`는 4개, `float4[3]`은 12개) |
+| 텍스처 | **PS의 `Texture2D` / `Texture2DArray`만** 지원. 슬롯 `t0 ~ t127`. 텍스처 배열은 `Name[0]`, `Name[1]`… 요소로 펼쳐 등록 |
+| 샘플러 | PS의 `SamplerState`. 슬롯 `s0 ~ s15`. 배열은 텍스처와 같은 방식 |
+
+**기본 Material과 Material Instance**
+
+재질 하나를 **기본 Material**(`Parameters`만, 재질당 1개)과 **Material Instance**(메시마다 1개, 같은 `Parameters` + 그 메시가 쓰는 `Textures[]` · `Samplers[]`)로 나눠 만들 수 있고, StaticMesh JSON은 Material Instance 쪽을 참조합니다 ([FBX 변환 도구](#fbx-변환-도구-fbxtostaticmeshjsontranslator)가 이 구조로 생성합니다).
+
+**`DefaultMaterial`** (`Engine/ForestPearlEngine/Assets/Material/DefaultMaterial.json`) — `DefaultVertexShader` + `DefaultPixelShader`, `MaterialConstBuffer`(BaseColor · Diffuse · Ambient `1`, Emissive `0`), 텍스처 `TexDiff` = `Default_Texture512`, 샘플러 `Smpler` = `Filter_Tri_Linear_Sampler_CLAMP`.
+
+> [!IMPORTANT]
+> `LoadAssets()`에서는 **셰이더 → 텍스처 → Material → StaticMesh** 순서로 호출해야 합니다. `MakeMaterial`은 JSON에 적힌 셰이더의 **바이트코드**와 텍스처 에셋(`HasTextureData`)을 즉시 조회하므로, 먼저 로드되어 있지 않으면 Material 생성이 실패합니다.
 
 ### Legacy 렌더러
 
@@ -1644,10 +1701,11 @@ FBXToStaticMeshJsonTranslator.exe [FBX입력폴더] [Json출력폴더]
 |---|---|
 | FBX 스캔 | 입력 폴더의 모든 `.fbx`를 읽어, **메시를 가진 노드마다** StaticMesh JSON 하나를 생성 (`Name` = 파일명 그대로, `NodeName` = FBX 노드 이름) |
 | 소켓 | 메시가 없는 자식 노드(로케이터/더미)는 `Sockets[]`로 변환 |
-| Material | 메시에 연결된 첫 머티리얼마다 **기본 Material**(`<재질명>_Material.json`, 재질당 1번만 저장)과 **Material Instance**(`<재질명>_<StaticMesh이름>_MaterialInstance.json`, 메시마다 저장)를 함께 기록. 둘 다 `VertexShader` / `PixelShader`는 FBX에 정보가 없으므로 `DefaultVertexShader` / `DefaultPixelShader`로 채움 |
-| Texture | 머티리얼에 연결된 텍스처를 **실제 이미지 파일 기준으로 중복 없이** Texture JSON으로 저장 (DDS면 `"DDS"`, 그 외엔 `"WIC"`). Material Instance의 `Texture[]` 항목에는 FBX 텍스처의 Wrap 설정(Repeat/Clamp)을 `"SamplerType": "Sampler_Wrap"` / `"Sampler_CLAMP"`로, 필터는 FBX에 정보가 없어 항상 `"TextureFilter": "Filter_Tri_Linear"`로 채움 |
+| Material | 메시에 연결된 첫 머티리얼마다 **기본 Material**(`<재질명>_Material.json`, 재질당 1번만 저장, `Parameters`만)과 **Material Instance**(`<재질명>_<StaticMesh이름>_MaterialInstance.json`, 메시마다 저장, 같은 `Parameters` + `Textures[]` · `Samplers[]`)를 함께 기록. `VertexShader` / `PixelShader`는 FBX에 정보가 없으므로 `DefaultVertexShader` / `DefaultPixelShader`로 채우고, `Parameters`는 엔진이 항상 읽는 `MaterialConstBuffer`(VS: `Material.BaseColor` / `Diffuse` / `Ambient` / `Emissive`)만 고정으로 생성 |
+| Texture | 머티리얼에 연결된 텍스처를 **실제 이미지 파일 기준으로 중복 없이** Texture JSON으로 저장 (DDS면 `"DDS"`, 그 외엔 `"WIC"`). Material Instance의 `Textures[]`에는 FBX 텍스처 속성 이름(`material_prop`)을 `Parameter`로, 같은 속성에 텍스처가 여러 장이면 `ArrayIndex`를 붙여 기록. `Samplers[]`에는 FBX의 Wrap 설정을 `"Filter_Tri_Linear_" + Sampler_Wrap/CLAMP`로 기록 (필터 정보는 FBX에 없어 항상 Tri-Linear). 같은 `Parameter`에서 `SamplerType`이 겹치는 샘플러는 하나로 합침 |
 
-- `Emissive`는 FBX 값과 무관하게 항상 `(0, 0, 0, 0)`으로 기록합니다 (필요하면 JSON에서 직접 수정).
+- `Material.Emissive`는 FBX 값과 무관하게 항상 `[0, 0, 0, 0]`으로 기록합니다 (필요하면 JSON에서 직접 수정). 색은 `[r, g, b, a]` 배열로 기록됩니다.
+- 툴은 셰이더를 모르므로 **`Parameter` 이름이 HLSL 변수 이름과 다를 수 있습니다.** 엔진은 이름이 셰이더와 일치해야 하므로, 사용할 셰이더(예: 기본 PS의 `TexDiff` · `Smpler`)에 맞게 생성된 JSON의 `Parameter`를 직접 수정해야 합니다.
 - FBX 머티리얼의 **Two Sided(`double_sided`)** 설정이 켜져 있으면 두 Material JSON에 `"TwoSided": true`를 기록합니다 (엔진 `FPMaterial::TwoSided`와 같은 의미).
 - 빌드된 실행 파일이 `Tool/FBXToStaticMeshJsonTranslator/EXE/`에 포함되어 있습니다.
 - 출력 폴더 아래 `StaticMesh/`, `Material/`, `Texture/` 하위 폴더가 자동으로 만들어집니다.
@@ -2182,192 +2240,152 @@ ForestPearlEngine::GetGameEngine().StopEngine();                   // 종료
 
 ### 8. 커스텀 Material과 상수 버퍼
 
-셰이더에 게임 데이터(색, 시간, 비율 등)를 넘기려면 `FPMaterial`을 상속해 **상수 버퍼를 등록**합니다.
-슬롯 번호와 레지스터의 대응은 [상수 버퍼 슬롯 규약](#슬롯-규약)을 따릅니다.
-
-> [!WARNING]
-> 현재 `MeshRenderPass`는 Material이 등록한 상수 버퍼를 셰이더로 보내지 않습니다 (Light · Material 색으로 자체 구성). 아래 방식은 **`GizmoRenderPass`로 그려지는 항목**에서만 동작합니다. 메시에 커스텀 상수 버퍼를 쓰려면 `CreateMeshRenderList`에서 `RenderItemData.VertexConstBuffer` / `PixelConstBuffer`를 복사해 이어 붙이도록 엔진을 수정해야 합니다.
+셰이더에 값(색, 시간, 비율 등)을 넘기는 방식이 **Shader Reflection 기반**으로 바뀌었습니다. 이전처럼 `FPMaterial`을 상속해 `AddConstantBuffer` / `UpdateConstantBuffer`로 슬롯을 직접 등록하지 않고, **HLSL에 `cbuffer`를 선언하고 Material JSON에 그 이름과 변수 이름을 적으면** 엔진이 오프셋과 슬롯을 알아서 계산합니다 ([Material JSON](#material-json)).
 
 #### 작성 순서
 
-```cpp
-#include "ForestPearlEngine/FPMaterial.h"
-#include <cmath>
-
-class PulseMaterial : public FPMaterial
-{
-    // ① 상수 버퍼용 구조체: 16 byte 배수, 멤버 순서 = HLSL cbuffer 선언 순서
-    struct alignas(16) VSParams { float Scale; float Pad[3]; };         // 16 byte  → VS 등록 슬롯 0 = b2
-    struct alignas(16) PSParams { float R, G, B, A; };                  // 16 byte  → PS 등록 슬롯 0 = b1
-
-    VSParams VSData{ 1.0f, {} };
-    PSParams PSData{ 1.0f, 1.0f, 0.0f, 1.0f };
-    float    Time = 0.0f;
-
-public:
-    PulseMaterial()
-    {
-        // ② 생성자에서 등록. 등록 순서가 곧 인덱스이므로 0번부터 빈틈없이
-        FPConstantBufferRenderDataUtil::AddConstantBuffer(VertexConstantBuffer, 0, VSData);
-        FPConstantBufferRenderDataUtil::AddConstantBuffer(PixelConstantBuffer,  0, PSData);
-    }
-
-    void UpdateMaterial(float DeltaTime) override
-    {
-        Time += DeltaTime;
-        VSData.Scale = 1.0f + 0.2f * sinf(Time);
-        PSData.G     = 0.5f + 0.5f * sinf(Time);
-
-        // ③ 멤버만 바꿔서는 반영되지 않음. 바뀐 값을 다시 복사해 넣어야 함
-        FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, VSData);
-        FPConstantBufferRenderDataUtil::UpdateConstantBuffer(PixelConstantBuffer,  0, PSData);
-    }
-};
-```
+**① HLSL — `cbuffer`를 선언 (엔진 예약 `b0 ~ b2`를 피함)**
 
 ```hlsl
-// Pulse.vsh — Object(b0)는 기본 셰이더와 같은 순서로 선언
-cbuffer ObejctConstBuffer : register(b0) { matrix mWorld; matrix mView; matrix mProj; matrix mWV; matrix mWVP; };
-cbuffer PulseVS           : register(b2) { float gScale; float3 _pad; };   // VS Material 슬롯 0
+// Assets/ShaderResource/Pulse.psh
+cbuffer PulseConstBuffer : register(b4)        // 이름이 JSON의 "ConstantBuffer"가 됨
+{
+    float4 TintColor;
+    float  Speed;
+    float2 UVScroll;                           // float ~ float4와 그 배열만 사용 가능
+};
 
-// Pulse.psh
-cbuffer PulsePS           : register(b1) { float4 gColor; };               // PS Material 슬롯 0
+Texture2D    TexDiff : register(t0);           // 이름이 JSON의 "Parameter"가 됨
+SamplerState Smpler  : register(s0);
 ```
 
-```cpp
-// 사용: 셰이더는 LoadAssets()에서 미리 로드해 둔다
-PulseMat = new PulseMaterial();
-PulseMat->SetVertexShader("Pulse.vso");
-PulseMat->SetPixelShader("Pulse.pso");
-Mesh->SetMaterial(PulseMat);               // 메시 컴포넌트를 만든 직후에 호출 ([알려진 문제] 참고)
+**② Material JSON — 값 · 텍스처 · 샘플러를 이름으로 연결**
 
-void MyActor::Tick()
+```json
 {
-    PulseMat->UpdateMaterial(GetWorld()->GetGameTimer()->DeltaTime());   // 엔진이 자동 호출하지 않음
-    __super::Tick();
+  "Material": {
+    "Name": "Pulse_Material",
+    "VertexShader": "DefaultVertexShader",
+    "PixelShader": "PulsePixelShader",
+    "Parameters": [
+      { "Type": "VS", "ConstantBuffer": "MaterialConstBuffer",
+        "Values": { "Material.BaseColor": [1,1,1,1], "Material.Diffuse": [1,1,1,1],
+                    "Material.Ambient": [1,1,1,1],   "Material.Emissive": [0,0,0,0] } },
+      { "Type": "PS", "ConstantBuffer": "PulseConstBuffer",
+        "Values": { "TintColor": [1.0, 0.5, 0.0, 1.0], "Speed": 2.0, "UVScroll": [0.1, 0.0] } }
+    ],
+    "Textures": [ { "Type": "PS", "Parameter": "TexDiff", "Asset": "Brick", "TextureType": "Texture2D" } ],
+    "Samplers": [ { "Type": "PS", "Parameter": "Smpler", "SamplerType": "Filter_Tri_Linear_Sampler_Wrap" } ]
+  }
 }
 ```
 
-StaticMesh JSON의 `"Material"`로 지정하려면 `Registry->Register<PulseMaterial>("PulseMaterial")`로 등록합니다 ([클래스 등록 규칙](#클래스-등록-규칙)).
+기본 Mesh VS(`DefaultVertexShader`)를 쓰면 `MaterialConstBuffer`(BaseColor · Diffuse · Ambient · Emissive)를 **반드시** Parameters에 적어야 합니다. 이 값이 라이트 계산(`CalculateLight`)에 쓰이기 때문입니다.
 
-#### ⚠️ 상수 버퍼 운용 시 유의사항
-
-> [!IMPORTANT]
-> 상수 버퍼는 **컴파일러와 런타임이 거의 검사해 주지 않는 영역**입니다. 규칙을 어기면 오류 메시지 없이 색이 이상하거나, 다른 Material 값이 섞이거나, 메모리가 손상됩니다.
-
-**① 크기 · 레이아웃**
-
-| 규칙 | 이유 / 어기면 |
-|---|---|
-| **구조체 1개의 크기는 9232 byte 이하** | 슬롯의 GPU 버퍼가 9232 byte 고정입니다 (Light 블록을 담기 위해 확장). 크기 검사가 없어 더 큰 구조체는 `Map`된 메모리를 넘어 `memcpy`합니다 (메모리 손상). 큰 데이터는 구조체를 나눠 슬롯 여러 개로 등록하세요 |
-| **구조체에 `alignas(16)`을 붙이고 크기를 16 byte 배수로** | HLSL `cbuffer`는 16 byte 단위로 패킹됩니다. 모자라는 부분은 `float Pad[n]`으로 명시해 두면 C++ · HLSL 레이아웃을 맞추기 쉽습니다 |
-| **멤버 순서 · 타입을 HLSL `cbuffer`와 완전히 일치** | 컴파일러가 둘을 대조하지 않습니다. 순서가 다르면 값이 엉뚱한 변수로 들어갑니다 |
-| **하나의 `float4`(16 byte) 경계를 넘는 멤버를 두지 않는다** | `float3` 뒤에는 `float`이 같은 16 byte 안으로 들어가고, `float2` 다음 `float3`은 다음 16 byte로 넘어갑니다. 헷갈리면 모두 `float4` 단위로 설계하세요 |
-| **`bool`을 쓰지 않는다. `float` / `int` / `uint`를 사용** | C++ `bool`은 1 byte, HLSL `bool`은 4 byte입니다 |
-| **배열은 요소마다 16 byte** | HLSL `float arr[4]`는 16 × 4 = 64 byte로 패킹됩니다. 배열이 필요하면 `float4` 배열로 선언하세요 |
-| **`std::string` · `std::vector` · 포인터 · 가상 함수가 있는 타입은 담지 않는다** | `memcpy`로 복사되므로 `std::is_trivially_copyable`이어야 합니다. 어기면 컴파일 단계에서 `static_assert`로 막히거나, 포인터를 넣으면 주소값이 GPU로 갑니다 |
-
-**② 슬롯 · 등록**
-
-| 규칙 | 이유 / 어기면 |
-|---|---|
-| **Material 슬롯 `k`는 VS `b(2+k)`, PS `b(1+k)`** | `register(b#)`를 이 표대로 선언해야 합니다. VS의 `b0`(Object), `b1`(ViewPort)은 엔진 예약이라 **Material이 쓸 수 없습니다.** PS `b0`도 ViewPort 예약입니다 |
-| **슬롯은 VS 최대 `k = 11`, PS 최대 `k = 12`** | 상수 버퍼는 `b13`까지입니다. 범위를 검사하지 않아 넘어가면 배열 범위 밖 접근으로 종료됩니다 |
-| **`AddConstantBuffer`는 0번부터 순서대로, 빈틈 · 중복 없이** | `UpdateConstantBuffer`의 두 번째 인자는 셰이더 슬롯이 아니라 **등록 순서 인덱스**입니다. 번호를 건너뛰거나 순서가 달라지면 엉뚱한 항목을 덮어씁니다 |
-| **VS와 PS는 각각 등록한다** | VS `b2`와 PS `b2`는 서로 다른 버퍼입니다. 같은 값을 양쪽에서 쓰려면 `VertexConstantBuffer`와 `PixelConstantBuffer`에 따로 등록하세요 |
-| **셰이더가 선언한 `cbuffer` 수 = Material이 등록한 수** | 28개 버퍼는 **모든 오브젝트가 돌려 씁니다.** Material이 등록하지 않은 슬롯을 셰이더가 읽으면 *직전에 그려진 다른 Material의 값*(처음에는 0 / 쓰레기)이 보입니다 |
-| **기본 셰이더(`Default*.vso/.pso`)를 쓰면 등록하지 않는다** | 기본 셰이더는 `b0`만 사용합니다 |
-| **뷰포트 상수 버퍼(`b1`)를 다른 용도로 선언하지 않는다** | VS `b1`에는 매 뷰포트마다 엔진이 `VertexConst { AniOn, BlendOn }`을 씁니다 |
-
-**③ 값 갱신**
-
-| 규칙 | 이유 / 어기면 |
-|---|---|
-| **구조체를 바꾼 뒤 `UpdateConstantBuffer`를 호출** | `Add` / `Update`는 호출 시점의 값을 **복사**합니다. 구조체 멤버만 수정하면 셰이더는 등록 당시의 값을 계속 봅니다 |
-| **`Update`에는 `Add`와 같은 타입을 넘긴다** | 크기 일치 검사(`assert`)는 **Debug에서만** 동작합니다. Release에서는 다른 크기를 조용히 복사합니다 |
-| **구조체는 값(또는 참조)으로 넘기고, 포인터를 넘기지 않는다** | `Add(…, 0, ptr)`처럼 포인터를 넘기면 `T`가 포인터 타입으로 추론되어 **포인터 값 8 byte가 복사**됩니다 (오류 없이 컴파일됨). 항상 `Add(…, 0, *ptr)` 또는 값 변수를 넘기세요 |
-| **`UpdateMaterial()`을 `Tick()`에서 직접 호출** | 엔진은 호출하지 않습니다. Render List는 `Tick`이 끝난 뒤 복사되므로 `Tick` 안에서 갱신하면 같은 프레임에 반영됩니다 |
-| **값이 바뀌지 않으면 `Update`를 생략한다** | 등록해 둔 값은 유지됩니다. `Update`는 `memcpy`만 하지만, 상수 버퍼 데이터는 프레임마다 Render List로 통째로 복사되고 GPU 쓰기(`Map`)는 *오브젝트 × 카메라*마다 일어나므로 작게 유지하는 편이 좋습니다 |
-
-**④ 소유 · 수명**
-
-| 규칙 | 이유 / 어기면 |
-|---|---|
-| **상수 버퍼 데이터는 Material 인스턴스가 소유한다** | 같은 Material 포인터를 공유하는 메시는 값도 공유합니다. 메시마다 다른 값이 필요하면 Material을 `new`로 각각 만드세요 |
-| **Material을 `delete`하지 않는다** | 렌더 항목이 Material의 상수 버퍼 데이터 **주소**를 들고 있어 Dangling이 됩니다 ([알려진 문제](#-알려진-문제--소멸-처리)) |
-| **`SetMaterial()`은 메시 컴포넌트를 만든 직후에 호출** | 렌더 항목 포인터가 무효화될 수 있습니다 ([사용 규칙](#4-현재-버전에서-지켜야-할-사용-규칙)) |
-| **`b0`의 행렬은 `mul(mWVP, pos)` 순서로 사용** | CPU 행렬이 전치 없이 전달됩니다. 직접 행렬을 상수 버퍼로 넘길 때도 같은 규칙을 따르세요 |
-
-**⑤ 체크리스트**
-
-- [ ] 구조체가 `alignas(16)`이고 `sizeof`가 16의 배수이며 9232 이하인가?
-- [ ] 멤버 순서 · 타입이 HLSL `cbuffer`와 같은가? (`bool`, 배열, `float3` 패킹 확인)
-- [ ] `AddConstantBuffer`를 0번부터 빈틈없이 등록했고, `register(b#)`가 VS `b(2+k)` / PS `b(1+k)`와 맞는가?
-- [ ] 셰이더가 선언한 `cbuffer`를 전부 Material이 등록했는가?
-- [ ] 값을 바꾼 뒤 `UpdateConstantBuffer`를 호출하고, 그 호출이 `Tick()`에서 일어나는가?
-- [ ] 포인터가 아니라 구조체를 `Add` / `Update`에 넘겼는가?
-- [ ] 메시마다 값이 달라야 한다면 Material 인스턴스를 따로 만들었는가?
-
-> [!NOTE]
-> `Games/Release_Game/ShaderCode_Triangle`의 `CB2Material` 등 기존 샘플은 이전 방식(`VertextConst = 포인터`)과 이전 슬롯 규약(PS `b0`)을 사용하므로 **현재 엔진에서 그대로 빌드 · 동작하지 않습니다.** 위 방식으로 옮겨서 사용하세요.
-
-### 9. Texture 사용
-
-텍스처는 **에셋으로 로드**한 뒤, 메시의 **Material 슬롯에 이름으로 지정**합니다. 내부 흐름은 [Texture](#texture)를 참고하세요.
+**③ C++ — 런타임에 값 바꾸기**
 
 ```cpp
-// ① 에셋 준비: Assets/Texture/Brick.json → Assets/TextureResource/brick.dds
-//    { "TextureData": [ { "Path": "brick.dds", "Type": "DDS" } ] }
+FPMaterialInterface& Mat = Mesh->GetMaterial();
 
-// ② LoadAssets()에서 로드 (이름 "Brick"이 이후 지정에 쓰는 키)
-Loader->LoadTexture("Brick", "Brick.json", AssetOwner::User);
+FPVector4 Tint = { 1.0f, 0.2f, 0.2f, 1.0f };
+Mat.SetParameter(FPShaderType::PS, "PulseConstBuffer", "TintColor", Tint);       // float4
+Mat.SetParameter(FPShaderType::PS, "PulseConstBuffer", "Speed", 3.0f);           // float
+Mat.SetParameter(FPShaderType::VS, "MaterialConstBuffer", "Material.Emissive", FPVector4(1, 1, 1, 1));
 
-// ③ Actor::Initialize() 또는 BeginPlay()에서 지정
-Mesh = new FPStaticMeshComponent(this, "Plane_StaticMesh");     // 엔진 기본 Plane 메시
+FPVector4 Out;
+if (Mat.GetParameter(FPShaderType::PS, "PulseConstBuffer", "TintColor", Out)) { /* Out 사용 */ }
 
-FPMaterialInterface& Material = Mesh->GetMaterial();
-std::string TextureName = "Brick";                               // 변수로 전달 (아래 표 참고)
-Material.SetTexture(0, TextureName);                             // 슬롯 0의 텍스처 교체
-Material.SetTexture(0, TextureName, Filter_Tri_Linear_Sampler_Wrap);  // 샘플러까지 지정 (필터_주소모드)
+// 배열 변수의 특정 요소만 (float4 Colors[4]; 의 2번째)
+Mat.SetParameterElement(FPShaderType::PS, "PulseConstBuffer", "Colors", 1, { 0.0f, 1.0f, 0.0f, 1.0f });
 
-Material.AddTexture(1);                                          // 슬롯 추가 (PS t1)
-std::string Detail = "Checker_dds";
-Material.SetTexture(1, Detail);
+// 텍스처 · 샘플러 교체
+Mat.SetNamedTexture(FPShaderType::PS, "TexDiff", "Checker_dds", Texture2D);
+Mat.SetNamedSampler(FPShaderType::PS, "Smpler", Filter_Tri_Linear_Sampler_Wrap);
 ```
 
 | 함수 (`FPMaterialInterface`) | 설명 |
 |---|---|
-| `SetTexture(Slot, Name)` | 슬롯의 텍스처 이름을 바꿈 |
-| `SetTexture(Slot, Name, SamplerType)` | 텍스처와 샘플러를 함께 바꿈 |
-| `SetTextureSampler(Slot, SamplerType)` | 샘플러만 바꿈 |
-| `AddTexture(Slot)` | 슬롯 추가. 기본값은 `Default_Texture512` + `Filter_Tri_Linear_Sampler_CLAMP` |
-| `DeleteTexture(Slot)` | 슬롯 제거 |
+| `SetParameter(Type, CB, Name, 값)` | 값은 `float` · `FPVector2/3/4` · `std::vector<float>`. 성공하면 `true`, 변수를 못 찾거나 **값 개수가 맞지 않으면 `false`** |
+| `GetParameter(Type, CB, Name, Out)` | 위와 같은 타입으로 읽기 (`const`) |
+| `SetParameterElement` / `GetParameterElement` | 배열 변수의 `ArrayIndex`번째 요소만 쓰기 / 읽기 |
+| `SetNamedTexture(Type, HLSL이름, 에셋이름, TextureType, ArrayIndex = 0)` | 텍스처 변수에 에셋 연결. 변수가 없거나 `TextureType`이 셰이더 선언과 다르면 `false` |
+| `SetNamedSampler(Type, HLSL이름, SamplerType, ArrayIndex = 0)` | 샘플러 변수에 `FPSamplerType` 지정. PS 샘플러만 허용 |
+| `SetTwoSided` / `GetTwoSided` | 양면 렌더링 |
+| `GetReflectionData()` | 리플렉션된 변수 · 텍스처 · 샘플러 목록 (`FPShaderReflectionData`) |
 
-엔진이 기본 제공하는 에셋: 메시 `Plane_StaticMesh`(`Primitive_Model/Plane.fbx`), 텍스처 `Default_Texture512` · `Checker_bmp` · `Checker_dds`. 샘플은 `Games/Release_Game/Lambert_Light/Plane.cpp`입니다.
-
-#### 여러 텍스처를 쓰는 셰이더
-
-```hlsl
-Texture2D    TexDiff   : register(t0);   // 슬롯 0
-Texture2D    TexDetail : register(t1);   // 슬롯 1 (AddTexture(1))
-SamplerState Smpler    : register(s0);   // 사용하는 샘플러 종류 중 가장 앞선 것
-```
+제거된 함수: `SetBaseColor` · `SetDiffuse` · `SetAmbient` · `SetEmissive`와 각 `Get*`, `SetTexture` · `SetTextureSampler` · `AddTexture` · `DeleteTexture` · `GetTextureList`. 색은 `SetParameter(VS, "MaterialConstBuffer", "Material.BaseColor", 값)`처럼 바꿉니다.
 
 #### ⚠️ 유의사항
 
 | 항목 | 이유 / 어기면 |
 |---|---|
-| **`SetTexture`에는 문자열 리터럴이 아니라 `std::string` 변수를 넘긴다** | 인자가 `std::string&`(비 const 참조)라서 `SetTexture(0, "Brick")`은 컴파일되지 않습니다 |
-| **`AddTexture(Slot)`로 만든 슬롯에만 `SetTexture`가 동작한다** | 없는 슬롯에 호출하면 **아무 일도 일어나지 않고 메시지도 없습니다.** 슬롯 0만 자동으로 존재합니다 |
-| **슬롯은 `0 ~ 127`** | 128 이상은 메시지를 출력하고 무시됩니다 |
-| **텍스처 이름은 `LoadTexture`의 첫 인자와 같아야 한다** | 로드하지 않은 이름을 지정하면 빈 항목이 만들어져 `nullptr` 리소스가 바인딩되고, 기본 PS에서는 메시가 검게 보입니다. `LoadAssets()`에서 먼저 로드하세요 |
-| **`GetMaterial()`은 컴포넌트가 가진 Material을 반환한다** | StaticMesh JSON의 `Material.Name`이 [Material JSON](#material-json)으로 `MakeMaterial`을 거쳐 자동으로 채워지므로(없으면 `DefaultMaterial`) 보통 널 참조가 나지 않습니다. 코드로 직접 교체하려면 컴포넌트 생성 **직후** `SetMaterial()`을 호출하세요 |
-| **텍스처는 Material 단위다** | 같은 Material 객체를 여러 메시에 `SetMaterial`하면 텍스처도 함께 바뀝니다. 기본 Material은 컴포넌트마다 따로 만들어지므로 `GetMaterial()`로 바꿔도 해당 메시에만 적용됩니다 |
-| **셰이더의 `t#`는 Material 슬롯과 같다** | 슬롯 `n` → `t(n)`. 셰이더가 읽는 슬롯은 모두 `AddTexture`로 만들어 두세요. Pass는 텍스처를 **해제하지 않으므로**, 슬롯이 없는 메시를 그리면 직전 메시의 텍스처가 남아 보일 수 있습니다 |
-| **샘플러 `s#`는 슬롯이 아니라 종류 순서다** | 한 메시에서 샘플러를 하나만 쓰면 `s0`입니다. 둘 이상 섞을 때는 [바인딩 규칙](#바인딩-규칙)의 순서를 따르세요 |
-| **샘플러는 엔진이 부팅 때 만든 36종(필터 4 × 주소모드 9)만 쓸 수 있다** | `CreateSamplers()`는 `PreInitialize()`에서 렌더러 초기화 직후 호출됩니다. Anisotropic 샘플러의 단계는 `GameSetting.json`의 `AnisotropicFiltering`으로 정해지며, 게임 코드에서 따로 호출할 필요는 없습니다 ([Texture](#texture) 참고) |
+| **cbuffer는 `float` 계열만 쓴다** | 행렬 · `int` · `uint` · `bool` · 구조체 배열이 JSON에 적은 cbuffer 안에 하나라도 있으면 그 Material은 **생성 실패**(`nullptr`)합니다. 정수 값이 필요하면 `float`로 받아 셰이더에서 변환하세요 |
+| **cbuffer 크기는 16의 배수, 9232 byte 이하** | HLSL 패킹 규칙대로 컴파일된 크기를 검사합니다. `float3` 뒤에 `float`은 같은 16 byte에 들어가고, `float2` 다음 `float3`은 다음 16 byte로 넘어갑니다 |
+| **엔진 예약 슬롯 `b0 ~ b2`를 쓰지 않는다** | `b0` Object(행렬 20개), `b1` ViewPort, `b2` Light 블록입니다. Material cbuffer의 `register(b#)`는 `b3` 이상으로 두세요 (기본 `MaterialConstBuffer`가 `b3`) |
+| **JSON의 이름은 셰이더 변수 이름과 정확히 같아야 한다** | cbuffer · 변수 · 텍스처 · 샘플러 이름 모두 대소문자까지 일치해야 하며, 틀리면 `false`/`nullptr`이 되고 콘솔에 메시지만 출력됩니다 |
+| **구조체 멤버는 `구조체.멤버`로 쓴다** | `Material.BaseColor`처럼. 변수 이름만 쓰면 찾지 못합니다 |
+| **`SetParameter`의 반환값을 확인한다** | 실패해도 예외가 나지 않고 `false`만 돌려줍니다. 값 개수는 `Components × ArrayCount`와 같아야 합니다 |
+| **엔진은 값을 자동으로 갱신하지 않는다** | `Tick()`에서 `SetParameter`를 호출하면 됩니다. Render List가 `Tick` 뒤에 복사하므로 같은 프레임에 반영됩니다. `UpdateMaterial()`은 이제 비어 있어 호출할 필요가 없습니다 |
+| **Material 한 개 = 상수 버퍼 한 세트** | 같은 Material 객체를 공유하는 메시는 값도 공유합니다. 메시마다 다른 값이 필요하면 Material을 따로 만들어야 합니다 |
+| **셰이더가 선언한 cbuffer는 JSON에 모두 적는다** | JSON에 없는 cbuffer는 엔진이 값을 채우지 않아, 직전에 그린 Material의 값이나 0이 보입니다 (엔진 관리 `b0 ~ b2` 제외) |
+| **텍스처 · 샘플러는 PS만 지원** | VS에서 `Texture2D`를 쓰면 리플렉션 대상이 아닙니다 |
+| **Material을 `delete`하지 않는다** | 렌더 항목이 Material의 데이터 **주소**를 들고 있어 Dangling이 됩니다 ([알려진 문제](#-알려진-문제--소멸-처리)) |
+
+**체크리스트**
+
+- [ ] `cbuffer`가 `float` 계열만이고 크기가 16의 배수이며 9232 이하인가?
+- [ ] `register(b#)`가 `b3` 이상이며 다른 Material cbuffer와 겹치지 않는가?
+- [ ] JSON의 `ConstantBuffer` · 변수 · `Parameter` 이름이 HLSL과 같은가?
+- [ ] 기본 Mesh VS를 쓴다면 `MaterialConstBuffer`의 네 값(BaseColor · Diffuse · Ambient · Emissive)을 모두 적었는가?
+- [ ] `LoadAssets()` 순서가 셰이더 → 텍스처 → Material → StaticMesh인가?
+- [ ] `SetParameter` / `SetNamedTexture`의 반환값을 확인했는가?
+
+> [!NOTE]
+> `Games/Release_Game/ShaderCode_Triangle`의 `CB2Material` 등 기존 샘플은 `FPMaterial` 상속과 `VertextConst = 포인터` 방식을 쓰므로 현재 엔진에서 **그대로 빌드 · 동작하지 않습니다.**
+
+### 9. Texture 사용
+
+텍스처는 **에셋으로 로드**한 뒤, Material JSON의 `Textures[]`(또는 `SetNamedTexture`)로 **HLSL 텍스처 변수에 이름으로 연결**합니다. 내부 흐름은 [Texture](#texture)를 참고하세요.
+
+```cpp
+// ① 에셋 준비: Assets/Texture/Brick.json → Assets/TextureResource/brick.dds
+//    { "Name": "Brick", "Path": "brick.dds", "Type": "DDS" }
+
+// ② LoadAssets()에서 로드 (이름 "Brick"이 이후 연결에 쓰는 키)
+Loader->LoadTexture("Brick.json", AssetOwner::User);
+
+// ③ 연결 — 방법 A: Material JSON  "Textures": [ { "Type":"PS", "Parameter":"TexDiff", "Asset":"Brick", "TextureType":"Texture2D" } ]
+//          방법 B: 코드 (Actor::BeginPlay 등)
+FPMaterialInterface& Material = Mesh->GetMaterial();
+Material.SetNamedTexture(FPShaderType::PS, "TexDiff", "Brick", Texture2D);
+Material.SetNamedSampler(FPShaderType::PS, "Smpler", Filter_Tri_Linear_Sampler_Wrap);
+```
+
+엔진이 기본 제공하는 에셋: 메시 `Plane_StaticMesh`(`Primitive_Model/Plane.fbx`), 텍스처 `Default_Texture512` · `Checker_bmp` · `Checker_dds`.
+
+#### 여러 텍스처를 쓰는 셰이더
+
+```hlsl
+Texture2D    TexDiff   : register(t0);   // Material JSON에서 Parameter "TexDiff"
+Texture2D    TexDetail : register(t1);   // Parameter "TexDetail" — 슬롯 번호는 셰이더가 정함
+SamplerState Smpler    : register(s0);
+```
+
+슬롯 번호는 Material에서 지정하지 않습니다. 셰이더의 `register(t#)` / `register(s#)`가 그대로 바인딩 슬롯입니다.
+
+#### ⚠️ 유의사항
+
+| 항목 | 이유 / 어기면 |
+|---|---|
+| **텍스처 에셋은 Material보다 먼저 로드한다** | `MakeMaterial`이 `Asset` 이름을 즉시 확인하고, 없으면 Material 생성이 실패합니다(`nullptr`). `SetNamedTexture`는 에셋 존재를 확인하지 않으므로 로드되지 않은 이름을 넘기면 그릴 때 빈(null) SRV가 바인딩되어 기본 PS에서는 메시가 검게 보입니다 |
+| **`Parameter`는 HLSL 변수 이름이다** | `TexDiff`처럼 셰이더에 선언한 이름과 같아야 합니다. 없는 이름이면 `false`가 되고 Material 생성이 실패합니다 |
+| **`TextureType`이 셰이더 선언과 같아야 한다** | `Texture2D`로 선언한 변수에 `Texture2DArray`를 연결하면 타입 불일치로 `false`입니다 |
+| **텍스처를 연결하지 않은 변수는 비어 있다** | 셰이더가 읽는 모든 텍스처 변수를 JSON에서 연결하세요. Pass는 텍스처를 **해제하지 않으므로**, 연결되지 않은 변수는 에셋 이름이 비어 null SRV가 바인딩됩니다 |
+| **쓰지 않는 텍스처 변수는 셰이더에서 지운다** | 선언된 텍스처 변수는 연결이 필요합니다. 기본 PS에서 쓰지 않던 `TexDiff2` 선언을 제거하고 Material JSON의 해당 항목도 지운 것이 그 예입니다 |
+| **텍스처는 Material 단위다** | 같은 Material 객체를 여러 메시에 `SetMaterial`하면 텍스처도 함께 바뀝니다 |
+| **샘플러 이름은 열거형 이름 그대로 적는다** | JSON `Samplers[].SamplerType`은 `StringToSamplerType`으로 변환됩니다. 목록에 없는 이름은 오류 없이 `Filter_Tri_Linear_Sampler_CLAMP`가 되므로, 기대한 필터 · 주소 모드가 아니라면 철자를 확인하세요 (`Filter_Anistropy_Linear_Sampler_Wrap` 등). 코드의 `SetNamedSampler`로도 바꿀 수 있습니다 |
 | **메시(`MeshRenderPass`)에서만 동작한다** | Gizmo · Normal · UI Pass는 텍스처를 바인딩하지 않습니다 |
-| **큰 텍스처는 DDS(밉맵 포함)로 변환해 쓴다** | `Tool/DXTexViewer/DxTex.exe`로 변환할 수 있습니다. 슬롯 수만큼 SRV 바인딩이 *메시 × 카메라*마다 일어나므로 쓰지 않는 슬롯은 `DeleteTexture`로 지우세요 |
+| **큰 텍스처는 DDS(밉맵 포함)로 변환해 쓴다** | `Tool/DXTexViewer/DxTex.exe`로 변환할 수 있습니다. 텍스처 변수 수만큼 SRV 바인딩이 *메시 × 카메라*마다 일어납니다 |
 
 ---
 
@@ -2405,7 +2423,7 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 
 ### Tri_World의 텍스처 · Material
 
-색을 코드(`SetBaseColor`)로 지정하던 Terrain · Tree · Windmill 액터가 **Material JSON + 텍스처**로 바뀌었습니다. 액터 코드에서 `GetMaterial().SetBaseColor(...)` 호출이 제거되었고, 색은 Material의 `BaseColor`(기본 흰색)와 텍스처가 정합니다.
+색을 코드로 지정하던 Terrain · Tree · Windmill 액터가 **Material JSON + 텍스처**로 바뀌었습니다. 액터 코드에서 `GetMaterial()` 색 지정 호출이 제거되었고, 색은 Material JSON `Parameters`의 `Material.BaseColor`(기본 흰색)와 텍스처가 정합니다. 모든 Tri_World Material JSON(ToonLink 포함)은 `Parameters`(`MaterialConstBuffer`) · `Textures[]` · `Samplers[]` 형식으로 변환되어 있습니다.
 
 | Material | 셰이더 | 텍스처 (슬롯 / 샘플러) | Two Sided |
 |---|---|---|:-:|
@@ -2414,7 +2432,7 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 | `WindmillBody_Material` | `DefaultVertexShader` + `WindmillWingBody_PixelShader` | `Windmill_jpg` (0), `Windmill_a_jpg` (1) / `Sampler_CLAMP` | — |
 | `WindmillWing_Material` | `DefaultVertexShader` + `WindmillWingBody_PixelShader` | `Windmill_jpg` (0), `Windmill_a_jpg` (1) / `Sampler_CLAMP` | ✔ |
 
-- **Terrain** — 전용 VS가 `uv`에 20을 곱해 하나의 텍스처를 지형 전체에 반복합니다. 반복하려면 샘플러가 `Sampler_Wrap`이어야 합니다 (Material JSON에서 지정).
+- **Terrain** — 전용 VS가 `uv`에 20을 곱해 하나의 텍스처를 지형 전체에 반복합니다. 반복하려면 샘플러가 Wrap이어야 합니다. Material JSON의 `Samplers[]`에 `Filter_Anistropy_Linear_Sampler_Wrap`(이방성 필터 + Wrap)이 지정되어 있습니다 ([Texture](#texture) 참고).
 - **Windmill** — PS가 `t0`(색)과 `t1`(알파 마스크)을 모두 샘플링해 `col * tex * tex2`를 출력하고, 알파를 `t1`에서 가져와 [Alpha Blend](#alpha-blend-초기-구현)로 투명 영역을 처리합니다.
 - **Tree** — 잎과 줄기가 서로 다른 StaticMesh(`Tree_StaticMesh`, `Tree_Trunk_StaticMesh`)이며 같은 텍스처를 사용합니다.
 - 이 셰이더들은 `Assets/Shader/*.json`으로 등록하고 `LoadAssets()`에서 `LoadVertexShader` / `LoadPixelShader`로 로드합니다 ([셰이더 JSON](#셰이더-json)). `LoadAssets()`의 등록 순서는 **셰이더 → 텍스처 → Material → StaticMesh**입니다.

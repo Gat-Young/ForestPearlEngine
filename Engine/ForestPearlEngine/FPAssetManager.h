@@ -18,6 +18,7 @@ private:
 
 	//Data List
 	std::unordered_map<std::string, FPTextureInfo> LoadedTextureData;
+	std::unordered_map<std::string, FPTextureArrayInfo> LoadedTextureArrayData;
 	std::unordered_map<std::string, FPMaterialData> LoadedMaterialData;
 	std::unordered_map<std::string, FPStaticMeshData> LoadedStaticMeshData;
 	std::unordered_map<std::string, FPVertexShaderData> LoadedVertexShaderData;
@@ -39,6 +40,7 @@ private:
 
 	//Texture
 	std::unordered_map<std::string, FPTextureData> TextureData;
+	std::unordered_map<std::string, FPTextureArrayData> TextureArrayData;
 
 	std::string ConvertUfbxString(ufbx_string String);
 	struct FPMeshData ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node* Node);
@@ -118,15 +120,29 @@ public:
 	bool HasTextureData(std::string TextureName);
 	void MakeTexture(FPTextureInfo& TextureInfo);
 
+	//Texture Array
+	FPTextureArrayData& GetTextureArrayData(std::string TextureArrayName);
+	void AddTextureArrayData(std::string TextureArrayName, FPTextureArrayData& TextureArrayData);
+	bool HasTextureArrayData(std::string TextureArrayName);
+	void MakeTextureArray(FPTextureArrayInfo& TextureInfo);
+
 	//Texture Info
 	FPTextureInfo& GetTextureInfoData(std::string TextureName);
 	void AddTextureInfoData(std::string TextureName, FPTextureInfo& TextureData);
 	bool HasTextureInfoData(std::string TextureName);
 
+	//Texture Array Info
+	FPTextureArrayInfo& GetTextureArrayInfoData(std::string TextureArrayName);
+	void AddTextureArrayInfoData(std::string TextureArrayName, FPTextureArrayInfo& TextureArrayData);
+	bool HasTextureArrayInfoData(std::string TextureArrayName);
+
 	//Material
 	FPMaterialData& GetMaterialData(std::string MaterialName);
 	void AddMaterialData(std::string MaterialName, FPMaterialData& MaterialData);
 	bool HasMaterialData(std::string MaterialName);
+
+	//Material
+	FPMaterialInterface* MakeMaterial(std::string MaterialName);
 
 	//GameSetting
 	bool HasGameSettingData();
@@ -142,8 +158,6 @@ public:
 	void AddGameModeData(std::string LevelName, std::string GameModeName);
 	std::string GetGameModeData(std::string LevelName);
 
-	//Material
-	FPMaterialInterface* MakeMaterial(std::string MaterialName);
 
 	//Shader
 	//Vertext

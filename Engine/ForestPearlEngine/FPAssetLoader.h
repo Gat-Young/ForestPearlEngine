@@ -31,6 +31,9 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 		//Texture Load
 		void LoadTexture(std::string TexturePath, AssetOwner EngineAsset);
 
+		//Texture 2D Array Load
+		void LoadTexture2DArray(std::string Texture2DArrayPath, AssetOwner EngineAsset);
+
 		//Material Load
 		void LoadMaterial(std::string MaterialPath, AssetOwner EngineAsset);
 };

@@ -1,6 +1,7 @@
 #include "RenderingDevice.h"
 #include "../Utility/FPPathManager.h"
 #include <assert.h>
+#include <set>
 #include <iostream>
 
 //객체 해제/제거 매크로()
@@ -504,6 +505,272 @@ HRESULT RenderingDevice::UpdatePixelShaderSubresource(UINT Slot, const uint8_t* 
 	return hr;
 }
 
+
+//추후에 Shader Factory에서 처리할지 고민 (책임 분리)
+HRESULT RenderingDevice::ReflectionShader(void* VScode, void* PScode, const std::set<std::pair<FPShaderType, std::string> >& ManagedCBs, FPShaderReflectionData* OutReflectionData, FPConstantBufferRenderData* OutVS, FPConstantBufferRenderData* OutPS)
+{
+	HRESULT hr = S_OK;
+	std::set<std::pair<FPShaderType, std::string> > FoundCBs;
+	FPShaderReflectionData NextLayout;
+	FPConstantBufferRenderData NextVS;
+	FPConstantBufferRenderData NextPS;
+
+	//Pass 0 : VS, Pass 1 : PS
+	for (unsigned int Pass = 0; Pass < 2; ++Pass)
+	{
+		const FPShaderType Stage = Pass == 0 ? FPShaderType::VS : FPShaderType::PS;
+		FPConstantBufferRenderData& Destination = Pass == 0 ? NextVS : NextPS;
+		ID3DBlob* ByteCode = Pass == 0 ? static_cast<ID3DBlob*>(VScode) : static_cast<ID3DBlob*>(PScode);
+
+		//셰이더 리플렉션 정보를 받아옴
+		ID3D11ShaderReflection* Reflection = nullptr;
+		hr = D3DReflect(ByteCode->GetBufferPointer(), ByteCode->GetBufferSize(), IID_ID3D11ShaderReflection, reinterpret_cast<void**>(&Reflection));
+		if (FAILED(hr) || Reflection == nullptr) { std::cout << "Shader Reflection Fail!" << "\n"; return E_FAIL; }
+
+		D3D11_SHADER_DESC ShaderDesc = {};
+		hr = Reflection->GetDesc(&ShaderDesc);
+		if (FAILED(hr)) { std::cout << "Shader 메타데이터 조회 실패!" << "\n"; return E_FAIL; }
+
+		for (UINT Index = 0; Index < ShaderDesc.BoundResources; ++Index)
+		{
+			D3D11_SHADER_INPUT_BIND_DESC Binding = {};
+			hr = Reflection->GetResourceBindingDesc(Index, &Binding);
+			if (FAILED(hr)) continue;
+
+			const std::string Name = Binding.Name;
+
+			//바인딩 타입이 상수버퍼인경우
+			if (Binding.Type == D3D_SIT_CBUFFER)
+			{
+				// JSON에 없는 CB들 (ex: Light/Object/Viewport )등은 내부 정보도 조회하지 않음
+				if (ManagedCBs.count(std::make_pair(Stage, Name)) == 0) continue;
+
+				//상수버퍼 정보를 가져옴
+				ID3D11ShaderReflectionConstantBuffer* CB = Reflection->GetConstantBufferByName(Name.c_str());
+				D3D11_SHADER_BUFFER_DESC CBDesc = {};
+				hr = CB->GetDesc(&CBDesc);
+				if (CB == nullptr || FAILED(hr) || CBDesc.Size == 0 || CBDesc.Size % 16 != 0 || CBDesc.Size > 9232)
+				{
+					std::cout << "상수 버퍼 메타데이터 또는 크기가 유효하지 않음 : " + Name << "\n";
+					return E_FAIL;
+				}
+
+				// CPU 버퍼는 VS, PS별 연속 메모리로 확보하고 개별 CB의 위치를 기록
+				const size_t CBStart = Destination.Buffer.size();
+				Destination.Buffer.resize(CBStart + CBDesc.Size, 0);
+				Destination.ConstantBuffers.push_back({ Binding.BindPoint, CBStart, CBDesc.Size });
+				FoundCBs.insert(std::make_pair(Stage, Name));
+
+				const size_t OldCount = NextLayout.Parameters.size();
+				for (UINT VariableIndex = 0; VariableIndex < CBDesc.Variables; ++VariableIndex)
+				{
+					//각 버퍼의 데이터를 가져옴
+					ID3D11ShaderReflectionVariable* Variable = CB->GetVariableByIndex(VariableIndex);
+					D3D11_SHADER_VARIABLE_DESC VarDesc = {};
+					hr = Variable->GetDesc(&VarDesc);
+					if (FAILED(hr) || VarDesc.Name == nullptr) continue;
+					if (VarDesc.StartOffset > CBDesc.Size || VarDesc.Size > CBDesc.Size - VarDesc.StartOffset)
+					{
+						std::cout << "상수 버퍼 변수 범위를 벗어남: " + Name << "\n";
+						return E_FAIL;
+					}
+
+					//AppendMaterialParameter (각 버퍼의 데이터 등록)
+					hr = AppendMaterialParameter(Variable->GetType(), VarDesc.Name, VarDesc.StartOffset, CBDesc.Size, CBStart, Stage, Name, NextLayout);
+					if (FAILED(hr))
+					{
+						std::cout << "구조체 분석 실패: " + Name << "\n";
+						return E_FAIL;
+					}
+				}
+
+				if (NextLayout.Parameters.size() == OldCount)
+				{
+					std::cout << "MaterialConstBuffer에서 지원하는 Parameter가 없음" + Name << "\n";
+					return E_FAIL;
+				}
+			}
+			else if (Stage == FPShaderType::PS && (Binding.Type == D3D_SIT_TEXTURE || Binding.Type == D3D_SIT_SAMPLER)) //PS 이면서, Texture, Sampler 처리
+			{
+				// 배열은 BindPoint에서 시작하여 BindCount개의 연속 슬롯을 점유
+				const unsigned int Limit = Binding.Type == D3D_SIT_TEXTURE ? 128u : 16u;
+				if (Binding.BindCount == 0 || Binding.BindPoint >= Limit || Binding.BindCount > Limit - Binding.BindPoint)
+				{
+					std::cout << "셰이더 리소스의 슬롯 범위가 유효하지 않음: " + Name << "\n";
+					return E_FAIL;
+				}
+
+				if (Binding.Type == D3D_SIT_SAMPLER)
+				{
+					// 샘플러 배열도 원소마다 독립된 상태와 실제 슬롯을 보관
+					for (unsigned int ArrayIndex = 0; ArrayIndex < Binding.BindCount; ++ArrayIndex)
+					{
+						FPReflectionSamplerInfo Entry;
+						Entry.Name = Binding.BindCount > 1 ? Name + "[" + std::to_string(ArrayIndex) + "]" : Name;
+						Entry.Slot = Binding.BindPoint + ArrayIndex;
+						Entry.BindCount = Binding.BindCount;
+
+						for (size_t Index = 0; Index < NextLayout.Samplers.size(); ++Index)
+						{
+							if (NextLayout.Samplers[Index].Name == Entry.Name || NextLayout.Samplers[Index].Slot == Entry.Slot)
+							{
+								std::cout << "Sampler 이름 또는 슬롯이 중복됨: " + Name << "\n";
+								return E_FAIL;
+							}
+						}
+						NextLayout.Samplers.push_back(Entry);
+					}
+				}
+
+				if (Binding.Type == D3D_SIT_TEXTURE)
+				{
+					FPTextureType TextureType = Texture2D;
+					if (Binding.Dimension == D3D_SRV_DIMENSION_TEXTURE2D) { TextureType = Texture2D; }
+					else if (Binding.Dimension == D3D_SRV_DIMENSION_TEXTURE2DARRAY) { TextureType = Texture2DArray; }
+					else { std::cout <<  "지원하지 않는 텍스처 차원: " + Name << "\n"; return E_FAIL; }
+
+					FPReflectionResourceInfo Entry;
+					Entry.Name = Name;
+					Entry.Slot = Binding.BindPoint;
+					Entry.BindCount = Binding.BindCount;
+					// 배열 요소마다 AssetName을 개별 관리할 수 있도록 항목을 나눔
+					for (unsigned int ArrayIndex = 0; ArrayIndex < Binding.BindCount; ++ArrayIndex)
+					{
+						FPReflectionResourceInfo Entry;
+						Entry.Name = Binding.BindCount > 1 ? Name + "[" + std::to_string(ArrayIndex) + "]" : Name;
+						Entry.TextureType = TextureType;
+						Entry.Slot = Binding.BindPoint + ArrayIndex;
+						Entry.BindCount = Binding.BindCount;
+
+						for (size_t Index = 0; Index < NextLayout.Resources.size(); ++Index)
+						{
+							if (NextLayout.Resources[Index].Name == Entry.Name || NextLayout.Resources[Index].Slot == Entry.Slot)
+							{
+								std::cout << "Texture 이름 또는 슬롯이 중복됨: " + Entry.Name << "\n";
+								return E_FAIL;
+							}
+						}
+						NextLayout.Resources.push_back(Entry);
+					}
+				}
+			}
+		}
+	}
+
+	// JSON이 요청한 CB가 최적화로 제거되었거나 다른 Stage에 있으면 오류
+	for (std::set < std::pair<FPShaderType, std::string> >::const_iterator It = ManagedCBs.begin(); It != ManagedCBs.end(); ++It)
+	{
+		if (FoundCBs.count(*It) == 0)
+		{
+			std::cout << "컴파일된 셰이더에서 찾지 못한 상수 버퍼: " + It->second << "\n";
+			return E_FAIL;
+
+		}
+	}
+
+	*(OutReflectionData) = std::move(NextLayout);
+	*(OutVS) = std::move(NextVS);
+	*(OutPS) = std::move(NextPS);
+
+	return hr;
+}
+
+HRESULT RenderingDevice::AppendMaterialParameter(ID3D11ShaderReflectionType* ReflectedType, const std::string& MemberName, size_t RelativeOffset, size_t ConstantBufferSize, size_t BufferStart, FPShaderType Stage, const std::string& ConstantBufferName, FPShaderReflectionData& Layout)
+{
+	if (ReflectedType == nullptr) return E_FAIL;
+	HRESULT hr = S_OK;
+
+	D3D11_SHADER_TYPE_DESC TypeDesc = {};
+	hr = ReflectedType->GetDesc(&TypeDesc);
+	if (FAILED(hr)) return E_FAIL;
+
+	//구조체인 경우
+	if (TypeDesc.Class == D3D_SVC_STRUCT)
+	{
+		// 구조체 배열은 별도 패킹 규칙이 필요하므로 이번 지원 대상에서 제외
+		if (TypeDesc.Elements != 0)
+		{
+			return E_FAIL;
+		}
+
+		for (UINT MemberIndex = 0; MemberIndex < TypeDesc.Members; ++MemberIndex)
+		{
+			ID3D11ShaderReflectionType* ChildType = ReflectedType->GetMemberTypeByIndex(MemberIndex);
+			const char* ChildName = ReflectedType->GetMemberTypeName(MemberIndex);
+			if (ChildType == nullptr || ChildName == nullptr) return E_FAIL;
+
+			D3D11_SHADER_TYPE_DESC ChildDesc = {};
+			hr = ChildType->GetDesc(&ChildDesc);
+			if (FAILED(hr)) return E_FAIL;
+
+			if (RelativeOffset > ConstantBufferSize || ChildDesc.Offset > ConstantBufferSize - RelativeOffset)
+			{
+				std::cout << "구조체 멤버 오프셋이 상수 버퍼 범위를 벗어남: " + MemberName << "\n";
+				return E_FAIL;
+			}
+
+			//재귀를 통해 구조체 안에 각 요소를 등록
+			hr = AppendMaterialParameter(ChildType, MemberName + "." + ChildName, RelativeOffset + ChildDesc.Offset, ConstantBufferSize, BufferStart, Stage, ConstantBufferName, Layout);
+			if (FAILED(hr))
+			{
+				return E_FAIL;
+			}
+		}
+		return S_OK;
+	}
+
+	//flot , float2 , float3, floa4 형식외의 형식은 넘어감
+	if ((TypeDesc.Class != D3D_SVC_SCALAR && TypeDesc.Class != D3D_SVC_VECTOR) || TypeDesc.Type != D3D_SVT_FLOAT || TypeDesc.Rows != 1 || TypeDesc.Columns == 0 || TypeDesc.Columns > 4)
+	{
+		std::cout << "MaterialConstBuffer에서 지원하지 않는 Parameter: " + MemberName << "\n";
+		return E_FAIL;
+	}
+
+	// HLSL의 float 계열 배열은 각 원소가 16바이트 경계에서 시작함
+	const size_t DataSize = sizeof(float) * TypeDesc.Columns;
+	const unsigned int ArrayCount = TypeDesc.Elements == 0 ? 1u : TypeDesc.Elements;
+	const size_t ArrayStride = TypeDesc.Elements == 0 ? 0u : 16u;
+
+	if (RelativeOffset > ConstantBufferSize || DataSize > ConstantBufferSize - RelativeOffset)
+	{
+		std::cout << "Parameter가 상수 버퍼 크기를 초과함 " + MemberName << "\n";
+		return E_FAIL;
+	}
+
+	//배열인 경우
+	if (TypeDesc.Elements != 0)
+	{
+		// 첫 원소 이외의 모든 원소도 상수 버퍼 범위 안인지 확인
+		const size_t Remaining = ConstantBufferSize - RelativeOffset - DataSize;
+		if (static_cast<size_t>(ArrayCount - 1) > Remaining / ArrayStride)
+		{
+			std::cout << "배열 Parameter가 상수 버퍼 크기를 초과함: " + MemberName << "\n";
+			return E_FAIL;
+		}
+	}
+
+	for (size_t Index = 0; Index < Layout.Parameters.size(); ++Index)
+	{
+		const FPReflectionParameterInfo& Existing = Layout.Parameters[Index];
+		if (Existing.Type == Stage && Existing.ConstantBufferName == ConstantBufferName && Existing.ParameterName == MemberName)
+		{
+			std::cout << "중복 Parameter: " + ConstantBufferName + "." + MemberName << "\n";
+			return E_FAIL;
+		}
+	}
+
+	FPReflectionParameterInfo Entry;
+	Entry.Type = Stage;
+	Entry.ConstantBufferName = ConstantBufferName;
+	Entry.ParameterName = MemberName;
+	Entry.BufferOffset = BufferStart + RelativeOffset;
+	Entry.Components = TypeDesc.Columns;
+	Entry.ArrayCount = ArrayCount;
+	Entry.ArrayStride = ArrayStride;
+	Layout.Parameters.push_back(Entry);
+
+	return hr;
+}
 
 HRESULT RenderingDevice::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, ID3DBlob* InVSCode, ID3D11InputLayout** ReturnLayout)
 {
@@ -1451,6 +1718,199 @@ HRESULT RenderingDevice::GetTextureDesc(void* TextureResourceView, void** Desc)
 		Tex->Release();
 	}
 	return hr;
+}
+
+HRESULT RenderingDevice::CheckTextureArrayData(UINT Texture2DArrayWidth, UINT Texture2DArrayHeight, std::vector<void*>* CheckTexture, std::vector<UINT>* TextureMiplevels, std::vector<void*>* TextureSources, UINT* MinMiplevels, void** OutBaseDesc, void** OutBaseSRVDesc)
+{
+	D3D11_TEXTURE2D_DESC BaseDesc = {};
+	D3D11_SHADER_RESOURCE_VIEW_DESC BaseSRVDesc = {};
+
+	UINT MinMipLevels = (std::numeric_limits<UINT>::max)();
+
+	for (int i = 0; i < (*CheckTexture).size(); ++i)
+	{
+		ID3D11ShaderResourceView* SourceSRV = static_cast<ID3D11ShaderResourceView*>((*(CheckTexture))[i]);
+
+		if (!SourceSRV) { std::cout << "[CheckTextureArrayData] : 유효하지 않은 SRV" << "\n"; return E_FAIL; }
+
+		//GPU 리소스 획득
+		ID3D11Resource* Resource;
+		SourceSRV->GetResource(&Resource);
+
+		//SRV에서 실제 리소스 획득
+		ID3D11Texture2D* SourceTexture;
+		
+		HRESULT hr = Resource->QueryInterface(__uuidof(ID3D11Texture2D),reinterpret_cast<void**>(&SourceTexture));
+
+		// GetResource()로 획득한 참조 해제
+		Resource->Release();
+		Resource = nullptr;
+
+		if (FAILED(hr))
+		{
+			std::cout << "[CheckTextureArrayData] : Texture2D 리소스가 아님!" << "\n";
+			return hr;
+		}
+
+		//Texture 정보 조회
+
+		D3D11_TEXTURE2D_DESC Desc = {};
+		SourceTexture->GetDesc(&Desc);
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+		SourceSRV->GetDesc(&SRVDesc);
+
+		//MSAA 미지원
+		if (Desc.SampleDesc.Count != 1)
+		{
+			std::cout << "[CheckTextureArrayData] : Texture Array는 NSAA 미지원" << "\n";
+			return E_FAIL;
+		}
+
+		//단일 Texture 2D만 허용
+		if (Desc.ArraySize != 1 || SRVDesc.ViewDimension != D3D11_SRV_DIMENSION_TEXTURE2D)
+		{
+			std::cout << "[CheckTextureArrayData] : Texture Array는 단일 Texture2D만 지원" << "\n";
+			return E_FAIL;
+		}
+
+		//해상도 확인
+		if (Desc.Width != Texture2DArrayWidth || Desc.Height != Texture2DArrayHeight)
+		{
+			std::cout << "[CheckTextureArrayData] : Texture가 TextureArray2D 해상도와 디릅니다!" << "\n";
+			return E_FAIL;
+		}
+
+		//MipMap 검증
+		if (Desc.MipLevels == 0)
+		{
+			std::cout << "[CheckTextureArrayData] : Texture가 정상적인 Texture가 아닙니다!" << "\n";
+			return E_FAIL;
+		}
+
+		if (i == 0)
+		{
+			// 첫 번째 텍스처를 기준으로 설정
+			BaseDesc = Desc;
+			BaseSRVDesc = SRVDesc;
+		}
+		else
+		{
+			// 포맷 검증
+			if (Desc.Format != BaseDesc.Format || SRVDesc.Format != BaseSRVDesc.Format)
+			{
+				std::cout << "[CheckTextureArrayData] : Texture끼리 Format이 다릅니다." << "\n";
+				return E_FAIL;
+			}
+		}
+
+		//최소 MipLevels 계산
+		MinMipLevels = (std::min)(MinMipLevels, Desc.MipLevels);
+		TextureMiplevels->push_back(Desc.MipLevels);
+		TextureSources->push_back(SourceTexture);
+	}
+
+	D3D11_TEXTURE2D_DESC* BucketBaseDesc = new D3D11_TEXTURE2D_DESC();
+	D3D11_SHADER_RESOURCE_VIEW_DESC* BucketBaseSRVDesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
+
+	(*BucketBaseDesc) = BaseDesc;
+	(*BucketBaseSRVDesc) = BaseSRVDesc;
+
+	(*OutBaseDesc) = BucketBaseDesc;
+	(*OutBaseSRVDesc) = BucketBaseSRVDesc;
+	*(MinMiplevels) = MinMipLevels;
+}
+
+HRESULT RenderingDevice::CreateTextureArray2D(UINT Width, UINT Height, UINT ArraySize, std::vector<void*>* TextureSources, std::vector<UINT>* SourceMipLevels, void* BaseDesc, void* BaseSRVDesc, UINT MinMiplevels, void** Texture2DArraySRV)
+{
+	D3D11_TEXTURE2D_DESC* InBaseDesc = static_cast<D3D11_TEXTURE2D_DESC*>(BaseDesc);
+	D3D11_SHADER_RESOURCE_VIEW_DESC* InBaseSRVDesc = static_cast<D3D11_SHADER_RESOURCE_VIEW_DESC*>(BaseSRVDesc);
+
+	ID3D11Texture2D* NewTexture = nullptr;
+	ID3D11ShaderResourceView* NewSRV = nullptr;
+
+	D3D11_TEXTURE2D_DESC ArrayDesc = {};
+
+	ArrayDesc.Width = Width;
+	ArrayDesc.Height = Height;
+
+	// 최소 공통 MipLevels 사용
+	ArrayDesc.MipLevels = MinMiplevels;
+
+	ArrayDesc.ArraySize = ArraySize;
+	ArrayDesc.Format = InBaseDesc->Format;
+
+	ArrayDesc.SampleDesc.Count = 1;
+	ArrayDesc.SampleDesc.Quality = 0;
+
+	ArrayDesc.Usage = D3D11_USAGE_DEFAULT;
+	ArrayDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	ArrayDesc.CPUAccessFlags = 0;
+	ArrayDesc.MiscFlags = 0;
+
+	HRESULT hr = Device->CreateTexture2D(&ArrayDesc,nullptr, &NewTexture);
+
+	if (FAILED(hr))
+	{
+		std::cout << "[CreateTextureArray2D] : Texture2D 만들기 실패!" << "\n";
+		return hr;
+	}
+
+	// 각 Slice의 공통 MipLevels 복사
+	for (UINT Slice = 0; Slice < ArraySize; ++Slice)
+	{
+		for (UINT Mip = 0; Mip < MinMiplevels; ++Mip)
+		{
+			// 대상 Texture2DArray의 서브리소스
+			UINT DestSubresource = D3D11CalcSubresource(
+				Mip,
+				Slice,
+				ArrayDesc.MipLevels
+			);
+
+			// 원본 Texture2D의 서브리소스
+			UINT SrcSubresource = D3D11CalcSubresource(
+				Mip,
+				0,
+				(*SourceMipLevels)[Slice]
+			);
+
+			DeviceContext->CopySubresourceRegion(
+				NewTexture,
+				DestSubresource,
+				0, 0, 0,
+				static_cast<ID3D11Resource*>((*TextureSources)[Slice]),
+				SrcSubresource,
+				nullptr
+			);
+		}
+	}
+
+	//Texture2DArray SRV 생성
+	D3D11_SHADER_RESOURCE_VIEW_DESC ViewDesc = {};
+
+	ViewDesc.Format = InBaseSRVDesc->Format;
+
+	ViewDesc.ViewDimension =
+		D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+
+	ViewDesc.Texture2DArray.MostDetailedMip = 0;
+
+	// 최소 MipLevels만 노출
+	ViewDesc.Texture2DArray.MipLevels = MinMiplevels;
+
+	ViewDesc.Texture2DArray.FirstArraySlice = 0;
+	ViewDesc.Texture2DArray.ArraySize = ArraySize;
+
+	hr = Device->CreateShaderResourceView(NewTexture,&ViewDesc,&NewSRV);
+
+	if (FAILED(hr))
+	{
+		std::cout << "[CreateTextureArray2D] : SRV 만들기 실패!" << "\n";
+		return hr;
+	}
+
+	(*Texture2DArraySRV) = NewSRV;
 }
 
 HRESULT RenderingDevice::PSSetShaderResources(UINT Slot, UINT NumViews, void* ShaderResourceView)

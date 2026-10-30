@@ -137,6 +137,11 @@ void Renderer::CreateMeshRenderList()
 		MeshRenderData.Location = *(RenderItemData.Location);
 		MeshRenderData.Rotation = *(RenderItemData.Rotation);
 		MeshRenderData.Scale = *(RenderItemData.Scale);
+		MeshRenderData.VertexConstBuffer = *(RenderItemData.VertexConstBuffer);		//Material에 있는 모든 Vertex Constatnt Buffer를 넘겨 받음
+		MeshRenderData.PixelConstBuffer = *(RenderItemData.PixelConstBuffer);		//Material에 있는 모든 Pixel Constatnt Buffer를 넘겨 받음
+
+		if(RenderItemData.Resources != nullptr) MeshRenderData.Resources = *(RenderItemData.Resources);
+		if(RenderItemData.Samplers != nullptr) MeshRenderData.Samplers = *(RenderItemData.Samplers);
 
 		//모델링 행렬 계산
 		FPMatrix WorldMatrix = ((MeshRenderData.Scale) * (MeshRenderData.Rotation) * (MeshRenderData.Location));
@@ -232,65 +237,12 @@ void Renderer::CreateMeshRenderList()
 		}
 
 		//VertexBuffer에 등록 2번은 Light
-		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, 0, LightBuffer);
+		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, 2, LightBuffer);
 
 		//Material 처리
 		MeshRenderData.VertexShaderPath = *(RenderItemData.VertexShaderPath);
 		MeshRenderData.PixelShaderPath = *(RenderItemData.PixelShaderPath);
-		
-		RenderingData::MaterialItem Material;
-		Material.BaseColor = *(RenderItemData.BaseColor);
-		Material.Diffuse = *(RenderItemData.Diffuse);
-		Material.Ambient = *(RenderItemData.Ambient);
-		Material.Emissive = *(RenderItemData.Emissive);
-
 		MeshRenderData.TwoSided = *(RenderItemData.TwoSided);
-
-		//Texture에 대한 처리 진행
-		//List 초기화
-		MeshRenderData.TextureList.clear(); 
-		MeshRenderData.SamplerList.clear();
-
-		int SelectedSampler[Sampler_MAX_] = { 0, };
-
-		for (std::pair<const int, FPTextureItem>& TextureItem : *(RenderItemData.TextureList))
-		{
-			int Slot = TextureItem.first;
-			std::string TexturePath = *(TextureItem.second.TexturePath);
-			FPSamplerType SamplerType = *(TextureItem.second.SamplerType);
-
-			//Sampler 선택
-			SelectedSampler[SamplerType] = 1;
-
-			//Texture Data 생성
-			RenderingData::FPTextureItem RenderTextureItem;
-			RenderTextureItem.Slot = Slot;
-			RenderTextureItem.TexturePath = TexturePath;
-			RenderTextureItem.SamplerType = SamplerType;
-
-			//Texture Item 추가
-			MeshRenderData.TextureList.push_back(RenderTextureItem);
-		}
-
-		//Sampler 등록
-		int SamplerSlot = 0;
-		for (int i = 0; i < Sampler_MAX_; ++i)
-		{
-			//해당 샘플러를 사용한다면
-			if (SelectedSampler[i] == 1)
-			{
-				RenderingData::FPSamplerItem RenderSamplerItem;
-				RenderSamplerItem.Slot = SamplerSlot;
-				RenderSamplerItem.SamplerType = static_cast<FPSamplerType>(i);
-
-				MeshRenderData.SamplerList.push_back(RenderSamplerItem);
-				SamplerSlot++;
-			}
-		}
-		//Texture 처리 End.
-
-		//3번은 Material
-		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, 1, Material);
 		this->MeshRenderList.push_back(MeshRenderData);
 	}
 
@@ -467,7 +419,7 @@ void Renderer::CreateNormalRenderList()
 		NormalItem.NormalMatrix = DirectX::XMMatrixTranspose(DirectX::XMMatrixInverse(nullptr, World));
 
 		//VB 설정
-		FPConstantBufferRenderDataUtil::AddConstantBuffer(NormalRenderData.VertexConstBuffer, 0, NormalItem);
+		FPConstantBufferRenderDataUtil::AddConstantBuffer(NormalRenderData.VertexConstBuffer, 2, NormalItem);
 
 		this->NormalRenderList.push_back(NormalRenderData);
 
@@ -547,12 +499,9 @@ void Renderer::MeshRenderPass()
 
 	//상수 버퍼 설정
 	//Vertex Shader
-	//MeshRenderPass에서 0번은 WVP, 1번은 ViewPort용 슬롯, 2번은 Light용 슬롯(임시) 임
-	unsigned int VertexShaderConstantBufferSlotOffset = 2;
-
+	//MeshRenderPass에서 0번은 WVP, 1번은 ViewPort용 슬롯, 2번은 Light용 슬롯 임
 	//PixelShader
 	//MeshRenderPass에서 0번은 ViewPort용 슬롯
-	unsigned int PixelShaderConstantBufferSlotOffset = 1;
 
 
 	RenderingData::MVPConstBuffer MVPCB;
@@ -590,7 +539,7 @@ void Renderer::MeshRenderPass()
 			//vertex
 			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.VertexConstBuffer.ConstantBuffers)
 			{
-				unsigned int Slot = VertexShaderConstantBufferSlotOffset + ConstantBufferInfo.Slot;
+				unsigned int Slot = ConstantBufferInfo.Slot;
 				size_t Offset = ConstantBufferInfo.Offset;
 				size_t Size = ConstantBufferInfo.Size;
 
@@ -600,7 +549,7 @@ void Renderer::MeshRenderPass()
 			//Pixel
 			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.PixelConstBuffer.ConstantBuffers)
 			{
-				unsigned int Slot = PixelShaderConstantBufferSlotOffset + ConstantBufferInfo.Slot;
+				unsigned int Slot = ConstantBufferInfo.Slot;
 				size_t Offset = ConstantBufferInfo.Offset;
 				size_t Size = ConstantBufferInfo.Size;
 
@@ -608,21 +557,23 @@ void Renderer::MeshRenderPass()
 			}
 
 			//Texture 셋팅
-			const std::vector<RenderingData::FPTextureItem>& TextureList = RenderItem.TextureList;
+			const std::vector<FPReflectionResourceInfo>& Resources = RenderItem.Resources;
 			
-			for (const RenderingData::FPTextureItem& TextureItem : TextureList)
+			for (const FPReflectionResourceInfo& TextureItem : Resources)
 			{
+				void* TextureData = nullptr;
 				//Texture 가져옴
-				FPTextureData& TextureData = AssetManager->GetTextureData(TextureItem.TexturePath);
+				if (TextureItem.TextureType == Texture2D) { TextureData = AssetManager->GetTextureData(TextureItem.AssetName).TextureResource; }
+				if (TextureItem.TextureType == Texture2DArray) { TextureData = AssetManager->GetTextureArrayData(TextureItem.AssetName).TextureArraySRV; }
 
-				Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData.TextureResource);
+				Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData);
 			}
 			//Texture 셋팅 End.
 
 			//Sampler 셋팅
-			const std::vector<RenderingData::FPSamplerItem>& SamplerList = RenderItem.SamplerList;
+			const std::vector<FPReflectionSamplerInfo>& Samplers = RenderItem.Samplers;
 
-			for (const RenderingData::FPSamplerItem& SamplerItem : SamplerList)
+			for (const FPReflectionSamplerInfo& SamplerItem : Samplers)
 			{
 				Device.PSSetSamplers(SamplerItem.Slot, 1, SamplerItem.SamplerType);
 			}
@@ -684,7 +635,7 @@ void Renderer::MeshRenderPass()
 				//vertex
 				for (FPConstantBufferInfo ConstantBufferInfo : CamViewPort.VertexConstBuffer.ConstantBuffers)
 				{
-					unsigned int Slot = 1 + ConstantBufferInfo.Slot;
+					unsigned int Slot = ConstantBufferInfo.Slot;
 					size_t Offset = ConstantBufferInfo.Offset;
 					size_t Size = ConstantBufferInfo.Size;
 
@@ -700,6 +651,7 @@ void Renderer::MeshRenderPass()
 
 					Device.UpdatePixelShaderSubresource(Slot, CamViewPort.PixelConstBuffer.Buffer.data(), Offset, Size);
 				}
+				/////////////////////
 
 
 				Device.IASetVertexBuffers(0, 1, PositionVB.VertexBuffer, &(PositionVB.Stride), &(PositionVB.Offset));
@@ -738,11 +690,10 @@ void Renderer::GizmoRenderPass()
 	//상수 버퍼 설정
 	//Vertex Shader
 	//MeshRenderPass에서 0번은 WVP, 1번은 ViewPort용 슬롯 임
-	unsigned int VertexShaderConstantBufferSlotOffset = 2;
+	//Slot is the absolute register number (b#) in all passes: b0 Object, b1 ViewPort, b2 Light / NormalDebug
 
 	//PixelShader
 	//MeshRenderPass에서 0번은 ViewPort용 슬롯
-	unsigned int PixelShaderConstantBufferSlotOffset = 1;
 
 
 	RenderingData::MVPConstBuffer MVPCB;
@@ -768,7 +719,7 @@ void Renderer::GizmoRenderPass()
 			//vertex
 			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.VertexConstBuffer.ConstantBuffers)
 			{
-				unsigned int Slot = VertexShaderConstantBufferSlotOffset + ConstantBufferInfo.Slot;
+				unsigned int Slot = ConstantBufferInfo.Slot;
 				size_t Offset = ConstantBufferInfo.Offset;
 				size_t Size = ConstantBufferInfo.Size;
 
@@ -778,7 +729,7 @@ void Renderer::GizmoRenderPass()
 			//Pixel
 			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.PixelConstBuffer.ConstantBuffers)
 			{
-				unsigned int Slot = PixelShaderConstantBufferSlotOffset + ConstantBufferInfo.Slot;
+				unsigned int Slot = ConstantBufferInfo.Slot;
 				size_t Offset = ConstantBufferInfo.Offset;
 				size_t Size = ConstantBufferInfo.Size;
 
@@ -828,7 +779,7 @@ void Renderer::GizmoRenderPass()
 				//vertex
 				for (FPConstantBufferInfo ConstantBufferInfo : CamViewPort.VertexConstBuffer.ConstantBuffers)
 				{
-					unsigned int Slot = 1 + ConstantBufferInfo.Slot;
+					unsigned int Slot = ConstantBufferInfo.Slot;
 					size_t Offset = ConstantBufferInfo.Offset;
 					size_t Size = ConstantBufferInfo.Size;
 
@@ -878,11 +829,10 @@ void Renderer::NormalRenderPass()
 	//상수 버퍼 설정
 	//Vertex Shader
 	//MeshRenderPass에서 0번은 WVP, 1번은 ViewPort용 슬롯 임
-	unsigned int VertexShaderConstantBufferSlotOffset = 2;
+	//Slot is the absolute register number (b#) in all passes: b0 Object, b1 ViewPort, b2 Light / NormalDebug
 
 	//PixelShader
 	//MeshRenderPass에서 0번은 ViewPort용 슬롯
-	unsigned int PixelShaderConstantBufferSlotOffset = 1;
 
 
 	RenderingData::MVPConstBuffer MVPCB;
@@ -908,7 +858,7 @@ void Renderer::NormalRenderPass()
 			//vertex
 			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.VertexConstBuffer.ConstantBuffers)
 			{
-				unsigned int Slot = VertexShaderConstantBufferSlotOffset + ConstantBufferInfo.Slot;
+				unsigned int Slot = ConstantBufferInfo.Slot;
 				size_t Offset = ConstantBufferInfo.Offset;
 				size_t Size = ConstantBufferInfo.Size;
 
@@ -918,7 +868,7 @@ void Renderer::NormalRenderPass()
 			//Pixel
 			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.PixelConstBuffer.ConstantBuffers)
 			{
-				unsigned int Slot = PixelShaderConstantBufferSlotOffset + ConstantBufferInfo.Slot;
+				unsigned int Slot = ConstantBufferInfo.Slot;
 				size_t Offset = ConstantBufferInfo.Offset;
 				size_t Size = ConstantBufferInfo.Size;
 
@@ -969,7 +919,7 @@ void Renderer::NormalRenderPass()
 				//vertex
 				for (FPConstantBufferInfo ConstantBufferInfo : CamViewPort.VertexConstBuffer.ConstantBuffers)
 				{
-					unsigned int Slot = 1 + ConstantBufferInfo.Slot;
+					unsigned int Slot = ConstantBufferInfo.Slot;
 					size_t Offset = ConstantBufferInfo.Offset;
 					size_t Size = ConstantBufferInfo.Size;
 

@@ -3,30 +3,38 @@
         "Name": "eyelid.002_Material",
         "VertexShader": "DefaultVertexShader",
         "PixelShader": "DefaultPixelShader",
-        "Ambient": {
-            "r": 0.05087608844041824,
-            "g": 0.05087608844041824,
-            "b": 0.05087608844041824,
-            "a": 1.0
-        },
-        "BaseColor": {
-            "r": 0.800000011920929,
-            "g": 0.800000011920929,
-            "b": 0.800000011920929,
-            "a": 1.0
-        },
-        "Diffuse": {
-            "r": 0.800000011920929,
-            "g": 0.800000011920929,
-            "b": 0.800000011920929,
-            "a": 1.0
-        },
-        "Emissive": {
-            "r": 0.0,
-            "g": 0.0,
-            "b": 0.0,
-            "a": 0.0
-        },
-        "TwoSided": false
+        "TwoSided": false,
+        "Parameters": [
+            {
+                "Type": "VS",
+                "ConstantBuffer": "MaterialConstBuffer",
+                "Values": {
+                    "Material.BaseColor": [
+                        0.800000011920929,
+                        0.800000011920929,
+                        0.800000011920929,
+                        1.0
+                    ],
+                    "Material.Diffuse": [
+                        0.800000011920929,
+                        0.800000011920929,
+                        0.800000011920929,
+                        1.0
+                    ],
+                    "Material.Ambient": [
+                        0.05087608844041824,
+                        0.05087608844041824,
+                        0.05087608844041824,
+                        1.0
+                    ],
+                    "Material.Emissive": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            }
+        ]
     }
 }

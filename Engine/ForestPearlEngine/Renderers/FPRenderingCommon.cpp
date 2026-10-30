@@ -79,3 +79,39 @@ FPSamplerType StringToSamplerType(const std::string& Name)
 	//기본값은 무조건 Filter_Tri_Linear_Sampler_Clamp
 	return Filter_Tri_Linear_Sampler_CLAMP;
 }
+
+FPTextureType StringToTextureType(const std::string& Name)
+{
+	static const std::unordered_map<std::string, FPTextureType> TextureTypeMap =
+	{
+		{ "Texture2D",      Texture2D },
+		{ "Texture2DArray", Texture2DArray },
+	};
+
+	auto it = TextureTypeMap.find(Name);
+
+	if (it != TextureTypeMap.end())
+	{
+		return it->second;
+	}
+
+	return Texture2D;
+}
+
+FPShaderType StringToFPShaderType(const std::string& ShaderType)
+{
+    static const std::unordered_map<std::string, FPShaderType> FPShaderTypeMap =
+    {
+        { "VS",      FPShaderType::VS },
+        { "PS", FPShaderType::PS },
+    };
+
+    auto it = FPShaderTypeMap.find(ShaderType);
+
+    if (it != FPShaderTypeMap.end())
+    {
+        return it->second;
+    }
+
+    return FPShaderType::None;
+}

@@ -51,16 +51,14 @@ void FPStaticMeshComponent::SetRenderItemData()
 	RenderItem->VertexShaderPath = SelectedMaterial->GetVertexShader();
 	RenderItem->PixelShaderPath = SelectedMaterial->GetPixelShader();
 
-	RenderItem->BaseColor = SelectedMaterial->GetBaseColor();
-	RenderItem->Diffuse = SelectedMaterial->GetDiffuse();
-	RenderItem->Ambient = SelectedMaterial->GetAmbient();
-	RenderItem->Emissive = SelectedMaterial->GetEmissive();
+
 	RenderItem->TwoSided = SelectedMaterial->GetTwoSided();
 
 	RenderItem->VertexConstBuffer = SelectedMaterial->GetVertexConstantBufferRenderData();
 	RenderItem->PixelConstBuffer = SelectedMaterial->GetPixelConstantBufferRenderData();
 
-	RenderItem->TextureList = SelectedMaterial->GetTextureList();
+	RenderItem->Resources = &(SelectedMaterial->GetReflectionData()->Resources);
+	RenderItem->Samplers = &(SelectedMaterial->GetReflectionData()->Samplers);
 }
 
 FTransform FPStaticMeshComponent::GetSocketTransform(const std::string& SocketName) const

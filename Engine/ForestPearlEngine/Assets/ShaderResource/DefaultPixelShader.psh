@@ -10,8 +10,6 @@
 //텍스처 객체 변수 : 엔진에서 공급됨, 레지스터 직접 지정. (기본값은 t0)
 Texture2D TexDiff : register(t0);
 
-Texture2D TexDiff2 : register(t1);
-
 //텍스처 셈플러 (직접지정)  기본값은 s0
 SamplerState Smpler : register(s0);
 

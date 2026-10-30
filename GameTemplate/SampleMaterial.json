@@ -1,0 +1,157 @@
+{
+  "Material": {
+    "Name": "SimpleMaterial",
+    "VertexShader": "SimpleVS",
+    "PixelShader": "SimplePS",
+    "TwoSided": false,
+    "Parameters": [
+      {
+        "Type": "VS",
+        "ConstantBuffer": "MaterialConstBuffer",
+        "Values": {
+          "Material.BaseColor": [
+            1.0,
+            0.9,
+            0.8,
+            1.0
+          ],
+          "Material.Diffuse": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Material.Ambient": [
+            0.2,
+            0.2,
+            0.2,
+            1.0
+          ],
+          "Material.Emissive": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      {
+        "Type": "VS",
+        "ConstantBuffer": "UVTransformCB",
+        "Values": {
+          "UVScale": [
+            1.0,
+            1.0
+          ],
+          "UVOffset": [
+            0.0,
+            0.0
+          ],
+          "UVJitter": [
+            0.0,
+            0.0,
+            0.02,
+            0.01
+          ]
+        }
+      },
+      {
+        "Type": "PS",
+        "ConstantBuffer": "SurfaceCB",
+        "Values": {
+          "TintColor": [
+            1.0,
+            0.9,
+            0.8,
+            1.0
+          ],
+          "DetailAmount": 0.3,
+          "MaskCutoff": 0.5
+        }
+      },
+      {
+        "Type": "PS",
+        "ConstantBuffer": "ExtraCB",
+        "Values": {
+          "ExtraColor": [
+            0.2,
+            0.2,
+            0.5,
+            0.0
+          ],
+          "Weights": [
+            0.1,
+            0.2,
+            0.3,
+            0.4
+          ],
+          "UVOffsets": [
+            0.0,
+            0.0,
+            0.25,
+            0.5,
+            0.75,
+            1.0
+          ],
+          "Colors": [
+            1,
+            0,
+            0,
+            1,
+            0,
+            0.8,
+            0,
+            1
+          ]
+        }
+      }
+    ],
+    "Textures": [
+      {
+        "Type": "PS",
+        "Parameter": "BaseTexture",
+        "Asset": "Demo_Base_2D",
+        "TextureType": "Texture2D"
+      },
+      {
+        "Type": "PS",
+        "Parameter": "DetailTextures",
+        "ArrayIndex": 0,
+        "Asset": "Demo_DetailA_2D",
+        "TextureType": "Texture2D"
+      },
+      {
+        "Type": "PS",
+        "Parameter": "DetailTextures",
+        "ArrayIndex": 1,
+        "Asset": "Demo_DetailB_2D",
+        "TextureType": "Texture2D"
+      },
+      {
+        "Type": "PS",
+        "Parameter": "LayerTexture",
+        "Asset": "Demo_Layers_2DArray",
+        "TextureType": "Texture2DArray"
+      }
+    ],
+    "Samplers": [
+      {
+        "Type": "PS",
+        "Parameter": "LinearSamplers",
+        "ArrayIndex": 0,
+        "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
+      },
+      {
+        "Type": "PS",
+        "Parameter": "LinearSamplers",
+        "ArrayIndex": 1,
+        "SamplerType": "Filter_Bi_Linear_Sampler_CLAMP"
+      },
+      {
+        "Type": "PS",
+        "Parameter": "PointSampler",
+        "SamplerType": "Filter_Point_Sampler_CLAMP"
+      }
+    ]
+  }
+}

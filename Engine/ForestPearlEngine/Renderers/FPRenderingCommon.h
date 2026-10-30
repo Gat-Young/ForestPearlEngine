@@ -187,6 +187,11 @@ struct FPTextureData
 	void* TextureDESC = nullptr;
 };
 
+struct FPTextureArrayData
+{
+	void* TextureArraySRV = nullptr;
+};
+
 //Texture Info
 struct FPTextureInfo
 {
@@ -194,6 +199,102 @@ struct FPTextureInfo
 	std::string Path;
 	std::string Type;
 	AssetOwner Owner;
+};
+
+//Texture Array Info
+struct FPTextureArrayInfo
+{
+	std::string Name;
+	unsigned int Width;
+	unsigned int Height;
+	unsigned int ArraySize;
+
+	std::vector<std::string> SourceTextures;
+	AssetOwner Owner;
+};
+
+enum FPTextureType
+{
+	Texture2D,
+	Texture2DArray
+};
+
+FPTextureType StringToTextureType(const std::string& Name);
+
+enum class FPShaderType
+{
+	VS,
+	PS,
+
+	None
+};
+
+FPShaderType StringToFPShaderType(const std::string& ShaderType);
+
+//////Material Data 구조체////////
+
+struct FPReflectionParameterInfo
+{
+	FPShaderType Type = FPShaderType::PS;
+	std::string ConstantBufferName;
+	std::string ParameterName;
+	size_t BufferOffset = 0;
+	unsigned int Components = 0;
+	unsigned int ArrayCount = 1; // 배열 요소 개수
+	size_t ArrayStride = 0;      // 다음 요소까지의 바이트 간격
+};
+
+struct FPReflectionResourceInfo
+{
+	std::string Name;
+	std::string AssetName;
+	FPTextureType TextureType = Texture2D;
+	unsigned int Slot = 0;
+	unsigned int BindCount = 1;
+};
+
+struct FPReflectionSamplerInfo
+{
+	std::string Name;
+	FPSamplerType SamplerType = Filter_Tri_Linear_Sampler_CLAMP;
+	unsigned int Slot = 0;
+	unsigned int BindCount = 1;
+};
+
+struct FPShaderReflectionData
+{
+	std::vector<FPReflectionParameterInfo> Parameters;
+	std::vector<FPReflectionResourceInfo> Resources;
+	std::vector<FPReflectionSamplerInfo> Samplers;
+};
+
+//////////////////////////////////////////////////////////
+
+//실수 파라이터 데이터 구조체
+struct FPFloatParameterData
+{
+	FPShaderType Type = FPShaderType::PS;
+	std::string ConstantBufferName; // 예: SurfaceCB
+	std::string ParameterName;      // 예: TintColor 또는 Material.BaseColor
+	std::vector<float> Values;
+};
+
+// 텍스처 SRV(t#)와 샘플러 상태(s#)는 서로 독립적으로 설정
+struct FPTextureParameterData
+{
+	FPShaderType Type = FPShaderType::PS;
+	std::string Parameter;							// HLSL 텍스처 변수 이름
+	std::string Name;								// 로딩한 텍스처 에셋 이름
+	FPTextureType TextureType = Texture2D;
+	unsigned int ArrayIndex = 0;					// HLSL 리소스 배열 인덱스. Texture2DArray의 슬라이스가 아님
+};
+
+struct FPSamplerParameterData
+{
+	FPShaderType Type = FPShaderType::PS;
+	std::string Parameter;							// HLSL 샘플러 변수 이름
+	FPSamplerType SamplerType = Filter_Tri_Linear_Sampler_Wrap;
+	unsigned int ArrayIndex = 0;					// HLSL SamplerState 배열 원소 번호
 };
 
 //Material 데이터 구조체
@@ -206,13 +307,9 @@ struct FPMaterialData
 
 	bool TwoSided;
 
-	COLOR_VERTEX BaseColor;
-	COLOR_VERTEX Ambient;
-	COLOR_VERTEX Diffuse;
-	COLOR_VERTEX Emissive;
-
-	//<Slot, Name, Samplertypr>
-	std::vector<std::tuple<unsigned int, std::string, FPSamplerType> > Textures;
+	std::vector<FPFloatParameterData> Parameters;
+	std::vector<FPTextureParameterData> NamedTextures;
+	std::vector<FPSamplerParameterData> NamedSamplers;
 };
 
 //VertexShader 데이터 구조체
@@ -262,12 +359,6 @@ struct FPActorData
 	float Scale_x, Scale_y, Scale_Z;
 };
 
-struct FPTextureItem
-{
-	std::string* TexturePath;
-	FPSamplerType* SamplerType;
-};
-
 struct RenderItem
 {
 	int* Priority = nullptr;
@@ -285,12 +376,8 @@ struct RenderItem
 	std::string* VertexShaderPath = nullptr;
 	std::string* PixelShaderPath = nullptr;
 
-	FPVector4* BaseColor = nullptr;
-	FPVector4* Diffuse = nullptr;
-	FPVector4* Ambient = nullptr;
-	FPVector4* Emissive = nullptr;
-
-	std::unordered_map<int, FPTextureItem>* TextureList;
+	std::vector<FPReflectionResourceInfo>* Resources = nullptr;
+	std::vector<FPReflectionSamplerInfo>* Samplers = nullptr;
 
 	//상수 버퍼용
 	FPConstantBufferRenderData* VertexConstBuffer = nullptr;
@@ -512,14 +599,6 @@ namespace RenderingData
 		LightDataItem Light[Light_MAX];
 	};
 
-	struct alignas(16) MaterialItem
-	{
-		FPVector4 BaseColor;
-		FPVector4 Diffuse;
-		FPVector4 Ambient;
-		FPVector4 Emissive;
-	};
-
 	//상수 버퍼용 구조체 : 셰이더 내부 연산에 사용될 데이터들
 	struct alignas(16) MVPConstBuffer
 	{
@@ -574,6 +653,7 @@ namespace RenderingData
 		int Slot;
 		std::string TexturePath;
 		FPSamplerType SamplerType;
+		FPTextureType TextureType;
 	};
 
 	struct FPSamplerItem
@@ -598,8 +678,8 @@ namespace RenderingData
 		std::string VertexShaderPath;
 		std::string PixelShaderPath;
 
-		std::vector<RenderingData::FPTextureItem> TextureList;
-		std::vector<RenderingData::FPSamplerItem> SamplerList;
+		std::vector<FPReflectionResourceInfo> Resources;
+		std::vector<FPReflectionSamplerInfo> Samplers;
 
 		FPConstantBufferRenderData VertexConstBuffer;
 		FPConstantBufferRenderData PixelConstBuffer;

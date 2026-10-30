@@ -1,5 +1,6 @@
 #include "FPAssetManager.h"
 #include <iostream>
+#include <set>
 #include "Utility/FPPathManager.h"
 #include "FPGameInstance.h"
 #include "FPMaterial.h"
@@ -114,6 +115,12 @@ void FPAssetManager::AllAssetDataCreate()
 	for (auto& [AssetName, Asset] : LoadedTextureData)
 	{
 		MakeTexture(Asset);
+	}
+
+	//Texture Array 생성
+	for (auto& [AssetName, Asset] : LoadedTextureArrayData)
+	{
+		MakeTextureArray(Asset);
 	}
 
 	//Fbx Load
@@ -797,6 +804,66 @@ void FPAssetManager::MakeTexture(FPTextureInfo& TextureInfo)
 	AddTextureData(TextureInfo.Name, Data);
 }
 
+FPTextureArrayData& FPAssetManager::GetTextureArrayData(std::string TextureArrayName)
+{
+	return this->TextureArrayData[TextureArrayName];
+}
+
+void FPAssetManager::AddTextureArrayData(std::string TextureArrayName, FPTextureArrayData& TextureArrayData)
+{
+	this->TextureArrayData[TextureArrayName] = TextureArrayData;
+}
+
+bool FPAssetManager::HasTextureArrayData(std::string TextureArrayName)
+{
+	if (TextureArrayData.count(TextureArrayName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void FPAssetManager::MakeTextureArray(FPTextureArrayInfo& TextureInfo)
+{
+	FPTextureArrayData Data;
+
+	//1. Texture Array 기본 속성이 적합한지 판단
+	if (TextureInfo.ArraySize == 0 || TextureInfo.ArraySize != TextureInfo.SourceTextures.size() || TextureInfo.ArraySize > 2048)
+	{
+		std::cout << "배열 크기가 0이거나 배열크기가 텍스처 배열 최대개수(2048)를 초과했거나 배열 크기와 리소스 개수 불일치!" << "\n";
+		return;
+	}
+
+	//2. 해상도 범위 체크
+	if (TextureInfo.Width <= 0 || TextureInfo.Height <= 0 || TextureInfo.Width > 16384 || TextureInfo.Height > 16384)
+	{
+		std::cout << "해상도 범위 오류 under 0 or over 16384" << "\n";
+		return;
+	}
+
+	//원본 텍스처 배열 보관
+	std::vector<void*> CheckTexture;
+	std::vector<UINT> TextureMiplevels;
+	std::vector<void*> TextureSources;
+	void* BaseDesc = nullptr;
+	void* BaseSRVDesc = nullptr;
+	UINT MinMaplevels;
+
+	//Texture Data에서 Resource를 찾아서 TextureSources 배열에 넣음 (가능한 경우인지 체크 + 최소 Mip level을 찾음)
+	for (int i = 0; i < TextureInfo.ArraySize; ++i)
+	{
+		CheckTexture.push_back(GetTextureData(TextureInfo.SourceTextures[i]).TextureResource);
+	}
+
+	RenderingDevice::GetRenderingDevice().CheckTextureArrayData(TextureInfo.Width, TextureInfo.Height, &CheckTexture, &TextureMiplevels ,&TextureSources, &MinMaplevels, &BaseDesc, &BaseSRVDesc);
+
+	//Texture2DArray 생성
+	RenderingDevice::GetRenderingDevice().CreateTextureArray2D(TextureInfo.Width, TextureInfo.Height, TextureInfo.ArraySize , &TextureSources, &TextureMiplevels ,BaseDesc, BaseSRVDesc, MinMaplevels,  &Data.TextureArraySRV);
+
+	AddTextureArrayData(TextureInfo.Name, Data);
+}
+
 ////////////////////////////
 //
 // Texture Info
@@ -814,6 +881,30 @@ void FPAssetManager::AddTextureInfoData(std::string TextureName, FPTextureInfo& 
 bool FPAssetManager::HasTextureInfoData(std::string TextureName)
 {
 	if (LoadedTextureData.count(TextureName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+////////////////////////////
+//
+// Texture Array Info
+//
+FPTextureArrayInfo& FPAssetManager::GetTextureArrayInfoData(std::string TextureArrayName)
+{
+	return this->LoadedTextureArrayData[TextureArrayName];
+}
+
+void FPAssetManager::AddTextureArrayInfoData(std::string TextureArrayName, FPTextureArrayInfo& TextureArrayData)
+{
+	this->LoadedTextureArrayData[TextureArrayName] = TextureArrayData;
+}
+
+bool FPAssetManager::HasTextureArrayInfoData(std::string TextureArrayName)
+{
+	if (LoadedTextureArrayData.count(TextureArrayName) > 0)
 	{
 		return true;
 	}
@@ -918,23 +1009,66 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 	FPMaterial* Material = new FPMaterial();
 	Material->SetVertexShader(MaterialData.VertexShader);
 	Material->SetPixelShader(MaterialData.PixelShader);
-
-	FPVector4 BaseColor{ MaterialData.BaseColor.r, MaterialData.BaseColor.g, MaterialData.BaseColor.b, MaterialData.BaseColor.a };
-	FPVector4 Diffuse{ MaterialData.Diffuse.r, MaterialData.Diffuse.g, MaterialData.Diffuse.b, MaterialData.Diffuse.a };
-	FPVector4 Ambient{ MaterialData.Ambient.r, MaterialData.Ambient.g, MaterialData.Ambient.b, MaterialData.Ambient.a };
-	FPVector4 Emissive{ MaterialData.Emissive.r, MaterialData.Emissive.g, MaterialData.Emissive.b, MaterialData.Emissive.a };
-
-	Material->SetBaseColor(BaseColor);
-	Material->SetDiffuse(Diffuse);
-	Material->SetAmbient(Ambient);
-	Material->SetEmissive(Emissive);
 	Material->SetTwoSided(MaterialData.TwoSided);
+	
+	const FPVertexShaderData& VS = GetVertexShaderData(MaterialData.VertexShader);
+	const FPPixelShaderData& PS = GetPixelShaderData(MaterialData.PixelShader);
 
-	for (auto& [Slot, TextureName, SamplerType] : MaterialData.Textures)
+	//Relflection 분석을 위한 구조체
+
+	//input
+	void* VScode = std::get<1>(GetVertexShader(VS.Name));
+	void* PScode = std::get<1>(GetPixelShader(PS.Name));
+	std::set<std::pair<FPShaderType, std::string> > ManagedCBs;			//실수형 파라미터의 정보를 담은 자료구조
+	for (const FPFloatParameterData& P : MaterialData.Parameters) ManagedCBs.insert({ P.Type, P.ConstantBufferName });
+
+	//Reflection 결과 pointer를 활용해 객체에 바로 데이터를 갱신
+	FPShaderReflectionData* ReflectionData = Material->GetReflectionData();
+	FPConstantBufferRenderData* VertexConstantBuffer = Material->GetVertexConstantBufferRenderData();
+	FPConstantBufferRenderData* PixelConstantBuffer = Material->GetPixelConstantBufferRenderData();
+
+	HRESULT hr = S_OK;
+	//Reflection 분석은 RenderingDevice가 담당
+	hr = RenderingDevice::GetRenderingDevice().ReflectionShader(VScode, PScode, ManagedCBs, ReflectionData, VertexConstantBuffer, PixelConstantBuffer);
+	if (FAILED(hr)) { std::cout << "마테리얼 셰이더 리플렉션 Fail!" << "\n"; }
+
+	for (const FPFloatParameterData& P : MaterialData.Parameters)
 	{
+		if (!Material->SetParameter(P.Type, P.ConstantBufferName, P.ParameterName, P.Values))
+		{
+			std::cout << "Material parameter missing/type mismatch: "
+				<< P.ConstantBufferName
+				<< "." << P.ParameterName << "\n";
+			delete Material;
+			return nullptr;
+		}
+	}
 
-		Material->AddTexture(Slot);
-		Material->SetTexture(Slot, TextureName, SamplerType);
+	for (const FPTextureParameterData& T : MaterialData.NamedTextures)
+	{
+		const bool AssetFound = (T.TextureType == Texture2D) ? HasTextureData(T.Name) : HasTextureArrayData(T.Name);
+		if (!AssetFound)
+		{
+			std::cout << "Material texture asset not loaded: " << T.Name << "\n";
+			delete Material;
+			return nullptr;
+		}
+		if (!Material->SetNamedTexture(T.Type, T.Parameter, T.Name,T.TextureType, T.ArrayIndex))
+		{
+			std::cout << "Material texture failed \n";
+			delete Material;
+			return nullptr;
+		}
+	}
+
+	for (const FPSamplerParameterData& S : MaterialData.NamedSamplers)
+	{
+		if (!Material->SetNamedSampler(S.Type, S.Parameter, S.SamplerType, S.ArrayIndex))
+		{
+			std::cout << "Material sampler failed \n";
+			delete Material;
+			return nullptr;
+		}
 	}
 
 	return Material;

@@ -4,11 +4,14 @@
 #include <wrl/client.h>
 #include <tchar.h>
 #include <vector>
+#include <set>
 
 #include <d3d11.h>
 #include <dxgi1_6.h>
 #pragma comment(lib, "D3D11")
 #pragma comment(lib, "dxgi.lib")
+#include <d3d11shader.h>
+#include <d3dcompiler.h>
 #include <DirectXMath.h>
 using namespace DirectX;
 #include <WICTextureLoader.h>
@@ -172,6 +175,10 @@ class RenderingDevice
 
 		HRESULT GetTextureDesc(void* TextureResourceView, void** Desc);
 
+		//TextureArray용
+		HRESULT CheckTextureArrayData(UINT Texture2DArrayWidth, UINT Texture2DArrayHeight, std::vector<void*>* CheckTexture, std::vector<UINT>* TextureMiplevels, std::vector<void*>* TextureSources, UINT* MinMiplevels, void** OutBaseDesc, void** OutBaseSRVDesc);
+		HRESULT CreateTextureArray2D(UINT Width, UINT Height, UINT ArraySize, std::vector<void*>* TextureSources,std::vector<UINT>* SourceMipLevels,void* BaseDesc, void* BaseSRVDesc, UINT MinMiplevels, void** Texture2DArraySRV);
+
 		HRESULT PSSetShaderResources(UINT Slot, UINT NumViews, void* ShaderResourceView);
 
 		//VB 만들기
@@ -193,6 +200,11 @@ class RenderingDevice
 		HRESULT UpdateVertexShaderSubresource(UINT Slot, const uint8_t* pSrcData, UINT Offset, UINT Size);
 		HRESULT UpdatePixelShaderSubresource(UINT Slot, const uint8_t* pSrcData, UINT Offset, UINT Size);
 
+		//Shader Reflection
+		HRESULT ReflectionShader(void* VScode, void* PScode, const std::set<std::pair<FPShaderType, std::string> >& ManagedCBs, FPShaderReflectionData* OutReflectionData, FPConstantBufferRenderData* OutVS, FPConstantBufferRenderData* OutPS);
+
+		//Rendering Device에서만 호출 할 듯?
+		HRESULT AppendMaterialParameter(ID3D11ShaderReflectionType* ReflectedType, const std::string& MemberName, size_t RelativeOffset, size_t ConstantBufferSize, size_t BufferStart, FPShaderType Stage, const std::string& ConstantBufferName, FPShaderReflectionData& Layout);
 		//입력 레이아웃 생성
 		HRESULT CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, ID3DBlob* InVSCode, ID3D11InputLayout** ReturnLayout);
 

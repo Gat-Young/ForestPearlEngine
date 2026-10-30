@@ -37,19 +37,19 @@
             }
         ],
         "Textures": [
-            {
-                "Type": "PS",
-                "Parameter": "Texture_0",
-                "Asset": "Field_micro02_dds",
-                "TextureType": "Texture2D"
-            }
+          {
+            "Type": "PS",
+            "Parameter": "TexDiff",
+            "Asset": "Field_micro02_dds",
+            "TextureType": "Texture2D"
+          }
         ],
         "Samplers": [
-            {
-                "Type": "PS",
-                "Parameter": "Texture_0",
-                "SamplerType": "Filter_Anistropy_Linear_Sampler_Wrap"
-            }
+          {
+            "Type": "PS",
+            "Parameter": "Smpler",
+            "SamplerType": "Filter_Anistropy_Linear_Sampler_Wrap"
+          }
         ]
     }
 }

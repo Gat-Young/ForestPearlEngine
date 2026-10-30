@@ -37,19 +37,19 @@
             }
         ],
         "Textures": [
-            {
-                "Type": "PS",
-                "Parameter": "Texture_0",
-                "Asset": "Tree01s_dds",
-                "TextureType": "Texture2D"
-            }
+          {
+            "Type": "PS",
+            "Parameter": "TexDiff",
+            "Asset": "Tree01s_dds",
+            "TextureType": "Texture2D"
+          }
         ],
         "Samplers": [
-            {
-                "Type": "PS",
-                "Parameter": "Texture_0",
-                "SamplerType": "Filter_Anistropy_Linear_Sampler_CLAMP"
-            }
+          {
+            "Type": "PS",
+            "Parameter": "Smpler",
+            "SamplerType": "Filter_Anistropy_Linear_Sampler_CLAMP"
+          }
         ]
     }
 }

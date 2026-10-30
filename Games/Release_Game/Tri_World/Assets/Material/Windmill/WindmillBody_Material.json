@@ -37,28 +37,23 @@
             }
         ],
         "Textures": [
-            {
-                "Type": "PS",
-                "Parameter": "Texture_0",
-                "Asset": "Windmill_jpg",
-                "TextureType": "Texture2D"
-            },
-            {
-                "Type": "PS",
-                "Parameter": "Texture_1",
-                "Asset": "Windmill_a_jpg",
-                "TextureType": "Texture2D"
-            }
+          {
+            "Type": "PS",
+            "Parameter": "TexDiff",
+            "Asset": "Windmill_jpg",
+            "TextureType": "Texture2D"
+          },
+          {
+            "Type": "PS",
+            "Parameter": "TexDiff2",
+            "Asset": "Windmill_a_jpg",
+            "TextureType": "Texture2D"
+          }
         ],
         "Samplers": [
             {
                 "Type": "PS",
-                "Parameter": "Texture_0",
-                "SamplerType": "Filter_Anistropy_Linear_Sampler_CLAMP"
-            },
-            {
-                "Type": "PS",
-                "Parameter": "Texture_1",
+                "Parameter": "Smpler",
                 "SamplerType": "Filter_Anistropy_Linear_Sampler_CLAMP"
             }
         ]

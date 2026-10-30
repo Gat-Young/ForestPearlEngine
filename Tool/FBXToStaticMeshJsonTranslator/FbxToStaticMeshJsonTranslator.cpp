@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <unordered_map>
+#include <vector>
 
 using json = nlohmann::ordered_json;
 
@@ -335,6 +336,18 @@ void FbxToStaticMeshJsonTranslator::ExportMaterialTextures(const ufbx_material& 
 	std::unordered_map<std::string, int> ParameterNextIndex;
 	int Slot = 0;
 
+	// Sampler는 텍스처 하나당이 아니라 "같은 Parameter를 쓰는 슬롯들"이 공유하는 설정이다.
+	// 같은 Parameter에 텍스처가 여러 개 매핑되면(ArrayIndex로 구분) Sampler 후보도 그만큼 쌓이는데,
+	// Parameter + SamplerType이 동일한 후보를 그대로 다 내보내면 완전히 같은 Sampler 항목이 중복으로 남는다.
+	// 그래서 일단 후보만 모아두고, 아래에서 Parameter별로 SamplerType이 겹치는 후보를 하나로 합친다.
+	struct FSamplerCandidate
+	{
+		int ArrayIndex;
+		std::string SamplerType;
+	};
+	std::vector<std::string> SamplerParameterOrder;
+	std::unordered_map<std::string, std::vector<FSamplerCandidate>> SamplerCandidatesByParameter;
+
 	for (const ufbx_material_texture& MaterialTexture : Material.textures)
 	{
 		if (!MaterialTexture.texture)
@@ -415,20 +428,51 @@ void FbxToStaticMeshJsonTranslator::ExportMaterialTextures(const ufbx_material& 
 
 		OutTextures.push_back(TextureRef);
 
-		json SamplerRef;
-		SamplerRef["Type"] = "PS";
-		SamplerRef["Parameter"] = ParameterName;
-		if (bSharedParameter)
-		{
-			SamplerRef["ArrayIndex"] = ArrayIndex;
-		}
 		// FBX에는 필터링 방식(Point/Bi-Linear/Tri-Linear/Anistropy) 정보가 없어 기본값으로 고정한다.
 		// 엔진 StringToSamplerType이 그대로 찾을 수 있도록 "Filter_Tri_Linear_" + Wrap 설정을 합친 문자열로 저장한다. (FPRenderingCommon.cpp 참고)
-		SamplerRef["SamplerType"] = "Filter_Tri_Linear_" + DetermineSamplerType(Texture.wrap_u);
+		const std::string SamplerTypeString = "Filter_Tri_Linear_" + DetermineSamplerType(Texture.wrap_u);
 
-		OutSamplers.push_back(SamplerRef);
+		if (SamplerCandidatesByParameter.find(ParameterName) == SamplerCandidatesByParameter.end())
+		{
+			SamplerParameterOrder.push_back(ParameterName);
+		}
+		SamplerCandidatesByParameter[ParameterName].push_back({ ArrayIndex, SamplerTypeString });
 
 		++Slot;
+	}
+
+	// Parameter별로 SamplerType이 겹치는 후보는 하나만 남긴다. (겹치지 않는 경우에만 ArrayIndex로 구분해서 모두 남긴다)
+	for (const std::string& ParameterName : SamplerParameterOrder)
+	{
+		std::vector<FSamplerCandidate> UniqueCandidates;
+		for (const FSamplerCandidate& Candidate : SamplerCandidatesByParameter[ParameterName])
+		{
+			const bool bAlreadyExists = std::any_of(UniqueCandidates.begin(), UniqueCandidates.end(), [&Candidate](const FSamplerCandidate& Existing)
+			{
+				return Existing.SamplerType == Candidate.SamplerType;
+			});
+
+			if (!bAlreadyExists)
+			{
+				UniqueCandidates.push_back(Candidate);
+			}
+		}
+
+		const bool bNeedsArrayIndex = UniqueCandidates.size() > 1;
+
+		for (const FSamplerCandidate& Candidate : UniqueCandidates)
+		{
+			json SamplerRef;
+			SamplerRef["Type"] = "PS";
+			SamplerRef["Parameter"] = ParameterName;
+			if (bNeedsArrayIndex)
+			{
+				SamplerRef["ArrayIndex"] = Candidate.ArrayIndex;
+			}
+			SamplerRef["SamplerType"] = Candidate.SamplerType;
+
+			OutSamplers.push_back(SamplerRef);
+		}
 	}
 }
 

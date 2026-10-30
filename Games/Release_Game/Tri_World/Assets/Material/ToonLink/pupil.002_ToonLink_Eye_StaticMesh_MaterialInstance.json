@@ -39,13 +39,13 @@
         "Textures": [
             {
                 "Type": "PS",
-                "Parameter": "Texture_0",
+                "Parameter": "TexDiff",
                 "Asset": "Pupil_png",
                 "TextureType": "Texture2D"
             },
             {
                 "Type": "PS",
-                "Parameter": "Texture_1",
+                "Parameter": "TexDiff2",
                 "Asset": "Pupil_png",
                 "TextureType": "Texture2D"
             }
@@ -53,12 +53,7 @@
         "Samplers": [
             {
                 "Type": "PS",
-                "Parameter": "Texture_0",
-                "SamplerType": "Filter_Anistropy_Linear_Sampler_Wrap"
-            },
-            {
-                "Type": "PS",
-                "Parameter": "Texture_1",
+                "Parameter": "Smpler",
                 "SamplerType": "Filter_Anistropy_Linear_Sampler_Wrap"
             }
         ]

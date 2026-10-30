@@ -489,7 +489,7 @@ void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsse
 	for (const json& Group : Groups)
 	{
 		//VS, PS 인지 구분
-		const FPShaderType Stage = StringToFPShaderType(Groups.at("Type").get<std::string>());
+		const FPShaderType Stage = StringToFPShaderType(Group.at("Type").get<std::string>());
 		if (Stage == FPShaderType::None) { std::cout << "Material의 Type은 VS or PS여야 합니다!" << "\n"; }
 
 		//상수 버퍼이름 가져오기
@@ -574,7 +574,7 @@ void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsse
 			}
 
 			const std::string SamplerType = S.at("SamplerType").get<std::string>();
-
+			Entry.SamplerType = StringToSamplerType(SamplerType);
 			MaterialData.NamedSamplers.push_back(std::move(Entry));
 		}
 	}

@@ -419,7 +419,7 @@ void Renderer::CreateNormalRenderList()
 		NormalItem.NormalMatrix = DirectX::XMMatrixTranspose(DirectX::XMMatrixInverse(nullptr, World));
 
 		//VB 설정
-		FPConstantBufferRenderDataUtil::AddConstantBuffer(NormalRenderData.VertexConstBuffer, 0, NormalItem);
+		FPConstantBufferRenderDataUtil::AddConstantBuffer(NormalRenderData.VertexConstBuffer, 2, NormalItem);
 
 		this->NormalRenderList.push_back(NormalRenderData);
 
@@ -566,7 +566,7 @@ void Renderer::MeshRenderPass()
 				if (TextureItem.TextureType == Texture2D) { TextureData = AssetManager->GetTextureData(TextureItem.AssetName).TextureResource; }
 				if (TextureItem.TextureType == Texture2DArray) { TextureData = AssetManager->GetTextureArrayData(TextureItem.AssetName).TextureArraySRV; }
 
-				Device.PSSetShaderResources(TextureItem.Slot, TextureItem.BindCount, TextureData);
+				Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData);
 			}
 			//Texture 셋팅 End.
 
@@ -690,11 +690,10 @@ void Renderer::GizmoRenderPass()
 	//상수 버퍼 설정
 	//Vertex Shader
 	//MeshRenderPass에서 0번은 WVP, 1번은 ViewPort용 슬롯 임
-	unsigned int VertexShaderConstantBufferSlotOffset = 2;
+	//Slot is the absolute register number (b#) in all passes: b0 Object, b1 ViewPort, b2 Light / NormalDebug
 
 	//PixelShader
 	//MeshRenderPass에서 0번은 ViewPort용 슬롯
-	unsigned int PixelShaderConstantBufferSlotOffset = 1;
 
 
 	RenderingData::MVPConstBuffer MVPCB;
@@ -720,7 +719,7 @@ void Renderer::GizmoRenderPass()
 			//vertex
 			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.VertexConstBuffer.ConstantBuffers)
 			{
-				unsigned int Slot = VertexShaderConstantBufferSlotOffset + ConstantBufferInfo.Slot;
+				unsigned int Slot = ConstantBufferInfo.Slot;
 				size_t Offset = ConstantBufferInfo.Offset;
 				size_t Size = ConstantBufferInfo.Size;
 
@@ -730,7 +729,7 @@ void Renderer::GizmoRenderPass()
 			//Pixel
 			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.PixelConstBuffer.ConstantBuffers)
 			{
-				unsigned int Slot = PixelShaderConstantBufferSlotOffset + ConstantBufferInfo.Slot;
+				unsigned int Slot = ConstantBufferInfo.Slot;
 				size_t Offset = ConstantBufferInfo.Offset;
 				size_t Size = ConstantBufferInfo.Size;
 
@@ -780,7 +779,7 @@ void Renderer::GizmoRenderPass()
 				//vertex
 				for (FPConstantBufferInfo ConstantBufferInfo : CamViewPort.VertexConstBuffer.ConstantBuffers)
 				{
-					unsigned int Slot = 1 + ConstantBufferInfo.Slot;
+					unsigned int Slot = ConstantBufferInfo.Slot;
 					size_t Offset = ConstantBufferInfo.Offset;
 					size_t Size = ConstantBufferInfo.Size;
 
@@ -830,11 +829,10 @@ void Renderer::NormalRenderPass()
 	//상수 버퍼 설정
 	//Vertex Shader
 	//MeshRenderPass에서 0번은 WVP, 1번은 ViewPort용 슬롯 임
-	unsigned int VertexShaderConstantBufferSlotOffset = 2;
+	//Slot is the absolute register number (b#) in all passes: b0 Object, b1 ViewPort, b2 Light / NormalDebug
 
 	//PixelShader
 	//MeshRenderPass에서 0번은 ViewPort용 슬롯
-	unsigned int PixelShaderConstantBufferSlotOffset = 1;
 
 
 	RenderingData::MVPConstBuffer MVPCB;
@@ -860,7 +858,7 @@ void Renderer::NormalRenderPass()
 			//vertex
 			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.VertexConstBuffer.ConstantBuffers)
 			{
-				unsigned int Slot = VertexShaderConstantBufferSlotOffset + ConstantBufferInfo.Slot;
+				unsigned int Slot = ConstantBufferInfo.Slot;
 				size_t Offset = ConstantBufferInfo.Offset;
 				size_t Size = ConstantBufferInfo.Size;
 
@@ -870,7 +868,7 @@ void Renderer::NormalRenderPass()
 			//Pixel
 			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.PixelConstBuffer.ConstantBuffers)
 			{
-				unsigned int Slot = PixelShaderConstantBufferSlotOffset + ConstantBufferInfo.Slot;
+				unsigned int Slot = ConstantBufferInfo.Slot;
 				size_t Offset = ConstantBufferInfo.Offset;
 				size_t Size = ConstantBufferInfo.Size;
 
@@ -921,7 +919,7 @@ void Renderer::NormalRenderPass()
 				//vertex
 				for (FPConstantBufferInfo ConstantBufferInfo : CamViewPort.VertexConstBuffer.ConstantBuffers)
 				{
-					unsigned int Slot = 1 + ConstantBufferInfo.Slot;
+					unsigned int Slot = ConstantBufferInfo.Slot;
 					size_t Offset = ConstantBufferInfo.Offset;
 					size_t Size = ConstantBufferInfo.Size;
 

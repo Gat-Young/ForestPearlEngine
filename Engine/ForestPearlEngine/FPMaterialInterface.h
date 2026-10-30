@@ -17,6 +17,7 @@ class FPMaterialInterface : public FPObject
 		virtual std::string* GetPixelShader() = 0;
 		virtual FPConstantBufferRenderData* GetVertexConstantBufferRenderData() = 0;
 		virtual FPConstantBufferRenderData* GetPixelConstantBufferRenderData() = 0;
+		virtual FPShaderReflectionData* GetReflectionData() = 0;
 
 		// 기존 인터페이스의 하위 클래스와 호환되는 선택적 Parameter 함수
 		virtual bool SetParameter(FPShaderType, const std::string& ConstantBufferName, const std::string& ParameterName, const std::vector<float>&) = 0;

@@ -1036,14 +1036,40 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 	{
 		if (!Material->SetParameter(P.Type, P.ConstantBufferName, P.ParameterName, P.Values))
 		{
-			std::cerr << "Material parameter missing/type mismatch: "
-				<< FPShaderTypeName(P.Type) << "." << P.ConstantBufferName
+			std::cout << "Material parameter missing/type mismatch: "
+				<< P.ConstantBufferName
 				<< "." << P.ParameterName << "\n";
 			delete Material;
 			return nullptr;
 		}
 	}
 
+	for (const FPTextureParameterData& T : MaterialData.NamedTextures)
+	{
+		const bool AssetFound = (T.TextureType == Texture2D) ? HasTextureData(T.Name) : HasTextureArrayData(T.Name);
+		if (!AssetFound)
+		{
+			std::cout << "Material texture asset not loaded: " << T.Name << "\n";
+			delete Material;
+			return nullptr;
+		}
+		if (!Material->SetNamedTexture(T.Type, T.Parameter, T.Name,T.TextureType, T.ArrayIndex))
+		{
+			std::cout << "Material texture failed \n";
+			delete Material;
+			return nullptr;
+		}
+	}
+
+	for (const FPSamplerParameterData& S : MaterialData.NamedSamplers)
+	{
+		if (!Material->SetNamedSampler(S.Type, S.Parameter, S.SamplerType, S.ArrayIndex))
+		{
+			std::cout << "Material sampler failed \n";
+			delete Material;
+			return nullptr;
+		}
+	}
 
 	return Material;
 }

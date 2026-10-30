@@ -42,12 +42,6 @@
                 "Parameter": "TexDiff",
                 "Asset": "Mouth10_png",
                 "TextureType": "Texture2D"
-            },
-            {
-                "Type": "PS",
-                "Parameter": "TexDiff2",
-                "Asset": "Mouth10_png",
-                "TextureType": "Texture2D"
             }
         ],
         "Samplers": [

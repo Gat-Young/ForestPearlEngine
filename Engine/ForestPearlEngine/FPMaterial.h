@@ -47,7 +47,7 @@ class FPMaterial : public FPMaterialInterface
 		bool SetParameterElement(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, unsigned int ArrayIndex, const std::vector<float>& Values) override;
 		bool GetParameterElement(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, unsigned int ArrayIndex, std::vector<float>& OutValues) const override;
 
-		FPShaderReflectionData* GetReflectionData();
+		FPShaderReflectionData* GetReflectionData() override;
 		FPConstantBufferRenderData* GetVertexConstantBufferRenderData() override;
 		FPConstantBufferRenderData* GetPixelConstantBufferRenderData() override;
 

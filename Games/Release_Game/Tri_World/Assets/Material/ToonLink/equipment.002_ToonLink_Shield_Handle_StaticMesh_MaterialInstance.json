@@ -42,12 +42,6 @@
                 "Parameter": "TexDiff",
                 "Asset": "Equipment_png",
                 "TextureType": "Texture2D"
-            },
-            {
-                "Type": "PS",
-                "Parameter": "TexDiff2",
-                "Asset": "Equipment_png",
-                "TextureType": "Texture2D"
             }
         ],
         "Samplers": [

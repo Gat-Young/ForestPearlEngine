@@ -42,12 +42,6 @@
                 "Parameter": "TexDiff",
                 "Asset": "Clothes_png",
                 "TextureType": "Texture2D"
-            },
-            {
-                "Type": "PS",
-                "Parameter": "TexDiff2",
-                "Asset": "Clothes_png",
-                "TextureType": "Texture2D"
             }
         ],
         "Samplers": [

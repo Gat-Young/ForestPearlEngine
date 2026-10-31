@@ -45,7 +45,7 @@
 |:-:|---|---|
 | 🧩 | **Actor / Component 프레임워크** | `FPObject → FPActor → FPPawn / FPAController / FPAGameMode`, 계층형 `FPSceneComponent` 트랜스폼 |
 | 🎨 | **DX11 렌더러** | `Renderer`(프레임 흐름) + `RenderingDevice`(D3D11 래퍼) 2계층, **Render List → Render Pass(Mesh / Gizmo / Normal / UI)** 구조, 슬롯 규약이 있는 **상수 버퍼 바인딩**, `GameSetting.json` 기반 MSAA(스왑체인·깊이버퍼 SampleDesc), Priority 정렬, 멀티 뷰포트 |
-| 💡 | **통합 Light (Directional · Point)** | `FPLightComponentBase` 계열이 Light Render List에 등록 → 메시마다 **최대 64개**를 하나의 `LIGHT` 상수 버퍼(`b2`, 9232 byte)로 묶어 전달. 정점 셰이더(`Light.hlsli`)에서 Directional(Local 공간) · Point(View 공간, 거리 감쇠, 비균등 스케일 대응 노멀) Lambert 계산. 라이트 색(`LightColor`) · **Emissive** 지원. 토치 예제 `ATorchLight` |
+| 💡 | **통합 Light (Directional · Point)** | `FPLightComponentBase` 계열이 Light Render List에 등록 → 메시마다 **최대 64개**를 하나의 `LIGHT` 상수 버퍼(`b2`, 9232 byte)로 묶어 전달. 정점 셰이더(`Light.hlsli`)에서 Directional · Point 모두 **View 공간**에서 Half-Lambert Diffuse + **Blinn-Phong Specular**(`SpecularBlinPhong.hlsli`) + Ambient를 계산(거리 감쇠, Range Fade, 비균등 스케일 대응 노멀). 라이트 색(`LightColor`) · **Emissive** 지원. 토치 예제 `ATorchLight` |
 | 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 샘플러 36종(AF 단계는 `GameSetting.json`). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환. 슬롯마다 `FPTextureType`(`Texture2D` / `Texture2DArray`)을 함께 지정 |
 | 🗂️ | **Texture2DArray** *(실험적)* | `LoadTexture2DArray`가 JSON(`Width/Height/ArraySize/SourceTextures[]`)을 읽어 이미 로드된 Texture2D들을 **`RenderingDevice::CheckTextureArrayData`로 포맷·해상도 검증 후 `CreateTextureArray2D`로 한 장의 `Texture2DArray` SRV로 합침**. `MeshRenderPass`는 Material 텍스처 슬롯의 `FPTextureType`에 따라 `GetTextureData`(Texture2D) 또는 `GetTextureArrayData`(Texture2DArray)에서 바인딩할 SRV를 고름. 아직 어떤 게임의 `LoadAssets()`에서도 호출되지 않는 템플릿 단계 |
 | ⚙️ | **GameSetting** | `Assets/GameSetting/GameSetting.json` → `FPAssetLoader::LoadGameSetting`이 읽어 `FPGameSettingData`로 저장 → `FPGameProjectSetting::ProjectSetting()`이 창 크기 · MSAA · AF · 전체화면 값을 반영, `RenderingDevice::SetMSAA/SetAF`로 렌더러에 전달 |
@@ -199,7 +199,8 @@ Engine/ForestPearlEngine/
 │       ├── DefaultVertexShader.vsh   # 기본 Mesh VS (WVP 변환 + Light.hlsli의 CalculateLight)
 │       ├── DefaultPixelShader.psh    # 기본 Mesh PS (정점 색 × 텍스처 t0 / s0, SV_IsFrontFace 입력)
 │       ├── Light.hlsli               # 통합 Light 상수 버퍼(b2 · b3) + Directional / Point 계산
-│       ├── LambertLight.hlsli        # LambertLight() 계산 함수
+│       ├── LambertLight.hlsli        # LambertLight() 계산 함수 (Half-Lambert)
+│       ├── SpecularBlinPhong.hlsli   # SpecularBlinPhongLight() 계산 함수
 │       ├── DefaultGizmoVertexShader.vsh / DefaultGizmoPixelShader.psh  # Grid / Axis 기즈모용 (라이트 없음)
 │       ├── NormalDebugVertexShader.vsh / NormalDebugPixelShader.psh    # Normal Line용
 │       ├── NormalCalculate.hlsli     # TransformWorldNormal()
@@ -928,7 +929,7 @@ struct alignas(16) LightItem { unsigned int LightCnt; unsigned int Padding[3]; L
 ```hlsl
 // Assets/ShaderResource/Light.hlsli — 기본 Mesh VS가 포함
 cbuffer LightConstBuffer    : register(b2) { uint LightCnt; float3 Padding; LIGHT Light[Light_MAX]; };  // 9232 byte
-cbuffer MaterialConstBuffer : register(b3) { MATERIAL Material; };   // BaseColor · Diffuse · Ambient · Emissive — Material JSON의 Parameters로 채워짐
+cbuffer MaterialConstBuffer : register(b3) { MATERIAL Material; };   // BaseColor · Diffuse · Ambient · Specular · Roughness · Emissive(96 byte) — Material JSON의 Parameters로 채워짐
 float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix mInverseTranseposeWV);
 ```
 
@@ -939,19 +940,26 @@ float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix 
 
 | 항목 | 내용 |
 |---|---|
-| 합성 | `LightCnt`만큼 반복해 라이트별 결과를 더하고, 최종 색 = `(Σ라이트 + Material.Emissive) × Material.BaseColor`, 알파 = `BaseColor.a` |
-| Directional | **Local(오브젝트) 공간.** 렌더러가 메시마다 `Direction`을 정규화 → `World` 역행렬 곱 → 정규화 → **부호 반전**해 전달하고, 셰이더는 모델 노멀을 변환하지 않고 `Lambert(N, L)`에 사용. 결과 × `LightColor` |
-| Point | **View 공간.** `posv = mul(mWV, pos)`, 광원 위치는 `mul(mView, LightPosition)`. 노멀은 `normalize(mul(mInverseTranseposeWV, nrm))`(`w = 0`)로 변환해 **비균등 스케일에서도 노멀이 올바르게** 계산됨. `Distance > Range`이면 0, 감쇠 `att = 1 / (Attenuation.x + y·d + z·d²)`(분모가 0이면 1). 결과 = Lambert × `att` × `LightColor` |
-| Spot · Rect | 타입 정의만 있고 호출이 주석 처리되어 있어 **기여하지 않음** |
-| 클램프 | `LambertLight()`가 더 이상 `saturate`하지 않아 라이트가 여러 개면 1을 넘을 수 있음 (최종 출력에서 잘림) |
+| 합성 | `LightCnt`만큼 반복해 라이트별 결과를 누적하고, 최종 색 = `Col + Material.Emissive × Material.BaseColor`, 알파 = `Material.BaseColor.a`. 각 라이트 함수가 `Diffuse`/`Ambient`에 이미 `BaseColor`를 곱해 두므로, 합산 후에는 `BaseColor`를 다시 곱하지 않고 `Emissive`에만 곱해서 더함(이전엔 `(Col + Emissive) × BaseColor`로 전체를 곱했음) |
+| Directional · Point 공용 | 이제 **둘 다 View 공간**에서 계산. 노멀 `N = normalize(mul(mInverseTranseposeWV, nrm))`(`w = 0`, 비균등 스케일 대응), 뷰 벡터 `V = normalize(-posv)`(`posv = mul(mWV, pos)`, `w = 0`) |
+| Directional | 렌더러가 메시마다 `Direction`을 정규화 → **부호만 반전**해 전달(이전의 `World` 역행렬 곱은 삭제됨). 셰이더가 `mul(mView, Direction)`으로 View 공간으로 변환해 사용 |
+| Point | 광원 위치 = `mul(mView, LightPosition)`. 감쇠 `att = 1 / max(Attenuation.x + y·d + z·d², 0.0001)`, 추가로 `Fade = 1 - smoothstep(Range × 0.8, Range, Distance)`로 `Range` 경계를 부드럽게 0까지 줄임(Diffuse·Specular·Ambient 모두에 곱함) |
+| Diffuse | Half-Lambert로 변경: `LambertLight()`가 `saturate(pow(dot(N, L) × 0.5 + 0.5, 2) × LightDiffuse × MaterialDiffuse)`를 반환(더 이상 `Ambient` 인자를 받지 않음). 결과에 `Material.BaseColor`를 곱함 |
+| Specular *(신규)* | `SpecularBlinPhongLight()`(`SpecularBlinPhong.hlsli`) — Half Vector `H = normalize(L + V)`, `Shininess = lerp(128, 2, saturate(Material.Roughness.r))`, `pow(saturate(dot(N, H)), Shininess) × LightSpecular × MaterialSpecular`. `dot(N, L) ≤ 0`이거나 `L + V`가 0에 가까우면 0 |
+| Ambient | `LightData.Ambient × Material.Ambient × Material.BaseColor`로 분리 계산(이전엔 `LambertLight()` 안에서 더해짐) |
+| 라이트별 반환 | `DirLight`/`PointLight`는 각각 `saturate(Diff + Spec + Amb) × LightColor`를 반환. `CalculateLight`의 `switch`는 Directional만 `Col = ...`(덮어쓰기)이고 Point는 여전히 `Col += ...`라서, **같은 메시에 Directional과 Point가 함께 켜져 있으면 이후 처리된 Directional이 Point 결과를 덮어씀** |
+| Spot · Rect | 타입 정의만 있고 호출이 주석 처리되어 있어 여전히 **기여하지 않음** |
 | 노멀 | `NORMAL_VERTEX`(`nx, ny, nz`) 스트림(Input Slot 1). FBX 로딩 시 노드의 `node_to_world`로 변환 후 정규화해 저장 |
+
+> [!NOTE]
+> `CalculateLight`의 라이트 합산 반복문 바로 다음 줄에 `//return Col;`이 주석으로 남아 있습니다. 주석을 해제하면 `Emissive`/`BaseColor` 최종 합성 없이 라이트 합(Diffuse + Specular + Ambient)만 바로 출력하도록 전환할 수 있습니다. `DefaultVertexShader.vsh` · `WindmillWingBody.psh`에도 디버그용 노멀 시각화/배율 코드가 주석으로 남아 있어, Specular·Half-Lambert 도입을 위해 디버깅 중인 상태로 보입니다.
 
 > [!NOTE]
 > `CreateMeshRenderList`는 **메시마다** 9232 byte의 `LIGHT` 블록을 만들어 `RenderingData::MeshRenderItem`에 복사하므로 메시 수 × 프레임에 비례해 비용이 듭니다 (커밋 메모: "최적화는 추후에 진행"). 활성 라이트가 적을수록 `LightCnt`만큼만 셰이더가 반복하지만, 복사 크기는 항상 고정입니다.
 
 **Emissive (자체 발광)**
 
-`MATERIAL` 구조체(`MaterialConstBuffer`, `b3`, 64 byte)의 `Emissive`는 라이트 합에 **더해진 뒤** `BaseColor`가 곱해집니다. 라이트의 영향을 받지 않고 밝게 보이게 할 때 씁니다. 이전의 `SetEmissive` / `SetBaseColor` 등은 사라졌고, Material JSON의 `Parameters`에서 지정하거나 `SetParameter(FPShaderType::VS, "MaterialConstBuffer", "Material.Emissive", 값)`으로 바꿉니다 ([Material JSON](#material-json)).
+`MATERIAL` 구조체(`MaterialConstBuffer`, `b3`, **96 byte** — `BaseColor` · `Diffuse` · `Ambient` · `Specular` · `Roughness` · `Emissive` 6개의 `float4`)의 `Emissive`는 라이트 합에 **더해지며**, 이제는 전체를 다시 `BaseColor`로 곱하지 않고 `Emissive`에만 `BaseColor`를 곱해서 더합니다(바로 위 "합성" 참고). 라이트의 영향을 받지 않고 밝게 보이게 할 때 씁니다. 이전의 `SetEmissive` / `SetBaseColor` 등은 사라졌고, Material JSON의 `Parameters`에서 지정하거나 `SetParameter(FPShaderType::VS, "MaterialConstBuffer", "Material.Emissive", 값)`으로 바꿉니다 ([Material JSON](#material-json)).
 
 ```cpp
 // Games/Release_Game/Tri_World/ADirectionalLight.cpp
@@ -2548,6 +2556,8 @@ FBXToStaticMeshJsonTranslator.exe [FBX입력폴더] [Json출력폴더]
 
 > [!NOTE]
 > HLSL 소스는 `Assets/Shader/`가 아니라 **`Assets/ShaderResource/`** 아래에 둡니다. `Assets/Shader/`는 [셰이더 JSON](#셰이더-json)(`LoadVertexShader` / `LoadPixelShader`가 읽는 등록 정보)만 들어가는 별도 폴더입니다 ([`FPPathManager::GetAssetShaderPath`](#에셋-루트)가 실제로 참조하는 경로도 `ShaderResource/bin/`(Debug) · `ShaderResource/`(Release)입니다).
+>
+> 라이팅 디버깅 중인 일부 셰이더(`DefaultVertexShader` · `WindmillWingBody` 등)는 HLSL 컴파일러 → 명령줄 속성에서 **최적화 사용 안 함**(`DisableOptimizations = true`)이 켜져 있습니다. 전체 셰이더에 적용된 것은 아니라 파일마다 속성을 확인해야 합니다.
 
 #### 프로젝트 템플릿
 

@@ -35,6 +35,8 @@ float4 PS_Main(
 	//float4 col = {1, 0, 1, 1};
     
     //텍스처 샘플링
+    
+    float4 nrm_col = col;
    
     
     float4 tex = TexDiff.Sample(Smpler, uv);
@@ -56,7 +58,7 @@ float4 PS_Main(
     
     
     col.a = tex2.r;
-    
     return col;
+    //return col* 0.0001f + nrm_col;
 }
 

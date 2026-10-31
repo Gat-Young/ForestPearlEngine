@@ -1,0 +1,14 @@
+{
+    "Name": "Box_StaticMesh",
+    "NodeName": "Cube",
+    "MeshData": [
+        {
+            "Path": "Box/Box.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+  "Material": {
+    "Name": "Box_Material"
+  }
+}

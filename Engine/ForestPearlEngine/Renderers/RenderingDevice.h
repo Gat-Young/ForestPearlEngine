@@ -12,6 +12,9 @@
 #pragma comment(lib, "dxgi.lib")
 #include <d3d11shader.h>
 #include <d3dcompiler.h>
+#pragma comment(lib, "d3dcompiler.lib")
+#pragma comment(lib, "dxguid.lib")
+
 #include <DirectXMath.h>
 using namespace DirectX;
 #include <WICTextureLoader.h>

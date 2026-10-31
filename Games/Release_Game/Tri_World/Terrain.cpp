@@ -23,3 +23,9 @@ void Terrain::Tick()
 {
 	__super::Tick();
 }
+
+
+void Terrain::ChangeSeason(int SeasonCnt)
+{
+	Mesh->GetMaterial().SetParameter(FPShaderType::PS, "SeasonConstBuffer", "SeasonCnt", static_cast<float>(SeasonCnt));
+}

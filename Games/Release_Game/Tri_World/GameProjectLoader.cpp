@@ -13,6 +13,7 @@
 #include "TripleWingWindmill.h"
 #include "ADirectionalLight.h"
 #include "ATorchLight.h"
+#include "ABox.h"
 
 void RegistProjectName()
 {
@@ -45,8 +46,7 @@ void LoadClassRegist()
 	ClassRegistry->Register<TripleWingWindmill>("TripleWingWindmill");
 	ClassRegistry->Register<ADirectionalLight>("ADirectionalLight");
 	ClassRegistry->Register<ATorchLight>("ATorchLight");
-
-	//Material Class µî·Ï
+	ClassRegistry->Register<ABox>("ABox");
 }
 
 void LoadAssets()
@@ -58,6 +58,7 @@ void LoadAssets()
 	AssetLoader->LoadPixelShader("TerrainPixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("WindmillWingBody_PixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("TreePixelShader.json", AssetOwner::User);
+	AssetLoader->LoadPixelShader("BoxPixelShader.json", AssetOwner::User);
 
 	//Texture Load
 
@@ -83,17 +84,27 @@ void LoadAssets()
 	AssetLoader->LoadTexture("ToonLink/Pupil_png.json", AssetOwner::User);
 	AssetLoader->LoadTexture("ToonLink/Skin_png.json", AssetOwner::User);
 
+	//Box Texture
+	AssetLoader->LoadTexture("Box/woodbox_bmp.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Box/woodbox_Grass_jpg.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Box/woodbox_Mask2_bmp.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Box/woodbox_snow_mask2_png.json", AssetOwner::User);
+
 	//Windmill Texture
 	AssetLoader->LoadTexture("Windmill/Windmill_jpg.json", AssetOwner::User);
 	AssetLoader->LoadTexture("Windmill/Windmill_dds.json", AssetOwner::User);
 	AssetLoader->LoadTexture("Windmill/Windmill_a_jpg.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Windmill/Windmill_mask3_png.json", AssetOwner::User);
 
 	//Tree Texture
 	AssetLoader->LoadTexture("Tree/Tree01s_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Tree/TreeMask2_png.json", AssetOwner::User);
 
 	//Terrain Texture Load
 	AssetLoader->LoadTexture("Terrain/lnd_micro16_dds.json", AssetOwner::User);
 	AssetLoader->LoadTexture("Terrain/Field_micro02_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Terrain/mask2_png.json", AssetOwner::User);
+	
 
 	//Material Load
 
@@ -125,6 +136,9 @@ void LoadAssets()
 	//Terrain Mayerial
 	AssetLoader->LoadMaterial("Terrain/Terrain_Material.json", AssetOwner::User);
 
+	//Box Material
+	AssetLoader->LoadMaterial("Box/Box_Material.json", AssetOwner::User);
+
 	/////////////////////////
 	//Static_Mesh Load
 
@@ -138,6 +152,9 @@ void LoadAssets()
 	//Tree Static Mesh
 	AssetLoader->LoadStaticMesh("Tree/Tree_StaticMesh.json", AssetOwner::User);
 	AssetLoader->LoadStaticMesh("Tree/Tree_Trunk_StaticMesh.json", AssetOwner::User);
+
+	//Box Static Mesh
+	AssetLoader->LoadStaticMesh("Box/Box_StaticMesh.json", AssetOwner::User);
 
 	//Link Static Mesh
 	AssetLoader->LoadStaticMesh("ToonLink/ToonLink_BodyAndHat_StaticMesh.json", AssetOwner::User);

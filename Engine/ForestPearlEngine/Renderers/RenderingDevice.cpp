@@ -1293,10 +1293,12 @@ HRESULT RenderingDevice::CreateBlendStateObject()
 
 	//색상 혼합 개체 #0  기본
 	rtb.BlendEnable = FALSE;	//블렌딩 동작 결정. 기본값은 FALSE (OFF)
+
 	//색상 성분 혼합 : Color Blending. (기본값)
 	rtb.BlendOp = D3D11_BLEND_OP_ADD;
 	rtb.SrcBlend = D3D11_BLEND_ONE;
 	rtb.DestBlend = D3D11_BLEND_ZERO;
+
 	//알파 성분 혼합 : Alpha Blending. (기본값)
 	rtb.BlendOpAlpha = D3D11_BLEND_OP_ADD;
 	rtb.SrcBlendAlpha = D3D11_BLEND_ONE;

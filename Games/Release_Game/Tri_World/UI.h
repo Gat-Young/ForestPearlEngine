@@ -48,6 +48,8 @@ class UI : public FPActor
 
 		FPTextComponent* TorchText;
 
+		FPTextComponent* SeasonText;
+
 		bool GridOn = true;
 		bool AxisOn = true;
 		bool ZEnable = true;
@@ -57,6 +59,8 @@ class UI : public FPActor
 		bool TorchOn = false;
 		int LightCnt = 0;
 		int LightCntMAX = 4;
+
+		int SeasonCnt = 0;
 
 	public:
 		virtual void Initialize() override;
@@ -79,4 +83,6 @@ class UI : public FPActor
 
 		void SetDirectionalLightColor(struct FInputValue Value);
 		void OnTorch(struct FInputValue Value);
+
+		void ChangeSeason(float SeasonCnt);
 };

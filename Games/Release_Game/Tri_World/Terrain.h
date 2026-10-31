@@ -20,4 +20,6 @@ class Terrain : public FPActor
 		virtual void Initialize() override;
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
+
+		void ChangeSeason(int SeasonCnt);
 };

@@ -48,6 +48,7 @@ struct MATERIAL
     float4 BaseColor;
     float4 Diffuse;
     float4 Ambient;
+    float4 Specular;
     float4 Emissive;
 };
 

@@ -5,45 +5,76 @@
         "PixelShader": "TreePixelShader",
         "TwoSided": true,
         "Parameters": [
-            {
-                "Type": "VS",
-                "ConstantBuffer": "MaterialConstBuffer",
-                "Values": {
-                    "Material.BaseColor": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0
-                    ],
-                    "Material.Diffuse": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0
-                    ],
-                    "Material.Ambient": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0
-                    ],
-                    "Material.Emissive": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                }
+          {
+            "Type": "VS",
+            "ConstantBuffer": "MaterialConstBuffer",
+            "Values": {
+              "Material.BaseColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ],
+              "Material.Diffuse": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ],
+              "Material.Ambient": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ],
+              "Material.Emissive": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ]
             }
-        ],
-        "Textures": [
+          },
+
           {
             "Type": "PS",
-            "Parameter": "TexDiff",
-            "Asset": "Tree01s_dds",
-            "TextureType": "Texture2D"
+            "ConstantBuffer": "SeasonConstBuffer",
+            "Values": {
+              "AutumnColor": [
+                0.7961,
+                0.5686,
+                0.1765,
+                1.0
+              ],
+              "WinterColor": [
+                0.8039,
+                0.9843,
+                1.0,
+                1.0
+              ],
+              "SeasonCnt": [
+                0.0
+              ]
+            }
           }
         ],
+      "Textures": [
+        {
+          "Type": "PS",
+          "Parameter": "TexDiff",
+          "Asset": "Tree01s_dds",
+          "TextureType": "Texture2D"
+        },
+
+        {
+          "Type": "PS",
+          "Parameter": "TexSnowMask",
+          "Asset": "TreeMask2_png",
+          "TextureType": "Texture2D"
+        }
+
+
+      ],
         "Samplers": [
           {
             "Type": "PS",

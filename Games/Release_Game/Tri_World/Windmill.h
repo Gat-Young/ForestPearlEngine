@@ -34,4 +34,6 @@ class Windmill : public FPPawn
 		void Rotate(FInputValue Value);
 		void Scaling(FInputValue Value);
 		void SetScaleWing(FInputValue Value);
+
+		void ChangeSeason(int SeasonCnt);
 };

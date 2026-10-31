@@ -83,3 +83,8 @@ void Windmill::SetScaleWing(FInputValue Value)
 		TripleWing->SetScaleWing(Value);
 	}
 }
+
+void Windmill::ChangeSeason(int SeasonCnt)
+{
+	Body->GetMaterial().SetParameter(FPShaderType::PS, "SeasonConstBuffer", "SeasonCnt", static_cast<float>(SeasonCnt));
+}

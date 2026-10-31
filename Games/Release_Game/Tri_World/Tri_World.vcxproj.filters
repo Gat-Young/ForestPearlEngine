@@ -214,66 +214,6 @@
     <None Include="Assets\StaticMesh\Tree_Trunk_StaticMesh.json">
       <Filter>Assets\StaticMesh</Filter>
     </None>
-    <None Include="Assets\Material\clothes.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\equipment.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\eye.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\eyebrow0.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\eyebrow1.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\eyelid.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\hair.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\mouth0.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\mouth1.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\mouth2.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\mouth3.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\mouth4.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\mouth5.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\mouth6.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\mouth7.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\mouth8.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\mouth9.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\mouth10.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\pupil.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
-    <None Include="Assets\Material\skin.002_Material.json">
-      <Filter>Assets\Material</Filter>
-    </None>
     <None Include="Assets\Level\ToonLink.json">
       <Filter>Level</Filter>
     </None>

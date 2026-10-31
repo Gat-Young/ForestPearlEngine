@@ -27,6 +27,18 @@
                         1.0,
                         1.0
                     ],
+                    "Material.Specular": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Roughness": [
+                        0.5,
+                        0.5,
+                        0.5,
+                        1.0
+                    ],
                     "Material.Emissive": [
                         0.0,
                         0.0,
@@ -37,19 +49,19 @@
             }
         ],
         "Textures": [
-          {
-            "Type": "PS",
-            "Parameter": "TexDiff",
-            "Asset": "Default_Texture512",
-            "TextureType": "Texture2D"
-          }
+            {
+                "Type": "PS",
+                "Parameter": "TexDiff",
+                "Asset": "Default_Texture512",
+                "TextureType": "Texture2D"
+            }
         ],
         "Samplers": [
-          {
-            "Type": "PS",
-            "Parameter": "Smpler",
-            "SamplerType": "Filter_Tri_Linear_Sampler_CLAMP"
-          }
+            {
+                "Type": "PS",
+                "Parameter": "Smpler",
+                "SamplerType": "Filter_Tri_Linear_Sampler_CLAMP"
+            }
         ]
     }
 }

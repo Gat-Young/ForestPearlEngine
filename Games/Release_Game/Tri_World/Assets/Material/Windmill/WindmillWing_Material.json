@@ -5,72 +5,84 @@
         "PixelShader": "WindmillWingBody_PixelShader",
         "TwoSided": true,
         "Parameters": [
-          {
-            "Type": "VS",
-            "ConstantBuffer": "MaterialConstBuffer",
-            "Values": {
-              "Material.BaseColor": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-              ],
-              "Material.Diffuse": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-              ],
-              "Material.Ambient": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-              ],
-              "Material.Emissive": [
-                0.0,
-                0.0,
-                0.0,
-                0.0
-              ]
+            {
+                "Type": "VS",
+                "ConstantBuffer": "MaterialConstBuffer",
+                "Values": {
+                    "Material.BaseColor": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Diffuse": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Ambient": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Specular": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Roughness": [
+                        0.5,
+                        0.5,
+                        0.5,
+                        1.0
+                    ],
+                    "Material.Emissive": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            },
+            {
+                "Type": "PS",
+                "ConstantBuffer": "SeasonConstBuffer",
+                "Values": {
+                    "WinterColor": [
+                        0.8039,
+                        0.9843,
+                        1.0,
+                        1.0
+                    ],
+                    "SeasonCnt": [
+                        0.0
+                    ]
+                }
             }
-          },
-          {
-            "Type": "PS",
-            "ConstantBuffer": "SeasonConstBuffer",
-            "Values": {
-              "WinterColor": [
-                0.8039,
-                0.9843,
-                1.0,
-                1.0
-              ],
-              "SeasonCnt": [
-                0.0
-              ]
-            }
-          }
         ],
-      "Textures": [
-        {
-          "Type": "PS",
-          "Parameter": "TexDiff",
-          "Asset": "Windmill_jpg",
-          "TextureType": "Texture2D"
-        },
-        {
-          "Type": "PS",
-          "Parameter": "TexDiff2",
-          "Asset": "Windmill_a_jpg",
-          "TextureType": "Texture2D"
-        },
-        {
-          "Type": "PS",
-          "Parameter": "TexSnowMask",
-          "Asset": "Windmill_mask3_png",
-          "TextureType": "Texture2D"
-        }
-      ],
+        "Textures": [
+            {
+                "Type": "PS",
+                "Parameter": "TexDiff",
+                "Asset": "Windmill_jpg",
+                "TextureType": "Texture2D"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "TexDiff2",
+                "Asset": "Windmill_a_jpg",
+                "TextureType": "Texture2D"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "TexSnowMask",
+                "Asset": "Windmill_mask3_png",
+                "TextureType": "Texture2D"
+            }
+        ],
         "Samplers": [
             {
                 "Type": "PS",

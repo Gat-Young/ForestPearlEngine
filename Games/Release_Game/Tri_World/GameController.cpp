@@ -14,6 +14,15 @@
 //Directional Light 변경
 #include "ADirectionalLight.h"
 
+//계절 처리
+#include "Tree.h"
+#include "Windmill.h"
+#include "TripleWingWindmill.h"
+#include "WindmillWing.h"
+#include "TripleWindmillWing.h"
+#include "Terrain.h"
+#include "ABox.h"
+
 #include <iostream>
 
 void GameController::Initialize()
@@ -81,6 +90,7 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_SetNormalLine", VK_F6, ModifyInfoTriger);
 
 	GetInputComponent().AddMappingKey("IA_SetDirectionLightColor", VK_F7, ModifyInfoTriger);
+	GetInputComponent().AddMappingKey("IA_SetSeason", VK_F8, ModifyInfoTriger);
 
 	GetInputComponent().AddMappingKey("IA_OnTorchLight", '1', ModifyInfoTriger);
 
@@ -112,6 +122,9 @@ void GameController::Initialize()
 
 	//Torch 바인딩
 	GetInputComponent().BindMethod("IA_OnTorchLight", this, EKeyState::Down, &GameController::OnTorch);
+
+	//계절 변경 바인딩
+	GetInputComponent().BindMethod("IA_SetSeason", this, EKeyState::Down, &GameController::ChangeSeason);
 
 	__super::Initialize();
 }
@@ -183,7 +196,7 @@ void GameController::SetCullTriangle(FInputValue Value)
 	ActorList.clear();
 }
 
-void GameController::SetActiveViewHelp(struct FInputValue Value)
+void GameController::SetActiveViewHelp(FInputValue Value)
 {
 	std::vector<FPActor*> ActorList;
 	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "UI", ActorList);
@@ -195,7 +208,7 @@ void GameController::SetActiveViewHelp(struct FInputValue Value)
 	ActorList.clear();
 }
 
-void GameController::SetActiveDepthStencilBuffer(struct FInputValue Value)
+void GameController::SetActiveDepthStencilBuffer(FInputValue Value)
 {
 	std::vector<FPActor*> ActorList;
 	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "UI", ActorList);
@@ -207,7 +220,7 @@ void GameController::SetActiveDepthStencilBuffer(struct FInputValue Value)
 	ActorList.clear();
 }
 
-void GameController::SetGridOn(struct FInputValue Value)
+void GameController::SetGridOn(FInputValue Value)
 {
 	std::vector<FPActor*> ActorList;
 	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Grid", ActorList);
@@ -227,7 +240,7 @@ void GameController::SetGridOn(struct FInputValue Value)
 	ActorList.clear();
 }
 
-void GameController::SetAxisOn(struct FInputValue Value)
+void GameController::SetAxisOn(FInputValue Value)
 {
 	std::vector<FPActor*> ActorList;
 	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Axis", ActorList);
@@ -262,7 +275,7 @@ void GameController::SetNormalLine(FInputValue Value)
 	ActorList.clear();
 }
 
-void GameController::SetDirectionalLight(struct FInputValue Value)
+void GameController::SetDirectionalLight(FInputValue Value)
 {
 	std::vector<FPActor*> ActorList;
 	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "ADirectionalLight", ActorList);
@@ -282,7 +295,7 @@ void GameController::SetDirectionalLight(struct FInputValue Value)
 	ActorList.clear();
 }
 
-void GameController::OnTorch(struct FInputValue Value)
+void GameController::OnTorch(FInputValue Value)
 {
 	std::vector<FPActor*> ActorList;
 	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "UI", ActorList);
@@ -290,6 +303,78 @@ void GameController::OnTorch(struct FInputValue Value)
 	{
 		UI* GameUI = static_cast<UI*>(Actor);
 		GameUI->OnTorch(Value);
+	}
+	ActorList.clear();
+}
+
+void GameController::ChangeSeason(FInputValue Value)
+{
+	SeasonCnt++;
+	SeasonCnt = SeasonCnt % 3;
+
+	std::vector<FPActor*> ActorList;
+
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Terrain", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		Terrain* GameObj = static_cast<Terrain*>(Actor);
+		GameObj->ChangeSeason(SeasonCnt);
+	}
+	ActorList.clear();
+
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "ABox", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		ABox* GameObj = static_cast<ABox*>(Actor);
+		GameObj->ChangeSeason(SeasonCnt);
+	}
+	ActorList.clear();
+
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Tree", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		Tree* GameObj = static_cast<Tree*>(Actor);
+		GameObj->ChangeSeason(SeasonCnt);
+	}
+	ActorList.clear();
+
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Windmill", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		Windmill* GameObj = static_cast<Windmill*>(Actor);
+		GameObj->ChangeSeason(SeasonCnt);
+	}
+	ActorList.clear();
+
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "TripleWingWindmill", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		TripleWingWindmill* GameObj = static_cast<TripleWingWindmill*>(Actor);
+		GameObj->ChangeSeason(SeasonCnt);
+	}
+	ActorList.clear();
+
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "WindmillWing", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		WindmillWing* GameObj = static_cast<WindmillWing*>(Actor);
+		GameObj->ChangeSeason(SeasonCnt);
+	}
+	ActorList.clear();
+
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "TripleWindmillWing", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		TripleWindmillWing* GameObj = static_cast<TripleWindmillWing*>(Actor);
+		GameObj->ChangeSeason(SeasonCnt);
+	}
+	ActorList.clear();
+
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "UI", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		UI* GameUI = static_cast<UI*>(Actor);
+		GameUI->ChangeSeason(SeasonCnt);
 	}
 	ActorList.clear();
 }

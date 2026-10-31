@@ -21,6 +21,13 @@ private:
 	bool isHead = false;
 	bool isShield = false;
 
+	float WingSpeed = 180.0f;
+
+	float SpeedOffset = 1.0f;
+	float deltaSpeed = 0.05f;
+
+	bool isWinter = false;
+
 public:
 	WindmillWing() = default;
 	virtual void Initialize() override;
@@ -30,4 +37,6 @@ public:
 	void AttachHead(FInputValue Value);
 	void AttachShield(FInputValue Value);
 	void SetScaleWing(FInputValue Value);
+
+	void ChangeSeason(int SeasonCnt);
 };

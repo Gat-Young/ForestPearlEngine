@@ -27,6 +27,18 @@
                         1.0,
                         1.0
                     ],
+                    "Material.Specular": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Roughness": [
+                        0.5,
+                        0.5,
+                        0.5,
+                        1.0
+                    ],
                     "Material.Emissive": [
                         0.0,
                         0.0,
@@ -34,22 +46,49 @@
                         0.0
                     ]
                 }
+            },
+            {
+                "Type": "PS",
+                "ConstantBuffer": "SeasonConstBuffer",
+                "Values": {
+                    "AutumnColor": [
+                        0.7961,
+                        0.5686,
+                        0.1765,
+                        1.0
+                    ],
+                    "WinterColor": [
+                        0.8039,
+                        0.9843,
+                        1.0,
+                        1.0
+                    ],
+                    "SeasonCnt": [
+                        0.0
+                    ]
+                }
             }
         ],
         "Textures": [
-          {
-            "Type": "PS",
-            "Parameter": "TexDiff",
-            "Asset": "Tree01s_dds",
-            "TextureType": "Texture2D"
-          }
+            {
+                "Type": "PS",
+                "Parameter": "TexDiff",
+                "Asset": "Tree01s_dds",
+                "TextureType": "Texture2D"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "TexSnowMask",
+                "Asset": "TreeMask2_png",
+                "TextureType": "Texture2D"
+            }
         ],
         "Samplers": [
-          {
-            "Type": "PS",
-            "Parameter": "Smpler",
-            "SamplerType": "Filter_Anistropy_Linear_Sampler_CLAMP"
-          }
+            {
+                "Type": "PS",
+                "Parameter": "Smpler",
+                "SamplerType": "Filter_Anistropy_Linear_Sampler_CLAMP"
+            }
         ]
     }
 }

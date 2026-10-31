@@ -535,6 +535,9 @@
     <None Include="Assets\ShaderResource\Light.hlsli">
       <Filter>Assets\ShaderResource\Common\Lighting</Filter>
     </None>
+    <None Include="Assets\ShaderResource\SpecularBlinPhong.hlsli">
+      <Filter>Assets\ShaderResource\Common\Lighting</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\ShaderResource\DefaultPixelShader.psh">

@@ -58,7 +58,6 @@ struct VSOutput
 VSOutput VS_Main(
                 float4 pos : POSITION,       //[입력] 정점좌표. Vertex Position(Model Space, 3D) 
                 float4 nrm : NORMAL,         //[입력] 노멀 normal
-                float4 col : COLOR0,         //[입력] 정점색. Vertex Color : "Diffuse"
                 float2 uv : TEXCOORD0        //[입력] UV
                 )
 {
@@ -73,8 +72,18 @@ VSOutput VS_Main(
     pos = mul(mWVP, pos);
     
     o.pos = pos;
-    o.col = CalculateLight(posv, nrm, mWV, mView, mInverseTranseposeWV);
-    //o.col = float4(nrm.rgb, 1.0f);
+    
+    float4 LitColor = CalculateLight(posv, nrm, mWV, mView, mInverseTranseposeWV);
+    o.col = LitColor;
+    //float4 N = mul(mInverseTranseposeWorld, nrm);
+    //N.w = 0;
+    //N = normalize(N);
+    //float4 DebugNormalColor = float4(N.xyz * 0.5f + 0.5f, 1.0f);
+
+    //o.col = DebugNormalColor + LitColor * 0.0001f;
+    
+    
+    
     o.uv = uv;
     
     return o;

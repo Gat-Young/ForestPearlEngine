@@ -1,0 +1,106 @@
+{
+    "Material": {
+        "Name": "Box_Material",
+        "VertexShader": "DefaultVertexShader",
+        "PixelShader": "BoxPixelShader",
+        "TwoSided": false,
+        "Parameters": [
+            {
+                "Type": "VS",
+                "ConstantBuffer": "MaterialConstBuffer",
+                "Values": {
+                    "Material.BaseColor": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Diffuse": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Ambient": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Specular": [
+                        0.800000011920929,
+                        0.800000011920929,
+                        0.800000011920929,
+                        1.0
+                    ],
+                    "Material.Roughness": [
+                        0.5,
+                        0.5,
+                        0.5,
+                        1.0
+                    ],
+                    "Material.Emissive": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "Type": "PS",
+                "ConstantBuffer": "SeasonConstBuffer",
+                "Values": {
+                    "AutumnColor": [
+                        0.7961,
+                        0.5686,
+                        0.1765,
+                        1.0
+                    ],
+                    "WinterColor": [
+                        0.8039,
+                        0.9843,
+                        1.0,
+                        1.0
+                    ],
+                    "SeasonCnt": [
+                        0.0
+                    ]
+                }
+            }
+        ],
+        "Textures": [
+            {
+                "Type": "PS",
+                "Parameter": "TexDiff",
+                "Asset": "woodbox_bmp",
+                "TextureType": "Texture2D"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "TexGrass",
+                "Asset": "woodbox_Grass_jpg",
+                "TextureType": "Texture2D"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "TexGrassMask",
+                "Asset": "woodbox_Mask2_bmp",
+                "TextureType": "Texture2D"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "TexSnowMask",
+                "Asset": "woodbox_snow_mask2_png",
+                "TextureType": "Texture2D"
+            }
+        ],
+        "Samplers": [
+            {
+                "Type": "PS",
+                "Parameter": "Smpler",
+                "SamplerType": "Filter_Anistropy_Linear_Sampler_CLAMP"
+            }
+        ]
+    }
+}

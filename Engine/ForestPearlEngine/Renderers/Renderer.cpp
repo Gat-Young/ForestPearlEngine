@@ -168,7 +168,7 @@ void Renderer::CreateMeshRenderList()
 			LightData.LightPosition = LightRenderList[LightCount].Location.Matrix.r[3];
 
 			FPVector4 LightDir = { LightRenderList[LightCount].Direction.x, LightRenderList[LightCount].Direction.y, LightRenderList[LightCount].Direction.z, 0.0f };
-			LightData.Direction = -((LightDir.Normalize() * WorldMatrix.MatrixInverse()).Normalize()); //Local로 변환
+			LightData.Direction = -(LightDir.Normalize()); //Local로 변환
 			
 			LightData.Range = LightRenderList[LightCount].Range;
 			LightData.Diffuse = LightRenderList[LightCount].Diffuse;

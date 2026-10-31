@@ -45,11 +45,11 @@
 |:-:|---|---|
 | 🧩 | **Actor / Component 프레임워크** | `FPObject → FPActor → FPPawn / FPAController / FPAGameMode`, 계층형 `FPSceneComponent` 트랜스폼 |
 | 🎨 | **DX11 렌더러** | `Renderer`(프레임 흐름) + `RenderingDevice`(D3D11 래퍼) 2계층, **Render List → Render Pass(Mesh / Gizmo / Normal / UI)** 구조, 슬롯 규약이 있는 **상수 버퍼 바인딩**, `GameSetting.json` 기반 MSAA(스왑체인·깊이버퍼 SampleDesc), Priority 정렬, 멀티 뷰포트 |
-| 💡 | **통합 Light (Directional · Point)** | `FPLightComponentBase` 계열이 Light Render List에 등록 → 메시마다 **최대 64개**를 하나의 `LIGHT` 상수 버퍼(`b2`, 9232 byte)로 묶어 전달. 정점 셰이더(`Light.hlsli`)에서 Directional(Local 공간) · Point(View 공간, 거리 감쇠, 비균등 스케일 대응 노멀) Lambert 계산. 라이트 색(`LightColor`) · **Emissive** 지원. 토치 예제 `ATorchLight` |
+| 💡 | **통합 Light (Directional · Point)** | `FPLightComponentBase` 계열이 Light Render List에 등록 → 메시마다 **최대 64개**를 하나의 `LIGHT` 상수 버퍼(`b2`, 9232 byte)로 묶어 전달. 정점 셰이더(`Light.hlsli`)에서 Directional · Point 모두 **View 공간**에서 Half-Lambert Diffuse + **Blinn-Phong Specular**(`SpecularBlinPhong.hlsli`) + Ambient를 계산(거리 감쇠, Range Fade, 비균등 스케일 대응 노멀). 라이트 색(`LightColor`) · **Emissive** 지원. 토치 예제 `ATorchLight` |
 | 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 샘플러 36종(AF 단계는 `GameSetting.json`). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환. 슬롯마다 `FPTextureType`(`Texture2D` / `Texture2DArray`)을 함께 지정 |
 | 🗂️ | **Texture2DArray** *(실험적)* | `LoadTexture2DArray`가 JSON(`Width/Height/ArraySize/SourceTextures[]`)을 읽어 이미 로드된 Texture2D들을 **`RenderingDevice::CheckTextureArrayData`로 포맷·해상도 검증 후 `CreateTextureArray2D`로 한 장의 `Texture2DArray` SRV로 합침**. `MeshRenderPass`는 Material 텍스처 슬롯의 `FPTextureType`에 따라 `GetTextureData`(Texture2D) 또는 `GetTextureArrayData`(Texture2DArray)에서 바인딩할 SRV를 고름. 아직 어떤 게임의 `LoadAssets()`에서도 호출되지 않는 템플릿 단계 |
 | ⚙️ | **GameSetting** | `Assets/GameSetting/GameSetting.json` → `FPAssetLoader::LoadGameSetting`이 읽어 `FPGameSettingData`로 저장 → `FPGameProjectSetting::ProjectSetting()`이 창 크기 · MSAA · AF · 전체화면 값을 반영, `RenderingDevice::SetMSAA/SetAF`로 렌더러에 전달 |
-| 🎭 | **데이터 기반 Material (Shader Reflection)** | Material JSON(`LoadMaterial`)이 셰이더의 **cbuffer 변수 · 텍스처 · 샘플러를 이름으로** 지정. `MakeMaterial`이 컴파일된 셰이더를 `D3DReflect`로 읽어 오프셋 · 슬롯(`b#` / `t#` / `s#`)을 자동 계산하고, 런타임에는 `SetParameter` / `SetNamedTexture` / `SetNamedSampler`로 이름을 통해 값을 바꿈. 재질 1개당 **기본 Material** + 메시마다 **Material Instance** 두 단계로 저장 (없으면 `DefaultMaterial` 사용) |
+| 🎭 | **데이터 기반 Material (Shader Reflection)** | Material JSON(`LoadMaterial`)이 셰이더의 **cbuffer 변수 · 텍스처 · 샘플러를 이름으로** 지정. `MakeMaterial`이 컴파일된 셰이더를 `D3DReflect`로 읽어 오프셋 · 슬롯(`b#` / `t#` / `s#`)을 자동 계산하고, 런타임에는 `SetParameter` / `SetNamedTexture` / `SetNamedSampler`로 이름을 통해 값을 바꿈. 재질 1개당 **기본 Material** + 메시마다 **Material Instance** 두 단계로 저장 (없으면 `DefaultMaterial` 사용). 계절 전환 예제(`Terrain`/`Tree`/`Windmill`/`ABox`, [F8](#계절-전환-season)) |
 | 🔍 | **Shader Reflection** | `RenderingDevice::ReflectionShader`가 VS · PS 바이트코드에서 JSON에 적힌 cbuffer의 변수 레이아웃(`float`~`float4`, 배열, `구조체.멤버`)과 PS의 `Texture2D` / `Texture2DArray` · `SamplerState` 바인딩을 수집해 `FPShaderReflectionData`로 보관. Mesh Pass는 이 정보로 **셰이더 레지스터 번호 그대로** 상수 버퍼 · 텍스처 · 샘플러를 바인딩 |
 | 🪟 | **Two Sided Material** | Material JSON의 `"TwoSided"`(기본 `false`)로 메시별 양면 렌더링 지정. `MeshRenderPass`가 **메시마다** Rasterizer State의 Cull을 `!TwoSided`로 결정하고, 기본 PS는 `SV_IsFrontFace`를 입력으로 받음. Normal Line은 뒷면 노멀(주황)도 함께 표시 |
 | 🧪 | **FBX → JSON 변환 도구** | `Tool/FBXToStaticMeshJsonTranslator` 콘솔 툴이 FBX 폴더를 통째로 읽어 **StaticMesh / Material / Material Instance / Texture** JSON을 한 번에 생성 (ToonLink 데모 모델 전체가 이 도구로 변환됨) |
@@ -199,7 +199,8 @@ Engine/ForestPearlEngine/
 │       ├── DefaultVertexShader.vsh   # 기본 Mesh VS (WVP 변환 + Light.hlsli의 CalculateLight)
 │       ├── DefaultPixelShader.psh    # 기본 Mesh PS (정점 색 × 텍스처 t0 / s0, SV_IsFrontFace 입력)
 │       ├── Light.hlsli               # 통합 Light 상수 버퍼(b2 · b3) + Directional / Point 계산
-│       ├── LambertLight.hlsli        # LambertLight() 계산 함수
+│       ├── LambertLight.hlsli        # LambertLight() 계산 함수 (Half-Lambert)
+│       ├── SpecularBlinPhong.hlsli   # SpecularBlinPhongLight() 계산 함수
 │       ├── DefaultGizmoVertexShader.vsh / DefaultGizmoPixelShader.psh  # Grid / Axis 기즈모용 (라이트 없음)
 │       ├── NormalDebugVertexShader.vsh / NormalDebugPixelShader.psh    # Normal Line용
 │       ├── NormalCalculate.hlsli     # TransformWorldNormal()
@@ -240,17 +241,18 @@ Games/Release_Game/Tri_World/
 ├── Axis.h / .cpp                  # Actor (Gizmo Axis)
 ├── ADirectionalLight.h / .cpp     # Actor (Directional Light, F7로 색 순환)
 ├── ATorchLight.h / .cpp           # Actor (Point Light + 구 + Emissive, 1번 키로 On/Off)
+├── ABox.h / .cpp                  # Actor (계절 전환 테스트용 상자, 텍스처 4장 블렌딩)
 ├── UI.h / .cpp                    # Actor (텍스트 UI)
 └── Assets/
     ├── Font/            Consolas10.sfont, 굴림9k.sfont
     ├── Level/           TriWorld.json, ToonLink.json (현재 시작 레벨)
-    ├── Model/           Terrain/ · ToonLink/ · Tree/ · Windmill/   (*.fbx — Windmill은 Windmill.fbx 하나로 통합)
-    ├── StaticMesh/      Terrain/ · Tree/ · Windmill/ · ToonLink/   (*_StaticMesh.json, 51개)
-    ├── Material/        Terrain/ · Tree/ · Windmill/ · ToonLink/   (68개 — 모델별 폴더로 분리)
-    ├── Texture/         Terrain/ · Tree/ · Windmill/ · ToonLink/   (*.json, 26개)
-    ├── TextureResource/ Terrain/ · Tree/ · Windmill/ · ToonLink/   (67개: png 45 · dds 14 · jpg 5 · tga 3)
-    ├── Shader/          TerrainVertexShader.json 등 4개            (셰이더 등록 JSON)
-    └── ShaderResource/  TerrainVertexShader.vsh · TerrainPixelShader.psh · TreePixelShader.psh · WindmillWingBody.psh (+ bin/)
+    ├── Model/           Box/ · Terrain/ · ToonLink/ · Tree/ · Windmill/   (*.fbx — Windmill은 Windmill.fbx 하나로 통합)
+    ├── StaticMesh/      Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/   (*_StaticMesh.json, 52개)
+    ├── Material/        Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/   (69개 — 모델별 폴더로 분리)
+    ├── Texture/         Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/   (*.json, 33개)
+    ├── TextureResource/ Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/   (79개: png 48 · dds 16 · jpg 10 · bmp 2 · tga 3)
+    ├── Shader/          TerrainVertexShader.json 등 5개            (셰이더 등록 JSON, `BoxPixelShader.json` 추가)
+    └── ShaderResource/  TerrainVertexShader.vsh · TerrainPixelShader.psh · TreePixelShader.psh · WindmillWingBody.psh · BoxPixelShader.psh (+ bin/)
 ```
 
 ---
@@ -927,7 +929,7 @@ struct alignas(16) LightItem { unsigned int LightCnt; unsigned int Padding[3]; L
 ```hlsl
 // Assets/ShaderResource/Light.hlsli — 기본 Mesh VS가 포함
 cbuffer LightConstBuffer    : register(b2) { uint LightCnt; float3 Padding; LIGHT Light[Light_MAX]; };  // 9232 byte
-cbuffer MaterialConstBuffer : register(b3) { MATERIAL Material; };   // BaseColor · Diffuse · Ambient · Emissive — Material JSON의 Parameters로 채워짐
+cbuffer MaterialConstBuffer : register(b3) { MATERIAL Material; };   // BaseColor · Diffuse · Ambient · Specular · Roughness · Emissive(96 byte) — Material JSON의 Parameters로 채워짐
 float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix mInverseTranseposeWV);
 ```
 
@@ -938,19 +940,26 @@ float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix 
 
 | 항목 | 내용 |
 |---|---|
-| 합성 | `LightCnt`만큼 반복해 라이트별 결과를 더하고, 최종 색 = `(Σ라이트 + Material.Emissive) × Material.BaseColor`, 알파 = `BaseColor.a` |
-| Directional | **Local(오브젝트) 공간.** 렌더러가 메시마다 `Direction`을 정규화 → `World` 역행렬 곱 → 정규화 → **부호 반전**해 전달하고, 셰이더는 모델 노멀을 변환하지 않고 `Lambert(N, L)`에 사용. 결과 × `LightColor` |
-| Point | **View 공간.** `posv = mul(mWV, pos)`, 광원 위치는 `mul(mView, LightPosition)`. 노멀은 `normalize(mul(mInverseTranseposeWV, nrm))`(`w = 0`)로 변환해 **비균등 스케일에서도 노멀이 올바르게** 계산됨. `Distance > Range`이면 0, 감쇠 `att = 1 / (Attenuation.x + y·d + z·d²)`(분모가 0이면 1). 결과 = Lambert × `att` × `LightColor` |
-| Spot · Rect | 타입 정의만 있고 호출이 주석 처리되어 있어 **기여하지 않음** |
-| 클램프 | `LambertLight()`가 더 이상 `saturate`하지 않아 라이트가 여러 개면 1을 넘을 수 있음 (최종 출력에서 잘림) |
+| 합성 | `LightCnt`만큼 반복해 라이트별 결과를 누적하고, 최종 색 = `Col + Material.Emissive × Material.BaseColor`, 알파 = `Material.BaseColor.a`. 각 라이트 함수가 `Diffuse`/`Ambient`에 이미 `BaseColor`를 곱해 두므로, 합산 후에는 `BaseColor`를 다시 곱하지 않고 `Emissive`에만 곱해서 더함(이전엔 `(Col + Emissive) × BaseColor`로 전체를 곱했음) |
+| Directional · Point 공용 | 이제 **둘 다 View 공간**에서 계산. 노멀 `N = normalize(mul(mInverseTranseposeWV, nrm))`(`w = 0`, 비균등 스케일 대응), 뷰 벡터 `V = normalize(-posv)`(`posv = mul(mWV, pos)`, `w = 0`) |
+| Directional | 렌더러가 메시마다 `Direction`을 정규화 → **부호만 반전**해 전달(이전의 `World` 역행렬 곱은 삭제됨). 셰이더가 `mul(mView, Direction)`으로 View 공간으로 변환해 사용 |
+| Point | 광원 위치 = `mul(mView, LightPosition)`. 감쇠 `att = 1 / max(Attenuation.x + y·d + z·d², 0.0001)`, 추가로 `Fade = 1 - smoothstep(Range × 0.8, Range, Distance)`로 `Range` 경계를 부드럽게 0까지 줄임(Diffuse·Specular·Ambient 모두에 곱함) |
+| Diffuse | Half-Lambert로 변경: `LambertLight()`가 `saturate(pow(dot(N, L) × 0.5 + 0.5, 2) × LightDiffuse × MaterialDiffuse)`를 반환(더 이상 `Ambient` 인자를 받지 않음). 결과에 `Material.BaseColor`를 곱함 |
+| Specular *(신규)* | `SpecularBlinPhongLight()`(`SpecularBlinPhong.hlsli`) — Half Vector `H = normalize(L + V)`, `Shininess = lerp(128, 2, saturate(Material.Roughness.r))`, `pow(saturate(dot(N, H)), Shininess) × LightSpecular × MaterialSpecular`. `dot(N, L) ≤ 0`이거나 `L + V`가 0에 가까우면 0 |
+| Ambient | `LightData.Ambient × Material.Ambient × Material.BaseColor`로 분리 계산(이전엔 `LambertLight()` 안에서 더해짐) |
+| 라이트별 반환 | `DirLight`/`PointLight`는 각각 `saturate(Diff + Spec + Amb) × LightColor`를 반환. `CalculateLight`의 `switch`는 Directional만 `Col = ...`(덮어쓰기)이고 Point는 여전히 `Col += ...`라서, **같은 메시에 Directional과 Point가 함께 켜져 있으면 이후 처리된 Directional이 Point 결과를 덮어씀** |
+| Spot · Rect | 타입 정의만 있고 호출이 주석 처리되어 있어 여전히 **기여하지 않음** |
 | 노멀 | `NORMAL_VERTEX`(`nx, ny, nz`) 스트림(Input Slot 1). FBX 로딩 시 노드의 `node_to_world`로 변환 후 정규화해 저장 |
+
+> [!NOTE]
+> `CalculateLight`의 라이트 합산 반복문 바로 다음 줄에 `//return Col;`이 주석으로 남아 있습니다. 주석을 해제하면 `Emissive`/`BaseColor` 최종 합성 없이 라이트 합(Diffuse + Specular + Ambient)만 바로 출력하도록 전환할 수 있습니다. `DefaultVertexShader.vsh` · `WindmillWingBody.psh`에도 디버그용 노멀 시각화/배율 코드가 주석으로 남아 있어, Specular·Half-Lambert 도입을 위해 디버깅 중인 상태로 보입니다.
 
 > [!NOTE]
 > `CreateMeshRenderList`는 **메시마다** 9232 byte의 `LIGHT` 블록을 만들어 `RenderingData::MeshRenderItem`에 복사하므로 메시 수 × 프레임에 비례해 비용이 듭니다 (커밋 메모: "최적화는 추후에 진행"). 활성 라이트가 적을수록 `LightCnt`만큼만 셰이더가 반복하지만, 복사 크기는 항상 고정입니다.
 
 **Emissive (자체 발광)**
 
-`MATERIAL` 구조체(`MaterialConstBuffer`, `b3`, 64 byte)의 `Emissive`는 라이트 합에 **더해진 뒤** `BaseColor`가 곱해집니다. 라이트의 영향을 받지 않고 밝게 보이게 할 때 씁니다. 이전의 `SetEmissive` / `SetBaseColor` 등은 사라졌고, Material JSON의 `Parameters`에서 지정하거나 `SetParameter(FPShaderType::VS, "MaterialConstBuffer", "Material.Emissive", 값)`으로 바꿉니다 ([Material JSON](#material-json)).
+`MATERIAL` 구조체(`MaterialConstBuffer`, `b3`, **96 byte** — `BaseColor` · `Diffuse` · `Ambient` · `Specular` · `Roughness` · `Emissive` 6개의 `float4`)의 `Emissive`는 라이트 합에 **더해지며**, 이제는 전체를 다시 `BaseColor`로 곱하지 않고 `Emissive`에만 `BaseColor`를 곱해서 더합니다(바로 위 "합성" 참고). 라이트의 영향을 받지 않고 밝게 보이게 할 때 씁니다. 이전의 `SetEmissive` / `SetBaseColor` 등은 사라졌고, Material JSON의 `Parameters`에서 지정하거나 `SetParameter(FPShaderType::VS, "MaterialConstBuffer", "Material.Emissive", 값)`으로 바꿉니다 ([Material JSON](#material-json)).
 
 ```cpp
 // Games/Release_Game/Tri_World/ADirectionalLight.cpp
@@ -2529,7 +2538,7 @@ FBXToStaticMeshJsonTranslator.exe [FBX입력폴더] [Json출력폴더]
 | | 링커 → 입력 → 추가 종속성 | `DirectXTK.lib` |
 | | 참조 | ForestPearlEngine |
 
-`D3D11`, `dxgi`, `d3dcompiler`, `Xinput`은 엔진 소스의 `#pragma comment(lib, …)`로 링크되므로 따로 설정하지 않습니다.
+`D3D11`, `dxgi`, `d3dcompiler`, `dxguid`, `Xinput`은 엔진 소스의 `#pragma comment(lib, …)`로 링크되므로 따로 설정하지 않습니다. `dxguid.lib`는 [Shader Reflection](#shader-reflection-동작-구조)이 쓰는 `D3DReflect` / `ID3D11ShaderReflection`의 GUID 때문에 추가되었습니다 (`Renderers/RenderingDevice.h`).
 
 #### ⑤ HLSL 파일 속성
 
@@ -2541,9 +2550,14 @@ FBXToStaticMeshJsonTranslator.exe [FBX입력폴더] [Json출력폴더]
 | HLSL 컴파일러 → 일반 | 진입점 이름 | `VS_Main` | `PS_Main` |
 | HLSL 컴파일러 → 일반 | 셰이더 형식 | 꼭짓점 셰이더 (`/vs`) | 픽셀 셰이더 (`/ps`) |
 | HLSL 컴파일러 → 일반 | 셰이더 모델 | Shader Model 5.0 (`/5_0`) | Shader Model 5.0 (`/5_0`) |
-| HLSL 컴파일러 → 출력 파일 | 개체 파일 이름 | `$(ProjectDir)\Assets\Shader\bin\%(Filename).vso` | `$(ProjectDir)\Assets\Shader\bin\%(Filename).pso` |
+| HLSL 컴파일러 → 출력 파일 | 개체 파일 이름 | `$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).vso` | `$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso` |
 
 컴파일하지 않을 참고용 파일(`.fx` 등)은 구성 속성 → 일반 → **빌드에서 제외 = 예**로 설정합니다.
+
+> [!NOTE]
+> HLSL 소스는 `Assets/Shader/`가 아니라 **`Assets/ShaderResource/`** 아래에 둡니다. `Assets/Shader/`는 [셰이더 JSON](#셰이더-json)(`LoadVertexShader` / `LoadPixelShader`가 읽는 등록 정보)만 들어가는 별도 폴더입니다 ([`FPPathManager::GetAssetShaderPath`](#에셋-루트)가 실제로 참조하는 경로도 `ShaderResource/bin/`(Debug) · `ShaderResource/`(Release)입니다).
+>
+> 라이팅 디버깅 중인 일부 셰이더(`DefaultVertexShader` · `WindmillWingBody` 등)는 HLSL 컴파일러 → 명령줄 속성에서 **최적화 사용 안 함**(`DisableOptimizations = true`)이 켜져 있습니다. 전체 셰이더에 적용된 것은 아니라 파일마다 속성을 확인해야 합니다.
 
 #### 프로젝트 템플릿
 
@@ -3125,16 +3139,17 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 > [!NOTE]
 > `GameProjectLoader.cpp`의 `ReturnStartLevel()`은 다시 **`"TriWorld"`**를 반환합니다 (`//return "ToonLink";`은 주석 처리). ToonLink 캐릭터 단독 데모(`Assets/Level/ToonLink.json` — `Terrain` · `Axis` · `Grid` · `UI` · `ADirectionalLight` + `Link`)를 보려면 두 줄의 주석을 바꾸면 됩니다. `Player`는 `BodyAndHat` · `Hair` · `Face` · `Eye` · `EyeBrow` · `Mouth` · `Hand` · `Buckle` · `MasterSword_*`(4개) · `Shield_*`(2개) 등 StaticMeshComponent 15개로 구성되며, 각 서브메시는 [FBX 변환 도구](#fbx-변환-도구-fbxtostaticmeshjsontranslator)가 만든 StaticMesh + Material Instance + Texture JSON을 사용합니다 ([Material JSON](#material-json), [Alpha Blend](#alpha-blend-초기-구현) 참고).
 
-### 씬 구성 (`Assets/Level/TriWorld.json`, 액터 311개)
+### 씬 구성 (`Assets/Level/TriWorld.json`, 액터 312개)
 
 | 클래스 | 수 | 베이스 | 구성 | 설명 |
 |---|:-:|---|---|---|
 | `Terrain` | 1 | `FPActor` | StaticMesh | 128×128 지형. `Terrain_Material`(Two Sided, `Field_micro02_dds` Wrap, 전용 `TerrainVertexShader`로 UV ×20 타일링) |
 | `Tree` | 300 | `FPActor` | StaticMesh × 2 (잎 · 줄기) | 나무. `Tree_Material`(Two Sided, `Tree01s_dds`, `TreePixelShader`) |
+| `ABox` | 1 | `FPActor` | StaticMesh | [계절 전환](#계절-전환-season) 테스트용 상자. `Box_Material`(`TexDiff` + `TexGrass`/`TexGrassMask` + `TexSnowMask`, `BoxPixelShader`) |
 | `Grid` | 1 | `FPActor` | Gizmo | 128×128 그리드 |
 | `Axis` | 1 | `FPActor` | Gizmo | 월드 축 |
 | `ADirectionalLight` | 1 | `FPActor` | DirectionalLight | 씬 전체를 비추는 Directional Light. Direction `(1, -1, 1)`(정규화됨). <kbd>F7</kbd>로 `LightColor`를 4색(흰색 · 주황 · 짙은 파랑 · 연한 남색) 순환 |
-| `UI` | 1 | `FPActor` | Text × 21 | FPS, 도움말, GPU / 해상도 / 렌더 상태, 조명 색(F7) · Torch(1) 상태 |
+| `UI` | 1 | `FPActor` | Text × 22 | FPS, 도움말, GPU / 해상도 / 렌더 상태, 조명 색(F7) · Torch(1) · 계절(F8) 상태 |
 | `Player` | 1 | `FPPawn` | StaticMesh + ShieldPivot + SpringArm + Camera | 시작 시 Possess. 제자리에서 계속 회전 |
 | `Windmill` | 2 | `FPPawn` | StaticMesh (몸체) | 이동 / 회전 / 크기 조절. `WindmillBody_Material`(`Windmill_jpg` t0 + `Windmill_a_jpg` t1, `WindmillWingBody_PixelShader`) |
 | `WindmillWing` | 1 | `FPPawn` | StaticMesh (날개) | `Windmill`의 `WingPoint1` Socket에 부착. Player에게 옮겨 붙일 수 있음. `WindmillWing_Material`(Two Sided) |
@@ -3147,10 +3162,11 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 
 | Material | 셰이더 | 텍스처 (슬롯 / 샘플러) | Two Sided |
 |---|---|---|:-:|
-| `Terrain_Material` | `TerrainVertexShader` + `TerrainPixelShader` | `Field_micro02_dds` (0 / `Sampler_Wrap`) | ✔ |
-| `Tree_Material` | `DefaultVertexShader` + `TreePixelShader` | `Tree01s_dds` (0 / `Sampler_CLAMP`) | ✔ |
-| `WindmillBody_Material` | `DefaultVertexShader` + `WindmillWingBody_PixelShader` | `Windmill_jpg` (0), `Windmill_a_jpg` (1) / `Sampler_CLAMP` | — |
-| `WindmillWing_Material` | `DefaultVertexShader` + `WindmillWingBody_PixelShader` | `Windmill_jpg` (0), `Windmill_a_jpg` (1) / `Sampler_CLAMP` | ✔ |
+| `Terrain_Material` | `TerrainVertexShader` + `TerrainPixelShader` | `Field_micro02_dds` (`t0` / `Sampler_Wrap`), `mask2_png`(`TexSnowMask`, `t1`) | ✔ |
+| `Tree_Material` | `DefaultVertexShader` + `TreePixelShader` | `Tree01s_dds` (`t0` / `Sampler_CLAMP`), `TreeMask2_png`(`TexSnowMask`, `t1`) | ✔ |
+| `WindmillBody_Material` | `DefaultVertexShader` + `WindmillWingBody_PixelShader` | `Windmill_jpg`(`t0`), `Windmill_a_jpg`(`t1`) / `Sampler_CLAMP`, `Windmill_mask3_png`(`TexSnowMask`, `t2`) | — |
+| `WindmillWing_Material` | `DefaultVertexShader` + `WindmillWingBody_PixelShader` | `Windmill_jpg`(`t0`), `Windmill_a_jpg`(`t1`) / `Sampler_CLAMP`, `Windmill_mask3_png`(`TexSnowMask`, `t2`) | ✔ |
+| `Box_Material`(`ABox`) | `DefaultVertexShader` + `BoxPixelShader` | `woodbox_bmp`(`TexDiff`,`t0`), `woodbox_Grass_jpg`(`TexGrass`,`t1`), `woodbox_Mask2_bmp`(`TexGrassMask`,`t2`), `woodbox_snow_mask2_png`(`TexSnowMask`,`t3`) / `Filter_Anistropy_Linear_Sampler_CLAMP` | — |
 
 - **Terrain** — 전용 VS가 `uv`에 20을 곱해 하나의 텍스처를 지형 전체에 반복합니다. 반복하려면 샘플러가 Wrap이어야 합니다. Material JSON의 `Samplers[]`에 `Filter_Anistropy_Linear_Sampler_Wrap`(이방성 필터 + Wrap)이 지정되어 있습니다 ([Texture](#texture) 참고).
 - **Windmill** — PS가 `t0`(색)과 `t1`(알파 마스크)을 모두 샘플링해 `col * tex * tex2`를 출력하고, 알파를 `t1`에서 가져와 [Alpha Blend](#alpha-blend-초기-구현)로 투명 영역을 처리합니다.
@@ -3162,6 +3178,38 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 - 모든 텍스처는 필터가 `Filter_Tri_Linear`(기본값)이고 주소 모드만 위 표의 값을 씁니다. 그래픽 옵션은 `Assets/GameSetting/GameSetting.json`에서 `MSAA: 8`, `AnisotropicFiltering: 16`, `Resolution: 960×600`으로 설정되어 있습니다 ([GameSetting](#gamesetting) 참고).
 
 > `ATorchLight`는 Level JSON에는 없고, `Player`가 <kbd>1</kbd> 키를 처음 누를 때 `SpawnActor`로 생성해 손의 `TorchPoint` Socket에 붙입니다 ([Light](#light-directional--point) 참고). 배경색은 라이트 색에 따라 바뀌지 않습니다 (논리적으로 맞지 않는다는 판단 — 커밋 메모).
+
+### 계절 전환 (Season)
+
+<kbd>F8</kbd>로 **봄/여름 → 가을 → 겨울**을 순환하는 데모입니다. 색을 코드로 바꾸는 대신 각 메시 Material의 **PS 상수 버퍼**(`SeasonConstBuffer`)와 마스크 텍스처만으로 구현되어 있어, [Shader Reflection](#shader-reflection-동작-구조)의 `SetParameter` 하나로 셰이더 분기를 넘나드는 예시를 보여줍니다.
+
+```mermaid
+flowchart LR
+    F8["F8"] --> GC["GameController::ChangeSeason<br/>SeasonCnt = (SeasonCnt + 1) % 3"]
+    GC -->|"ChangeSeason(SeasonCnt)"| ACTORS["Terrain · Tree · ABox<br/>Windmill · WindmillWing<br/>TripleWingWindmill · TripleWindmillWing"]
+    GC -->|"ChangeSeason(SeasonCnt)"| UI["UI - 화면 텍스트"]
+    ACTORS -->|"GetMaterial.SetParameter(PS, SeasonConstBuffer, SeasonCnt, 값)"| M["Material Instance<br/>SeasonConstBuffer.SeasonCnt"]
+    M -->|"다음 프레임 MeshRenderPass"| PS["PS의 if (SeasonCnt == …) 분기"]
+```
+
+| `SeasonCnt` | 의미 | PS 처리 |
+|:-:|---|---|
+| `0` | 봄 / 여름 (기본값) | 기본 텍스처만 출력 (`Box_Material`은 항상 `TexGrass × TexGrassMask`도 더함) |
+| `1` | 가을 | 출력 색에 `AutumnColor`를 곱해 틴트 (Windmill 계열은 `AutumnColor`가 없어 봄/여름과 동일) |
+| `2` | 겨울 | `TexSnowMask`를 `WinterColor`와 곱해 기존 색에 더함 |
+
+| 대상 | `SeasonConstBuffer`(PS `b1`, `Box_Material`은 `BoxPixelShader` 기준) | 추가 텍스처 |
+|---|---|---|
+| `Terrain_Material` / `Tree_Material` | `AutumnColor` · `WinterColor` · `SeasonCnt` | `TexSnowMask`(`t1`) |
+| `WindmillBody_Material` / `WindmillWing_Material` | `WinterColor` · `SeasonCnt`(`AutumnColor` 없음) | `TexSnowMask`(`t2`) |
+| `Box_Material` | `AutumnColor` · `WinterColor` · `SeasonCnt` | `TexGrass`(`t1`) · `TexGrassMask`(`t2`) · `TexSnowMask`(`t3`) |
+
+`GameController::ChangeSeason`은 <kbd>F8</kbd>을 누를 때마다 `SeasonCnt`를 0 → 1 → 2 → 0으로 순환시키고, `FPGameplayStatics::GetAllActorsOfClass`로 `Terrain` · `Tree` · `ABox` · `Windmill` · `WindmillWing` · `TripleWingWindmill` · `TripleWindmillWing` · `UI`를 찾아 각 액터의 `ChangeSeason(SeasonCnt)`를 호출합니다. 각 액터는 자신이 가진 메시의 Material에 `SetParameter(FPShaderType::PS, "SeasonConstBuffer", "SeasonCnt", (float)SeasonCnt)`만 호출할 뿐, 실제 색 전환은 PS의 `if (SeasonCnt == …)` 분기가 맡습니다. `UI::ChangeSeason(float)`는 값을 멤버에 저장해 두고, `SystemInfo`가 매 프레임 "계절 전환:F8 (봄/가을/겨울)" 텍스트로 표시합니다.
+
+> [!NOTE]
+> `ABox`(Level JSON의 `Box_1`)는 이 기능만을 위한 **테스트용 상자**입니다. `BoxPixelShader`가 `TexDiff`(나무) 위에 `TexGrass × TexGrassMask`를 계절과 무관하게 항상 더하고, 겨울에만 `TexSnowMask × WinterColor`를 더해 — 한 Material에서 텍스처 4장(`TexDiff`/`TexGrass`/`TexGrassMask`/`TexSnowMask`)을 조합하는 예시이기도 합니다.
+
+`WindmillWing` · `TripleWindmillWing` · `TripleWingWindmill`은 텍스처 전환과 별개로, 겨울(`isWinter = (SeasonCnt == 2)`)에는 `Tick()`마다 `SpeedOffset`을 `deltaSpeed`(0.05)만큼 줄여 `0`까지, 다른 계절에는 다시 `1`까지 늘립니다. 날개 회전 속도(`Wing*Speed * SpeedOffset * DeltaTime`)에 곱해지므로, 겨울이 되면 날개가 서서히 멈추고 계절이 바뀌면 서서히 다시 돌기 시작합니다.
 
 **Socket 정의**
 
@@ -3195,6 +3243,7 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 | <kbd>F5</kbd> | 깊이 테스트 전환 | 전체 |
 | <kbd>F6</kbd> | Normal Line 표시 전환 | 전체 |
 | <kbd>F7</kbd> | Directional Light 색 순환 (4색) | `ADirectionalLight`, `UI` |
+| <kbd>F8</kbd> | [계절](#계절-전환-season) 순환 (봄/여름 → 가을 → 겨울) | `Terrain`, `Tree`, `ABox`, `Windmill`, `WindmillWing`, `TripleWingWindmill`, `TripleWindmillWing`, `UI` |
 | <kbd>1</kbd> | 손에 토치(Point Light) 생성 · 켜기 / 끄기 | Player, `UI` |
 | **마우스 휠** | 카메라 줌 (SpringArm 길이 증감) | Player |
 | <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> | `IA_SetMoveWindmill`에 매핑만 되어 있음 (바인딩된 동작 없음) | — |
@@ -3239,6 +3288,7 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 | `IA_SetDepthStencilBuffer` | F5 | — | Down | `GameController::SetActiveDepthStencilBuffer` |
 | `IA_SetNormalLine` | F6 | — | Down | `GameController::SetNormalLine` |
 | `IA_SetDirectionLightColor` | F7 | — | Down | `GameController::SetDirectionalLight` (`ADirectionalLight`와 `UI` 갱신) |
+| `IA_SetSeason` | F8 | — | Down | `GameController::ChangeSeason` (`Terrain`/`Tree`/`ABox`/`Windmill`/`WindmillWing`/`TripleWingWindmill`/`TripleWindmillWing`/`UI` 갱신) |
 | `IA_OnTorchLight` | 1 | — | Down | `GameController::OnTorch`, `Player::OnTorch` |
 | `IA_ZoomCamera` | 마우스 휠 | — | Pressed | `Player::CameraZoom` |
 

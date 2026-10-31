@@ -75,6 +75,9 @@ void UI::Initialize()
 
 	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
 	TorchText = TextComponets.back();
+
+	SetUIContext(&bShow, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, _T(""));
+	SeasonText = TextComponets.back();
 }
 
 
@@ -165,6 +168,18 @@ void UI::SystemInfo(int x, int y, FPVector4 col)
 	_stprintf_s(text, _T("Torch: 1 (%s)"), ((TorchOn == true) ? _T("ON") : _T("OFF")));
 	TorchText->SetTextData(&bShow, x, y += 14, col, text);
 
+
+	if (SeasonCnt == 0) {
+		_stprintf_s(text, _T("계절 변경:F8 (%s)"), _T("여름"));
+	}
+	if (SeasonCnt == 1) {
+		_stprintf_s(text, _T("계절 변경:F8 (%s)"), _T("가을"));
+	}
+	if (SeasonCnt == 2) {
+		_stprintf_s(text, _T("계절 변경:F8 (%s)"), _T("겨울"));
+	}
+	SeasonText->SetTextData(&bShow, x, y += 14, col, text);
+
 }
 
 void UI::AdapterInfo(int index, int x, int& y, FPVector4 col)
@@ -247,4 +262,10 @@ void UI::SetDirectionalLightColor(FInputValue Value)
 void UI::OnTorch(struct FInputValue Value)
 {
 	TorchOn = !TorchOn;
+}
+
+
+void UI::ChangeSeason(float SeasonCnt)
+{
+	this->SeasonCnt = SeasonCnt;
 }

@@ -267,6 +267,7 @@
     <None Include="Assets\ShaderResource\LambertLight.hlsli" />
     <None Include="Assets\ShaderResource\Light.hlsli" />
     <None Include="Assets\ShaderResource\NormalCalculate.hlsli" />
+    <None Include="Assets\ShaderResource\SpecularBlinPhong.hlsli" />
     <None Include="Assets\Shader\DefaultGizmoPixelShader.json" />
     <None Include="Assets\Shader\DefaultGizmoVertexShader.json" />
     <None Include="Assets\Shader\DefaultPixelShader.json" />
@@ -321,6 +322,7 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VS_Main</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
     </FxCompile>
     <FxCompile Include="Assets\ShaderResource\DefaultPixelShader.psh">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PS_Main</EntryPointName>
@@ -357,6 +359,8 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VS_Main</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
     </FxCompile>
     <FxCompile Include="Assets\ShaderResource\NormalDebugPixelShader.psh">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PS_Main</EntryPointName>
@@ -393,6 +397,7 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VS_Main</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

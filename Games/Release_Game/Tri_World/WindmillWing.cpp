@@ -34,9 +34,24 @@ void WindmillWing::Tick()
 {
 	FPGameTimer* GameTimer = static_cast<FPGameTimer*>(FPGameInstance::Get().GetGameTimer());
 
-	float RotateSpeed = 180.0f;
+	float RotateSpeed = 1.0f;
 	if (isHead) RotateSpeed *= 2;
-	Wing->AddLocalRotation(FPVector3{ 0.0f,  RotateSpeed * GameTimer->DeltaTime(),0.0f });
+
+	if (isWinter)
+	{
+		SpeedOffset -= deltaSpeed;
+		if (SpeedOffset <= 0.0f) SpeedOffset = 0.0f;
+	}
+	else
+	{
+		SpeedOffset += deltaSpeed;
+		if (SpeedOffset >= 1.0f) SpeedOffset = 1.0f;
+	}
+
+	float WingDeltaSpeed = WingSpeed * SpeedOffset * RotateSpeed * GameTimer->DeltaTime();
+
+
+	Wing->AddLocalRotation(FPVector3{ 0.0f,  WingDeltaSpeed,0.0f });
 	__super::Tick();
 }
 
@@ -116,4 +131,12 @@ void WindmillWing::SetScaleWing(FInputValue Value)
 	}
 
 	Wing->SetWorldScale3D(Wing->GetComponentScale() + FPVector3{ move_x, move_x, move_x });
+}
+
+void WindmillWing::ChangeSeason(int SeasonCnt)
+{
+	if (SeasonCnt == 2) isWinter = true;
+	else isWinter = false;
+
+	Wing->GetMaterial().SetParameter(FPShaderType::PS, "SeasonConstBuffer", "SeasonCnt", static_cast<float>(SeasonCnt));
 }

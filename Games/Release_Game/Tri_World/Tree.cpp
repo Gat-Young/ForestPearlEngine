@@ -25,3 +25,9 @@ void Tree::Tick()
 {
 	__super::Tick();
 }
+
+void Tree::ChangeSeason(int SeasonCnt)
+{
+	TreeLeaf->GetMaterial().SetParameter(FPShaderType::PS, "SeasonConstBuffer", "SeasonCnt", static_cast<float>(SeasonCnt));
+	TreeTrunk->GetMaterial().SetParameter(FPShaderType::PS, "SeasonConstBuffer", "SeasonCnt", static_cast<float>(SeasonCnt));
+}

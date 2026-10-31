@@ -25,6 +25,7 @@
     <ClInclude Include="GameController.h" />
     <ClInclude Include="GameMode.h" />
     <ClInclude Include="Grid.h" />
+    <ClInclude Include="ABox.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Tree.h" />
@@ -35,6 +36,7 @@
     <ClInclude Include="WindmillWing.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ABox.cpp" />
     <ClCompile Include="ADirectionalLight.cpp" />
     <ClCompile Include="ATorchLight.cpp" />
     <ClCompile Include="Axis.cpp" />
@@ -55,26 +57,6 @@
     <None Include="Assets\GameSetting\GameSetting.json" />
     <None Include="Assets\Level\ToonLink.json" />
     <None Include="Assets\Level\Triworld.json" />
-    <None Include="Assets\Material\clothes.002_Material.json" />
-    <None Include="Assets\Material\equipment.002_Material.json" />
-    <None Include="Assets\Material\eye.002_Material.json" />
-    <None Include="Assets\Material\eyebrow0.002_Material.json" />
-    <None Include="Assets\Material\eyebrow1.002_Material.json" />
-    <None Include="Assets\Material\eyelid.002_Material.json" />
-    <None Include="Assets\Material\hair.002_Material.json" />
-    <None Include="Assets\Material\mouth0.002_Material.json" />
-    <None Include="Assets\Material\mouth1.002_Material.json" />
-    <None Include="Assets\Material\mouth10.002_Material.json" />
-    <None Include="Assets\Material\mouth2.002_Material.json" />
-    <None Include="Assets\Material\mouth3.002_Material.json" />
-    <None Include="Assets\Material\mouth4.002_Material.json" />
-    <None Include="Assets\Material\mouth5.002_Material.json" />
-    <None Include="Assets\Material\mouth6.002_Material.json" />
-    <None Include="Assets\Material\mouth7.002_Material.json" />
-    <None Include="Assets\Material\mouth8.002_Material.json" />
-    <None Include="Assets\Material\mouth9.002_Material.json" />
-    <None Include="Assets\Material\pupil.002_Material.json" />
-    <None Include="Assets\Material\skin.002_Material.json" />
     <None Include="Assets\StaticMesh\Terrain_StaticMesh.json" />
     <None Include="Assets\StaticMesh\Tree_StaticMesh.json" />
     <None Include="Assets\StaticMesh\Tree_Trunk_StaticMesh.json" />
@@ -102,6 +84,25 @@
     <None Include="Assets\Texture\Skin_png.json" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Assets\ShaderResource\BoxPixelShader.psh">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PS_Main</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PS_Main</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS_Main</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS_Main</EntryPointName>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)\Assets\Shader\bin\%(Filename).pso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\Assets\Shader\bin\%(Filename).pso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
+    </FxCompile>
     <FxCompile Include="Assets\ShaderResource\TerrainPixelShader.psh">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
@@ -115,6 +116,9 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS_Main</EntryPointName>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)\Assets\Shader\bin\%(Filename).pso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\Assets\Shader\bin\%(Filename).pso</ObjectFileOutput>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
     </FxCompile>
     <FxCompile Include="Assets\ShaderResource\TerrainVertexShader.vsh">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
@@ -131,6 +135,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\</AdditionalIncludeDirectories>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VS_Main</EntryPointName>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
     </FxCompile>
     <FxCompile Include="Assets\ShaderResource\TreePixelShader.psh">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
@@ -145,6 +150,7 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS_Main</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS_Main</EntryPointName>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
     </FxCompile>
     <FxCompile Include="Assets\ShaderResource\WindmillWingBody.psh">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS_Main</EntryPointName>
@@ -155,6 +161,8 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DisableOptimizations>
     </FxCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">

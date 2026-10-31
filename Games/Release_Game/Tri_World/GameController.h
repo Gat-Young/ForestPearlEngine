@@ -19,6 +19,8 @@ class GameController : public FPAController
 		bool bisCull = true;
 		bool bNormal = false;
 
+		int SeasonCnt = 0;
+
 	public :
 		virtual void Initialize() override;
 		virtual void BeginPlay() override;
@@ -31,11 +33,13 @@ class GameController : public FPAController
 		void SetCullTriangle(FInputValue Value);
 		void SetNormalLine(FInputValue Value);
 
-		void SetActiveViewHelp(struct FInputValue Value);
-		void SetActiveDepthStencilBuffer(struct FInputValue Value);
-		void SetGridOn(struct FInputValue Value);
-		void SetAxisOn(struct FInputValue Value);
+		void SetActiveViewHelp(FInputValue Value);
+		void SetActiveDepthStencilBuffer(FInputValue Value);
+		void SetGridOn(FInputValue Value);
+		void SetAxisOn(FInputValue Value);
 
-		void SetDirectionalLight(struct FInputValue Value);
-		void OnTorch(struct FInputValue Value);
+		void SetDirectionalLight(FInputValue Value);
+		void OnTorch(FInputValue Value);
+
+		void ChangeSeason(FInputValue Value);
 };

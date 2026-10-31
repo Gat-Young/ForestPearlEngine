@@ -22,6 +22,11 @@ private:
 	float Wing2Speed = 180.0f;
 	float Wing3Speed = 360.0f;
 
+	float SpeedOffset = 1.0f;
+	float deltaSpeed = 0.05f;
+
+	bool isWinter = false;
+
 public:
 	TripleWingWindmill() = default;
 	virtual void Initialize() override;
@@ -31,5 +36,6 @@ public:
 	void Move(FInputValue Value);
 	void Rotate(FInputValue Value);
 	void Scaling(FInputValue Value);
+	void ChangeSeason(int SeasonCnt);
 
 };

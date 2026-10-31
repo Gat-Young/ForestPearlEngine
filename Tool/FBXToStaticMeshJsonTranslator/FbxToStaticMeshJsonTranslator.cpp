@@ -243,15 +243,26 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 	const json DiffuseArray = MakeColorJson(Material.fbx.diffuse_color, 1.0, 1.0, 1.0, 1.0);
 	const json AmbientArray = MakeColorJson(Material.fbx.ambient_color, 0.1, 0.1, 0.1, 1.0);
 
+	// Specular는 고전 FBX 속성(fbx.specular_color)을 사용한다. 값이 없으면 기본값(흰색)을 사용한다.
+	const json SpecularArray = MakeColorJson(Material.fbx.specular_color, 1.0, 1.0, 1.0, 1.0);
+
+	// Roughness는 고전 FBX 속성에는 없고 PBR 속성(pbr.roughness)에만 있는 스칼라 값이라 r=g=b로 채운다.
+	// 값이 없으면 기본값(0.5, 중간 거칠기)을 사용한다.
+	const double RoughnessValue = Material.pbr.roughness.has_value ? Material.pbr.roughness.value_vec3.x : 0.5;
+	const json RoughnessArray = json::array({ RoughnessValue, RoughnessValue, RoughnessValue, 1.0 });
+
 	// Emissive(자체 발광)는 FBX 값과 무관하게 항상 0으로 시작한다. (필요하면 추후 머티리얼 에디터에서 수동으로 조절)
 	const json EmissiveArray = MakeColorJson({}, 0.0, 0.0, 0.0, 0.0);
 
 	// 엔진이 항상 읽는 MaterialConstBuffer 파라미터 블록. Shader Reflection은 하지 않으므로
 	// 다른 상수버퍼(UVTransformCB 등)는 만들지 않고 이 고정 블록만 생성한다. (SimpleMaterial.json 참고)
+	// Light.hlsli의 MATERIAL 구조체 순서(BaseColor/Diffuse/Ambient/Specular/Roughness/Emissive)와 동일하게 채운다.
 	json MaterialConstBufferValues;
 	MaterialConstBufferValues["Material.BaseColor"] = BaseColorArray;
 	MaterialConstBufferValues["Material.Diffuse"] = DiffuseArray;
 	MaterialConstBufferValues["Material.Ambient"] = AmbientArray;
+	MaterialConstBufferValues["Material.Specular"] = SpecularArray;
+	MaterialConstBufferValues["Material.Roughness"] = RoughnessArray;
 	MaterialConstBufferValues["Material.Emissive"] = EmissiveArray;
 
 	json MaterialConstBufferParameter;

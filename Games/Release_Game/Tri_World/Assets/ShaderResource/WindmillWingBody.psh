@@ -7,10 +7,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////// 
 
+//계절 변화용 상수 버퍼
+cbuffer SeasonConstBuffer : register(b1)
+{
+    float4 WinterColor;
+    float SeasonCnt;
+}
+
 //텍스처 객체 변수 : 엔진에서 공급됨, 레지스터 직접 지정. (기본값은 t0)
 Texture2D TexDiff : register(t0);
 
 Texture2D TexDiff2 : register(t1);
+
+Texture2D TexSnowMask : register(t2);
 
 //텍스처 셈플러 (직접지정)  기본값은 s0
 SamplerState Smpler : register(s0);
@@ -26,16 +35,30 @@ float4 PS_Main(
 	//float4 col = {1, 0, 1, 1};
     
     //텍스처 샘플링
+    
+    float4 nrm_col = col;
    
     
     float4 tex = TexDiff.Sample(Smpler, uv);
     float4 tex2 = TexDiff2.Sample(Smpler, uv);
+    float4 SnowMask = TexSnowMask.Sample(Smpler, uv);
     
-    col = col * tex * tex2;
-
-    col.a = tex2;
-
+    float4 Base = col * tex * tex2;
+    //여름
+    if (SeasonCnt == 0 || SeasonCnt == 1)
+    {
+        col = Base;
+    }
     
+    //겨울
+    if (SeasonCnt == 2)
+    {
+        col = Base + SnowMask * WinterColor * col;
+    }
+    
+    
+    col.a = tex2.r;
     return col;
+    //return col* 0.0001f + nrm_col;
 }
 

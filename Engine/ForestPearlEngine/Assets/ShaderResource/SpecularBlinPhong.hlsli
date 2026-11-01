@@ -37,6 +37,6 @@ float4 SpecularBlinPhongLight(float4 Normal, float4 Direction, float4 View, floa
     
     Specular = SpecLight * (LightSpecular * MaterialSpecular);
     
-    return saturate(Specular);
+    return Specular;
 }
 #endif

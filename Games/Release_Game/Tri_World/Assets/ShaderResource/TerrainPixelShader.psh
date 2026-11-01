@@ -80,28 +80,32 @@ float4 PS_Main(
     }
     
     
-    float4 LitColor = CalculateLight(posv, nrm, mView);
+    float4 DiffuseLit;
+    float4 SpecularLit;
+    float4 EmissiveLit;
+    
+    CalculateLight(posv, nrm, mView, DiffuseLit, SpecularLit, EmissiveLit);
     
     float4 tex = TexDiff.Sample(Smpler, uv);
     float4 texSnowMask = TexSnowMask.Sample(Smpler, uv);
     
-    float4 BaseCol = LitColor * col * tex;
+    float4 BaseCol = DiffuseLit * col * tex;
     //여름
     if (SeasonCnt == 0)
     {
-        col = BaseCol;
+        col = BaseCol + SpecularLit + EmissiveLit;
     }
     
     //가을
     if (SeasonCnt == 1)
     {
-        col = BaseCol * AutumnColor;
+        col = BaseCol * AutumnColor + SpecularLit + EmissiveLit;
     }
     
     //겨울
     if (SeasonCnt == 2)
     {
-        col = BaseCol + texSnowMask * WinterColor * LitColor * col;
+        col = BaseCol + texSnowMask * WinterColor * DiffuseLit * col + SpecularLit + EmissiveLit;
     }
     col.a = tex.a;
     

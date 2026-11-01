@@ -1,0 +1,95 @@
+// box Rendering용
+
+// Pixel Light 운용 Shader
+// b2 : Light,  b3 : Material
+#include "PixelLight.hlsli"
+
+//상수 버퍼
+cbuffer ObejctConstBuffer : register(b0)
+{
+    matrix mWorld;
+    matrix mInverseWorld;
+    matrix mTranseposeWorld;
+    matrix mInverseTranseposeWorld;
+    
+    matrix mView;
+    matrix mInverseView;
+    matrix mTranseposeView;
+    matrix mInverseTranseposeView;
+    
+    matrix mProj;
+    matrix mInverseProj;
+    matrix mTranseposeProj;
+    matrix mInverseTranseposeProj;
+    
+    matrix mWV;
+    matrix mInverseWV;
+    matrix mTranseposeWV;
+    matrix mInverseTranseposeWV;
+    
+    matrix mWVP;
+    matrix mInverseWVP;
+    matrix mTranseposeWVP;
+    matrix mInverseTranseposeWVP;
+    
+};
+
+////////////////////////////////////////////////////////////////////////////// 
+//
+//! Pixel Shader Main : 픽셀 셰이더 메인 함수.
+//
+////////////////////////////////////////////////////////////////////////////// 
+
+//계절 변화용 상수 버퍼
+cbuffer SeasonConstBuffer : register(b1)
+{
+    float4 AutumnColor;
+    float4 WinterColor;
+    float SeasonCnt;
+}
+
+//텍스처 객체 변수 : 엔진에서 공급됨, 레지스터 직접 지정. (기본값은 t0)
+Texture2D TexDiff : register(t0);
+
+Texture2D TexSpec : register(t1);
+
+
+//텍스처 셈플러 (직접지정)  기본값은 s0
+SamplerState Smpler : register(s0);
+
+float4 PS_Main(
+                float4 pos : SV_POSITION, //[입력] 정점좌표. Vertex Position(Model Space, 3D) 
+                float4 col : COLOR0, //[입력] 정점색. Vertex Color : "Diffuse" 
+                float4 nrm : TEXCOORD2, //[입력] 역전치WV 변환된 normal
+                float4 posv : TEXCOORD1, //[입력] WordlView 변환된 pos
+                float2 uv : TEXCOORD0, //[입력] uv
+                bool IsFrontFace : SV_IsFrontFace //CULLMODE None일때 앞 뒷면 판단
+                ) : SV_TARGET
+{
+    
+    float4 DiffMap = TexDiff.Sample(Smpler, uv);
+    float4 SpecMap = TexSpec.Sample(Smpler, uv);
+    
+    //텍스처 샘플링
+   
+    if (!IsFrontFace)
+    {
+        nrm = -nrm;
+    }
+    
+    float4 DiffuseLit;
+    float4 SpecularLit;
+    float4 EmissiveLit;
+    
+    CalculateLight(posv, nrm, mView, DiffuseLit, SpecularLit, EmissiveLit);
+    
+    float4 BaseCol = DiffuseLit * col * DiffMap;
+    float4 SpecularCol = SpecMap * SpecularLit;
+    
+    col = BaseCol + SpecularCol + EmissiveLit;
+    
+    col.a = DiffMap.a;
+    
+    return col;
+}
+

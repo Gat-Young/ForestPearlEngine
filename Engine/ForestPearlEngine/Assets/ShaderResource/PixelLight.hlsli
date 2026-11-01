@@ -60,54 +60,49 @@ cbuffer MaterialConstBuffer : register(b3)
 };
 
 //조명 처리 함수.
-float4 CalculateLight(float4 posv, float4 nrm, matrix mView);
+void CalculateLight(float4 posv, float4 nrm, matrix mView, out float4 OutDiffuse, out float4 OutSpecular, out float4 OutEmissive);
 
 //조명 계산 함수
-float4 DirLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData);
-float4 PointLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData);
-float4 SpotLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData);
-float4 RectLight(float4 posv, float4 nrm,  matrix mView, LIGHT LightData);
+void DirLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout float4 OutDiffuse, inout float4 OutSpecular);
+void PointLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout float4 OutDiffuse, inout float4 OutSpecular);
+void SpotLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout float4 OutDiffuse, inout float4 OutSpecular);
+void RectLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout float4 OutDiffuse, inout float4 OutSpecular);
 
-float4 CalculateLight(float4 posv, float4 nrm, matrix mView)
+void CalculateLight(float4 posv, float4 nrm, matrix mView, out float4 OutDiffuse, out float4 OutSpecular, out float4 OutEmissive)
 {
-    float4 Col = { 0.0f, 0.0f, 0.0f, 1.0f };
+    OutDiffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    OutSpecular = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    OutEmissive = (Material.Emissive * Material.BaseColor);
     
     for (uint i = 0; i < min(LightCnt, (uint) Light_MAX); ++i)
     {
         switch (Light[i].LightType)
         {
             case LightType_Direction:
-                Col += DirLight(posv, nrm, mView, Light[i]);
+                DirLight(posv, nrm, mView, Light[i], OutDiffuse, OutSpecular);
                 break;
             
             case LightType_Point:
-                Col += PointLight(posv, nrm, mView, Light[i]);
+                PointLight(posv, nrm, mView, Light[i], OutDiffuse, OutSpecular);
                 break;
             
             case LightType_Spot:
-                //Col += SpotLight(posv, nrm, mView, Light[i]);
+                //Col += SpotLight(posv, nrm, mView, Light[i], OutDiffuse, OutSpecular);
                 break;
             
             case LightType_Rect:
-                //Col += RectLight(posv, nrm, mView, Light[i]);
+                //Col += RectLight(posv, nrm, mView, Light[i], OutDiffuse, OutSpecular);
                 break;
         }
     }
-    
-    //return Col;
-    
-    float4 Result = (Col + Material.Emissive * Material.BaseColor);
-    
-    return float4(Result.rgb, Material.BaseColor.a);
-
 }
 
 
-float4 DirLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData)
+void DirLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout float4 OutDiffuse, inout float4 OutSpecular)
 {
-    float4 Diff = 1;
-    float4 Spec = 0;
-    float4 Amb = 0;
+    float4 Diff = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float4 Spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float4 Amb = float4(0.0f, 0.0f, 0.0f, 0.0f);
     
     float4 Normal = float4(nrm.xyz, 0.0f);
     float4 N = Normal;
@@ -127,28 +122,16 @@ float4 DirLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData)
     Spec = SpecularBlinPhongLight(N, L, V, LightData.Specular, Material.Specular, Material.Roughness);
     Amb = LightData.Ambient * Material.Ambient * Material.BaseColor;
     
-    return saturate((Diff + Spec + Amb)) * LightData.LightColor;
+    OutDiffuse = OutDiffuse + (Diff + Amb) * LightData.LightColor;
+    OutSpecular = OutSpecular + Spec * LightData.LightColor;
 
-    //return float4(L.xyz * 0.5f + 0.5f, 1.0f) + Diff * 0.000001f;
-    
-    //L = float4(normalize(LightData.Direction.xyz), 0.0f);
-
-    //return float4(L.xyz * 0.5f + 0.5f, 1.0f);
-    
-    //L = float4(0.0f, 0.0f, -1.0f, 0.0f);
-
-    //L = mul(mView, L);
-    //L.w = 0.0f;
-    //L = normalize(L);
-
-    //return float4(L.xyz * 0.5f + 0.5f, 1.0f);
 }
 
-float4 PointLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData)
+void PointLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout float4 OutDiffuse, inout float4 OutSpecular)
 {
-    float4 Diff = 1;
-    float4 Spec = 1;
-    float4 Amb = 1;
+    float4 Diff = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float4 Spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float4 Amb = float4(0.0f, 0.0f, 0.0f, 0.0f);
     
     float4 ViewLightPosition = mul(mView, LightData.LightPosition);
     float4 L = float4((ViewLightPosition.xyz - posv.xyz), 0.0f);
@@ -165,7 +148,7 @@ float4 PointLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData)
     
     //광원 도달 거리 벗어남
     if (Distance > LightData.Range)
-        return 0;
+        return;
     
     //정규화
     L /= Distance;
@@ -181,23 +164,25 @@ float4 PointLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData)
     
     Diff = LambertLight(N, L, LightData.Diffuse, Material.Diffuse) * att * Fade * Material.BaseColor;
     Spec = SpecularBlinPhongLight(N, L, V, LightData.Specular, Material.Specular, Material.Roughness) * att * Fade;
-    Amb = LightData.Ambient * Material.Ambient * Fade * Material.BaseColor;
+    Amb = LightData.Ambient * Material.Ambient * att * Fade * Material.BaseColor;
     
-    return saturate((Diff + Spec + Amb)) * LightData.LightColor;
+    OutDiffuse = OutDiffuse + (Diff + Amb) * LightData.LightColor;
+    OutSpecular = OutSpecular + Spec * LightData.LightColor;
 }
 
-float4 SpotLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData)
+void SpotLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout float4 OutDiffuse, inout float4 OutSpecular)
 {
     //미구현이므로 Light 연산을 하지 않음
     float4 Col = { 0.0f, 0.0f, 0.0f, 0.0f };
-    return Col;
+    OutDiffuse = OutDiffuse + Col;
+    OutSpecular = OutSpecular + Col;
 }
 
-float4 RectLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData)
+void RectLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout float4 OutDiffuse, inout float4 OutSpecular)
 {
     //미구현이므로 Light 연산을 하지 않음
     float4 Col = { 0.0f, 0.0f, 0.0f, 0.0f };
-    return Col;
+    OutDiffuse = OutDiffuse + Col;
+    OutSpecular = OutSpecular + Col;
 }
-
 #endif

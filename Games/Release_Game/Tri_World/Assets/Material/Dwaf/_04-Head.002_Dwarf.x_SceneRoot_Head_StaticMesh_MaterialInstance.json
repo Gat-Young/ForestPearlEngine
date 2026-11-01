@@ -1,67 +1,73 @@
 {
-    "Material": {
-        "Name": "_04-Head.002_Dwarf.x_SceneRoot_Head_StaticMesh_MaterialInstance",
-        "VertexShader": "DefaultVertexShader",
-        "PixelShader": "DefaultPixelShader",
-        "TwoSided": false,
-        "Parameters": [
-            {
-                "Type": "PS",
-                "ConstantBuffer": "MaterialConstBuffer",
-                "Values": {
-                    "Material.BaseColor": [
-                        0.800000011920929,
-                        0.800000011920929,
-                        0.800000011920929,
-                        1.0
-                    ],
-                    "Material.Diffuse": [
-                        0.800000011920929,
-                        0.800000011920929,
-                        0.800000011920929,
-                        1.0
-                    ],
-                    "Material.Ambient": [
-                        0.05087608844041824,
-                        0.05087608844041824,
-                        0.05087608844041824,
-                        1.0
-                    ],
-                    "Material.Specular": [
-                        0.800000011920929,
-                        0.800000011920929,
-                        0.800000011920929,
-                        1.0
-                    ],
-                    "Material.Roughness": [
-                        0.5,
-                        0.5,
-                        0.5,
-                        1.0
-                    ],
-                    "Material.Emissive": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                }
-            }
-        ],
-        "Textures": [
-            {
-                "Type": "PS",
-                "Parameter": "TexDiff",
-                "Asset": "DwarfHead_dds",
-                "TextureType": "Texture2D"
-            }
-        ],
-        "Samplers": [
-            {
-                "Type": "PS",
-                "Parameter": "Smpler",
-                "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
-            }
-        ]
-    }
+  "Material": {
+    "Name": "_04-Head.002_Dwarf.x_SceneRoot_Head_StaticMesh_MaterialInstance",
+    "VertexShader": "DefaultVertexShader",
+    "PixelShader": "DwarfPixelShader",
+    "TwoSided": false,
+    "Parameters": [
+      {
+        "Type": "PS",
+        "ConstantBuffer": "MaterialConstBuffer",
+        "Values": {
+          "Material.BaseColor": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Material.Diffuse": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Material.Ambient": [
+            0.05087608844041824,
+            0.05087608844041824,
+            0.05087608844041824,
+            1.0
+          ],
+          "Material.Specular": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Material.Roughness": [
+            0.5,
+            0.5,
+            0.5,
+            1.0
+          ],
+          "Material.Emissive": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      }
+    ],
+    "Textures": [
+      {
+        "Type": "PS",
+        "Parameter": "TexDiff",
+        "Asset": "DwarfHead_dds",
+        "TextureType": "Texture2D"
+      },
+      {
+        "Type": "PS",
+        "Parameter": "TexSpec",
+        "Asset": "DwarfHead_spec_bmp",
+        "TextureType": "Texture2D"
+      }
+    ],
+    "Samplers": [
+      {
+        "Type": "PS",
+        "Parameter": "Smpler",
+        "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
+      }
+    ]
+  }
 }

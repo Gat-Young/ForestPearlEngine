@@ -1055,7 +1055,7 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 		}
 		if (!Material->SetNamedTexture(T.Type, T.Parameter, T.Name,T.TextureType, T.ArrayIndex))
 		{
-			std::cout << "Material texture failed \n";
+			std::cout << "Material texture failed : " << T.Name << "\n";
 			delete Material;
 			return nullptr;
 		}

@@ -61,6 +61,7 @@ void LoadAssets()
 	AssetLoader->LoadPixelShader("WindmillWingBody_PixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("TreePixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("BoxPixelShader.json", AssetOwner::User);
+	AssetLoader->LoadPixelShader("DwarfPixelShader.json", AssetOwner::User);
 
 	//Texture Load
 
@@ -102,6 +103,12 @@ void LoadAssets()
 	AssetLoader->LoadTexture("Dwaf/Pack_bumpmap_dds.json", AssetOwner::User);
 	AssetLoader->LoadTexture("Dwaf/Weapons_dds.json", AssetOwner::User);
 	AssetLoader->LoadTexture("Dwaf/Weapons_bumpmap_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Armor_spec_bmp.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Body_spec_bmp.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/DwarfHead_spec_bmp.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Headgear_spec_bmp.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Pack_spec_bmp.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Weapons_spec_bmp.json", AssetOwner::User);
 
 	//Box Texture
 	AssetLoader->LoadTexture("Box/woodbox_bmp.json", AssetOwner::User);

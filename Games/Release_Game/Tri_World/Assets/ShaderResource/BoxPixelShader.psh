@@ -79,30 +79,34 @@ float4 PS_Main(
         nrm = -nrm;
     }
     
-    float4 LitColor = CalculateLight(posv, nrm, mView);
+    float4 DiffuseLit;
+    float4 SpecularLit;
+    float4 EmissiveLit;
+    
+    CalculateLight(posv, nrm, mView, DiffuseLit, SpecularLit, EmissiveLit);
     
     float4 tex = TexDiff.Sample(Smpler, uv);
     float4 texSnowMask = TexSnowMask.Sample(Smpler, uv);
     float4 Grass = TexGrass.Sample(Smpler, uv);
     float4 GrassMask = TexGrassMask.Sample(Smpler, uv);
     
-    float4 BaseCol = LitColor * col * tex;
+    float4 BaseCol = DiffuseLit * col * tex;
     //여름
     if (SeasonCnt == 0)
     {
-        col = BaseCol + Grass * GrassMask * LitColor * col;
+        col = BaseCol + Grass * GrassMask * DiffuseLit * col + SpecularLit + EmissiveLit;
     }
     
     //가을
     if (SeasonCnt == 1)
     {
-        col = BaseCol + Grass * GrassMask * AutumnColor * LitColor * col;
+        col = BaseCol + Grass * GrassMask * AutumnColor * DiffuseLit * col + SpecularLit + EmissiveLit;
     }
     
     //겨울
     if (SeasonCnt == 2)
     {
-        col = BaseCol + Grass * GrassMask * LitColor * col + texSnowMask * WinterColor * LitColor * col;
+        col = BaseCol + Grass * GrassMask * DiffuseLit * col + texSnowMask * WinterColor * DiffuseLit * col + SpecularLit + EmissiveLit;
     }
     col.a = tex.a;
     

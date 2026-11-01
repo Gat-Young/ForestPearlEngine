@@ -1,5 +1,38 @@
 // Tree REndering Test 용
 
+// Pixel Light 운용 Shader
+// b2 : Light,  b3 : Material
+#include "PixelLight.hlsli"
+
+//상수 버퍼
+cbuffer ObejctConstBuffer : register(b0)
+{
+    matrix mWorld;
+    matrix mInverseWorld;
+    matrix mTranseposeWorld;
+    matrix mInverseTranseposeWorld;
+    
+    matrix mView;
+    matrix mInverseView;
+    matrix mTranseposeView;
+    matrix mInverseTranseposeView;
+    
+    matrix mProj;
+    matrix mInverseProj;
+    matrix mTranseposeProj;
+    matrix mInverseTranseposeProj;
+    
+    matrix mWV;
+    matrix mInverseWV;
+    matrix mTranseposeWV;
+    matrix mInverseTranseposeWV;
+    
+    matrix mWVP;
+    matrix mInverseWVP;
+    matrix mTranseposeWVP;
+    matrix mInverseTranseposeWVP;
+    
+};
 
 ////////////////////////////////////////////////////////////////////////////// 
 //
@@ -26,6 +59,8 @@ SamplerState Smpler : register(s0);
 float4 PS_Main(
                 float4 pos : SV_POSITION, //[입력] 정점좌표. Vertex Position(Model Space, 3D) 
                 float4 col : COLOR0, //[입력] 정점색. Vertex Color : "Diffuse" 
+                float4 nrm : TEXCOORD2, //[입력] 역전치WV 변환된 normal
+                float4 posv : TEXCOORD1, //[입력] WordlView 변환된 pos
                 float2 uv : TEXCOORD0, //[입력] uv
                 bool IsFrontFace : SV_IsFrontFace //CULLMODE None일때 앞 뒷면 판단
                 ) : SV_TARGET
@@ -33,28 +68,36 @@ float4 PS_Main(
 	//지정색 출력.
 	//float4 col = {1, 0, 1, 1};
     
-    //텍스처 샘플링
-   
+       //텍스처 샘플링
+    
+    if (!IsFrontFace)
+    {
+        nrm = -nrm;
+    }
+    
+    float4 LitColor = CalculateLight(posv, nrm, mView);
     
     float4 tex = TexDiff.Sample(Smpler, uv);
     float4 texSnowMask = TexSnowMask.Sample(Smpler, uv);
     
+    float4 BaseCol = LitColor * col * tex;
+    
     //여름
     if (SeasonCnt == 0)
     {
-        col = col * tex;
+        col = BaseCol;
     }
     
     //가을
     if(SeasonCnt == 1)
     {
-        col = col * tex * AutumnColor * col;
+        col = BaseCol * AutumnColor;
     }
     
     //겨울
     if(SeasonCnt == 2)
     {        
-        col = col * tex + texSnowMask * WinterColor * col;
+        col = BaseCol + texSnowMask * WinterColor * LitColor * col;
     }
     col.a = tex.a;
     return col;

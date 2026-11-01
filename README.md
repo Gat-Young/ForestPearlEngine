@@ -15,7 +15,7 @@
 [메인 루프](#-엔진-메인-루프) ·
 [렌더링](#-렌더링-구조) ·
 [RenderPass](#render-pass) ·
-[Light · Normal](#lambert-light--normal-line) ·
+[Light · Normal](#per-pixel-light--normal-line) ·
 [Texture](#texture) ·
 [Alpha Blend](#alpha-blend-초기-구현) ·
 [상수 버퍼](#상수-버퍼) ·
@@ -45,7 +45,7 @@
 |:-:|---|---|
 | 🧩 | **Actor / Component 프레임워크** | `FPObject → FPActor → FPPawn / FPAController / FPAGameMode`, 계층형 `FPSceneComponent` 트랜스폼 |
 | 🎨 | **DX11 렌더러** | `Renderer`(프레임 흐름) + `RenderingDevice`(D3D11 래퍼) 2계층, **Render List → Render Pass(Mesh / Gizmo / Normal / UI)** 구조, 슬롯 규약이 있는 **상수 버퍼 바인딩**, `GameSetting.json` 기반 MSAA(스왑체인·깊이버퍼 SampleDesc), Priority 정렬, 멀티 뷰포트 |
-| 💡 | **통합 Light (Directional · Point)** | `FPLightComponentBase` 계열이 Light Render List에 등록 → 메시마다 **최대 64개**를 하나의 `LIGHT` 상수 버퍼(`b2`, 9232 byte)로 묶어 전달. 정점 셰이더(`Light.hlsli`)에서 Directional · Point 모두 **View 공간**에서 Half-Lambert Diffuse + **Blinn-Phong Specular**(`SpecularBlinPhong.hlsli`) + Ambient를 계산(거리 감쇠, Range Fade, 비균등 스케일 대응 노멀). 라이트 색(`LightColor`) · **Emissive** 지원. 토치 예제 `ATorchLight` |
+| 💡 | **통합 Light (Directional · Point, Per-Pixel)** | `FPLightComponentBase` 계열이 Light Render List에 등록 → 메시마다 **최대 64개**를 하나의 `LIGHT` 상수 버퍼(`b2`, 9232 byte)로 묶어 **픽셀 셰이더** `PixelLight.hlsli`에 전달. VS는 노멀 · 위치를 View 공간으로 변환해 보간만 하고, Directional · Point 모두 PS에서 Half-Lambert Diffuse + **Blinn-Phong Specular**(`SpecularBlinPhong.hlsli`) + Ambient를 픽셀 단위로 계산(거리 감쇠, Range Fade). 과거 정점 단위 계산 코드는 `VertexLight.hlsli`로 남아 있지만 비활성 상태. 라이트 색(`LightColor`) · **Emissive** 지원. 토치 예제 `ATorchLight` |
 | 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 샘플러 36종(AF 단계는 `GameSetting.json`). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환. 슬롯마다 `FPTextureType`(`Texture2D` / `Texture2DArray`)을 함께 지정 |
 | 🗂️ | **Texture2DArray** *(실험적)* | `LoadTexture2DArray`가 JSON(`Width/Height/ArraySize/SourceTextures[]`)을 읽어 이미 로드된 Texture2D들을 **`RenderingDevice::CheckTextureArrayData`로 포맷·해상도 검증 후 `CreateTextureArray2D`로 한 장의 `Texture2DArray` SRV로 합침**. `MeshRenderPass`는 Material 텍스처 슬롯의 `FPTextureType`에 따라 `GetTextureData`(Texture2D) 또는 `GetTextureArrayData`(Texture2DArray)에서 바인딩할 SRV를 고름. 아직 어떤 게임의 `LoadAssets()`에서도 호출되지 않는 템플릿 단계 |
 | ⚙️ | **GameSetting** | `Assets/GameSetting/GameSetting.json` → `FPAssetLoader::LoadGameSetting`이 읽어 `FPGameSettingData`로 저장 → `FPGameProjectSetting::ProjectSetting()`이 창 크기 · MSAA · AF · 전체화면 값을 반영, `RenderingDevice::SetMSAA/SetAF`로 렌더러에 전달 |
@@ -196,9 +196,10 @@ Engine/ForestPearlEngine/
 │   ├── TextureResource/              # 이미지 원본 (*.dds · checker.bmp)
 │   ├── Shader/                       # 셰이더 등록 JSON (Name · Path · InputLayout) — Default* · DefaultGizmo* · NormalDebug*
 │   └── ShaderResource/               # HLSL 소스와 컴파일 결과(bin/)
-│       ├── DefaultVertexShader.vsh   # 기본 Mesh VS (WVP 변환 + Light.hlsli의 CalculateLight)
-│       ├── DefaultPixelShader.psh    # 기본 Mesh PS (정점 색 × 텍스처 t0 / s0, SV_IsFrontFace 입력)
-│       ├── Light.hlsli               # 통합 Light 상수 버퍼(b2 · b3) + Directional / Point 계산
+│       ├── DefaultVertexShader.vsh   # 기본 Mesh VS (WVP 변환, 노멀 · posv를 View 공간으로 변환해 PS로 전달)
+│       ├── DefaultPixelShader.psh    # 기본 Mesh PS (PixelLight.hlsli의 CalculateLight, 정점 색 × 라이트 × 텍스처 t0/s0, SV_IsFrontFace로 뒷면 노멀 반전)
+│       ├── VertexLight.hlsli         # Light 상수 버퍼(b2 · b3) + Directional/Point 계산 — Per-Vertex 경로(현재 비활성, include 주석 처리됨)
+│       ├── PixelLight.hlsli          # Light 상수 버퍼(b2 · b3) + Directional/Point 계산 — Per-Pixel 경로(현재 활성)
 │       ├── LambertLight.hlsli        # LambertLight() 계산 함수 (Half-Lambert)
 │       ├── SpecularBlinPhong.hlsli   # SpecularBlinPhongLight() 계산 함수
 │       ├── DefaultGizmoVertexShader.vsh / DefaultGizmoPixelShader.psh  # Grid / Axis 기즈모용 (라이트 없음)
@@ -624,7 +625,7 @@ flowchart LR
 
 | Pass | 읽는 목록 | Topology | 반복 단위 | 상수 버퍼 | 정렬 |
 |---|---|---|---|---|---|
-| `MeshRenderPass` | `MeshRenderList` | `TRIANGLELIST` | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Light · Material** (Renderer가 구성, [Light · Normal](#lambert-light--normal-line)) | `Priority` 오름차순 (+ 시작/종료 시 [Alpha Blend](#alpha-blend-초기-구현) 상태 On/Off). Rasterizer(Cull)는 **메시마다** 지정 ([Two Sided](#two-sided-material)) |
+| `MeshRenderPass` | `MeshRenderList` | `TRIANGLELIST` | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Light · Material** (Renderer가 구성, [Light · Normal](#per-pixel-light--normal-line)) | `Priority` 오름차순 (+ 시작/종료 시 [Alpha Blend](#alpha-blend-초기-구현) 상태 On/Off). Rasterizer(Cull)는 **메시마다** 지정 ([Two Sided](#two-sided-material)) |
 | `GizmoRenderPass` | `GizmoRenderList` | `LINELIST` | 카메라 → 기즈모 → 뷰포트 → 서브 메시 | Object · ViewPort · Material | `Priority` 오름차순 |
 | `NormalRenderPass` | `NormalRenderList` | `LINELIST` (`DrawInstanced`) | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Normal Matrix** | 없음 (`bNormal`이 `true`일 때만 실행) |
 | `UIRenderPass` | `UIRenderList` | (SpriteBatch) | 텍스트 → `UIViewPort` | 사용 안 함 | `Priority` 오름차순 |
@@ -806,12 +807,16 @@ namespace FPConstantBufferRenderDataUtil
 |:-:|:-:|---|---|---|
 | VS | `b0` | **엔진 예약** (Object) | `World` · `View` · `Proj` · `WV` · `WVP` 5종 각각에 대해 **원본 · Inverse · Transpose · InverseTranspose** 4개씩 = 행렬 20개 (20 × 64 = **1280 byte**, `MVPConstBuffer`) | 오브젝트 × 뷰포트 |
 | VS | `b1` | **엔진 예약** (ViewPort) | 뷰포트의 Vertex 상수. 기본 구조체 `VertexConst { AniOn, BlendOn }` | 뷰포트 |
-| VS | `b2` | **엔진 예약** (Renderer) | Mesh: **Light 블록**(`LightCnt` + 최대 64개, 9232 byte).<br/>Normal: Normal Matrix + 길이 ([Light · Normal](#lambert-light--normal-line)) | 오브젝트 |
-| VS | `b3 ~ b13` | **Material** (Mesh) | Material JSON `Parameters`에 `"Type": "VS"`로 적은 cbuffer. **셰이더의 `register(b#)` 번호가 그대로 슬롯**입니다 (기본 `MaterialConstBuffer` = `b3`) | 오브젝트 |
-| PS | `b0` | **엔진 예약** (ViewPort) | 뷰포트의 Pixel 상수 (`Slot k` → `b(k)`). 현재 엔진 기본 뷰포트는 사용하지 않음 | 뷰포트 |
-| PS | `b1 ~ b13` | **Material** (Mesh) | Material JSON `Parameters`에 `"Type": "PS"`로 적은 cbuffer. `register(b#)` 번호 그대로 | 오브젝트 |
+| VS | `b2` | **엔진 예약** (Renderer) | Mesh: **Light 블록**(`LightCnt` + 최대 64개, 9232 byte) — **Per-Vertex Light 경로**(`VertexLight.hlsli`)용. 기본 Mesh VS(`DefaultVertexShader.vsh`)는 `#include "VertexLight.hlsli"`가 주석 처리되어 있어 **현재는 바인딩되지 않음**.<br/>Normal: Normal Matrix + 길이 ([Light · Normal](#per-pixel-light--normal-line)) | 오브젝트 |
+| VS | `b3 ~ b13` | **Material** (Mesh) | Material JSON `Parameters`에 `"Type": "VS"`로 적은 cbuffer. **셰이더의 `register(b#)` 번호가 그대로 슬롯**입니다. 커스텀 VS cbuffer에는 여전히 쓰이지만, 기본 `MaterialConstBuffer`는 이제 PS 쪽에 있음(아래) | 오브젝트 |
+| PS | `b0` | **엔진 예약** (Object) | `CreateMeshRenderList`가 VS `b0`과 **같은 `MVPConstBuffer`(1280 byte)** 를 `Device.UpdatePixelShaderSubresource(0, …)`로 PS `b0`에도 그대로 복사. **Per-Pixel Light 경로**(`PixelLight.hlsli`)가 `mView`를 여기서 읽음. 뷰포트 Pixel 상수는 현재 사용하지 않아 이 슬롯과 겹치지 않음 | 오브젝트 |
+| PS | `b2` | **엔진 예약** (Renderer) | Mesh: **Light 블록**(VS `b2`와 같은 구조) — **Per-Pixel Light 경로**(현재 기본 활성 경로)가 여기로 바인딩됨. `CreateMeshRenderList`는 `MeshRenderData.PixelConstBuffer`에 등록(VS 쪽 등록은 주석 처리됨) | 오브젝트 |
+| PS | `b1, b3 ~ b13` | **Material** (Mesh) | Material JSON `Parameters`에 `"Type": "PS"`로 적은 cbuffer. `register(b#)` 번호 그대로. 기본 `MaterialConstBuffer`(`b3`)가 여기 포함 — `PixelLight.hlsli`가 PS에 포함되므로 | 오브젝트 |
 
-**Mesh Pass의 슬롯은 "절대 번호"입니다.** `FPConstantBufferInfo::Slot`이 곧 셰이더 레지스터 번호이며, 리플렉션이 cbuffer의 `BindPoint`를 그대로 슬롯으로 기록합니다. 따라서 Material cbuffer를 `register(b4)`로 선언하면 VS `b4`로 갱신됩니다. 뷰포트 상수는 슬롯 `1`, Light 블록은 슬롯 `2`로 등록되어 있습니다.
+**Mesh Pass의 슬롯은 "절대 번호"입니다.** `FPConstantBufferInfo::Slot`이 곧 셰이더 레지스터 번호이며, 리플렉션이 cbuffer의 `BindPoint`를 그대로 슬롯으로 기록합니다. 따라서 Material cbuffer를 `register(b4)`로 선언하면 해당 스테이지의 `b4`로 갱신됩니다. 뷰포트 상수는 슬롯 `1`, Light 블록은 슬롯 `2`로 등록되어 있습니다.
+
+> [!NOTE]
+> 라이트 블록(`b2`)과 Material cbuffer(기본 `b3`)를 **어느 스테이지가 실제로 소비하느냐**는 그 셰이더의 HLSL이 어디서 `#include`하는지에 달려 있습니다. 지금은 `DefaultVertexShader.vsh` · `TerrainVertexShader.vsh`가 `VertexLight.hlsli` 포함을 주석 처리해 VS에는 `LIGHT`/`MATERIAL` cbuffer가 아예 없고, 대신 `DefaultPixelShader.psh`를 비롯한 PS들이 `PixelLight.hlsli`를 포함해 PS 쪽에 바인딩됩니다. Material JSON의 `Parameters`에 적는 `"Type"`도 반드시 이와 일치해야 합니다 (현재는 `"PS"`).
 
 > [!NOTE]
 > **Mesh · Gizmo · Normal Pass 모두 같은 절대 슬롯 규칙**을 씁니다. 이전에는 Gizmo · Normal Pass만 오프셋(VS `+2`, PS `+1`, 뷰포트 `1 + Slot`)을 더해 슬롯을 계산해서, 뷰포트 상수(슬롯 `1`)가 VS `b2`에 쓰이며 Normal Matrix 버퍼를 덮어쓰는 문제가 있었습니다. 지금은 오프셋을 없애고 `FPConstantBufferInfo::Slot`을 그대로 레지스터 번호로 사용하며, Normal Matrix는 슬롯 `2`로 등록합니다 (`NormalDebugVertexShader`의 `register(b2)`와 일치). 새 Pass를 만들 때도 오프셋 없이 절대 슬롯으로 등록하세요.
@@ -873,7 +878,7 @@ flowchart TD
 
 게임 뷰포트는 기준 화면비(960:600)를 유지하도록 계산되며, 창의 긴 축 방향으로 분할·중앙 정렬됩니다.
 
-### Lambert Light · Normal Line
+### Per-Pixel Light · Normal Line
 
 한 프레임에서 Light와 Normal Line이 어떻게 만들어지고 그려지는지 정리합니다.
 
@@ -881,8 +886,8 @@ flowchart TD
 flowchart LR
     DL["FPDirectionalLightComponent<br/>FPPointLightComponent"] -->|"등록"| LL["FPLightRenderList"]
     LL --> CL["CreateLightRenderList<br/>Active 라이트 값 복사"]
-    CL --> CM["CreateMeshRenderList<br/>메시마다 LightItem(최대 64개) 구성<br/>VS b2 Light, b3 Material"]
-    CM --> MP["MeshRenderPass<br/>DefaultVertexShader: CalculateLight 정점 계산"]
+    CL --> CM["CreateMeshRenderList<br/>메시마다 LightItem(최대 64개) 구성<br/>PS b0 Object, PS b2 Light, PS b3 Material"]
+    CM --> MP["MeshRenderPass<br/>VS: 노멀 · posv를 View 공간으로 변환해 보간<br/>PS(DefaultPixelShader): CalculateLight 픽셀 계산"]
     SM["FPStaticMeshComponent"] -->|"자동 생성"| NL["FPGizmoNormalLineComponent"]
     NL -->|"등록"| NR["FPMeshNormalRenderList"]
     NR --> CN["CreateNormalRenderList<br/>Normal Matrix 계산"]
@@ -891,7 +896,10 @@ flowchart LR
 
 #### Light (Directional · Point)
 
-Light는 **컴포넌트 → `FPLightRenderList` → `CreateLightRenderList`(값 복사) → `CreateMeshRenderList`(메시마다 `LIGHT` 상수 버퍼 하나로 묶음) → `DefaultVertexShader`의 `CalculateLight()`** 순서로 처리됩니다. 계산은 모두 **정점 셰이더**에서 이루어지고, 픽셀 셰이더는 보간된 색을 출력할 뿐입니다.
+Light는 **컴포넌트 → `FPLightRenderList` → `CreateLightRenderList`(값 복사) → `CreateMeshRenderList`(메시마다 `LIGHT` 상수 버퍼 하나로 묶음) → `DefaultPixelShader`의 `CalculateLight()`** 순서로 처리됩니다. VS(`DefaultVertexShader.vsh`)는 이제 라이팅을 계산하지 않고, 노멀을 View 공간으로 변환(`mInverseTranseposeWV`)하고 `posv`(View 공간 위치)를 구해 PS로 넘기기만 합니다. 실제 Diffuse · Specular · Ambient · Emissive 계산은 **픽셀 셰이더**(`PixelLight.hlsli`)에서 픽셀 단위로 이루어집니다(Per-Pixel Light).
+
+> [!NOTE]
+> 라이트 계산 코드는 `VertexLight.hlsli`(Per-Vertex) · `PixelLight.hlsli`(Per-Pixel) 두 파일에 거의 동일한 내용으로 중복돼 있습니다. 기존 `Light.hlsli`는 삭제되었습니다. `DefaultVertexShader.vsh`는 `#include "VertexLight.hlsli"`와 `CalculateLight` 호출을 모두 주석으로만 남겨 둬서, 주석을 풀면 Per-Vertex 경로로 되돌릴 수 있는 상태입니다. 현재 활성 경로는 PS 쪽(Per-Pixel)입니다.
 
 | 클래스 | 설명 |
 |---|---|
@@ -912,7 +920,7 @@ Light는 **컴포넌트 → `FPLightRenderList` → `CreateLightRenderList`(값 
 
 **Light 상수 버퍼 (`b2`)**
 
-라이트마다 `LightDataItem`(144 byte)을 만들고 최대 `Light_MAX = 64`개를 `LightItem` 하나로 묶어 VS `b2`에 전달합니다. 크기는 `16 + 64 × 144 = 9232 byte`입니다 ([상수 버퍼 크기가 9232 byte로 확장](#상수-버퍼)된 이유).
+라이트마다 `LightDataItem`(144 byte)을 만들고 최대 `Light_MAX = 64`개를 `LightItem` 하나로 묶어 **PS `b2`**에 전달합니다(`CreateMeshRenderList`가 `MeshRenderData.PixelConstBuffer`에 등록 — VS 쪽 등록 줄은 주석 처리됨). 크기는 `16 + 64 × 144 = 9232 byte`입니다 ([상수 버퍼 크기가 9232 byte로 확장](#상수-버퍼)된 이유).
 
 ```cpp
 // Renderers/FPRenderingCommon.h
@@ -927,39 +935,39 @@ struct alignas(16) LightItem { unsigned int LightCnt; unsigned int Padding[3]; L
 ```
 
 ```hlsl
-// Assets/ShaderResource/Light.hlsli — 기본 Mesh VS가 포함
+// Assets/ShaderResource/PixelLight.hlsli — 기본 Mesh PS가 포함 (Per-Pixel, 현재 활성 경로)
 cbuffer LightConstBuffer    : register(b2) { uint LightCnt; float3 Padding; LIGHT Light[Light_MAX]; };  // 9232 byte
 cbuffer MaterialConstBuffer : register(b3) { MATERIAL Material; };   // BaseColor · Diffuse · Ambient · Specular · Roughness · Emissive(96 byte) — Material JSON의 Parameters로 채워짐
-float4 CalculateLight(float4 posv, float4 nrm, matrix mWV, matrix mView, matrix mInverseTranseposeWV);
+float4 CalculateLight(float4 posv, float4 nrm, matrix mView);   // VertexLight.hlsli 쪽은 매개변수에 mWV · mInverseTranseposeWV가 더 있음(노멀을 직접 변환하므로)
 ```
 
 > [!IMPORTANT]
 > 이전에는 라이트마다 슬롯을 하나씩 차지해 Material 슬롯이 라이트 수에 따라 밀렸지만, 지금은 **`b2` = Light 블록(항상 1개), `b3` = Material로 고정**입니다. 라이트가 0개여도(`LightCnt = 0`) 위치는 바뀌지 않습니다.
 
-**계산 방식 (`Light.hlsli`)**
+**계산 방식 (`PixelLight.hlsli`)**
 
 | 항목 | 내용 |
 |---|---|
 | 합성 | `LightCnt`만큼 반복해 라이트별 결과를 누적하고, 최종 색 = `Col + Material.Emissive × Material.BaseColor`, 알파 = `Material.BaseColor.a`. 각 라이트 함수가 `Diffuse`/`Ambient`에 이미 `BaseColor`를 곱해 두므로, 합산 후에는 `BaseColor`를 다시 곱하지 않고 `Emissive`에만 곱해서 더함(이전엔 `(Col + Emissive) × BaseColor`로 전체를 곱했음) |
-| Directional · Point 공용 | 이제 **둘 다 View 공간**에서 계산. 노멀 `N = normalize(mul(mInverseTranseposeWV, nrm))`(`w = 0`, 비균등 스케일 대응), 뷰 벡터 `V = normalize(-posv)`(`posv = mul(mWV, pos)`, `w = 0`) |
+| Directional · Point 공용 | `PixelLight.hlsli`는 노멀 · 위치 변환 행렬을 받지 않습니다(`CalculateLight(posv, nrm, mView)`). **VS가 이미 View 공간으로 변환해 보간해 준 값**을 그대로 씀(`N = Normal`, 추가 행렬 곱 없음). 뷰 벡터 `V = normalize(-posv)`(`posv`도 VS에서 View 공간으로 변환되어 보간됨, `w = 0`) |
 | Directional | 렌더러가 메시마다 `Direction`을 정규화 → **부호만 반전**해 전달(이전의 `World` 역행렬 곱은 삭제됨). 셰이더가 `mul(mView, Direction)`으로 View 공간으로 변환해 사용 |
 | Point | 광원 위치 = `mul(mView, LightPosition)`. 감쇠 `att = 1 / max(Attenuation.x + y·d + z·d², 0.0001)`, 추가로 `Fade = 1 - smoothstep(Range × 0.8, Range, Distance)`로 `Range` 경계를 부드럽게 0까지 줄임(Diffuse·Specular·Ambient 모두에 곱함) |
 | Diffuse | Half-Lambert로 변경: `LambertLight()`가 `saturate(pow(dot(N, L) × 0.5 + 0.5, 2) × LightDiffuse × MaterialDiffuse)`를 반환(더 이상 `Ambient` 인자를 받지 않음). 결과에 `Material.BaseColor`를 곱함 |
 | Specular *(신규)* | `SpecularBlinPhongLight()`(`SpecularBlinPhong.hlsli`) — Half Vector `H = normalize(L + V)`, `Shininess = lerp(128, 2, saturate(Material.Roughness.r))`, `pow(saturate(dot(N, H)), Shininess) × LightSpecular × MaterialSpecular`. `dot(N, L) ≤ 0`이거나 `L + V`가 0에 가까우면 0 |
 | Ambient | `LightData.Ambient × Material.Ambient × Material.BaseColor`로 분리 계산(이전엔 `LambertLight()` 안에서 더해짐) |
-| 라이트별 반환 | `DirLight`/`PointLight`는 각각 `saturate(Diff + Spec + Amb) × LightColor`를 반환. `CalculateLight`의 `switch`는 Directional만 `Col = ...`(덮어쓰기)이고 Point는 여전히 `Col += ...`라서, **같은 메시에 Directional과 Point가 함께 켜져 있으면 이후 처리된 Directional이 Point 결과를 덮어씀** |
+| 라이트별 반환 | `DirLight`/`PointLight`는 각각 `saturate(Diff + Spec + Amb) × LightColor`를 반환. `PixelLight.hlsli`의 `switch`는 **Directional · Point 모두 `Col += ...`** — `VertexLight.hlsli`(비활성 경로)에만 남아 있던 "Directional이 `Col = ...`로 덮어써 Point 결과를 지우는" 버그가 Per-Pixel 전환과 함께 고쳐졌습니다 |
 | Spot · Rect | 타입 정의만 있고 호출이 주석 처리되어 있어 여전히 **기여하지 않음** |
-| 노멀 | `NORMAL_VERTEX`(`nx, ny, nz`) 스트림(Input Slot 1). FBX 로딩 시 노드의 `node_to_world`로 변환 후 정규화해 저장 |
+| 노멀 | `NORMAL_VERTEX`(`nx, ny, nz`) 스트림(Input Slot 1). FBX 로딩 시 노드의 `node_to_world`로 변환 후 정규화해 저장. VS가 `mInverseTranseposeWV`로 View 공간 변환 후 `TEXCOORD2`로 넘기고, PS는 `IsFrontFace`가 거짓이면(`TwoSided` 뒷면) `nrm = -nrm`으로 뒤집음 |
 
 > [!NOTE]
-> `CalculateLight`의 라이트 합산 반복문 바로 다음 줄에 `//return Col;`이 주석으로 남아 있습니다. 주석을 해제하면 `Emissive`/`BaseColor` 최종 합성 없이 라이트 합(Diffuse + Specular + Ambient)만 바로 출력하도록 전환할 수 있습니다. `DefaultVertexShader.vsh` · `WindmillWingBody.psh`에도 디버그용 노멀 시각화/배율 코드가 주석으로 남아 있어, Specular·Half-Lambert 도입을 위해 디버깅 중인 상태로 보입니다.
+> `CalculateLight`의 라이트 합산 반복문 바로 다음 줄에 `//return Col;`이 주석으로 남아 있습니다. 주석을 해제하면 `Emissive`/`BaseColor` 최종 합성 없이 라이트 합(Diffuse + Specular + Ambient)만 바로 출력하도록 전환할 수 있습니다. `WindmillWingBody.psh`에도 디버그용 변수(`nrm_col`)와 주석 처리된 대체 `return`문이 남아 있어, Specular·Half-Lambert·Per-Pixel 전환을 디버깅하던 흔적으로 보입니다.
 
 > [!NOTE]
 > `CreateMeshRenderList`는 **메시마다** 9232 byte의 `LIGHT` 블록을 만들어 `RenderingData::MeshRenderItem`에 복사하므로 메시 수 × 프레임에 비례해 비용이 듭니다 (커밋 메모: "최적화는 추후에 진행"). 활성 라이트가 적을수록 `LightCnt`만큼만 셰이더가 반복하지만, 복사 크기는 항상 고정입니다.
 
 **Emissive (자체 발광)**
 
-`MATERIAL` 구조체(`MaterialConstBuffer`, `b3`, **96 byte** — `BaseColor` · `Diffuse` · `Ambient` · `Specular` · `Roughness` · `Emissive` 6개의 `float4`)의 `Emissive`는 라이트 합에 **더해지며**, 이제는 전체를 다시 `BaseColor`로 곱하지 않고 `Emissive`에만 `BaseColor`를 곱해서 더합니다(바로 위 "합성" 참고). 라이트의 영향을 받지 않고 밝게 보이게 할 때 씁니다. 이전의 `SetEmissive` / `SetBaseColor` 등은 사라졌고, Material JSON의 `Parameters`에서 지정하거나 `SetParameter(FPShaderType::VS, "MaterialConstBuffer", "Material.Emissive", 값)`으로 바꿉니다 ([Material JSON](#material-json)).
+`MATERIAL` 구조체(`MaterialConstBuffer`, `b3`, **96 byte** — `BaseColor` · `Diffuse` · `Ambient` · `Specular` · `Roughness` · `Emissive` 6개의 `float4`)의 `Emissive`는 라이트 합에 **더해지며**, 이제는 전체를 다시 `BaseColor`로 곱하지 않고 `Emissive`에만 `BaseColor`를 곱해서 더합니다(바로 위 "합성" 참고). 라이트의 영향을 받지 않고 밝게 보이게 할 때 씁니다. 이전의 `SetEmissive` / `SetBaseColor` 등은 사라졌고, Material JSON의 `Parameters`에서 지정하거나 `SetParameter(FPShaderType::PS, "MaterialConstBuffer", "Material.Emissive", 값)`으로 바꿉니다 ([Material JSON](#material-json)). `MaterialConstBuffer`가 이제 `PixelLight.hlsli`를 포함하는 **PS**에서 선언되므로 `FPShaderType`도 `VS`가 아니라 `PS`를 씁니다.
 
 ```cpp
 // Games/Release_Game/Tri_World/ADirectionalLight.cpp
@@ -994,9 +1002,9 @@ ATorchLight::ATorchLight()
     LightComponent->SetAttenuation(Attenuation);
     LightComponent->SetRange(100.0f);
 
-    LightProbe->GetMaterial().SetParameter(FPShaderType::VS, "MaterialConstBuffer", "Material.BaseColor", Color);
+    LightProbe->GetMaterial().SetParameter(FPShaderType::PS, "MaterialConstBuffer", "Material.BaseColor", Color);
     FPVector4 EmissiveColor = { 1, 1, 1, 1 };                      // 라이트와 무관하게 밝게
-    LightProbe->GetMaterial().SetParameter(FPShaderType::VS, "MaterialConstBuffer", "Material.Emissive", EmissiveColor);
+    LightProbe->GetMaterial().SetParameter(FPShaderType::PS, "MaterialConstBuffer", "Material.Emissive", EmissiveColor);
     LightProbe->GetMaterial().SetTwoSided(true);
 }
 void ATorchLight::OnTorch() { isActive = !isActive; LightComponent->SetActive(isActive); LightProbe->SetActive(isActive); }
@@ -1004,7 +1012,7 @@ void ATorchLight::OnTorch() { isActive = !isActive; LightComponent->SetActive(is
 
 `Player::OnTorch()`가 `1`번 키에서 처음 한 번 `SpawnActor("ATorchLight", "PlayerTorch")`로 토치를 만들고 `AttachToComponent(Hand, "TorchPoint")`로 손(`ToonLink_Hand_StaticMesh.json`에 추가된 `TorchPoint` Socket)에 붙인 뒤, 이후에는 켜고 끄기만 합니다. `ATorchLight`는 `LoadClassRegist()`에 `Register<ATorchLight>("ATorchLight")`로 등록되어 있습니다.
 
-Level JSON에 `"class": "ADirectionalLight"`로 배치하며, 클래스는 `LoadClassRegist()`에서 등록해야 합니다. 메시 색은 `Mesh->GetMaterial().SetParameter(FPShaderType::VS, "MaterialConstBuffer", "Material.BaseColor", Color)`로 지정합니다.
+Level JSON에 `"class": "ADirectionalLight"`로 배치하며, 클래스는 `LoadClassRegist()`에서 등록해야 합니다. 메시 색은 `Mesh->GetMaterial().SetParameter(FPShaderType::PS, "MaterialConstBuffer", "Material.BaseColor", Color)`로 지정합니다.
 
 #### Normal Line
 
@@ -1225,23 +1233,26 @@ flowchart LR
 
 #### 기본 셰이더
 
-`DefaultVertexShader`는 `TEXCOORD0`을 `o.uv`로 넘기고, `DefaultPixelShader`는 정점 색에 텍스처를 곱해 출력합니다. [Alpha Blend](#alpha-blend-초기-구현) 추가 이후로는 텍스처의 알파 채널을 출력 알파로 그대로 내보냅니다.
+`DefaultVertexShader`는 `TEXCOORD0`을 `o.uv`로, 노멀 · 위치를 View 공간으로 변환해 `TEXCOORD2`/`TEXCOORD1`로 넘기고, `DefaultPixelShader`가 [Per-Pixel Light](#per-pixel-light--normal-line)로 계산한 색에 정점 색 · 텍스처를 곱해 출력합니다. [Alpha Blend](#alpha-blend-초기-구현) 추가 이후로는 텍스처의 알파 채널을 출력 알파로 그대로 내보냅니다.
 
 ```hlsl
 Texture2D    TexDiff : register(t0);   // Material 텍스처 슬롯 0
 SamplerState Smpler  : register(s0);   // 사용 중인 샘플러 중 가장 앞선 종류
 
-float4 PS_Main(float4 pos : SV_POSITION, float4 col : COLOR0, float2 uv : TEXCOORD0,
+float4 PS_Main(float4 pos : SV_POSITION, float4 col : COLOR0, float4 nrm : TEXCOORD2, float4 posv : TEXCOORD1, float2 uv : TEXCOORD0,
                bool IsFrontFace : SV_IsFrontFace) : SV_TARGET   // Cull이 꺼진(TwoSided) 메시의 앞/뒷면 판별용
 {
+    if (!IsFrontFace) nrm = -nrm;             // 뒷면이면 노멀을 뒤집어 라이팅
+
+    float4 LitColor = CalculateLight(posv, nrm, mView);
     float4 tex = TexDiff.Sample(Smpler, uv);
-    float4 col2 = col * tex;
+    float4 col2 = col * LitColor * tex;
     col2.a = tex.a;         // 출력 알파 = 텍스처 알파 (Alpha Blend용)
     return col2;
 }
 ```
 
-`IsFrontFace`는 입력으로 선언만 되어 있고 기본 PS는 아직 이 값으로 노멀을 뒤집지 않습니다 (뒷면 노멀 처리는 정점 셰이더의 Lambert 계산에 반영되어야 하며 구현은 진행 중입니다). 따라서 텍스처를 지정하지 않은 메시는 `Default_Texture512`가 곱해집니다. 기본 텍스처는 엔진이 `LoadEngineAssets()`에서 로드하며, `Checker_bmp`(WIC) · `Checker_dds`(DDS)도 함께 제공됩니다.
+`IsFrontFace`는 이제 실제로 쓰입니다 — 거짓이면(뒷면) PS가 `nrm`을 반전해 라이팅하므로, `TwoSided` 메시의 뒷면도 올바른 방향의 노멀로 라이팅됩니다(이전엔 입력만 받고 쓰지 않아 뒷면도 앞면과 같은 노멀로 계산됐습니다). 텍스처를 지정하지 않은 메시는 `Default_Texture512`가 곱해집니다. 기본 텍스처는 엔진이 `LoadEngineAssets()`에서 로드하며, `Checker_bmp`(WIC) · `Checker_dds`(DDS)도 함께 제공됩니다.
 
 #### 텍스처 에셋
 
@@ -1314,7 +1325,7 @@ flowchart TD
     "TwoSided": true,
     "Parameters": [
       {
-        "Type": "VS",
+        "Type": "PS",
         "ConstantBuffer": "MaterialConstBuffer",
         "Values": {
           "Material.BaseColor": [1.0, 1.0, 1.0, 1.0],
@@ -1882,12 +1893,12 @@ Material JSON의 `TwoSided`는 `FPMaterialData` → `FPMaterial::SetTwoSided()` 
 | 코드 | `FPMaterialInterface::SetTwoSided(bool)` / `GetTwoSided()`. 런타임에 `Mesh->GetMaterial().SetTwoSided(true)`로도 바꿀 수 있음 |
 | 렌더링 | `MeshRenderPass`가 메시마다 `UpdateRSSetState(bFill, !(TwoSided))`를 호출 → **`TwoSided = true`이면 Cull 없음**, `false`이면 뒷면 제거 |
 | 전역 Cull | Mesh Pass에서는 `ForestPearlEngine::SetbCull`(<kbd>F4</kbd>)이 더 이상 적용되지 않습니다. Gizmo · Normal Pass만 전역 `bCull`을 따릅니다 |
-| 픽셀 셰이더 | `bool IsFrontFace : SV_IsFrontFace` 입력을 받을 수 있음. Tri_World의 Terrain · Tree · WindmillWingBody PS도 같은 시그니처 |
+| 픽셀 셰이더 | `bool IsFrontFace : SV_IsFrontFace` 입력을 받음. `DefaultPixelShader` · Tri_World의 Terrain · Tree · Box · WindmillWingBody PS 모두 `if (!IsFrontFace) nrm = -nrm;`로 뒷면 노멀을 반전해 `PixelLight.hlsli::CalculateLight`에 넘김 |
 | FBX 변환 도구 | FBX 머티리얼의 `double_sided` 설정을 기본 Material과 Material Instance 양쪽의 `"TwoSided"`로 기록 |
 | 디버그 | Normal Line이 뒷면 노멀(주황)을 함께 그림 ([Normal Line](#normal-line)) |
 
 > [!NOTE]
-> 커밋 메모에 남아 있듯, 양면 메시에서 **뒷면에 반대 방향 노멀을 쓰는 셰이더 코드는 아직 없습니다.** 지금은 Cull만 꺼지므로 뒷면도 앞면과 같은 노멀로 라이팅됩니다.
+> Per-Pixel Light 전환과 함께 **뒷면에 반대 방향 노멀을 쓰는 셰이더 코드가 추가됐습니다** (`IsFrontFace`로 PS에서 `nrm`을 반전). 이전 버전에서는 Cull만 꺼지고 뒷면도 앞면과 같은 노멀로 라이팅됐지만, 지금은 뒷면이 올바른 방향의 노멀로 라이팅됩니다.
 > 한 번 바뀐 Rasterizer State가 Pass 안에서 메시마다 다시 지정되므로, 양면 메시가 많으면 상태 변경 횟수가 늘어납니다.
 
 ### JSON 에셋 레퍼런스 (전체 예시)
@@ -2186,7 +2197,7 @@ float4 c = TerrainLayers.Sample(Smpler, float3(uv, 2));   // 2번 슬라이스 (
     "PixelShader": "DefaultPixelShader",
     "Parameters": [
       {
-        "Type": "VS",
+        "Type": "PS",
         "ConstantBuffer": "MaterialConstBuffer",
         "Values": {
           "Material.BaseColor": [1.0, 0.0, 0.0, 1.0],
@@ -2200,9 +2211,9 @@ float4 c = TerrainLayers.Sample(Smpler, float3(uv, 2));   // 2번 슬라이스 (
 }
 ```
 ```hlsl
-// Light.hlsli (기본 VS가 포함)
-struct MATERIAL { float4 BaseColor; float4 Diffuse; float4 Ambient; float4 Emissive; };
-cbuffer MaterialConstBuffer : register(b3) { MATERIAL Material; };     // 구조체 멤버 → "Material.BaseColor"
+// PixelLight.hlsli (기본 PS가 포함)
+struct MATERIAL { float4 BaseColor; float4 Diffuse; float4 Ambient; float4 Specular; float4 Roughness; float4 Emissive; };
+cbuffer MaterialConstBuffer : register(b3) { MATERIAL Material; };     // 구조체 멤버 → "Material.BaseColor" (예시는 BaseColor·Diffuse·Ambient·Emissive만 지정 — 나머지는 기본값 0)
 ```
 > 이 상태에서 기본 PS(`TexDiff` · `Smpler` 선언)를 쓰면 텍스처가 연결되지 않아 검게 보입니다. 텍스처가 필요 없으면 해당 변수를 쓰지 않는 PS를 사용하세요.
 
@@ -2216,7 +2227,7 @@ cbuffer MaterialConstBuffer : register(b3) { MATERIAL Material; };     // 구조
     "PixelShader": "DefaultPixelShader",
     "TwoSided": true,
     "Parameters": [
-      { "Type": "VS", "ConstantBuffer": "MaterialConstBuffer",
+      { "Type": "PS", "ConstantBuffer": "MaterialConstBuffer",
         "Values": { "Material.BaseColor": [1,1,1,1], "Material.Diffuse": [1,1,1,1],
                     "Material.Ambient":   [1,1,1,1], "Material.Emissive": [0,0,0,0] } }
     ],
@@ -2244,7 +2255,7 @@ SamplerState Smpler  : register(s0);
     "PixelShader": "AllTypesPixelShader",
     "Parameters": [
       {
-        "Type": "VS",
+        "Type": "PS",
         "ConstantBuffer": "MaterialConstBuffer",
         "Values": {
           "Material.BaseColor": [1,1,1,1], "Material.Diffuse": [1,1,1,1],
@@ -2302,7 +2313,7 @@ cbuffer WaveCB : register(b5)             // VS 상수 버퍼 (b0 Object · b1 V
     "VertexShader": "DefaultVertexShader",
     "PixelShader": "LayeredPixelShader",
     "Parameters": [
-      { "Type": "VS", "ConstantBuffer": "MaterialConstBuffer",
+      { "Type": "PS", "ConstantBuffer": "MaterialConstBuffer",
         "Values": { "Material.BaseColor": [1,1,1,1], "Material.Diffuse": [1,1,1,1],
                     "Material.Ambient":   [1,1,1,1], "Material.Emissive": [0,0,0,0] } }
     ],
@@ -2340,7 +2351,7 @@ SamplerState LayerSmp[2] : register(s2);      // s2, s3 → "LayerSmp[0]", "Laye
     "PixelShader": "TerrainArrayPixelShader",
     "TwoSided": true,
     "Parameters": [
-      { "Type": "VS", "ConstantBuffer": "MaterialConstBuffer",
+      { "Type": "PS", "ConstantBuffer": "MaterialConstBuffer",
         "Values": { "Material.BaseColor": [1,1,1,1], "Material.Diffuse": [1,1,1,1],
                     "Material.Ambient":   [1,1,1,1], "Material.Emissive": [0,0,0,0] } }
     ],
@@ -2387,7 +2398,7 @@ Mat.SetTwoSided(true);
 // Material/hair.002_Material.json — 기본 Material (Parameters만)
 { "Material": { "Name": "hair.002_Material", "VertexShader": "DefaultVertexShader", "PixelShader": "DefaultPixelShader",
                 "TwoSided": false,
-                "Parameters": [ { "Type": "VS", "ConstantBuffer": "MaterialConstBuffer",
+                "Parameters": [ { "Type": "PS", "ConstantBuffer": "MaterialConstBuffer",
                                   "Values": { "Material.BaseColor": [0.8,0.8,0.8,1], "Material.Diffuse": [0.8,0.8,0.8,1],
                                               "Material.Ambient": [0.05,0.05,0.05,1], "Material.Emissive": [0,0,0,0] } } ] } }
 ```
@@ -2395,7 +2406,7 @@ Mat.SetTwoSided(true);
 // Material/hair.002_ToonLink_Hair_StaticMesh_MaterialInstance.json — 이 메시 전용 Instance (+ Textures / Samplers)
 { "Material": { "Name": "hair.002_ToonLink_Hair_StaticMesh_MaterialInstance",
                 "VertexShader": "DefaultVertexShader", "PixelShader": "DefaultPixelShader", "TwoSided": false,
-                "Parameters": [ { "Type": "VS", "ConstantBuffer": "MaterialConstBuffer",
+                "Parameters": [ { "Type": "PS", "ConstantBuffer": "MaterialConstBuffer",
                                   "Values": { "Material.BaseColor": [0.8,0.8,0.8,1], "Material.Diffuse": [0.8,0.8,0.8,1],
                                               "Material.Ambient": [0.05,0.05,0.05,1], "Material.Emissive": [0,0,0,0] } } ],
                 "Textures": [ { "Type": "PS", "Parameter": "TexDiff", "Asset": "Hair_png", "TextureType": "Texture2D" } ],
@@ -2430,7 +2441,7 @@ FBXToStaticMeshJsonTranslator.exe [FBX입력폴더] [Json출력폴더]
 |---|---|
 | FBX 스캔 | 입력 폴더의 모든 `.fbx`를 읽어, **메시를 가진 노드마다** StaticMesh JSON 하나를 생성 (`Name` = 파일명 그대로, `NodeName` = FBX 노드 이름) |
 | 소켓 | 메시가 없는 자식 노드(로케이터/더미)는 `Sockets[]`로 변환 |
-| Material | 메시에 연결된 첫 머티리얼마다 **기본 Material**(`<재질명>_Material.json`, 재질당 1번만 저장, `Parameters`만)과 **Material Instance**(`<재질명>_<StaticMesh이름>_MaterialInstance.json`, 메시마다 저장, 같은 `Parameters` + `Textures[]` · `Samplers[]`)를 함께 기록. `VertexShader` / `PixelShader`는 FBX에 정보가 없으므로 `DefaultVertexShader` / `DefaultPixelShader`로 채우고, `Parameters`는 엔진이 항상 읽는 `MaterialConstBuffer`(VS: `Material.BaseColor` / `Diffuse` / `Ambient` / `Emissive`)만 고정으로 생성 |
+| Material | 메시에 연결된 첫 머티리얼마다 **기본 Material**(`<재질명>_Material.json`, 재질당 1번만 저장, `Parameters`만)과 **Material Instance**(`<재질명>_<StaticMesh이름>_MaterialInstance.json`, 메시마다 저장, 같은 `Parameters` + `Textures[]` · `Samplers[]`)를 함께 기록. `VertexShader` / `PixelShader`는 FBX에 정보가 없으므로 `DefaultVertexShader` / `DefaultPixelShader`로 채우고, `Parameters`는 엔진이 항상 읽는 `MaterialConstBuffer`(PS: `Material.BaseColor` / `Diffuse` / `Ambient` / `Emissive`)만 고정으로 생성 |
 | Texture | 머티리얼에 연결된 텍스처를 **실제 이미지 파일 기준으로 중복 없이** Texture JSON으로 저장 (DDS면 `"DDS"`, 그 외엔 `"WIC"`). Material Instance의 `Textures[]`에는 FBX 텍스처 속성 이름(`material_prop`)을 `Parameter`로, 같은 속성에 텍스처가 여러 장이면 `ArrayIndex`를 붙여 기록. `Samplers[]`에는 FBX의 Wrap 설정을 `"Filter_Tri_Linear_" + Sampler_Wrap/CLAMP`로 기록 (필터 정보는 FBX에 없어 항상 Tri-Linear). 같은 `Parameter`에서 `SamplerType`이 겹치는 샘플러는 하나로 합침 |
 
 - `Material.Emissive`는 FBX 값과 무관하게 항상 `[0, 0, 0, 0]`으로 기록합니다 (필요하면 JSON에서 직접 수정). 색은 `[r, g, b, a]` 배열로 기록됩니다.
@@ -2558,6 +2569,8 @@ FBXToStaticMeshJsonTranslator.exe [FBX입력폴더] [Json출력폴더]
 > HLSL 소스는 `Assets/Shader/`가 아니라 **`Assets/ShaderResource/`** 아래에 둡니다. `Assets/Shader/`는 [셰이더 JSON](#셰이더-json)(`LoadVertexShader` / `LoadPixelShader`가 읽는 등록 정보)만 들어가는 별도 폴더입니다 ([`FPPathManager::GetAssetShaderPath`](#에셋-루트)가 실제로 참조하는 경로도 `ShaderResource/bin/`(Debug) · `ShaderResource/`(Release)입니다).
 >
 > 라이팅 디버깅 중인 일부 셰이더(`DefaultVertexShader` · `WindmillWingBody` 등)는 HLSL 컴파일러 → 명령줄 속성에서 **최적화 사용 안 함**(`DisableOptimizations = true`)이 켜져 있습니다. 전체 셰이더에 적용된 것은 아니라 파일마다 속성을 확인해야 합니다.
+>
+> Tri_World의 `TerrainPixelShader` · `BoxPixelShader` · `TreePixelShader` · `WindmillWingBody` PS는 `#include "PixelLight.hlsli"`로 **Engine 프로젝트의** `Assets/ShaderResource/`에 있는 파일을 참조하므로, HLSL 컴파일러 → 일반 → **추가 포함 디렉터리**에 `$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\`를 추가해 둬야 컴파일됩니다 (`Tri_World.vcxproj`의 해당 `FxCompile` 항목에 `AdditionalIncludeDirectories`로 설정됨).
 
 #### 프로젝트 템플릿
 
@@ -3002,7 +3015,7 @@ SamplerState Smpler  : register(s0);
     "VertexShader": "DefaultVertexShader",
     "PixelShader": "PulsePixelShader",
     "Parameters": [
-      { "Type": "VS", "ConstantBuffer": "MaterialConstBuffer",
+      { "Type": "PS", "ConstantBuffer": "MaterialConstBuffer",
         "Values": { "Material.BaseColor": [1,1,1,1], "Material.Diffuse": [1,1,1,1],
                     "Material.Ambient": [1,1,1,1],   "Material.Emissive": [0,0,0,0] } },
       { "Type": "PS", "ConstantBuffer": "PulseConstBuffer",
@@ -3014,7 +3027,7 @@ SamplerState Smpler  : register(s0);
 }
 ```
 
-기본 Mesh VS(`DefaultVertexShader`)를 쓰면 `MaterialConstBuffer`(BaseColor · Diffuse · Ambient · Emissive)를 **반드시** Parameters에 적어야 합니다. 이 값이 라이트 계산(`CalculateLight`)에 쓰이기 때문입니다.
+기본 Mesh PS(`DefaultPixelShader`, `PixelLight.hlsli` 포함)를 쓰면 `MaterialConstBuffer`(`"Type": "PS"`, BaseColor · Diffuse · Ambient · Specular · Roughness · Emissive)를 **반드시** Parameters에 적어야 합니다. 이 값이 라이트 계산(`CalculateLight`)에 쓰이기 때문입니다.
 
 **③ C++ — 런타임에 값 바꾸기**
 
@@ -3024,7 +3037,7 @@ FPMaterialInterface& Mat = Mesh->GetMaterial();
 FPVector4 Tint = { 1.0f, 0.2f, 0.2f, 1.0f };
 Mat.SetParameter(FPShaderType::PS, "PulseConstBuffer", "TintColor", Tint);       // float4
 Mat.SetParameter(FPShaderType::PS, "PulseConstBuffer", "Speed", 3.0f);           // float
-Mat.SetParameter(FPShaderType::VS, "MaterialConstBuffer", "Material.Emissive", FPVector4(1, 1, 1, 1));
+Mat.SetParameter(FPShaderType::PS, "MaterialConstBuffer", "Material.Emissive", FPVector4(1, 1, 1, 1));
 
 FPVector4 Out;
 if (Mat.GetParameter(FPShaderType::PS, "PulseConstBuffer", "TintColor", Out)) { /* Out 사용 */ }

@@ -145,7 +145,6 @@ void Renderer::CreateMeshRenderList()
 
 		//모델링 행렬 계산
 		FPMatrix WorldMatrix = ((MeshRenderData.Scale) * (MeshRenderData.Rotation) * (MeshRenderData.Location));
-	
 
 		//////////////////////////////////////////////////
 		// 
@@ -169,7 +168,7 @@ void Renderer::CreateMeshRenderList()
 
 			FPVector4 LightDir = { LightRenderList[LightCount].Direction.x, LightRenderList[LightCount].Direction.y, LightRenderList[LightCount].Direction.z, 0.0f };
 			LightData.Direction = -(LightDir.Normalize()); //Local로 변환
-			
+
 			LightData.Range = LightRenderList[LightCount].Range;
 			LightData.Diffuse = LightRenderList[LightCount].Diffuse;
 			LightData.Ambient = LightRenderList[LightCount].Ambient;
@@ -180,14 +179,14 @@ void Renderer::CreateMeshRenderList()
 
 			LightBuffer.Light[LightCount] = LightData;
 
-			
+
 			/*
 			std::cout << "\n========== LightDataItem ==========\n";
 
 			RenderingData::LightDataItem& Data = LightData;
 			std::cout << "LightCount : " << LightCount << "\n";
 			std::cout << "LightType : " << Data.LightType << "\n";
-			
+
 			std::cout << "LightPosition : ("
 				<< Data.LightPosition.x << ", "
 				<< Data.LightPosition.y << ", "
@@ -225,7 +224,7 @@ void Renderer::CreateMeshRenderList()
 				<< Data.Attenuation.y << ", "
 				<< Data.Attenuation.z << ", "
 				<< Data.Attenuation.w << ")\n";
-				
+
 			std::cout << "LightColor : ("
 				<< Data.LightColor.x << ", "
 				<< Data.LightColor.y << ", "
@@ -237,7 +236,10 @@ void Renderer::CreateMeshRenderList()
 		}
 
 		//VertexBuffer에 등록 2번은 Light
-		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.VertexConstBuffer, 2, LightBuffer);
+		//FPConstantBufferRenderDataUtil::AddConstantBuffer(RenderItemData.VertexConstBuffer, 2, LightBuffer);
+
+		//PixelBuffer에 등록 2번은 Light
+		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.PixelConstBuffer, 2, LightBuffer);
 
 		//Material 처리
 		MeshRenderData.VertexShaderPath = *(RenderItemData.VertexShaderPath);
@@ -365,10 +367,6 @@ void Renderer::CreateLightRenderList()
 		LightRenderingData.Location = *(LightItem.Location);
 		LightRenderingData.Rotation = *(LightItem.Rotation);
 		LightRenderingData.Scale = *(LightItem.Scale);
-
-		LightRenderingData.VertexConstBuffer = *(LightItem.VertexConstBuffer);
-		LightRenderingData.PixelConstBuffer = *(LightItem.PixelConstBuffer);
-
 		this->LightRenderList.push_back(LightRenderingData);
 	}
 
@@ -629,9 +627,10 @@ void Renderer::MeshRenderPass()
 
 				//Object 상수 버퍼 갱신
 				Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
+				Device.UpdatePixelShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
 
 
-				//ViewPort Shader ConstBuffer가 있다면 갱신
+				//ViewPort Shader ConstBuffer가 있다면 갱신 (사실 상 죽었을 듯)...(현재 Vertex 쪽 1번 슬롯만 동작 함)
 				//vertex
 				for (FPConstantBufferInfo ConstantBufferInfo : CamViewPort.VertexConstBuffer.ConstantBuffers)
 				{

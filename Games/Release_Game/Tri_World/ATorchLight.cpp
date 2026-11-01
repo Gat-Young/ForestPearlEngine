@@ -14,11 +14,11 @@ ATorchLight::ATorchLight()
 	FPVector3 ProbeSize = { 0.5f, 0.5f, 0.5f };
 	LightComponent->SetLightColor(Color);
 	LightProbe->SetWorldScale3D({ 0.5f, 0.5f, 0.5f });
-	LightProbe->GetMaterial().SetParameter(FPShaderType::VS, "MaterialConstBuffer", "Material.BaseColor", Color);
+	LightProbe->GetMaterial().SetParameter(FPShaderType::PS, "MaterialConstBuffer", "Material.BaseColor", Color);
 	LightProbe->GetMaterial().SetTwoSided(true);
 
 	FPVector4 EmissiveColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-	LightProbe->GetMaterial().SetParameter(FPShaderType::VS, "MaterialConstBuffer", "Material.Emissive", EmissiveColor);
+	LightProbe->GetMaterial().SetParameter(FPShaderType::PS, "MaterialConstBuffer", "Material.Emissive", EmissiveColor);
 	FPVector4 Attenuation = { 0.0f, 0.05f, 0.05f , 1.0f };
 	LightComponent->SetAttenuation(Attenuation);
 

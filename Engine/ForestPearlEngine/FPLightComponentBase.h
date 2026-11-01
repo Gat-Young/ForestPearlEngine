@@ -21,10 +21,6 @@ class FPLightComponentBase : public FPSceneComponent
 
 		FPLightConstantBuffer LightConstantBuffer;
 
-		//상수 버퍼 정보
-		FPConstantBufferRenderData VertexConstantBuffer;
-		FPConstantBufferRenderData PixelConstantBuffer;
-
 		FPLightRenderItem* RenderItem = nullptr;
 
 		virtual void RegistLightRenderList();

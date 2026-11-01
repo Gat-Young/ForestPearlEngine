@@ -6,7 +6,7 @@
         "TwoSided": false,
         "Parameters": [
             {
-                "Type": "VS",
+                "Type": "PS",
                 "ConstantBuffer": "MaterialConstBuffer",
                 "Values": {
                     "Material.BaseColor": [

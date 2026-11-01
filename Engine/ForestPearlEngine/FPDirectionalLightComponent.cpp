@@ -17,7 +17,6 @@ FPDirectionalLightComponent::FPDirectionalLightComponent(FPActor* Owner) : FPLig
 	LightConstantBuffer = DirectionLightSetting;
 
 	//상수 버퍼를 정점 상수 버퍼에 등록
-	FPConstantBufferRenderDataUtil::AddConstantBuffer(VertexConstantBuffer, 0, LightConstantBuffer);
 	RegistLightRenderList();
 }
 

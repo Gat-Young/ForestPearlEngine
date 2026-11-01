@@ -483,10 +483,6 @@ struct FPLightRenderItem
 	FPMatrix* Location = nullptr;
 	FPMatrix* Rotation = nullptr;
 	FPMatrix* Scale = nullptr;
-
-	//상수 버퍼용
-	FPConstantBufferRenderData* VertexConstBuffer = nullptr;
-	FPConstantBufferRenderData* PixelConstBuffer = nullptr;
 };
 
 namespace RenderingData

@@ -26,51 +26,42 @@ void FPLightComponentBase::RegistLightRenderList()
 	RenderItem->Location = &(this->WorldTransform.LocationMatrix);
 	RenderItem->Rotation = &(this->WorldTransform.RotationMatrix);
 	RenderItem->Scale = &(this->WorldTransform.ScaleMatrix);
-	RenderItem->VertexConstBuffer = &(this->VertexConstantBuffer);
-	RenderItem->PixelConstBuffer = &(this->PixelConstantBuffer);
 }
 
 //Set한 이후 버퍼 데이터를 업데이트
 void FPLightComponentBase::SetDirection(FPVector3& Dir)
 {
 	LightConstantBuffer.Direction = (Dir.Normalize());
-	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, LightConstantBuffer);
 }
 
 void FPLightComponentBase::SetRange(float Ran)
 {
 	LightConstantBuffer.Range = Ran;
-	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, LightConstantBuffer);
 }
 
 void FPLightComponentBase::SetDiffuse(FPVector4& Diffuse)
 {
 	LightConstantBuffer.Diffuse = Diffuse;
-	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, LightConstantBuffer);
 }
 
 void FPLightComponentBase::SetAmbient(FPVector4& Ambient)
 {
 	LightConstantBuffer.Ambient = Ambient;
-	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, LightConstantBuffer);
 }
 
 void FPLightComponentBase::SetLightColor(FPVector4& LightColor)
 {
 	LightConstantBuffer.LightColor = LightColor;
-	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, LightConstantBuffer);
 }
 
 void FPLightComponentBase::SetSpecular(FPVector4& Specular)
 {
 	LightConstantBuffer.Specular = Specular;
-	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, LightConstantBuffer);
 }
 
 void FPLightComponentBase::SetAttenuation(FPVector4& Attenuation)
 {
 	LightConstantBuffer.Attenuation = Attenuation;
-	FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, LightConstantBuffer);
 }
 
 

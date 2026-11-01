@@ -1,11 +1,11 @@
 //////////////////////////////////
 //
-// 통합 Light 운용 셰이더 코드
+// Per Vertex Light 운용 셰이더 코드
 //
 //
 
-#ifndef LIGHT_HLSLI
-#define LIGHT_HLSLI
+#ifndef VERTEX_LIGHT_HLSLI
+#define VERTEX_LIGHT_HLSLI
 
 //Light 계산 함수
 #include "LambertLight.hlsli"

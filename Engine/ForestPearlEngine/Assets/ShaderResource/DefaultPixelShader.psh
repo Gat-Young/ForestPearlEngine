@@ -1,5 +1,38 @@
 //기본 Pixel 셰이더 소스
 
+// Pixel Light 운용 Shader
+// b2 : Light,  b3 : Material
+#include "PixelLight.hlsli"
+
+//상수 버퍼
+cbuffer ObejctConstBuffer : register(b0)
+{
+    matrix mWorld;
+    matrix mInverseWorld;
+    matrix mTranseposeWorld;
+    matrix mInverseTranseposeWorld;
+    
+    matrix mView;
+    matrix mInverseView;
+    matrix mTranseposeView;
+    matrix mInverseTranseposeView;
+    
+    matrix mProj;
+    matrix mInverseProj;
+    matrix mTranseposeProj;
+    matrix mInverseTranseposeProj;
+    
+    matrix mWV;
+    matrix mInverseWV;
+    matrix mTranseposeWV;
+    matrix mInverseTranseposeWV;
+    
+    matrix mWVP;
+    matrix mInverseWVP;
+    matrix mTranseposeWVP;
+    matrix mInverseTranseposeWVP;
+    
+};
 
 ////////////////////////////////////////////////////////////////////////////// 
 //
@@ -14,21 +47,26 @@ Texture2D TexDiff : register(t0);
 SamplerState Smpler : register(s0);
 
 float4 PS_Main(
-                float4 pos : SV_POSITION, //[입력] 정점좌표. Vertex Position(Model Space, 3D) 
-                float4 col : COLOR0, //[입력] 정점색. Vertex Color : "Diffuse" 
-                float2 uv : TEXCOORD0, //[입력] uv
+                float4 pos  : SV_POSITION,  //[입력] 정점좌표. Vertex Position(Model Space, 3D) 
+                float4 col  : COLOR0,       //[입력] 정점색. Vertex Color : "Diffuse" 
+                float4 nrm  : TEXCOORD2,    //[입력] 역전치WV 변환된 normal
+                float4 posv : TEXCOORD1,    //[입력] WordlView 변환된 pos
+                float2 uv   : TEXCOORD0,    //[입력] uv
                 bool IsFrontFace : SV_IsFrontFace   //CULLMODE None일때 앞 뒷면 판단
                 ) : SV_TARGET
-{
-	//지정색 출력.
-	//float4 col = {1, 0, 1, 1};
-    
+{    
     //텍스처 샘플링
-   
+    
+    if (!IsFrontFace)
+    {
+        nrm = -nrm;
+    }
+    
+    float4 LitColor = CalculateLight(posv, nrm, mView);
     
     float4 tex = TexDiff.Sample(Smpler, uv);
     
-    col = col * tex;
+    col = col * LitColor * tex;
     
     col.a = tex.a;
 

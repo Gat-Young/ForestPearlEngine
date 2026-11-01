@@ -3,7 +3,7 @@
         "Name": "WindmillBody_Material",
         "VertexShader": "DefaultVertexShader",
         "PixelShader": "WindmillWingBody_PixelShader",
-        "TwoSided": false,
+        "TwoSided": true,
         "Parameters": [
             {
                 "Type": "PS",

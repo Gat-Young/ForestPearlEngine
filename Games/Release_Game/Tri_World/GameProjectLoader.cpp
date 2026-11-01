@@ -83,6 +83,23 @@ void LoadAssets()
 	AssetLoader->LoadTexture("ToonLink/Mouth10_png.json", AssetOwner::User);
 	AssetLoader->LoadTexture("ToonLink/Pupil_png.json", AssetOwner::User);
 	AssetLoader->LoadTexture("ToonLink/Skin_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("ToonLink/Clothes_bump_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("ToonLink/Equipment_bump_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("ToonLink/Skin_bump_png.json", AssetOwner::User);
+
+	//Dwaf Texture
+	AssetLoader->LoadTexture("Dwaf/Armor_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Armor_bumpmap_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Body_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Body_bumpmap_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/DwarfHead_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/DwarfHead_bumpmap_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Headgear_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Headgear_bumpmap_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Pack_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Pack_bumpmap_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Weapons_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Weapons_bumpmap_dds.json", AssetOwner::User);
 
 	//Box Texture
 	AssetLoader->LoadTexture("Box/woodbox_bmp.json", AssetOwner::User);

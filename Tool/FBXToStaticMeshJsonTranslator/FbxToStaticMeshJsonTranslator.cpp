@@ -266,7 +266,7 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 	MaterialConstBufferValues["Material.Emissive"] = EmissiveArray;
 
 	json MaterialConstBufferParameter;
-	MaterialConstBufferParameter["Type"] = "VS";
+	MaterialConstBufferParameter["Type"] = "PS";
 	MaterialConstBufferParameter["ConstantBuffer"] = "MaterialConstBuffer";
 	MaterialConstBufferParameter["Values"] = MaterialConstBufferValues;
 

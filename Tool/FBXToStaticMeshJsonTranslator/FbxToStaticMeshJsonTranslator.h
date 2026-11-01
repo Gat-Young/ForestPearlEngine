@@ -13,7 +13,7 @@
 // - 파일마다 메쉬를 가진 노드 단위로 StaticMesh json 파일을 생성한다. (파일명 = Name + ".json")
 // - 머티리얼은 "기본 Material"(재질당 1개, Parameters만) + "Material Instance"(메쉬당 1개, Parameters 복제 + Textures/Samplers 배열) 두 가지로 나눠서 저장한다.
 //   (FP_Material_Refactored/Examples/SimpleMaterial.json 형식 참고. Shader Reflection은 하지 않으므로, 엔진이 항상 읽는
-//    "MaterialConstBuffer"(VS, Material.BaseColor/Diffuse/Ambient/Specular/Roughness/Emissive) 파라미터 블록만 고정으로 생성한다.)
+//    "MaterialConstBuffer"(PS, Material.BaseColor/Diffuse/Ambient/Specular/Roughness/Emissive) 파라미터 블록만 고정으로 생성한다.)
 // - 텍스처는 실제 이미지 파일 기준으로 중복 없이 한 번만 Texture.json으로 저장한다.
 class FbxToStaticMeshJsonTranslator
 {

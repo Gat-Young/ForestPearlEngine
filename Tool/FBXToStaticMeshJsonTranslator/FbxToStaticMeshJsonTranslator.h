@@ -42,14 +42,16 @@ private:
 	// - 두 json 모두 VertexShader/PixelShader는 FBX에 정보가 없으므로 기본값("DefaultVertexShader" / "DefaultPixelShader")으로 채운다.
 	// StaticMesh json에 들어갈 "Material" 참조 항목(Material Instance 이름만 있는 형태)을 반환한다.
 	// 연결된 머티리얼이 없으면 이름이 빈 Material 항목만 반환한다.
-	static nlohmann::ordered_json ExportMeshMaterial(const ufbx_mesh& Mesh, const std::string& StaticMeshName, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedMaterialNames, std::set<std::string>& ExportedTextureNames);
+	// ModelName : FBX 파일 이름(확장자 제외, 예: "Dwaf"). TextureResource/<ModelName>/ 폴더를 가리키는 Texture Path를 만드는 데 쓰인다.
+	static nlohmann::ordered_json ExportMeshMaterial(const ufbx_mesh& Mesh, const std::string& StaticMeshName, const std::string& ModelName, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedMaterialNames, std::set<std::string>& ExportedTextureNames);
 
 	// 머티리얼에 연결된 텍스처들을 실제 이미지 파일 기준으로 Texture.json으로 변환해서 저장한다. (같은 파일이면 한 번만 저장)
 	// Material Instance json에 들어갈 "Textures" / "Samplers" 배열을 OutTextures / OutSamplers로 각각 채워서 돌려준다.
 	// Shader Reflection은 하지 않으므로, 각 텍스처의 "Parameter" 이름은 ufbx가 알려주는 FBX 속성 이름(material_prop)을 그대로 사용한다.
 	// 같은 Parameter를 여러 텍스처가 공유하면(예: 레이어 텍스처) "ArrayIndex"를 붙여 구분한다.
 	// SamplerType은 FBX 텍스처의 Wrap 설정(Repeat/Clamp)을 엔진 FPSamplerType 이름으로 변환한 값이다.
-	static void ExportMaterialTextures(const ufbx_material& Material, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedTextureNames, nlohmann::ordered_json& OutTextures, nlohmann::ordered_json& OutSamplers);
+	// Texture json의 "Path"는 실제 이미지가 있는 TextureResource/<ModelName>/ 폴더를 가리키도록 ModelName을 붙여서 저장한다.
+	static void ExportMaterialTextures(const ufbx_material& Material, const std::string& ModelName, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedTextureNames, nlohmann::ordered_json& OutTextures, nlohmann::ordered_json& OutSamplers);
 
 	// 머티리얼의 색상 맵(ufbx_material_map)을 [r,g,b,a] 배열 json으로 변환한다.
 	// 값이 지정되어 있지 않으면 기본값(Default*)을 사용한다.

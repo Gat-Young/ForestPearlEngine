@@ -155,7 +155,7 @@ bool FbxToStaticMeshJsonTranslator::TranslateFbxFile(const std::filesystem::path
 		const json SocketsJson = BuildSocketsJson(*Node);
 
 		// 머티리얼 -> 기본 Material.json(재질당 1회) + Material Instance json(메쉬당 1회) 생성 및 참조 정보
-		const json MaterialJson = ExportMeshMaterial(Mesh, StaticMeshName, JsonOutputDirectory, ExportedMaterialNames, ExportedTextureNames);
+		const json MaterialJson = ExportMeshMaterial(Mesh, StaticMeshName, FbxFileStem, JsonOutputDirectory, ExportedMaterialNames, ExportedTextureNames);
 
 		const json StaticMeshJson = BuildStaticMeshJson(*Node, StaticMeshName, MeshDataPath, SocketsJson, MaterialJson);
 
@@ -225,7 +225,7 @@ json FbxToStaticMeshJsonTranslator::BuildSocketsJson(const ufbx_node& Node)
 	return SocketsArray;
 }
 
-json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, const std::string& StaticMeshName, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedMaterialNames, std::set<std::string>& ExportedTextureNames)
+json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, const std::string& StaticMeshName, const std::string& ModelName, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedMaterialNames, std::set<std::string>& ExportedTextureNames)
 {
 	// 연결된 머티리얼이 없으면 이름이 빈 Material 참조만 반환
 	if (Mesh.materials.count == 0 || Mesh.materials.data[0] == nullptr)
@@ -300,7 +300,7 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 	// Material Instance : 이 메쉬 전용. 기본 머티리얼과 같은 Parameters + 이 메쉬가 쓰는 Textures/Samplers 배열을 포함한다.
 	json TexturesArray;
 	json SamplersArray;
-	ExportMaterialTextures(Material, JsonOutputDirectory, ExportedTextureNames, TexturesArray, SamplersArray);
+	ExportMaterialTextures(Material, ModelName, JsonOutputDirectory, ExportedTextureNames, TexturesArray, SamplersArray);
 
 	const std::string MaterialInstanceName = SanitizeFileName(MaterialName.empty() ? "Material" : MaterialName) + "_" + StaticMeshName + "_MaterialInstance";
 
@@ -327,7 +327,7 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 	return MaterialRef;
 }
 
-void FbxToStaticMeshJsonTranslator::ExportMaterialTextures(const ufbx_material& Material, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedTextureNames, nlohmann::ordered_json& OutTextures, nlohmann::ordered_json& OutSamplers)
+void FbxToStaticMeshJsonTranslator::ExportMaterialTextures(const ufbx_material& Material, const std::string& ModelName, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedTextureNames, nlohmann::ordered_json& OutTextures, nlohmann::ordered_json& OutSamplers)
 {
 	OutTextures = json::array();
 	OutSamplers = json::array();
@@ -404,9 +404,11 @@ void FbxToStaticMeshJsonTranslator::ExportMaterialTextures(const ufbx_material& 
 
 		if (ExportedTextureNames.insert(TextureName).second)
 		{
+			// TextureResource/<ModelName>/<파일명> 구조를 그대로 가리키도록 모델명을 붙인다.
+			// (AssetManager가 "TextureResource/" + Path로 실제 이미지를 찾으므로 모델 폴더가 빠지면 로드에 실패한다)
 			json TextureFileJson;
 			TextureFileJson["Name"] = TextureName;
-			TextureFileJson["Path"] = TextureFileName;
+			TextureFileJson["Path"] = ModelName.empty() ? TextureFileName : (ModelName + "/" + TextureFileName);
 			TextureFileJson["Type"] = DetermineTextureType(ExtensionNoDot);
 
 			const std::filesystem::path OutputPath = JsonOutputDirectory / "Texture" / (TextureName + ".json");

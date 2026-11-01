@@ -124,6 +124,30 @@
     },
 
     {
+      "class": "ADwaf",
+      "name": "Dwaf1",
+      "transform": {
+        "location": {
+          "x": 5.0,
+          "y": 0.0,
+          "z": 20.0
+        },
+
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+
+        "scale": {
+          "x": 3.0,
+          "y": 3.0,
+          "z": 3.0
+        }
+      }
+    },
+
+    {
       "class": "Windmill",
       "name": "Windmill",
       "transform": {

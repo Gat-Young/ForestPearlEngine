@@ -51,7 +51,7 @@
         "Textures": [
             {
                 "Type": "PS",
-                "Parameter": "DiffuseColor",
+                "Parameter": "TexDiff",
                 "Asset": "Body_dds",
                 "TextureType": "Texture2D"
             }
@@ -59,7 +59,7 @@
         "Samplers": [
             {
                 "Type": "PS",
-                "Parameter": "DiffuseColor",
+                "Parameter": "Smpler",
                 "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
             }
         ]

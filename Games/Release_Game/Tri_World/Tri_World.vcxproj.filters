@@ -84,6 +84,9 @@
     <ClInclude Include="ABox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ADwaf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="UI.cpp">
@@ -132,6 +135,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ABox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ADwaf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -142,6 +142,7 @@ void GameController::BeginPlay()
 	}
 	
 	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "TripleWingWindmill")));
+	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "ADwaf")));
 	ControllPawnSize = ControllPawn.size();
 }
 

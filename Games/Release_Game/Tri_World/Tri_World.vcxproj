@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ADirectionalLight.h" />
+    <ClInclude Include="ADwaf.h" />
     <ClInclude Include="ATorchLight.h" />
     <ClInclude Include="Axis.h" />
     <ClInclude Include="GameController.h" />
@@ -38,6 +39,7 @@
   <ItemGroup>
     <ClCompile Include="ABox.cpp" />
     <ClCompile Include="ADirectionalLight.cpp" />
+    <ClCompile Include="ADwaf.cpp" />
     <ClCompile Include="ATorchLight.cpp" />
     <ClCompile Include="Axis.cpp" />
     <ClCompile Include="GameController.cpp" />

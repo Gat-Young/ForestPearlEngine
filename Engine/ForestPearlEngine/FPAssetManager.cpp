@@ -446,6 +446,64 @@ void FPAssetManager::LoadFbxData(FPStaticMeshData& StaticMeshData)
 	ufbx_free_scene(Scene);
 }
 
+bool FPAssetManager::CalculateTriangleTangent(const POSITION_VERTEX& P0, const POSITION_VERTEX& P1, const POSITION_VERTEX& P2, const UV_VERTEX& UV0, const UV_VERTEX& UV1, const UV_VERTEX& UV2, FPVector3& OutTangent, FPVector3& OutBinormal)
+{
+	FPVector4 V0{ P0.x, P0.y, P0.z, 0.0f };
+	FPVector4 V1{ P1.x, P1.y, P1.z, 0.0f };
+	FPVector4 V2{ P2.x, P2.y, P2.z, 0.0f };
+
+	FPVector4 E1 = V1 - V0;
+	FPVector4 E2 = V2 - V0;
+
+	float DeltaU1 = UV1.u - UV0.u;
+	float DeltaV1 = UV1.v - UV0.v;
+
+	float DeltaU2 = UV2.u - UV0.u;
+	float DeltaV2 = UV2.v - UV0.v;
+
+	float Deter = DeltaU1 * DeltaV2 - DeltaU2 * DeltaV1;
+
+	//퇴화한 삼각형 검사
+	float UVScale = (std::max)((std::max)(std::fabs(DeltaU1), std::fabs(DeltaV1)),(std::max)(std::fabs(DeltaU2), std::fabs(DeltaV2)));
+	
+	if (UVScale < 1e-12f || std::fabs(Deter) < 1e-6f * UVScale * UVScale)
+	{
+		return false;
+	}
+
+	// Position 삼각형 퇴화 검사
+	FPVector3 Edge1{ E1.x, E1.y, E1.z };
+	FPVector3 Edge2{ E2.x, E2.y, E2.z };
+
+	FPVector3 CrossVec = Cross(Edge1, Edge2);
+
+	float Edge1Sq = Dot(Edge1, Edge1);
+	float Edge2Sq = Dot(Edge2, Edge2);
+
+	if (Edge1Sq < 1e-20f ||
+		Edge2Sq < 1e-20f ||
+		Dot(CrossVec, CrossVec) < 1e-12f * Edge1Sq * Edge2Sq)
+	{
+		return false;
+	}
+
+	float InvD = 1.0f / Deter;
+
+	FPVector4 T;
+	
+	T = ((E1 * DeltaV2) - (E2 * DeltaV1)) * InvD;
+
+	OutTangent = {T.x , T.y , T.z};
+
+	FPVector4 B;
+
+	B = ((E1 * -DeltaU2) + (E2 * DeltaU1)) * InvD;
+
+	OutBinormal = { B.x, B.y, B.z };
+
+	return true;
+}
+
 //ufbx_string -> std::string
 std::string FPAssetManager::ConvertUfbxString(ufbx_string String)
 {
@@ -458,16 +516,17 @@ std::string FPAssetManager::ConvertUfbxString(ufbx_string String)
 }
 
 // ufbx_mesh -> FPMeshData
-// 인덱스 버퍼를 생성하지 않음
-// 삼각형 코너마다 정점을 하나씩 복사
 FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node* Node)
 {
 	FPMeshData Result;
 
-	if (!Mesh)
+	if (!Mesh || !Node)
 	{
 		return Result;
 	}
+	// 원본 정점 하나를 참조하는
+	// 삼각형 코너 인덱스들의 목록
+	Result.VertexAdjacency.resize(Mesh->num_vertices);
 
 	Result.NodeName = ConvertUfbxString(Node->name);
 
@@ -493,6 +552,7 @@ FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_nod
 		//코너 개수
 		const size_t CornerCount = static_cast<size_t>(TriangleCount) * 3;
 
+
 		//삼각형 코너 마다 정점 생성
 		for (size_t Corner = 0; Corner < CornerCount; ++Corner)
 		{
@@ -500,6 +560,16 @@ FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_nod
 			//Position, Normal, UV, Color를 모두 같은 CornerIndex로 조회
 
 			const uint32_t CornerIndex = TriangleCorners[Corner];
+
+			// ufbx 원본 논리적 정점 인덱스
+			const uint32_t OriginalVertexIndex = Mesh->vertex_indices[CornerIndex];
+
+			// 엔진의 삼각형 코너 배열 인덱스
+			const uint32_t ExpandedCornerIndex = static_cast<uint32_t>(Result.Position_Vertices.size());
+
+			// 원본 정점에 연결된 코너 저장
+			Result.VertexAdjacency[OriginalVertexIndex].push_back(ExpandedCornerIndex);
+
 
 			//Position(Local)
 			const ufbx_vec3 Position = ufbx_get_vertex_vec3(&Mesh->vertex_position, CornerIndex);
@@ -589,9 +659,12 @@ FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_nod
 			ColorVertex.a = static_cast<float>(Color.w);
 
 			Result.Color_Vertices.push_back(ColorVertex);
-
 		}
 	}
+	
+	//Tangent Space 생성
+
+
 
 	// Index Buffer 생성
 	const size_t TotalVertexCount = Result.Position_Vertices.size();
@@ -641,13 +714,12 @@ FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_nod
 	// 중복 정점 제거
 	const size_t UniqueVertexCount = ufbx_generate_indices(
 		VertexStreams,
-		4,
+		4,				/* 추후에 5 로 변경*/
 		Indices.data(),
 		Indices.size(),
 		nullptr,
 		&Error
 	);
-
 
 	// 실패 처리
 	if (Error.type != UFBX_ERROR_NONE ||
@@ -657,8 +729,30 @@ FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_nod
 		Result.Normal_Vertices.clear();
 		Result.Color_Vertices.clear();
 		Result.UV_Vertices.clear();
+		Result.VertexAdjacency.clear();
 
 		return Result;
+	}
+
+	// 기존의 원본 정점 기반 인접 정보 초기화
+	Result.VertexAdjacency.clear();
+
+	// 최종 Vertex Buffer 정점 수로 재설정
+	Result.VertexAdjacency.resize(UniqueVertexCount);
+
+	// 최종 인덱스를 이용한 인접 삼각형 구축
+	for (size_t i = 0; i < Indices.size(); i += 3)
+	{
+		const uint32_t TriangleIndex =
+			static_cast<uint32_t>(i / 3);
+
+		const uint32_t A = Indices[i];
+		const uint32_t B = Indices[i + 1];
+		const uint32_t C = Indices[i + 2];
+
+		Result.VertexAdjacency[A].push_back(TriangleIndex);
+		Result.VertexAdjacency[B].push_back(TriangleIndex);
+		Result.VertexAdjacency[C].push_back(TriangleIndex);
 	}
 
 	// --------------------------------------------------------

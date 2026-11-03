@@ -107,6 +107,20 @@ FPQuaternion FPQuaternion::Normalize() const
 }
 
 
+float Dot(const FPVector3& A, const FPVector3& B)
+{
+	return A.x * B.x + A.y * B.y + A.z * B.z;
+}
+
+FPVector3 Cross(const FPVector3& A, const FPVector3& B)
+{
+	return {
+		   A.y * B.z - A.z * B.y,
+		   A.z * B.x - A.x * B.z,
+		   A.x * B.y - A.y * B.x
+			};
+}
+
 FPVector3 Rotate(const FPQuaternion& quat, const FPVector3& vec)
 {
 	FPQuaternion Quatvec = { vec.x, vec.y, vec.z, 0.0f };

@@ -42,6 +42,12 @@ private:
 	std::unordered_map<std::string, FPTextureData> TextureData;
 	std::unordered_map<std::string, FPTextureArrayData> TextureArrayData;
 
+	bool CalculateTriangleTangent(const POSITION_VERTEX& P0, const POSITION_VERTEX& P1, const POSITION_VERTEX& P2,
+									const UV_VERTEX& UV0, const UV_VERTEX& UV1, const UV_VERTEX& UV2,
+										FPVector3& OutTangent, FPVector3& OutBinormal);
+
+	bool SameTangentAttributes(const FPMeshData& Mesh, uint32_t A, uint32_t B);
+
 	std::string ConvertUfbxString(ufbx_string String);
 	struct FPMeshData ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node* Node);
 

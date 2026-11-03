@@ -504,6 +504,11 @@ bool FPAssetManager::CalculateTriangleTangent(const POSITION_VERTEX& P0, const P
 	return true;
 }
 
+bool FPAssetManager::SameTangentAttributes(const FPMeshData& Mesh, uint32_t A, uint32_t B)
+{
+	return false;
+}
+
 //ufbx_string -> std::string
 std::string FPAssetManager::ConvertUfbxString(ufbx_string String)
 {

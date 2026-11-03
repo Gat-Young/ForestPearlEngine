@@ -60,6 +60,12 @@
         "Parameter": "TexSpec",
         "Asset": "Weapons_spec_bmp",
         "TextureType": "Texture2D"
+      },
+      {
+        "Type": "PS",
+        "Parameter": "TexBumpMap",
+        "Asset": "Weapons_bumpmap_dds",
+        "TextureType": "Texture2D"
       }
 
     ],

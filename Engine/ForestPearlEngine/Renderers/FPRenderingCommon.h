@@ -90,7 +90,7 @@ struct FPMeshData
 	std::vector<NORMAL_VERTEX> Normal_Vertices;
 	std::vector<COLOR_VERTEX> Color_Vertices;
 	std::vector<UV_VERTEX> UV_Vertices;
-	std::vector<TANGENT_VERTEX> Tangent;
+	std::vector<TANGENT_VERTEX> Tangent_Vertices;
 	std::vector<INDEX_32BIT> Index;
 	std::vector<std::vector<uint32_t>> VertexAdjacency;
 };

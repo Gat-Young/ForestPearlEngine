@@ -208,6 +208,7 @@ HRESULT ShaderFactory::CreateInputLayout(void* InVSCode, void** ReturnLayout)
 		{ "NORMAL"	, 0, DXGI_FORMAT_R32G32B32_FLOAT,		1,	0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT,	2,	0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,			3,  0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT,		4,	0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
 	hr = RenderingDevice::GetRenderingDevice().CreateInputLayout(layout, ARRAYSIZE(layout), VScode, &Layout);

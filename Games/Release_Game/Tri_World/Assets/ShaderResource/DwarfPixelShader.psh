@@ -4,6 +4,9 @@
 // b2 : Light,  b3 : Material
 #include "PixelLight.hlsli"
 
+//Tangent Space 운용 Shader
+#include "BumpMapping.hlsli"
+
 //상수 버퍼
 cbuffer ObejctConstBuffer : register(b0)
 {
@@ -40,18 +43,12 @@ cbuffer ObejctConstBuffer : register(b0)
 //
 ////////////////////////////////////////////////////////////////////////////// 
 
-//계절 변화용 상수 버퍼
-cbuffer SeasonConstBuffer : register(b1)
-{
-    float4 AutumnColor;
-    float4 WinterColor;
-    float SeasonCnt;
-}
-
 //텍스처 객체 변수 : 엔진에서 공급됨, 레지스터 직접 지정. (기본값은 t0)
 Texture2D TexDiff : register(t0);
 
 Texture2D TexSpec : register(t1);
+
+Texture2D TexBumpMap : register(t2);
 
 
 //텍스처 셈플러 (직접지정)  기본값은 s0
@@ -60,28 +57,33 @@ SamplerState Smpler : register(s0);
 float4 PS_Main(
                 float4 pos : SV_POSITION, //[입력] 정점좌표. Vertex Position(Model Space, 3D) 
                 float4 col : COLOR0, //[입력] 정점색. Vertex Color : "Diffuse" 
-                float4 nrm : TEXCOORD2, //[입력] 역전치WV 변환된 normal
                 float4 posv : TEXCOORD1, //[입력] WordlView 변환된 pos
                 float2 uv : TEXCOORD0, //[입력] uv
+                float4 T : TEXCOORD2, //[입력] WV변환된 Tangent
+                float4 N : TEXCOORD3, //[입력] 역전치WV 변환된 normal
                 bool IsFrontFace : SV_IsFrontFace //CULLMODE None일때 앞 뒷면 판단
                 ) : SV_TARGET
 {
-    
+    //텍스처 샘플링
     float4 DiffMap = TexDiff.Sample(Smpler, uv);
     float4 SpecMap = TexSpec.Sample(Smpler, uv);
+    float4 BumpMap = TexBumpMap.Sample(Smpler, uv);
     
-    //텍스처 샘플링
-   
+    //Front Back 확인
     if (!IsFrontFace)
     {
-        nrm = -nrm;
+        N = -N;
     }
+    
+    //NormalMap 변환
+    float3 BumpNormal = normalize(N.xyz);
+    CalculateBumpNormal(BumpMap, T, N, BumpNormal);
     
     float4 DiffuseLit;
     float4 SpecularLit;
     float4 EmissiveLit;
     
-    CalculateLight(posv, nrm, mView, DiffuseLit, SpecularLit, EmissiveLit);
+    CalculateLight(posv, float4(BumpNormal, 0.0f), mView, DiffuseLit, SpecularLit, EmissiveLit);
     
     float4 BaseCol = DiffuseLit * col * DiffMap;
     float4 SpecularCol = SpecMap * SpecularLit;
@@ -92,4 +94,5 @@ float4 PS_Main(
     
     return col;
 }
+
 

@@ -50,6 +50,12 @@ void* FPAssetManager::MakeIndex32BitBuffer(std::vector<struct INDEX_32BIT>& Mesh
 	return RenderingDevice::GetRenderingDevice().CreateIndexBuffer(Mesh.data(), Mesh.size(), sizeof(INDEX_32BIT));
 }
 
+void* FPAssetManager::MakeTangentVertexBuffer(std::vector<struct TANGENT_VERTEX>& Mesh)
+{
+	if (Mesh.size() == 0) return nullptr;
+	return RenderingDevice::GetRenderingDevice().CreateVertexBuffer(Mesh.data(), Mesh.size(), sizeof(TANGENT_VERTEX));
+}
+
 //통합 Mesh Buffer 제작
 void FPAssetManager::MakeMeshBuffer(FPMeshData& MeshData)
 {
@@ -58,6 +64,7 @@ void FPAssetManager::MakeMeshBuffer(FPMeshData& MeshData)
 	void* NormalVB = MakeNormalVertexBuffer(MeshData.Normal_Vertices);
 	void* UVVB = MakeUVVertexBuffer(MeshData.UV_Vertices);
 	void* Index32B = MakeIndex32BitBuffer(MeshData.Index);
+	void* TangentVB = MakeTangentVertexBuffer(MeshData.Tangent_Vertices);
 
 	//버퍼 생성 후 Map에 정보 등록 
 	AddPositionVertexBuffer(MeshData.Name, PositionVB, MeshData.Position_Vertices.size() * sizeof(POSITION_VERTEX), MeshData.Position_Vertices.size(), sizeof(POSITION_VERTEX), 0);
@@ -65,6 +72,7 @@ void FPAssetManager::MakeMeshBuffer(FPMeshData& MeshData)
 	AddNormalVertexBuffer(MeshData.Name, NormalVB, MeshData.Normal_Vertices.size() * sizeof(NORMAL_VERTEX), MeshData.Normal_Vertices.size(), sizeof(NORMAL_VERTEX), 0);
 	AddUVVertexBuffer(MeshData.Name, UVVB, MeshData.UV_Vertices.size() * sizeof(UV_VERTEX), MeshData.UV_Vertices.size(), sizeof(UV_VERTEX), 0);
 	AddIndexBuffer(MeshData.Name, Index32B, MeshData.Index.size() * sizeof(INDEX_32BIT), MeshData.Index.size() * 3, MeshData.Index.size(), sizeof(INDEX_32BIT), 0);
+	AddTangentVertexBuffer(MeshData.Name, TangentVB, MeshData.Tangent_Vertices.size() * sizeof(TANGENT_VERTEX), MeshData.Tangent_Vertices.size(), sizeof(TANGENT_VERTEX), 0);
 }
 
 //Vertex Shader 제작
@@ -395,6 +403,43 @@ FPIndexBufferData FPAssetManager::GetIndexBuffer(std::string MeshPath)
 	return MeshIndexBuffer[MeshPath];
 }
 
+void FPAssetManager::AddTangentVertexBuffer(std::string FbxPath, FPVertexBufferData& TangentVertexBuffer)
+{
+	MeshTangentVertexBuffer[FbxPath] = TangentVertexBuffer;
+}
+
+void FPAssetManager::AddTangentVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset)
+{
+	FPVertexBufferData VBData;
+	VBData.VertexBuffer = VertexBuffer;
+	VBData.VB_Size = VBSize;
+	VBData.VB_Cnt = VBCnt;
+	VBData.Stride = Stride;
+	VBData.Offset = Offset;
+
+	MeshTangentVertexBuffer[FbxPath] = VBData;
+}
+
+bool FPAssetManager::HasTangentBuffer(std::string MeshPath)
+{
+	if (MeshTangentVertexBuffer.count(MeshPath) <= 0)
+	{
+		return false;
+	}
+	return true;
+}
+
+FPVertexBufferData FPAssetManager::GetTangentVertexBuffer(std::string MeshPath)
+{
+	if (!HasTangentBuffer(MeshPath))
+	{
+		std::cout << MeshPath << "의 Tangent VB 데이터가 없습니다." << "\n";
+
+		return {};
+	}
+
+	return MeshTangentVertexBuffer[MeshPath];
+}
 ////////////////////////////
 //
 // FBX Load
@@ -504,9 +549,269 @@ bool FPAssetManager::CalculateTriangleTangent(const POSITION_VERTEX& P0, const P
 	return true;
 }
 
+//같은 원본 정점 그룹 내에서 Normal과 UV가 같은지 확인
 bool FPAssetManager::SameTangentAttributes(const FPMeshData& Mesh, uint32_t A, uint32_t B)
 {
-	return false;
+	const NORMAL_VERTEX& N0 = Mesh.Normal_Vertices[A];
+	const NORMAL_VERTEX& N1 = Mesh.Normal_Vertices[B];
+
+	const UV_VERTEX& U0 = Mesh.UV_Vertices[A];
+	const UV_VERTEX& U1 = Mesh.UV_Vertices[B];
+
+	return  N0.nx == N1.nx &&
+			N0.ny == N1.ny &&
+			N0.nz == N1.nz &&
+			U0.u == U1.u &&
+			U0.v == U1.v;
+}
+
+//Tanget 누적시 자연스럽게 만들기 위한 삼각형 코너 각도 가중치 계산
+float FPAssetManager::CalculateCornerAngle(const FPMeshData& Mesh, size_t Base, size_t LocalCorner)
+{
+	const POSITION_VERTEX& P_Vertex = Mesh.Position_Vertices[Base + LocalCorner];
+	const FPVector3 P{ P_Vertex.x , P_Vertex.y , P_Vertex.z };
+
+	const POSITION_VERTEX& A_Vertex = Mesh.Position_Vertices[Base + (LocalCorner+1)%3];
+	const FPVector3 A{ A_Vertex.x , A_Vertex.y , A_Vertex.z };
+
+	const POSITION_VERTEX& B_Vertex = Mesh.Position_Vertices[Base + (LocalCorner + 2) % 3];
+	const FPVector3 B{ B_Vertex.x, B_Vertex.y, B_Vertex.z };
+
+	FPVector3 E1 = A - P;
+	FPVector3 E2 = B - P;
+
+	FPVector3 C = Cross(E1, E2);
+
+	return std::atan2(std::sqrt(Dot(C, C)), Dot(E1, E2));
+}
+
+bool FPAssetManager::GenerateTangents(FPMeshData& MeshData)
+{
+	struct FPCornerTangentData
+	{
+		FPVector3 Tangent{};
+
+		float TangentSign = 1.0f;
+		float Weight = 0.0f;
+
+		bool Valid = false;
+	};
+
+	const size_t VertexCount = MeshData.Position_Vertices.size();
+
+	// 1. 입력 데이터 검증
+	if (VertexCount == 0 || VertexCount % 3 != 0) { return false; }
+	if (MeshData.Normal_Vertices.size() != VertexCount || MeshData.UV_Vertices.size() != VertexCount) { return false; }
+	
+	//최종 Tanget 저장 공간 초기화
+	MeshData.Tangent_Vertices.assign(VertexCount, TANGENT_VERTEX{});
+
+	//삼각형 코너별 임시 데이터
+	std::vector<FPCornerTangentData> CornerData(VertexCount);
+
+	//최종 Tangent 할당 여부
+	std::vector<uint8_t> Processed(VertexCount, 0);
+
+	//모든 삼각형의 Tangent / Binormal 계산
+
+	for (size_t i = 0; i < VertexCount; i += 3)
+	{
+		FPVector3 Traw{};
+		FPVector3 Braw{};
+
+		bool Success = CalculateTriangleTangent(MeshData.Position_Vertices[i],
+												MeshData.Position_Vertices[i+1],
+												MeshData.Position_Vertices[i+2],
+			
+												MeshData.UV_Vertices[i],
+												MeshData.UV_Vertices[i+1],
+												MeshData.UV_Vertices[i+2],
+			
+												Traw,
+												Braw);
+
+		if (!Success) { continue; } //퇴화 삼각형은 누적 기여 X
+
+		//한 삼각형에 세 코너 처리
+		for (size_t j = 0; j < 3; ++j)
+		{
+			const size_t Corner = i + j;
+
+			const NORMAL_VERTEX& N_Vertex = MeshData.Normal_Vertices[Corner];
+			FPVector3 N{ N_Vertex.nx, N_Vertex.ny, N_Vertex.nz };
+
+			N = N.Normalize();
+
+			//Gram - Schmidt 직교
+			//Tangent를 Normal에 직교
+			FPVector3 T = Traw - (N * Dot(N, Traw));
+
+			T = T.Normalize();
+
+			//TangentSign 계산
+			float TangentSign = Dot(Cross(N, T), Braw);
+			if (!std::isfinite(TangentSign) || std::fabs(TangentSign) < 1e-20f)
+			{
+				continue;
+			}
+
+			TangentSign = TangentSign < 0.0f ? -1.0f : 1.0f;
+
+			//삼각형 코너 각도
+			float Weight = CalculateCornerAngle(MeshData, i, j);
+
+			if (!std::isfinite(Weight) || Weight <= 0.0f)
+			{
+				continue;
+			}
+
+			//코너별 임시 Tanget에 저장
+			CornerData[Corner].Tangent = T;
+			CornerData[Corner].TangentSign = TangentSign;
+			CornerData[Corner].Weight = Weight;
+			CornerData[Corner].Valid = true;
+		}
+	}
+
+	//3. 원본 정점 인접 정보를 이용한 Tanget 누적
+	for (size_t v = 0; v < MeshData.VertexAdjacency.size(); ++v)
+	{
+		const std::vector<uint32_t>& AdjacentCorners = MeshData.VertexAdjacency[v];
+
+		for (size_t a = 0; a < AdjacentCorners.size(); ++a)
+		{
+			const uint32_t Seed = AdjacentCorners[a];
+			
+			if (Seed >= VertexCount) { return false; }
+			if (Processed[Seed]) { continue; }
+
+			//그룹별 Tangent Sign 결정
+			float GroupSign = 1.0f;
+			bool HasSign = false;
+
+			//Seed와 속성이 같은 유효 코너에서 부호 검색
+			for (size_t b = 0; b < AdjacentCorners.size(); ++b)
+			{
+				const uint32_t Candidate = AdjacentCorners[b];
+				if (Candidate >= VertexCount) { return false; }
+				if (Processed[Candidate] || !CornerData[Candidate].Valid) { continue; }
+
+				if (!SameTangentAttributes(MeshData, Seed, Candidate)) { continue; }
+
+				GroupSign = CornerData[Candidate].TangentSign;
+				HasSign = true;
+				break;
+			}
+
+			//같은 그룹의 Tanget 누적
+			std::vector<uint32_t> GroupCorners;
+			FPVector3 TangentSum{};
+			FPVector3 FirstValidTangent{};
+			bool HasValidTangent = false;
+
+			for (size_t b = 0; b < AdjacentCorners.size(); ++b)
+			{
+				const uint32_t Candidate = AdjacentCorners[b];
+				if (Processed[Candidate]) { continue; }
+
+				//Normal / UV가 다르면 분리
+				if (!SameTangentAttributes(MeshData, Seed, Candidate)) { continue; }
+
+				//미리 Tangent Sign이 다르면 분리
+				if (HasSign && CornerData[Candidate].Valid && CornerData[Candidate].TangentSign != GroupSign) { continue; }
+
+				GroupCorners.push_back(Candidate);
+
+				if (CornerData[Candidate].Valid)
+				{
+					const FPVector3& T = CornerData[Candidate].Tangent;
+					const float Weight = CornerData[Candidate].Weight;
+
+					TangentSum = TangentSum + (T * Weight);
+
+					if (!HasValidTangent)
+					{
+						FirstValidTangent = T;
+						HasValidTangent = true;
+					}
+				}
+			}
+
+			if (GroupCorners.empty())
+			{
+				return false;
+			}
+
+			//4. 그룹별 최종 Tanget 생성
+			const NORMAL_VERTEX& N_Vertex = MeshData.Normal_Vertices[Seed];
+			FPVector3 N{ N_Vertex.nx , N_Vertex.ny, N_Vertex.nz };
+
+			N = N.Normalize();
+
+			//누적 Tanget를 Notmal에 직교
+			FPVector3 T = TangentSum - (N * Dot(N, TangentSum));
+
+			T = T.Normalize();
+
+			//유효하지 않은 경우
+			if (T.x == 0 && T.y == 0 && T.z == 0)
+			{
+				if (HasValidTangent)
+				{
+					//유효했던 첫 번째 Tangent 사용
+					T = FirstValidTangent - (N * Dot(N, FirstValidTangent));
+					T = T.Normalize();
+				}
+
+				if (!HasValidTangent || ((T.x == 0 && T.y == 0) && T.z == 0))
+				{
+					//모든 Tanget가 유효하지 않은 경우
+					//Normal 기준 대체 Tangent 생성
+					FPVector3 Axis;
+
+					if (std::fabs(N.x) < 0.9f)
+					{
+						Axis = { 1.0f, 0.0f, 0.0f };
+					}
+					else
+					{
+						Axis = { 0.0f, 1.0f, 0.0f };
+					}
+
+					T = Cross(Axis, N);
+					T = T.Normalize();
+				}
+			}
+
+
+			//5. 같은 그룹의 모든 코너에 Tanget 기록
+
+			for (size_t g = 0; g < GroupCorners.size(); ++g)
+			{
+				const uint32_t Index = GroupCorners[g];
+
+				TANGENT_VERTEX& Output = MeshData.Tangent_Vertices[Index];
+
+				Output.x = T.x;
+				Output.y = T.y;
+				Output.z = T.z;
+				Output.w = GroupSign;
+
+				Processed[Index] = 1;
+			}
+		}
+	}
+
+	//6. 모든 코너가 처리되었는지 검사
+	for (size_t i = 0; i < VertexCount; ++i)
+	{
+		if (!Processed[i])
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 //ufbx_string -> std::string
@@ -668,17 +973,20 @@ FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_nod
 	}
 	
 	//Tangent Space 생성
-
-
-
-	// Index Buffer 생성
 	const size_t TotalVertexCount = Result.Position_Vertices.size();
+	if (TotalVertexCount == 0) { return Result; }
 
-	if (TotalVertexCount == 0)
+	bool HasTangent = false;
+	if (Mesh->vertex_normal.exists && Mesh->vertex_uv.exists)
 	{
-		return Result;
+		HasTangent = GenerateTangents(Result);
+		if (!HasTangent)
+		{
+			return FPMeshData{};
+		}
 	}
 
+	// Index Buffer 생성
 	// ufbx_generate_indices()는 memcmp()로 비교하므로
 	// 정점 구조체에 패딩 바이트가 없어야 함
 	static_assert(sizeof(POSITION_VERTEX) == 12);
@@ -708,6 +1016,11 @@ FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_nod
 			Result.UV_Vertices.data(),
 			TotalVertexCount,
 			sizeof(UV_VERTEX)
+		},
+		{
+			Result.Tangent_Vertices.data(),
+			TotalVertexCount,
+			sizeof(TANGENT_VERTEX)
 		}
 	};
 
@@ -719,7 +1032,7 @@ FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_nod
 	// 중복 정점 제거
 	const size_t UniqueVertexCount = ufbx_generate_indices(
 		VertexStreams,
-		4,				/* 추후에 5 로 변경*/
+		5,				
 		Indices.data(),
 		Indices.size(),
 		nullptr,
@@ -756,8 +1069,16 @@ FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_nod
 		const uint32_t C = Indices[i + 2];
 
 		Result.VertexAdjacency[A].push_back(TriangleIndex);
-		Result.VertexAdjacency[B].push_back(TriangleIndex);
-		Result.VertexAdjacency[C].push_back(TriangleIndex);
+		// 퇴화 삼각형으로 인한 중복 등록 방지
+		if (B != A)
+		{
+			Result.VertexAdjacency[B].push_back(TriangleIndex);
+		}
+
+		if (C != A && C != B)
+		{
+			Result.VertexAdjacency[C].push_back(TriangleIndex);
+		}
 	}
 
 	// --------------------------------------------------------
@@ -768,6 +1089,7 @@ FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_nod
 	Result.Normal_Vertices.resize(UniqueVertexCount);
 	Result.Color_Vertices.resize(UniqueVertexCount);
 	Result.UV_Vertices.resize(UniqueVertexCount);
+	Result.Tangent_Vertices.resize(UniqueVertexCount);
 
 	// ========================================================
 	// 4. INDEX_32BIT 구조체로 변환

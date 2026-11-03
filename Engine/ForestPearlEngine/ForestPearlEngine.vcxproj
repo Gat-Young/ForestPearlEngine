@@ -264,6 +264,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Material\DefaultMaterial.json" />
+    <None Include="Assets\ShaderResource\BumpMapping.hlsli" />
     <None Include="Assets\ShaderResource\LambertLight.hlsli" />
     <None Include="Assets\ShaderResource\PixelLight.hlsli" />
     <None Include="Assets\ShaderResource\VertexLight.hlsli" />

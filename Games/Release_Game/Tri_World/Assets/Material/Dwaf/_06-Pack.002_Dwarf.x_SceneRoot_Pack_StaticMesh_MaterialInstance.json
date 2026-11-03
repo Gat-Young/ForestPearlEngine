@@ -60,6 +60,12 @@
         "Parameter": "TexSpec",
         "Asset": "Pack_spec_bmp",
         "TextureType": "Texture2D"
+      },
+      {
+        "Type": "PS",
+        "Parameter": "TexBumpMap",
+        "Asset": "Pack_bumpmap_dds",
+        "TextureType": "Texture2D"
       }
     ],
     "Samplers": [

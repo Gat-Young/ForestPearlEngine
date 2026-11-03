@@ -62,6 +62,7 @@ void LoadAssets()
 	AssetLoader->LoadPixelShader("TreePixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("BoxPixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("DwarfPixelShader.json", AssetOwner::User);
+	AssetLoader->LoadPixelShader("ToonLinkPixelShader.json", AssetOwner::User);
 
 	//Texture Load
 
@@ -143,6 +144,7 @@ void LoadAssets()
 	AssetLoader->LoadMaterial("ToonLink/hair.002_ToonLink_Hair_StaticMesh_MaterialInstance.json", AssetOwner::User);
 	AssetLoader->LoadMaterial("ToonLink/skin.002_ToonLink_Hand_StaticMesh_MaterialInstance.json", AssetOwner::User);
 	AssetLoader->LoadMaterial("ToonLink/eye.002_ToonLink_LeftEyeBackground_StaticMesh_MaterialInstance.json", AssetOwner::User);
+
 	AssetLoader->LoadMaterial("ToonLink/equipment.002_ToonLink_MasterSword_Scabbard_StaticMesh_MaterialInstance.json", AssetOwner::User);
 	AssetLoader->LoadMaterial("ToonLink/equipment.002_ToonLink_MasterSword_Handle_StaticMesh_MaterialInstance.json", AssetOwner::User);
 	AssetLoader->LoadMaterial("ToonLink/equipment.002_ToonLink_MasterSword_Blade_StaticMesh_MaterialInstance.json", AssetOwner::User);

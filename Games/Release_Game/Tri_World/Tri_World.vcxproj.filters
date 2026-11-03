@@ -246,5 +246,8 @@
     <FxCompile Include="Assets\ShaderResource\DwarfPixelShader.psh">
       <Filter>Assets\ShaderResource</Filter>
     </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\ToonLinkPixelShader.psh">
+      <Filter>Assets\ShaderResource</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

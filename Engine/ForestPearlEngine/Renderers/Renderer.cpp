@@ -582,6 +582,7 @@ void Renderer::MeshRenderPass()
 			FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);
 			FPVertexBufferData UVVB = AssetManager->GetUVVertexBuffer(RenderItem.MeshPath);
 			FPIndexBufferData IndexB = AssetManager->GetIndexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData TangentVB = AssetManager->GetTangentVertexBuffer(RenderItem.MeshPath);
 			/*
 			std::cout << "<VB Size>" << "\n";
 			std::cout << PositionVB.VB_Cnt << "\n";
@@ -657,6 +658,7 @@ void Renderer::MeshRenderPass()
 				Device.IASetVertexBuffers(1, 1, NormalVB.VertexBuffer, &(NormalVB.Stride), &(NormalVB.Offset));
 				Device.IASetVertexBuffers(2, 1, ColorVB.VertexBuffer, &(ColorVB.Stride), &(ColorVB.Offset));
 				Device.IASetVertexBuffers(3, 1, UVVB.VertexBuffer, &(UVVB.Stride), &(UVVB.Offset));
+				Device.IASetVertexBuffers(4, 1, TangentVB.VertexBuffer, &(TangentVB.Stride), &(TangentVB.Offset));
 				Device.IASetIndexBuffers(IndexB.IndexBuffer, IndexB.Offset);
 
 				Device.DrawIndexed(IndexB.Index_Cnt, 0, 0);																//Draw Call

@@ -46,6 +46,7 @@
 | 🧩 | **Actor / Component 프레임워크** | `FPObject → FPActor → FPPawn / FPAController / FPAGameMode`, 계층형 `FPSceneComponent` 트랜스폼 |
 | 🎨 | **DX11 렌더러** | `Renderer`(프레임 흐름) + `RenderingDevice`(D3D11 래퍼) 2계층, **Render List → Render Pass(Mesh / Gizmo / Normal / UI)** 구조, 슬롯 규약이 있는 **상수 버퍼 바인딩**, `GameSetting.json` 기반 MSAA(스왑체인·깊이버퍼 SampleDesc), Priority 정렬, 멀티 뷰포트 |
 | 💡 | **통합 Light (Directional · Point, Per-Pixel)** | `FPLightComponentBase` 계열이 Light Render List에 등록 → 메시마다 **최대 64개**를 하나의 `LIGHT` 상수 버퍼(`b2`, 9232 byte)로 묶어 **픽셀 셰이더** `PixelLight.hlsli`에 전달. VS는 노멀 · 위치를 View 공간으로 변환해 보간만 하고, Directional · Point 모두 PS에서 Lambert Diffuse + **Blinn-Phong Specular**(`SpecularBlinPhong.hlsli`) + Ambient를 픽셀 단위로 계산(거리 감쇠, Range Fade). `CalculateLight`가 `Diffuse` · `Specular` · `Emissive`를 **각각 `out` 매개변수로 반환**해 PS마다 직접 합성(`col = col × Diffuse × tex + Specular + Emissive`) — Specular를 **텍스처(Specular Map)로 변조**하는 `DwarfPixelShader`(`TexSpec`, `t1`)도 추가됨. 과거 정점 단위 계산 코드는 `VertexLight.hlsli`로 남아 있지만 비활성 상태. 라이트 색(`LightColor`) 지원. 토치 예제 `ATorchLight` |
+| 🧵 | **Bump Mapping (Normal Map) · Tangent 생성** | FBX 로딩 시 `FPAssetManager::GenerateTangents`가 코너별 UV 면 탄젠트를 구해 **인접 삼각형끼리 각도 가중 평균 + Gram-Schmidt 직교화**로 부드럽게 섞은 뒤 5번째 정점 스트림(`TANGENT_VERTEX`, Input Slot 4)으로 추가. VS가 View 공간 Tangent/Normal(`T`/`N`)을 만들어 넘기면 `BumpMapping.hlsli::CalculateBumpNormal`이 TBN 행렬로 노멀 맵(`TexBumpMap`)을 View 공간 노멀로 바꿔 `CalculateLight`에 그대로 사용. `DwarfPixelShader` · 신규 `ToonLinkPixelShader`가 적용 |
 | 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 샘플러 36종(AF 단계는 `GameSetting.json`). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환. 슬롯마다 `FPTextureType`(`Texture2D` / `Texture2DArray`)을 함께 지정 |
 | 🗂️ | **Texture2DArray** *(실험적)* | `LoadTexture2DArray`가 JSON(`Width/Height/ArraySize/SourceTextures[]`)을 읽어 이미 로드된 Texture2D들을 **`RenderingDevice::CheckTextureArrayData`로 포맷·해상도 검증 후 `CreateTextureArray2D`로 한 장의 `Texture2DArray` SRV로 합침**. `MeshRenderPass`는 Material 텍스처 슬롯의 `FPTextureType`에 따라 `GetTextureData`(Texture2D) 또는 `GetTextureArrayData`(Texture2DArray)에서 바인딩할 SRV를 고름. 아직 어떤 게임의 `LoadAssets()`에서도 호출되지 않는 템플릿 단계 |
 | ⚙️ | **GameSetting** | `Assets/GameSetting/GameSetting.json` → `FPAssetLoader::LoadGameSetting`이 읽어 `FPGameSettingData`로 저장 → `FPGameProjectSetting::ProjectSetting()`이 창 크기 · MSAA · AF · 전체화면 값을 반영, `RenderingDevice::SetMSAA/SetAF`로 렌더러에 전달 |
@@ -59,7 +60,7 @@
 | 🕹️ | **Possess** | 컨트롤러가 Pawn을 빙의(Possess)하며, 빙의된 Pawn의 바인딩만 입력을 받음 |
 | 🔩 | **Socket Attach** | StaticMesh JSON에 정의한 Socket에 컴포넌트/액터를 부착 |
 | 📷 | **SpringArm + Camera** | 컨트롤러 회전을 따라가는 3인칭 카메라 |
-| 📦 | **에셋 파이프라인** | FBX(ufbx) → **속성별 VertexBuffer 4개(Position · Normal · Color · UV) + Index Buffer**, JSON(Level / StaticMesh / Material / Texture), 사전 컴파일 셰이더(`.vso` / `.pso`). `Load*()`로 JSON · FBX를 설명 데이터로만 모아 둔 뒤 `FPAssetManager::AllAssetDataCreate()`가 한 번에 GPU 리소스로 일괄 생성 |
+| 📦 | **에셋 파이프라인** | FBX(ufbx) → **속성별 VertexBuffer 5개(Position · Normal · Color · UV · Tangent) + Index Buffer**, JSON(Level / StaticMesh / Material / Texture), 사전 컴파일 셰이더(`.vso` / `.pso`). `Load*()`로 JSON · FBX를 설명 데이터로만 모아 둔 뒤 `FPAssetManager::AllAssetDataCreate()`가 한 번에 GPU 리소스로 일괄 생성 |
 | 🏭 | **클래스 레지스트리** | 문자열 이름 → 팩토리. Level JSON의 `"class"` 문자열로 액터를 생성 |
 | 🛠️ | **자동 패키징** | Release\|x64 빌드 후 PowerShell 스크립트가 `<게임이름>.exe` + `Assets/`를 구성 |
 
@@ -202,6 +203,7 @@ Engine/ForestPearlEngine/
 │       ├── PixelLight.hlsli          # Light 상수 버퍼(b2 · b3) + Directional/Point 계산 — Per-Pixel 경로(현재 활성)
 │       ├── LambertLight.hlsli        # LambertLight() 계산 함수 (Lambert, max(dot(N,L),0))
 │       ├── SpecularBlinPhong.hlsli   # SpecularBlinPhongLight() 계산 함수
+│       ├── BumpMapping.hlsli         # CalculateBumpNormal() — Tangent Space 노멀 맵을 View 공간 노멀로 변환
 │       ├── DefaultGizmoVertexShader.vsh / DefaultGizmoPixelShader.psh  # Grid / Axis 기즈모용 (라이트 없음)
 │       ├── NormalDebugVertexShader.vsh / NormalDebugPixelShader.psh    # Normal Line용
 │       ├── NormalCalculate.hlsli     # TransformWorldNormal()
@@ -252,8 +254,8 @@ Games/Release_Game/Tri_World/
     ├── Material/        Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/   (69개 — 모델별 폴더로 분리)
     ├── Texture/         Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/   (*.json, 33개)
     ├── TextureResource/ Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/   (79개: png 48 · dds 16 · jpg 10 · bmp 2 · tga 3)
-    ├── Shader/          TerrainVertexShader.json 등 6개            (셰이더 등록 JSON, `BoxPixelShader.json` · `DwarfPixelShader.json` 추가)
-    └── ShaderResource/  TerrainVertexShader.vsh · TerrainPixelShader.psh · TreePixelShader.psh · WindmillWingBody.psh · BoxPixelShader.psh · DwarfPixelShader.psh (+ bin/)
+    ├── Shader/          TerrainVertexShader.json 등 7개            (셰이더 등록 JSON, `BoxPixelShader.json` · `DwarfPixelShader.json` · `ToonLinkPixelShader.json` 추가)
+    └── ShaderResource/  TerrainVertexShader.vsh · TerrainPixelShader.psh · TreePixelShader.psh · WindmillWingBody.psh · BoxPixelShader.psh · DwarfPixelShader.psh · ToonLinkPixelShader.psh (+ bin/)
 ```
 
 ---
@@ -990,6 +992,24 @@ Dwarf 캐릭터용 `Assets/ShaderResource/DwarfPixelShader.psh`(Tri_World)는 `T
 > [!NOTE]
 > 텍스처 로드 실패 메시지에 실패한 텍스처 이름이 포함되도록 개선됐습니다(`FPAssetManager::MakeMaterial`의 `"Material texture failed : " << T.Name`).
 
+**Bump Mapping (Normal Map) · Tangent Space**
+
+노멀 맵 텍스처(`TexBumpMap`)로 픽셀 단위 노멀을 바꿔 쓰는 기능입니다. [정점 스트림 분리와 Index Buffer](#정점-스트림-분리와-index-buffer)에서 FBX 로딩 때 만든 **Tangent**를 VS가 View 공간으로 가져오고, PS가 `BumpMapping.hlsli::CalculateBumpNormal()`로 노멀 맵을 TBN 변환해 `CalculateLight`에 넘기는 노멀을 바꿔치기합니다.
+
+| 단계 | 내용 |
+|---|---|
+| VS | `TANGENT` 입력(`T`)을 `mul(mWV, T.xyz)`로 View 공간으로 옮긴 뒤 Normal(`N`)에 대해 Gram-Schmidt로 다시 직교화. Mirror(음수 스케일) 메시를 대비해 `determinant((float3x3)mWV) < 0`이면 `T.w`(`TangentSign`)를 반전. `TEXCOORD2`(`T`) · `TEXCOORD3`(`N`)로 출력(`DefaultVertexShader.vsh` · `TerrainVertexShader.vsh`) |
+| PS | `BumpMapping.hlsli::CalculateBumpNormal(texNorm, T, N, out Normal)` — `N`을 다시 정규화하고 `Tangent = normalize(T.xyz − dot(N,T.xyz)·N)`로 직교화, `BiTangent = sign(T.w) × cross(N, T.xyz)`로 TBN 행렬(모두 View 공간)을 구성. 노멀 맵 텍셀을 `texNorm × 2 − 1`로 `[-1,1]` 범위로 복원해 `mul(TBN, NormalTS)`로 View 공간 노멀을 얻고, 이 값을 그대로 `CalculateLight`의 노멀 인자로 사용 |
+| 적용 셰이더 | `DwarfPixelShader`(`TexDiff` t0 · `TexSpec` t1 · `TexBumpMap` t2 — Specular Map + Bump Mapping 둘 다) · 신규 `ToonLinkPixelShader`(`TexDiff` t0 · `TexBumpMap` t1 — Bump Mapping만, Specular Map 없음) |
+| 미적용 셰이더 | `TerrainPixelShader` · `BoxPixelShader` · `TreePixelShader` · `WindmillWingBody.psh`도 `VSOutput`이 같아 `T`/`N`을 입력으로 받지만, `BumpMapping.hlsli`를 포함하지 않아 **Bump Mapping은 적용되지 않습니다**(받은 `T`를 쓰지 않음) |
+| 텍스처 에셋 | Dwarf 쪽은 이전 커밋에서 이미 로드해 뒀지만 Material에서는 쓰지 않던 `Dwaf/*_bumpmap_dds`를 이번에 `TexBumpMap`으로 연결. ToonLink 쪽도 마찬가지로 기존 `*_bump_png`를 `TexBumpMap`으로 연결하고, Material Instance의 `PixelShader`를 `DefaultPixelShader` → `ToonLinkPixelShader`로 바꿈(10개) |
+
+> [!NOTE]
+> `DwarfPixelShader.psh`는 이번에 안 쓰는 `SeasonConstBuffer`(`b1`, `AutumnColor`/`WinterColor`/`SeasonCnt`)도 함께 제거했습니다. Dwarf는 계절 텍스처 블렌딩을 쓰지 않으므로 원래부터 불필요했던 코드입니다.
+
+> [!NOTE]
+> 셰이더 등록 JSON은 `Shader/ToonLinkPixelShader.json`(`"Path": "ToonLinkPixelShader.pso"`), HLSL 소스는 `ShaderResource/ToonLinkPixelShader.psh`이며 `GameProjectLoader::LoadAssets()`에 `LoadPixelShader("ToonLinkPixelShader.json", ...)` 호출이 추가됐습니다. `Tri_World.vcxproj`에도 FxCompile 항목이 추가됐고, 엔진의 `BumpMapping.hlsli`/`PixelLight.hlsli`를 참조하므로 추가 포함 디렉터리 설정도 함께 들어 있습니다.
+
 **Emissive (자체 발광)**
 
 `MATERIAL` 구조체(`MaterialConstBuffer`, `b3`, **96 byte** — `BaseColor` · `Diffuse` · `Ambient` · `Specular` · `Roughness` · `Emissive` 6개의 `float4`)의 `Emissive`는 `CalculateLight`가 라이트 반복문 **진입 전에** `OutEmissive = Material.Emissive × Material.BaseColor`로 먼저 계산해 돌려주고, 각 Pixel Shader가 `Diffuse`/`Specular` 결과에 그대로 더합니다(예: `col = col × DiffuseLit × tex + SpecularLit + EmissiveLit`). 라이트의 영향을 받지 않고 밝게 보이게 할 때 씁니다. 이전의 `SetEmissive` / `SetBaseColor` 등은 사라졌고, Material JSON의 `Parameters`에서 지정하거나 `SetParameter(FPShaderType::PS, "MaterialConstBuffer", "Material.Emissive", 값)`으로 바꿉니다 ([Material JSON](#material-json)). `MaterialConstBuffer`가 이제 `PixelLight.hlsli`를 포함하는 **PS**에서 선언되므로 `FPShaderType`도 `VS`가 아니라 `PS`를 씁니다.
@@ -1091,7 +1111,7 @@ Material 선택 우선순위: **컴포넌트 생성 뒤 `SetMaterial`로 직접 
 
 ### 정점 스트림 분리와 Index Buffer
 
-메시의 정점 데이터는 하나의 `VERTEX` 배열 대신 **속성별 스트림 4개 + Index Buffer 1개**로 나뉘어 GPU에 올라갑니다.
+메시의 정점 데이터는 하나의 `VERTEX` 배열 대신 **속성별 스트림 5개 + Index Buffer 1개**로 나뉘어 GPU에 올라갑니다.
 
 | 스트림 | 구조체 | 크기 | Input Slot | 시맨틱 |
 |---|---|:-:|:-:|---|
@@ -1099,68 +1119,102 @@ Material 선택 우선순위: **컴포넌트 생성 뒤 `SetMaterial`로 직접 
 | Normal | `NORMAL_VERTEX { nx, ny, nz }` | 12 byte | 1 | `NORMAL` |
 | Color | `COLOR_VERTEX { r, g, b, a }` | 16 byte | 2 | `COLOR` |
 | UV | `UV_VERTEX { u, v }` | 8 byte | 3 | `TEXCOORD` |
+| Tangent *(신규)* | `TANGENT_VERTEX { x, y, z, w }` (`w` = Binormal 부호) | 16 byte | 4 | `TANGENT` |
 | Index | `INDEX_32BIT { A, B, C }` (삼각형 1개) | 12 byte | — | `DXGI_FORMAT_R32_UINT` |
 
 Input Layout은 시맨틱마다 **슬롯이 다르고 오프셋은 모두 0**입니다 (`ShaderFactory::CreateInputLayout`). HLSL의 시맨틱(`POSITION`, `NORMAL`, `COLOR0`, `TEXCOORD0`) 선언은 바뀌지 않았으므로 기존 셰이더는 그대로 사용할 수 있습니다.
-`VERTEX`(`PositionVertex` · `NormalVertex` · `ColorVertex` · `UVVertex` · `Index`)는 Gizmo 정점을 만들 때 쓰는 **조립용 구조체**이며, GPU에는 속성별로 분해되어 올라갑니다.
+`VERTEX`(`PositionVertex` · `NormalVertex` · `ColorVertex` · `UVVertex` · `Tangent` · `Index`)는 Gizmo 정점을 만들 때 쓰는 **조립용 구조체**이며, GPU에는 속성별로 분해되어 올라갑니다.
+
+> [!IMPORTANT]
+> `TANGENT`가 **이 Input Layout을 쓰는 모든 Vertex Shader의 필수 입력**이 됐습니다(`CreateInputLayout`은 Mesh VS뿐 아니라 Gizmo VS도 공유). 그래서 라이팅을 계산하지 않는 `DefaultGizmoVertexShader.vsh`도 `float4 T : TANGENT` 입력을 추가해야 했습니다. 반면 `NormalDebugVertexShader.vsh`는 별도의 `CreateNormalInputLayout`(Position · Normal만)을 쓰므로 영향이 없습니다.
+
+#### Tangent 생성 (`FPAssetManager::GenerateTangents`)
+
+이전에는 `SameTangentAttributes`가 항상 `false`를 반환해 Tangent가 실질적으로 만들어지지 않았습니다. 이제 FBX 로딩 중 Normal · UV가 모두 있으면 `GenerateTangents(FPMeshData&)`가 코너(삼각형의 정점 하나하나)마다 Tangent를 계산합니다.
+
+```mermaid
+flowchart TD
+    A["삼각형별 Tangent/Binormal 원시값<br/>CalculateTriangleTangent(UV 기반 면 탄젠트)"] --> B["코너별 Gram-Schmidt 직교화<br/>T = Traw − N·(N·Traw), TangentSign = sign(Dot(Cross(N,T), Braw))"]
+    B --> C["VertexAdjacency로 인접한(=합쳐질) 코너를 묶음<br/>SameTangentAttributes(Normal·UV 동일)로 그룹 분리, TangentSign도 그룹 분리"]
+    C --> D["그룹 내 코너를 삼각형 꼭짓각 크기(CalculateCornerAngle)로 가중 평균"]
+    D --> E["평균 Tangent를 다시 Normal에 직교화<br/>0벡터면 그룹의 첫 유효 Tangent로, 그래도 0이면 Normal에 수직인 임의 축으로 대체"]
+    E --> F["그룹의 모든 코너에 같은 Tangent · w(=TangentSign) 기록"]
+```
+
+| 단계 | 내용 |
+|---|---|
+| 입력 검증 | 정점 수가 0이거나 3의 배수가 아니면, 또는 `Normal_Vertices`/`UV_Vertices` 크기가 안 맞으면 실패(`false`) |
+| 면 탄젠트 | 기존 `CalculateTriangleTangent`(세 정점의 Position · UV로 면의 Tangent/Binormal 원시값 계산)를 그대로 사용. 퇴화 삼각형은 건너뜀 |
+| 직교화 · 부호 | 코너마다 Tangent를 `Normal`에 대해 Gram-Schmidt 직교화하고, `TangentSign = sign(Dot(Cross(N, T), Braw))`로 Binormal 방향을 ±1로 기록(`TANGENT_VERTEX.w`) |
+| 가중치 | `CalculateCornerAngle`이 `atan2(|Cross(E1,E2)|, Dot(E1,E2))`로 **그 코너의 삼각형 꼭짓각**을 구해 평균의 가중치로 사용(각이 클수록 그 삼각형의 기여가 큼) |
+| 그룹 평균 | `VertexAdjacency[v]`(같은 위치로 합쳐질 코너 목록)를 돌면서 `SameTangentAttributes`(Normal · UV가 모두 같은지)로 그룹을 나누고, **TangentSign이 다르면 같은 그룹에 섞지 않음**. 그룹 안의 유효한 Tangent를 각도 가중 합산 후 다시 Normal에 직교화 |
+| 예외 처리 | 평균이 0벡터면 그룹의 첫 유효 Tangent로 대체, 그래도 0이면 `Normal.x`가 작은 쪽 축(`(1,0,0)` 또는 `(0,1,0)`)과의 `Cross`로 임의의 수직 Tangent를 만듦(완전히 깨지지 않도록 하는 안전장치) |
+| 실패 조건 | 그룹이 비거나, 코너 하나라도 끝까지 처리되지 않으면 `GenerateTangents`가 `false`를 반환 → `ConvertUfbxMesh`가 그 메시를 **빈 `FPMeshData`로 반환**(해당 메시 전체가 로드되지 않음) |
+
+> [!NOTE]
+> `VertexAdjacency` 구성도 함께 고쳐졌습니다. 퇴화 삼각형(`B == A` 또는 `C == A`/`C == B`)에서 같은 인덱스를 중복으로 넣지 않도록 조건을 추가했습니다(이전엔 무조건 세 인덱스를 모두 넣었음).
 
 #### FBX 로딩과 Index 생성
 
 ```mermaid
 flowchart LR
-    A["ufbx 삼각형화<br/>코너마다 Position · Normal · UV · Color 생성"] --> B["ufbx_generate_indices<br/>4개 스트림이 모두 같은 정점만 병합"]
-    B --> C["고유 정점 배열 4개<br/>+ 인덱스 배열"]
+    A["ufbx 삼각형화<br/>코너마다 Position · Normal · UV · Color 생성"] --> T["GenerateTangents<br/>코너별 Tangent 생성(위 단계)"]
+    T --> B["ufbx_generate_indices<br/>5개 스트림이 모두 같은 정점만 병합"]
+    B --> C["고유 정점 배열 5개<br/>+ 인덱스 배열"]
     C --> D["INDEX_32BIT 삼각형 목록"]
-    C --> E["스트림별 VertexBuffer 4개"]
+    C --> E["스트림별 VertexBuffer 5개"]
     D --> F["IndexBuffer"]
     E --> G["FPAssetManager<br/>경로별 · 서브 메시별 보관"]
     F --> G
 ```
 
-- 위치 · 노멀 · UV · 컬러 **네 값이 모두 같은 정점만** 하나로 합쳐집니다. 노멀이나 UV가 다른 모서리는 합쳐지지 않으므로 정점 수는 줄지만 하드 에지는 유지됩니다.
-- 메시 노드 하나가 서브 메시 하나이며, 서브 메시마다 스트림 4개와 Index Buffer가 `FPAssetManager`에 같은 순서로 쌓입니다. 렌더 Pass는 같은 인덱스 `i`로 꺼내 씁니다.
-- 변환할 정점이 없는 메시는 빈 데이터로 반환됩니다.
+- 위치 · 노멀 · UV · 컬러 · **Tangent 다섯 값이 모두 같은 정점만** 하나로 합쳐집니다(이전엔 네 값). Tangent가 추가되면서 병합 기준이 더 엄격해져, 같은 위치·노멀·UV라도 그룹별 Tangent가 다르면 더 쪼개질 수 있습니다.
+- 메시 노드 하나가 서브 메시 하나이며, 서브 메시마다 스트림 5개와 Index Buffer가 `FPAssetManager`에 같은 순서로 쌓입니다. 렌더 Pass는 같은 인덱스 `i`로 꺼내 씁니다.
+- 변환할 정점이 없는 메시, 또는 Tangent 생성에 실패한 메시는 빈 데이터로 반환됩니다.
 
 #### 데이터 구조체
 
 ```cpp
-// Define/FPDataDefine.h
+// Define/FPDataDefine.h, Renderers/FPRenderingCommon.h
 struct FPVertexBufferData { void* VertexBuffer; unsigned long VB_Size /*byte*/, VB_Cnt /*정점 수*/; unsigned int Stride, Offset; };
 struct FPIndexBufferData  { void* IndexBuffer;  unsigned long Index_Size /*byte*/, Index_Cnt /*인덱스 수 = FaceCnt*3*/, FaceCnt; unsigned int Stride, Offset; };
+struct TANGENT_VERTEX { float x, y, z, w; };   // w = TangentSign(Binormal 방향, ±1)
 
 struct FPMeshData { std::string Name;
     std::vector<POSITION_VERTEX> Position_Vertices;  std::vector<NORMAL_VERTEX> Normal_Vertices;
     std::vector<COLOR_VERTEX>    Color_Vertices;     std::vector<UV_VERTEX>     UV_Vertices;
-    std::vector<INDEX_32BIT>     Index; };
+    std::vector<TANGENT_VERTEX>  Tangent_Vertices;   std::vector<INDEX_32BIT>   Index; };
 ```
 
 | `FPAssetManager` | 설명 |
 |---|---|
-| `AddPositionVertexBuffer` · `AddNormalVertexBuffer` · `AddColorVertexBuffer` · `AddUVVertexBuffer` · `AddIndexBuffer` | 경로(FBX 경로 · Gizmo 이름)별로 서브 메시 순서대로 추가 |
-| `GetPositionVertexBuffer` · `GetNormalVertexBuffer` · `GetColorVertexBuffer` · `GetUVVertexBuffer` · `GetIndexBuffer` | 경로의 서브 메시 목록 반환 |
-| `HasPositionBuffer` · `HasNormalBuffer` · `HasColorBuffer` · `HasUVBuffer` · `HasIndexBuffer` | 등록 여부 |
+| `AddPositionVertexBuffer` · `AddNormalVertexBuffer` · `AddColorVertexBuffer` · `AddUVVertexBuffer` · `AddTangentVertexBuffer` · `AddIndexBuffer` | 경로(FBX 경로 · Gizmo 이름)별로 서브 메시 순서대로 추가 |
+| `GetPositionVertexBuffer` · `GetNormalVertexBuffer` · `GetColorVertexBuffer` · `GetUVVertexBuffer` · `GetTangentVertexBuffer` · `GetIndexBuffer` | 경로의 서브 메시 목록 반환 |
+| `HasPositionBuffer` · `HasNormalBuffer` · `HasColorBuffer` · `HasUVBuffer` · `HasTangentBuffer` · `HasIndexBuffer` | 등록 여부 |
 
-기존 `AddVertexBuffer` · `GetVertexBuffer` · `HasVertexBuffer`는 제거되었습니다. 로더는 `FPAssetLoader::MakePositionVertexBuffer` · `MakeNormalVertexBuffer` · `MakeColorVertexBuffer` · `MakeUVVertexBuffer` · `MakeIndex32BitBuffer`로 GPU 버퍼를 만들며, `RenderingDevice`에는 `CreateIndexBuffer`, `IASetIndexBuffers`, `DrawIndexed`가 추가되었습니다. `MakeIndex16BitBuffer`(`INDEX_16BIT`)도 정의되어 있지만 Index Buffer 포맷은 `R32_UINT`로 고정되어 있어 현재 쓰이지 않습니다.
+기존 `AddVertexBuffer` · `GetVertexBuffer` · `HasVertexBuffer`는 제거되었습니다. 로더는 `FPAssetLoader::MakePositionVertexBuffer` · `MakeNormalVertexBuffer` · `MakeColorVertexBuffer` · `MakeUVVertexBuffer` · `MakeTangentVertexBuffer` · `MakeIndex32BitBuffer`로 GPU 버퍼를 만들며, `RenderingDevice`에는 `CreateIndexBuffer`, `IASetIndexBuffers`, `DrawIndexed`가 추가되었습니다. `MakeIndex16BitBuffer`(`INDEX_16BIT`)도 정의되어 있지만 Index Buffer 포맷은 `R32_UINT`로 고정되어 있어 현재 쓰이지 않습니다.
 
 #### Pass별 사용
 
 | Pass | 바인딩하는 스트림 | 그리기 |
 |---|---|---|
-| `MeshRenderPass` | Position(0) · Normal(1) · Color(2) · UV(3) · Index | `DrawIndexed(Index_Cnt, 0, 0)` |
+| `MeshRenderPass` | Position(0) · Normal(1) · Color(2) · UV(3) · **Tangent(4)** · Index | `DrawIndexed(Index_Cnt, 0, 0)` |
 | `GizmoRenderPass` | Position(0) · Color(2) (Index 없음) | `Draw(VB_Cnt, 0)` — 선 목록을 인덱스 없이 그림 |
 | `NormalRenderPass` | Position(0) · Normal(1) (Index는 바인딩만 하고 사용하지 않음) | `DrawInstanced(2, VB_Cnt, 0, 0)` — 정점마다 인스턴스 1개 |
 
 > [!NOTE]
-> - Gizmo Pass는 Normal(1) · UV(3) 슬롯을 바인딩하지 않지만 Mesh와 같은 Input Layout을 사용합니다. 셰이더가 읽지 않는 슬롯이므로 문제는 없습니다.
+> - Gizmo Pass는 Normal(1) · UV(3) · Tangent(4) 슬롯을 바인딩하지 않지만 Mesh와 같은 Input Layout을 사용합니다. 셰이더가 읽지 않는 슬롯이므로 문제는 없습니다.
 > - Draw 호출에는 바이트 수(`VB_Size`)가 아니라 **정점 수(`VB_Cnt`)** 를 넘겨야 합니다. 새 Pass를 만들 때 주의하세요.
 > - Normal Pass가 `DrawInstanced`를 쓰는 이유는 정점마다 선을 하나 그리는 구조이기 때문입니다. 병합된 정점의 노멀은 모두 같으므로 정점 하나당 선 하나가 됩니다.
 
 #### 콘텐츠 프로그래머가 알아둘 점
 
-- 메시를 쓰는 코드(`FPStaticMeshComponent`, StaticMesh JSON, `LoadFbxData`)는 **바뀐 것이 없습니다.** 스트림 분리와 Index 생성은 로더가 처리합니다.
-- 직접 만든 셰이더는 시맨틱(`POSITION` · `NORMAL` · `COLOR0` · `TEXCOORD0`) 이름만 맞추면 됩니다. 전용 Input Layout이 필요한 셰이더(예: Normal Line)는 `ShaderFactory`에서 슬롯 배치를 함께 맞춰야 합니다.
+- 메시를 쓰는 코드(`FPStaticMeshComponent`, StaticMesh JSON, `LoadFbxData`)는 **바뀐 것이 없습니다.** 스트림 분리 · Tangent 생성 · Index 생성은 모두 로더가 처리합니다.
+- 직접 만든 셰이더는 시맨틱(`POSITION` · `NORMAL` · `COLOR0` · `TEXCOORD0` · `TANGENT`) 이름만 맞추면 됩니다. 전용 Input Layout이 필요한 셰이더(예: Normal Line)는 `ShaderFactory`에서 슬롯 배치를 함께 맞춰야 합니다.
 - 새 Gizmo를 만들 때는 `FPGizmoComponent::MakeVertexBuffer`가 만드는 `VERTEX` 중 **Position과 Color만** 사용됩니다.
 - 인덱스는 삼각형 단위(3개씩)로 만들어지므로 FBX 메시는 `TRIANGLELIST`로 그려야 합니다.
+> [!WARNING]
+> FBX에 `vertex_normal` 또는 `vertex_uv`가 없는 메시는 `GenerateTangents`가 **호출되지 않습니다.** 이 경우 `Result.Tangent_Vertices`는 한 번도 채워지지 않아(크기 0인 채로) 남는데, 바로 아래 `ufbx_generate_indices`에 넘기는 `VertexStreams`는 Tangent 스트림도 **다른 스트림과 똑같이 `TotalVertexCount`개**가 있다고 가정하고 읽습니다. 즉 Normal·UV가 없는 FBX 메시를 로드하면 **범위를 벗어난 메모리를 읽을 수 있는 버그**가 남아 있습니다(README 작성 시점 기준, 아직 수정되지 않음). 현재 Tri_World 데모의 모든 메시는 Normal·UV를 갖고 있어 실제로는 발생하지 않습니다.
 
 ### Texture
 
@@ -1258,19 +1312,20 @@ flowchart LR
 
 #### 기본 셰이더
 
-`DefaultVertexShader`는 `TEXCOORD0`을 `o.uv`로, 노멀 · 위치를 View 공간으로 변환해 `TEXCOORD2`/`TEXCOORD1`로 넘기고, `DefaultPixelShader`가 [Per-Pixel Light](#per-pixel-light--normal-line)로 구한 `Diffuse`/`Specular`/`Emissive`를 정점 색 · 텍스처와 섞어 출력합니다. [Alpha Blend](#alpha-blend-초기-구현) 추가 이후로는 텍스처의 알파 채널을 출력 알파로 그대로 내보냅니다.
+`DefaultVertexShader`는 `TEXCOORD0`을 `o.uv`로, View 공간 Tangent · Normal을 `TEXCOORD2`(`T`) · `TEXCOORD3`(`N`)로 넘기고, `DefaultPixelShader`가 [Per-Pixel Light](#per-pixel-light--normal-line)로 구한 `Diffuse`/`Specular`/`Emissive`를 정점 색 · 텍스처와 섞어 출력합니다. [Alpha Blend](#alpha-blend-초기-구현) 추가 이후로는 텍스처의 알파 채널을 출력 알파로 그대로 내보냅니다.
 
 ```hlsl
 Texture2D    TexDiff : register(t0);   // Material 텍스처 슬롯 0
 SamplerState Smpler  : register(s0);   // 사용 중인 샘플러 중 가장 앞선 종류
 
-float4 PS_Main(float4 pos : SV_POSITION, float4 col : COLOR0, float4 nrm : TEXCOORD2, float4 posv : TEXCOORD1, float2 uv : TEXCOORD0,
+float4 PS_Main(float4 pos : SV_POSITION, float4 col : COLOR0, float4 posv : TEXCOORD1, float2 uv : TEXCOORD0,
+               float4 T : TEXCOORD2, float4 N : TEXCOORD3,                     // T는 받기만 하고 쓰지 않음(Bump Mapping용 셰이더만 사용)
                bool IsFrontFace : SV_IsFrontFace) : SV_TARGET   // Cull이 꺼진(TwoSided) 메시의 앞/뒷면 판별용
 {
-    if (!IsFrontFace) nrm = -nrm;             // 뒷면이면 노멀을 뒤집어 라이팅
+    if (!IsFrontFace) N = -N;                  // 뒷면이면 노멀을 뒤집어 라이팅
 
     float4 DiffuseLit, SpecularLit, EmissiveLit;
-    CalculateLight(posv, nrm, mView, DiffuseLit, SpecularLit, EmissiveLit);   // 세 값을 out 매개변수로 받음
+    CalculateLight(posv, N, mView, DiffuseLit, SpecularLit, EmissiveLit);   // 세 값을 out 매개변수로 받음
 
     float4 tex = TexDiff.Sample(Smpler, uv);
     float4 col2 = col * DiffuseLit * tex + SpecularLit + EmissiveLit;
@@ -1278,6 +1333,9 @@ float4 PS_Main(float4 pos : SV_POSITION, float4 col : COLOR0, float4 nrm : TEXCO
     return col2;
 }
 ```
+
+> [!NOTE]
+> `DefaultPixelShader`는 Bump Mapping을 쓰지 않으므로 `T`(Tangent)를 입력으로만 받고 실제로는 쓰지 않습니다. 모든 Mesh PS가 같은 `VSOutput`(`DefaultVertexShader`/`TerrainVertexShader`가 출력하는 `pos·col·posv·uv·T·N`)을 받아야 해서, Bump Mapping을 쓰지 않는 `TerrainPixelShader` · `BoxPixelShader` · `TreePixelShader` · `WindmillWingBody.psh`도 모두 `T` 입력이 추가됐습니다(아래 "Bump Mapping" 참고).
 
 `IsFrontFace`는 이제 실제로 쓰입니다 — 거짓이면(뒷면) PS가 `nrm`을 반전해 라이팅하므로, `TwoSided` 메시의 뒷면도 올바른 방향의 노멀로 라이팅됩니다(이전엔 입력만 받고 쓰지 않아 뒷면도 앞면과 같은 노멀로 계산됐습니다). 텍스처를 지정하지 않은 메시는 `Default_Texture512`가 곱해집니다. 기본 텍스처는 엔진이 `LoadEngineAssets()`에서 로드하며, `Checker_bmp`(WIC) · `Checker_dds`(DDS)도 함께 제공됩니다.
 

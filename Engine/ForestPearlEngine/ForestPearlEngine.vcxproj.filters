@@ -112,6 +112,9 @@
     <Filter Include="Assets\Shader\PS">
       <UniqueIdentifier>{955e596e-4ac3-4dfe-8982-0cc615d0eae5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\ShaderResource\Common\Bump">
+      <UniqueIdentifier>{8e360594-20ea-45b9-bc5d-19afdcdb375f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -540,6 +543,9 @@
     </None>
     <None Include="Assets\ShaderResource\PixelLight.hlsli">
       <Filter>Assets\ShaderResource\Common\Lighting</Filter>
+    </None>
+    <None Include="Assets\ShaderResource\BumpMapping.hlsli">
+      <Filter>Assets\ShaderResource\Common\Bump</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

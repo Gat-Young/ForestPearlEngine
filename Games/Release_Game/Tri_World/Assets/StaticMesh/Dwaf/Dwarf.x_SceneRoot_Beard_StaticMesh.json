@@ -1,0 +1,14 @@
+{
+    "Name": "Dwarf.x_SceneRoot_Beard_StaticMesh",
+    "NodeName": "Dwarf.x_SceneRoot_Beard",
+    "MeshData": [
+        {
+            "Path": "Dwarf/Dwarf.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "_05-HeadGear.002_Dwarf.x_SceneRoot_Beard_StaticMesh_MaterialInstance"
+    }
+}

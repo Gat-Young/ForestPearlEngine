@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <cmath>
 #include <DirectXMath.h>
 constexpr float PI = 3.14159265358979323846f;
@@ -127,6 +128,36 @@ struct FPVector4
 		return ret;
 	}
 
+	FPVector4 operator /(const float& rhs) const
+	{
+		FPVector4 ret;
+		ret.x = x / rhs;
+		ret.y = y / rhs;
+		ret.z = z / rhs;
+		ret.w = w / rhs;
+		return ret;
+	}
+
+	FPVector4 operator +(const FPVector4& rhs) const
+	{
+		FPVector4 ret;
+		ret.x = x + rhs.x;
+		ret.y = y + rhs.y;
+		ret.z = z + rhs.z;
+		ret.w = w + rhs.w;
+		return ret;
+	}
+
+	FPVector4 operator -(const FPVector4& rhs) const
+	{
+		FPVector4 ret;
+		ret.x = x - rhs.x;
+		ret.y = y - rhs.y;
+		ret.z = z - rhs.z;
+		ret.w = w - rhs.w;
+		return ret;
+	}
+
 	FPVector4 operator*(const struct FPMatrix& rhs) const;
 
 	float LengthSq() const;
@@ -214,6 +245,10 @@ struct FPMatrix
 	}
 
 };
+
+float Dot(const FPVector3& A, const FPVector3& B);
+
+FPVector3 Cross(const FPVector3& A, const FPVector3& B);
 
 FPVector3 Rotate(const FPQuaternion& quat, const FPVector3& vec);
 

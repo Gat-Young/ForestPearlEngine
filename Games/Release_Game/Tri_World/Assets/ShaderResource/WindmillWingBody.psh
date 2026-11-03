@@ -60,9 +60,10 @@ SamplerState Smpler : register(s0);
 float4 PS_Main(
                 float4 pos : SV_POSITION, //[입력] 정점좌표. Vertex Position(Model Space, 3D) 
                 float4 col : COLOR0, //[입력] 정점색. Vertex Color : "Diffuse" 
-                float4 nrm : TEXCOORD2, //[입력] 역전치WV 변환된 normal
                 float4 posv : TEXCOORD1, //[입력] WordlView 변환된 pos
                 float2 uv : TEXCOORD0, //[입력] uv
+                float4 T : TEXCOORD2, //[입력] WV변환된 Tangent
+                float4 N : TEXCOORD3, //[입력] 역전치WV 변환된 normal
                 bool IsFrontFace : SV_IsFrontFace //CULLMODE None일때 앞 뒷면 판단
                 ) : SV_TARGET
 {
@@ -76,16 +77,22 @@ float4 PS_Main(
      
     if (!IsFrontFace)
     {
-        nrm = -nrm;
+        N = -N;
     }
     
-    float4 LitColor = CalculateLight(posv, nrm, mView);
+    
+    float4 DiffuseLit;
+    float4 SpecularLit;
+    float4 EmissiveLit;
+    
+    CalculateLight(posv, N, mView, DiffuseLit, SpecularLit, EmissiveLit);
     
     float4 tex = TexDiff.Sample(Smpler, uv);
     float4 tex2 = TexDiff2.Sample(Smpler, uv);
     float4 SnowMask = TexSnowMask.Sample(Smpler, uv);
     
-    float4 Base = LitColor * col * tex * tex2;
+    float4 Base = DiffuseLit * col * tex * tex2 + SpecularLit + EmissiveLit;
+    
     //여름
     if (SeasonCnt == 0 || SeasonCnt == 1)
     {
@@ -95,7 +102,7 @@ float4 PS_Main(
     //겨울
     if (SeasonCnt == 2)
     {
-        col = Base + SnowMask * WinterColor * LitColor * col;
+        col = Base + SnowMask * WinterColor * DiffuseLit * col;
     }
     
     

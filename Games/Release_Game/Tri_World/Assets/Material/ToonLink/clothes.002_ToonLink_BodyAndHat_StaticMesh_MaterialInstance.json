@@ -2,7 +2,7 @@
     "Material": {
         "Name": "clothes.002_ToonLink_BodyAndHat_StaticMesh_MaterialInstance",
         "VertexShader": "DefaultVertexShader",
-        "PixelShader": "DefaultPixelShader",
+        "PixelShader": "ToonLinkPixelShader",
         "TwoSided": false,
         "Parameters": [
             {
@@ -48,14 +48,20 @@
                 }
             }
         ],
-        "Textures": [
-            {
-                "Type": "PS",
-                "Parameter": "TexDiff",
-                "Asset": "Clothes_png",
-                "TextureType": "Texture2D"
-            }
-        ],
+      "Textures": [
+        {
+          "Type": "PS",
+          "Parameter": "TexDiff",
+          "Asset": "Clothes_png",
+          "TextureType": "Texture2D"
+        },
+        {
+          "Type": "PS",
+          "Parameter": "TexBumpMap",
+          "Asset": "Clothes_bump_png",
+          "TextureType": "Texture2D"
+        }
+      ],
         "Samplers": [
             {
                 "Type": "PS",

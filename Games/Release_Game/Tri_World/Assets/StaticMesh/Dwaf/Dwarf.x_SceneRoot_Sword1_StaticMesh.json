@@ -1,0 +1,14 @@
+{
+    "Name": "Dwarf.x_SceneRoot_Sword1_StaticMesh",
+    "NodeName": "Dwarf.x_SceneRoot_Sword1",
+    "MeshData": [
+        {
+            "Path": "Dwarf/Dwarf.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "_01_Weapon.002_Dwarf.x_SceneRoot_Sword1_StaticMesh_MaterialInstance"
+    }
+}

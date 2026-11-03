@@ -14,6 +14,7 @@
 #include "ADirectionalLight.h"
 #include "ATorchLight.h"
 #include "ABox.h"
+#include "ADwaf.h"
 
 void RegistProjectName()
 {
@@ -47,6 +48,7 @@ void LoadClassRegist()
 	ClassRegistry->Register<ADirectionalLight>("ADirectionalLight");
 	ClassRegistry->Register<ATorchLight>("ATorchLight");
 	ClassRegistry->Register<ABox>("ABox");
+	ClassRegistry->Register<ADwaf>("ADwaf");
 }
 
 void LoadAssets()
@@ -59,6 +61,8 @@ void LoadAssets()
 	AssetLoader->LoadPixelShader("WindmillWingBody_PixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("TreePixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("BoxPixelShader.json", AssetOwner::User);
+	AssetLoader->LoadPixelShader("DwarfPixelShader.json", AssetOwner::User);
+	AssetLoader->LoadPixelShader("ToonLinkPixelShader.json", AssetOwner::User);
 
 	//Texture Load
 
@@ -83,6 +87,29 @@ void LoadAssets()
 	AssetLoader->LoadTexture("ToonLink/Mouth10_png.json", AssetOwner::User);
 	AssetLoader->LoadTexture("ToonLink/Pupil_png.json", AssetOwner::User);
 	AssetLoader->LoadTexture("ToonLink/Skin_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("ToonLink/Clothes_bump_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("ToonLink/Equipment_bump_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("ToonLink/Skin_bump_png.json", AssetOwner::User);
+
+	//Dwaf Texture
+	AssetLoader->LoadTexture("Dwaf/Armor_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Armor_bumpmap_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Body_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Body_bumpmap_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/DwarfHead_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/DwarfHead_bumpmap_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Headgear_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Headgear_bumpmap_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Pack_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Pack_bumpmap_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Weapons_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Weapons_bumpmap_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Armor_spec_bmp.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Body_spec_bmp.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/DwarfHead_spec_bmp.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Headgear_spec_bmp.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Pack_spec_bmp.json", AssetOwner::User);
+	AssetLoader->LoadTexture("Dwaf/Weapons_spec_bmp.json", AssetOwner::User);
 
 	//Box Texture
 	AssetLoader->LoadTexture("Box/woodbox_bmp.json", AssetOwner::User);
@@ -117,6 +144,7 @@ void LoadAssets()
 	AssetLoader->LoadMaterial("ToonLink/hair.002_ToonLink_Hair_StaticMesh_MaterialInstance.json", AssetOwner::User);
 	AssetLoader->LoadMaterial("ToonLink/skin.002_ToonLink_Hand_StaticMesh_MaterialInstance.json", AssetOwner::User);
 	AssetLoader->LoadMaterial("ToonLink/eye.002_ToonLink_LeftEyeBackground_StaticMesh_MaterialInstance.json", AssetOwner::User);
+
 	AssetLoader->LoadMaterial("ToonLink/equipment.002_ToonLink_MasterSword_Scabbard_StaticMesh_MaterialInstance.json", AssetOwner::User);
 	AssetLoader->LoadMaterial("ToonLink/equipment.002_ToonLink_MasterSword_Handle_StaticMesh_MaterialInstance.json", AssetOwner::User);
 	AssetLoader->LoadMaterial("ToonLink/equipment.002_ToonLink_MasterSword_Blade_StaticMesh_MaterialInstance.json", AssetOwner::User);
@@ -125,6 +153,14 @@ void LoadAssets()
 	AssetLoader->LoadMaterial("ToonLink/eye.002_ToonLink_RightEyeBackground_StaticMesh_MaterialInstance.json", AssetOwner::User);
 	AssetLoader->LoadMaterial("ToonLink/equipment.002_ToonLink_Shield_Back_StaticMesh_MaterialInstance.json", AssetOwner::User);
 	AssetLoader->LoadMaterial("ToonLink/equipment.002_ToonLink_Shield_Handle_StaticMesh_MaterialInstance.json", AssetOwner::User);
+
+	//Dwaf Material
+	AssetLoader->LoadMaterial("Dwaf/_01_Weapon.002_Dwarf.x_SceneRoot_Sword1_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("Dwaf/_02_Body.002_Dwarf.x_SceneRoot_Body_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("Dwaf/_03_Armor.002_Dwarf.x_SceneRoot_Armor_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("Dwaf/_04-Head.002_Dwarf.x_SceneRoot_Head_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("Dwaf/_05-HeadGear.002_Dwarf.x_SceneRoot_Beard_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("Dwaf/_06-Pack.002_Dwarf.x_SceneRoot_Pack_StaticMesh_MaterialInstance.json", AssetOwner::User);
 
 	//Windmill Material
 	AssetLoader->LoadMaterial("Windmill/WindmillBody_Material.json", AssetOwner::User);
@@ -173,6 +209,14 @@ void LoadAssets()
 	AssetLoader->LoadStaticMesh("ToonLink/ToonLink_RightEyeBackground_StaticMesh.json", AssetOwner::User);
 	AssetLoader->LoadStaticMesh("ToonLink/ToonLink_Shield_Back_StaticMesh.json", AssetOwner::User);
 	AssetLoader->LoadStaticMesh("ToonLink/ToonLink_Shield_Handle_StaticMesh.json", AssetOwner::User);
+
+	//Dwaf Static Mesh
+	AssetLoader->LoadStaticMesh("Dwaf/Dwarf.x_SceneRoot_Armor_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("Dwaf/Dwarf.x_SceneRoot_Beard_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("Dwaf/Dwarf.x_SceneRoot_Body_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("Dwaf/Dwarf.x_SceneRoot_Head_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("Dwaf/Dwarf.x_SceneRoot_Pack_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("Dwaf/Dwarf.x_SceneRoot_Sword1_StaticMesh.json", AssetOwner::User);
 }
 
 std::string ReturnStartLevel()

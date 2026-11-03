@@ -64,6 +64,12 @@ struct INDEX_32BIT
 	unsigned long A, B, C;
 };
 
+//Tangnet , w는 TangentSign : 방향 값, Binormal을 외적과 TangentSign으로 구함
+struct TANGENT_VERTEX
+{
+	float x, y, z, w;
+};
+
 //VERTEX
 struct VERTEX
 {
@@ -71,6 +77,7 @@ struct VERTEX
 	NORMAL_VERTEX NormalVertex;
 	COLOR_VERTEX ColorVertex;
 	UV_VERTEX UVVertex;
+	TANGENT_VERTEX Tangent;
 	INDEX_32BIT Index;
 };
 
@@ -83,7 +90,9 @@ struct FPMeshData
 	std::vector<NORMAL_VERTEX> Normal_Vertices;
 	std::vector<COLOR_VERTEX> Color_Vertices;
 	std::vector<UV_VERTEX> UV_Vertices;
+	std::vector<TANGENT_VERTEX> Tangent_Vertices;
 	std::vector<INDEX_32BIT> Index;
+	std::vector<std::vector<uint32_t>> VertexAdjacency;
 };
 
 //소켓용 트랜스폼

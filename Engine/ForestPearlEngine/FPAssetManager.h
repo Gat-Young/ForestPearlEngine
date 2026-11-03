@@ -33,6 +33,7 @@ private:
 	std::unordered_map<std::string, FPVertexBufferData> MeshUVVertexBuffer;
 	std::unordered_map<std::string, FPVertexBufferData> MeshColorVertexBuffer;
 	std::unordered_map<std::string, FPIndexBufferData> MeshIndexBuffer;
+	std::unordered_map<std::string, FPVertexBufferData> MeshTangentVertexBuffer;
 
 	//Shader
 	std::unordered_map<std::string, std::tuple<void*, void*, void*> > VertexShaderData;
@@ -41,6 +42,16 @@ private:
 	//Texture
 	std::unordered_map<std::string, FPTextureData> TextureData;
 	std::unordered_map<std::string, FPTextureArrayData> TextureArrayData;
+
+	bool CalculateTriangleTangent(const POSITION_VERTEX& P0, const POSITION_VERTEX& P1, const POSITION_VERTEX& P2,
+									const UV_VERTEX& UV0, const UV_VERTEX& UV1, const UV_VERTEX& UV2,
+										FPVector3& OutTangent, FPVector3& OutBinormal);
+
+	bool SameTangentAttributes(const FPMeshData& Mesh, uint32_t A, uint32_t B);
+	
+	float CalculateCornerAngle(const FPMeshData& Mesh, size_t Base, size_t LocalCorner);
+
+	bool GenerateTangents(FPMeshData& MeshData);
 
 	std::string ConvertUfbxString(ufbx_string String);
 	struct FPMeshData ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_node* Node);
@@ -63,6 +74,7 @@ public:
 	void* MakeUVVertexBuffer(std::vector<struct UV_VERTEX>& Mesh);
 	void* MakeIndex16BitBuffer(std::vector<struct INDEX_16BIT>& Mesh);
 	void* MakeIndex32BitBuffer(std::vector<struct INDEX_32BIT>& Mesh);
+	void* MakeTangentVertexBuffer(std::vector<struct TANGENT_VERTEX>& Mesh);
 
 	//Shader »ý¼º
 	void MakeVertexShader(FPVertexShaderData& VertexShaderData);
@@ -107,6 +119,12 @@ public:
 	void AddIndexBuffer(std::string FbxPath, void* IndexBuffer, unsigned long IBSize, unsigned long IBCnt, unsigned long FaceCnt, unsigned long Stride, unsigned long Offset);
 	bool HasIndexBuffer(std::string MeshPath);
 	FPIndexBufferData GetIndexBuffer(std::string MeshPath);
+
+	//Tangent
+	void AddTangentVertexBuffer(std::string FbxPath, FPVertexBufferData& TangentVertexBuffer);
+	void AddTangentVertexBuffer(std::string FbxPath, void* VertexBuffer, unsigned long VBSize, unsigned long VBCnt, unsigned long Stride, unsigned long Offset);
+	bool HasTangentBuffer(std::string MeshPath);
+	FPVertexBufferData GetTangentVertexBuffer(std::string MeshPath);
 
 	//StaticMesh
 	FPStaticMesh* GetStaticMeshData(std::string StaticMeshName);

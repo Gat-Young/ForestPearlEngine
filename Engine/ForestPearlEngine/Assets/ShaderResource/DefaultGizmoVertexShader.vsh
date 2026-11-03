@@ -49,7 +49,8 @@ VSOutput VS_Main(
                 float4 pos : POSITION,       //[입력] 정점좌표. Vertex Position(Model Space, 3D) 
                 float4 nrm : NORMAL,         //[입력] 노멀 normal
                 float4 col : COLOR0,         //[입력] 정점색. Vertex Color : "Diffuse"
-                float2 uv : TEXCOORD0        //[입력] UV
+                float2 uv : TEXCOORD0,        //[입력] UV
+                float4 T : TANGENT //[입력] 탄젠트 노멀 Tangent Normal
                 )
 {
     //입력된 정보 그대로 출력..

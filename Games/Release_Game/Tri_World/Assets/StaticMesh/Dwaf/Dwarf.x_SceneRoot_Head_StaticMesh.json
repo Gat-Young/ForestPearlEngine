@@ -1,0 +1,14 @@
+{
+    "Name": "Dwarf.x_SceneRoot_Head_StaticMesh",
+    "NodeName": "Dwarf.x_SceneRoot_Head",
+    "MeshData": [
+        {
+            "Path": "Dwarf/Dwarf.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "_04-Head.002_Dwarf.x_SceneRoot_Head_StaticMesh_MaterialInstance"
+    }
+}

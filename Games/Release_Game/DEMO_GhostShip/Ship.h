@@ -20,6 +20,9 @@ class Ship : public FPPawn
 		std::vector<FPStaticMeshComponent*> JosenShipMeshes;
 
 
+		//Canon Model
+		std::vector<FPStaticMeshComponent*> CanonMeshes;
+
 		FPSceneComponent* ShieldPivot;
 		FPSpringArmComponent* SpringArm;
 		FPCameraComponent* PlayerCamera;

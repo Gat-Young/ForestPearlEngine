@@ -51,7 +51,7 @@ void LoadAssets()
 	AssetLoader->LoadTexture("Terrain/mask2_png.json", AssetOwner::User);
 
 	//JosenShip Texture
-	AssetLoader->LoadTexture("JosenShip/T_Cauldron01a_BC._png.json", AssetOwner::User);
+	/*AssetLoader->LoadTexture("JosenShip/T_Cauldron01a_BC._png.json", AssetOwner::User);
 	AssetLoader->LoadTexture("JosenShip/T_Cauldron01a_MT_png.json", AssetOwner::User);
 	AssetLoader->LoadTexture("JosenShip/T_Cauldron01a_NM_png.json", AssetOwner::User);
 	AssetLoader->LoadTexture("JosenShip/T_Cauldron01a_RN_png.json", AssetOwner::User);
@@ -96,7 +96,14 @@ void LoadAssets()
 	AssetLoader->LoadTexture("JosenShip/T_Window_RN_png.json", AssetOwner::User);
 	AssetLoader->LoadTexture("JosenShip/T_WoodR_BC_png.json", AssetOwner::User);
 	AssetLoader->LoadTexture("JosenShip/T_Wood_NM (1)_png.json", AssetOwner::User);
-	AssetLoader->LoadTexture("JosenShip/T_Wood_RN (1)_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("JosenShip/T_Wood_RN (1)_png.json", AssetOwner::User);*/
+
+
+	// Canon Texture
+	AssetLoader->LoadTexture("canon/Canon_Low_Canon_BaseColor_png.json", AssetOwner::User);
+	AssetLoader->LoadTexture("canon/Canon_Low_Canon_Metallic_png.json", AssetOwner::User); 
+	AssetLoader->LoadTexture("canon/Canon_Low_Canon_Normal_png.json", AssetOwner::User); 
+	AssetLoader->LoadTexture("canon/Canon_Low_Canon_Roughness_png.json", AssetOwner::User); 
 
 
 	//Material Load
@@ -105,8 +112,12 @@ void LoadAssets()
 	//Terrain Mayerial
 	AssetLoader->LoadMaterial("Terrain/Terrain_Material.json", AssetOwner::User);
 
+	//Canon Material
+	AssetLoader->LoadMaterial("canon/Canon.001_Canon_StaticMesh_MaterialInstance.json", AssetOwner::User);
+
+
 	//JosenShip Material
-	AssetLoader->LoadMaterial("JosenShip/MI_Cauldron01a_SM_Cauldron01a1_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	/*AssetLoader->LoadMaterial("JosenShip/MI_Cauldron01a_SM_Cauldron01a1_StaticMesh_MaterialInstance.json", AssetOwner::User);
 	AssetLoader->LoadMaterial("JosenShip/MI_Cauldron01a_SM_Cauldron01a2_StaticMesh_MaterialInstance.json", AssetOwner::User);
 	AssetLoader->LoadMaterial("JosenShip/MI_Cauldron01a_SM_Cauldron01a3_StaticMesh_MaterialInstance.json", AssetOwner::User);
 	AssetLoader->LoadMaterial("JosenShip/MI_Cauldron01a_SM_Cauldron01a4_StaticMesh_MaterialInstance.json", AssetOwner::User);
@@ -445,7 +456,7 @@ void LoadAssets()
 	AssetLoader->LoadMaterial("JosenShip/MI_WoodR_SM_Wall04a23_StaticMesh_MaterialInstance.json", AssetOwner::User);
 	AssetLoader->LoadMaterial("JosenShip/MI_WoodR_SM_Wall04a24_StaticMesh_MaterialInstance.json", AssetOwner::User);
 	AssetLoader->LoadMaterial("JosenShip/MI_WoodR_SM_Wall04a25_StaticMesh_MaterialInstance.json", AssetOwner::User);
-	AssetLoader->LoadMaterial("JosenShip/MI_WoodR_SM_Wall04a26_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("JosenShip/MI_WoodR_SM_Wall04a26_StaticMesh_MaterialInstance.json", AssetOwner::User);*/
 
 
 	/////////////////////////
@@ -454,8 +465,11 @@ void LoadAssets()
 	//Terrain Static Mesh
 	AssetLoader->LoadStaticMesh("Terrain/Terrain_StaticMesh.json", AssetOwner::User);
 
+	//Canon Static Mesh
+	AssetLoader->LoadStaticMesh("canon/Canon_StaticMesh.json", AssetOwner::User);
+
 	//JosenShip Static Mesh
-	AssetLoader->LoadStaticMesh("JosenShip/SM_Anchor_StaticMesh.json", AssetOwner::User);
+	/*AssetLoader->LoadStaticMesh("JosenShip/SM_Anchor_StaticMesh.json", AssetOwner::User);
 	AssetLoader->LoadStaticMesh("JosenShip/SM_Bollard_StaticMesh.json", AssetOwner::User);
 	AssetLoader->LoadStaticMesh("JosenShip/SM_Bollard1_StaticMesh.json", AssetOwner::User);
 	AssetLoader->LoadStaticMesh("JosenShip/SM_Bollard2_StaticMesh.json", AssetOwner::User);
@@ -794,7 +808,7 @@ void LoadAssets()
 	AssetLoader->LoadStaticMesh("JosenShip/SM_Window2_StaticMesh.json", AssetOwner::User);
 	AssetLoader->LoadStaticMesh("JosenShip/SM_Window3_StaticMesh.json", AssetOwner::User);
 	AssetLoader->LoadStaticMesh("JosenShip/SM_Window4_StaticMesh.json", AssetOwner::User);
-	AssetLoader->LoadStaticMesh("JosenShip/SM_Window5_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("JosenShip/SM_Window5_StaticMesh.json", AssetOwner::User);*/
 
 }
 

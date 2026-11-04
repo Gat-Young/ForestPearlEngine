@@ -1,0 +1,52 @@
+{
+    "Material": {
+        "Name": "Canon.001_Material",
+        "VertexShader": "DefaultVertexShader",
+        "PixelShader": "ShipPixelShader",
+        "TwoSided": false,
+        "Parameters": [
+            {
+                "Type": "PS",
+                "ConstantBuffer": "MaterialConstBuffer",
+                "Values": {
+                    "Material.BaseColor": [
+                        0.09083804488182068,
+                        0.09083804488182068,
+                        0.09083804488182068,
+                        1.0
+                    ],
+                    "Material.Diffuse": [
+                        0.09083804488182068,
+                        0.09083804488182068,
+                        0.09083804488182068,
+                        1.0
+                    ],
+                    "Material.Ambient": [
+                        0.05087608844041824,
+                        0.05087608844041824,
+                        0.05087608844041824,
+                        1.0
+                    ],
+                    "Material.Specular": [
+                        0.09083804488182068,
+                        0.09083804488182068,
+                        0.09083804488182068,
+                        1.0
+                    ],
+                    "Material.Roughness": [
+                        0.2496240735054016,
+                        0.2496240735054016,
+                        0.2496240735054016,
+                        1.0
+                    ],
+                    "Material.Emissive": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            }
+        ]
+    }
+}

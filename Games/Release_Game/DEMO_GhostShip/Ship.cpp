@@ -15,7 +15,7 @@ void Ship::Initialize()
 {
 
 	//JosenShip Model
-	const char* JosenShipMeshNames[] =
+	/*const char* JosenShipMeshNames[] =
 	{
 		"SM_Anchor_StaticMesh",
 		"SM_Bollard_StaticMesh",
@@ -364,9 +364,12 @@ void Ship::Initialize()
 		FPStaticMeshComponent* MeshComponent = new FPStaticMeshComponent(this, MeshName);
 		MeshComponent->SetupAttachment(RootComponent);
 		JosenShipMeshes.push_back(MeshComponent);
-	}
+	}*/
 
-	
+
+	FPStaticMeshComponent* MeshComponent = new FPStaticMeshComponent(this, "Canon_StaticMesh");
+	MeshComponent->SetupAttachment(RootComponent);
+	CanonMeshes.push_back(MeshComponent);
 
 	ShieldPivot = new FPSceneComponent(this);
 	ShieldPivot->SetupAttachment(RootComponent);

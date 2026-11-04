@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Pillar9_StaticMesh",
+    "NodeName": "SM_Pillar9",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_WoodR_SM_Pillar9_StaticMesh_MaterialInstance"
+    }
+}

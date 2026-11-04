@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Firewood1_StaticMesh",
+    "NodeName": "SM_Firewood1",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_Firewood_SM_Firewood1_StaticMesh_MaterialInstance"
+    }
+}

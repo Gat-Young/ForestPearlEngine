@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Door01a31_StaticMesh",
+    "NodeName": "SM_Door01a31",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_Door01a_SM_Door01a31_StaticMesh_MaterialInstance"
+    }
+}

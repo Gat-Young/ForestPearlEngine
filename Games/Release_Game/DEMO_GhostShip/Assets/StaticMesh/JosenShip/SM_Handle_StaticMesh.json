@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Handle_StaticMesh",
+    "NodeName": "SM_Handle",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_Hull_SM_Handle_StaticMesh_MaterialInstance"
+    }
+}

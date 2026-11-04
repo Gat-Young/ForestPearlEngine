@@ -1,0 +1,14 @@
+{
+  "GameSetting": {
+    "GameName": "DEMO_GhostShip",
+    "Graphics": {
+      "MSAA": 8,
+      "AnisotropicFiltering": 16,
+      "Resolution": {
+        "Width": 960,
+        "Height": 600
+      },
+      "FullScreen": false
+    }
+  }
+}

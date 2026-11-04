@@ -284,11 +284,6 @@
     <None Include="Assets\Texture\Default_Texture512.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Games\Release_Game\Tri_World\Tri_World.vcxproj">
-      <Project>{874c49a3-fd56-4137-9cfa-a3bd1b70917e}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <FxCompile Include="Assets\ShaderResource\DefaultGizmoPixelShader.psh">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PS_Main</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -401,6 +396,11 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
       <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Games\Release_Game\DEMO_GhostShip\DEMO_GhostShip.vcxproj">
+      <Project>{5c000f79-2527-4bb9-a74d-b54016c52fac}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

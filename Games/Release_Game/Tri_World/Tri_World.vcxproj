@@ -57,33 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\GameSetting\GameSetting.json" />
-    <None Include="Assets\Level\ToonLink.json" />
     <None Include="Assets\Level\Triworld.json" />
-    <None Include="Assets\StaticMesh\Terrain_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\Tree_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\Tree_Trunk_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\Windmill_Body_StaticMesh.json" />
-    <None Include="Assets\StaticMesh\Windmill_Wing_StaticMesh.json" />
-    <None Include="Assets\Texture\Clothes_png.json" />
-    <None Include="Assets\Texture\Equipment_png.json" />
-    <None Include="Assets\Texture\Eyebrow0_png.json" />
-    <None Include="Assets\Texture\Eyebrow1_png.json" />
-    <None Include="Assets\Texture\Eyelid_png.json" />
-    <None Include="Assets\Texture\Eye_png.json" />
-    <None Include="Assets\Texture\Hair_png.json" />
-    <None Include="Assets\Texture\Mouth0_png.json" />
-    <None Include="Assets\Texture\Mouth10_png.json" />
-    <None Include="Assets\Texture\Mouth1_png.json" />
-    <None Include="Assets\Texture\Mouth2_png.json" />
-    <None Include="Assets\Texture\Mouth3_png.json" />
-    <None Include="Assets\Texture\Mouth4_png.json" />
-    <None Include="Assets\Texture\Mouth5_png.json" />
-    <None Include="Assets\Texture\Mouth6_png.json" />
-    <None Include="Assets\Texture\Mouth7_png.json" />
-    <None Include="Assets\Texture\Mouth8_png.json" />
-    <None Include="Assets\Texture\Mouth9_png.json" />
-    <None Include="Assets\Texture\Pupil_png.json" />
-    <None Include="Assets\Texture\Skin_png.json" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\ShaderResource\BoxPixelShader.psh">

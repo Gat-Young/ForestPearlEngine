@@ -1,0 +1,52 @@
+{
+    "Material": {
+        "Name": "MI_Flag01c_Material",
+        "VertexShader": "DefaultVertexShader",
+        "PixelShader": "ShipPixelShader",
+        "TwoSided": true,
+        "Parameters": [
+            {
+                "Type": "PS",
+                "ConstantBuffer": "MaterialConstBuffer",
+                "Values": {
+                    "Material.BaseColor": [
+                        0.2158605009317398,
+                        0.2158605009317398,
+                        0.2158605009317398,
+                        1.0
+                    ],
+                    "Material.Diffuse": [
+                        0.2158605009317398,
+                        0.2158605009317398,
+                        0.2158605009317398,
+                        1.0
+                    ],
+                    "Material.Ambient": [
+                        0.05087608844041824,
+                        0.05087608844041824,
+                        0.05087608844041824,
+                        1.0
+                    ],
+                    "Material.Specular": [
+                        0.2158605009317398,
+                        0.2158605009317398,
+                        0.2158605009317398,
+                        1.0
+                    ],
+                    "Material.Roughness": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Emissive": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            }
+        ]
+    }
+}

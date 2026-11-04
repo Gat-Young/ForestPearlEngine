@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Flag01c1_StaticMesh",
+    "NodeName": "SM_Flag01c1",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_Flag01c_SM_Flag01c1_StaticMesh_MaterialInstance"
+    }
+}

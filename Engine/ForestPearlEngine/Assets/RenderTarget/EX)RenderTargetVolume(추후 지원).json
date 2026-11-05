@@ -1,0 +1,11 @@
+{
+  "Name": "RT_Volume",
+  "Type": "Volume",
+  "SizeX": 128,
+  "SizeY": 128,
+  "Depth": 64,
+  "RenderTargetFormat": "RGBA16F",
+  "ClearColor": [ 0.0, 0.0, 0.0, 0.0 ],
+  "MSAA": 1,
+  "MipMap": true
+}

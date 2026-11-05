@@ -189,6 +189,8 @@ enum FPBlendingStateType
 	BS_MAX_
 };
 
+
+//Texture 데이터와 RenderTarget, DepthStencil Data가 공통 Type으로 관리되도록 구조체를 조정
 //Textue 데이터 구조체
 struct FPTextureData
 {
@@ -209,6 +211,13 @@ struct FPTextureInfo
 	std::string Type;
 	AssetOwner Owner;
 };
+
+//RenderTarget
+struct FPRenderTargetTexture2DInfo
+{
+
+};
+
 
 //Texture Array Info
 struct FPTextureArrayInfo

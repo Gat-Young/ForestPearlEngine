@@ -1,0 +1,10 @@
+{
+  "Name": "RT_Canvas2D",
+  "Type": "Canvas2D",
+  "SizeX": 1920,
+  "SizeY": 1080,
+  "RenderTargetFormat": "RGBA8",
+  "ClearColor": [ 0.0, 0.0, 0.0, 0.0 ],
+  "MSAA": 1,
+  "MipMap": false
+}

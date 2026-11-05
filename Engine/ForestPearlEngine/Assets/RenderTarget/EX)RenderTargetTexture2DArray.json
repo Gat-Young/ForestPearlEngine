@@ -1,0 +1,11 @@
+{
+  "Name": "RT_2DArray",
+  "Type": "2DArray",
+  "SizeX": 1024,
+  "SizeY": 1024,
+  "ArraySize": 4,
+  "RenderTargetFormat": "RGBA8",
+  "ClearColor": [ 0.0, 0.0, 0.0, 1.0 ],
+  "MSAA": 1,
+  "MipMap": true
+}

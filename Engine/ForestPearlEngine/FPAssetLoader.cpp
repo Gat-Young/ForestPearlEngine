@@ -583,3 +583,170 @@ void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsse
 
 	AssetManager->AddMaterialData(MaterialData.Name, MaterialData);
 }
+
+void FPAssetLoader::LoadRenderTargetTexture2D(std::string RenderTargetTexture2DPath, AssetOwner EngineAsset)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::ifstream File(FPPathManager::Get().GetAssetPath("RenderTarget/" + RenderTargetTexture2DPath));
+	if (EngineAsset == AssetOwner::Engine) File = std::ifstream(FPPathManager::Get().GetEngineAssetPath("RenderTarget/" + RenderTargetTexture2DPath));
+
+	if (!File.is_open())
+	{
+		std::cerr << RenderTargetTexture2DPath << "파일 열기 실패\n";
+		return;
+	}
+
+	json JsonRenderTargetData;
+
+	try
+	{
+		File >> JsonRenderTargetData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPRenderTargetTexture2DInfo RenderTargetInfo;
+
+	RenderTargetInfo.Name = JsonRenderTargetData["Name"].get<std::string>();
+	RenderTargetInfo.Type = JsonRenderTargetData["Type"].get<std::string>();
+	RenderTargetInfo.SizeX = JsonRenderTargetData["SizeX"].get<unsigned int>();
+	RenderTargetInfo.SizeY = JsonRenderTargetData["SizeY"].get<unsigned int>();
+	RenderTargetInfo.RenderTragetFormat = StringToFPRenderTargetFormat(JsonRenderTargetData["RenderTargetFormat"].get<std::string>());
+
+	const json& ClearColor = JsonRenderTargetData["ClearColor"];
+	RenderTargetInfo.ClearColor = FPVector4(ClearColor[0].get<float>(), ClearColor[1].get<float>(), ClearColor[2].get<float>(), ClearColor[3].get<float>());
+
+	RenderTargetInfo.MSAA = JsonRenderTargetData["MSAA"].get<unsigned int>();
+	RenderTargetInfo.MipMap = JsonRenderTargetData["MipMap"].get<bool>();
+	RenderTargetInfo.Owner = EngineAsset;
+
+	if (AssetManager->HasRenderTargetTexture2DData(RenderTargetInfo.Name))
+	{
+		std::cout << "같은 이름의 RenderTarget이 존재합니다." << "\n";
+		return;
+	}
+
+	//AssetManager에 Load한 정보 등록
+	AssetManager->AddRenderTargetTexture2DData(RenderTargetInfo.Name, RenderTargetInfo);
+}
+
+void FPAssetLoader::LoadDepthStencil(std::string DepthStencilPath, AssetOwner EngineAsset)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::ifstream File(FPPathManager::Get().GetAssetPath("DepthStencil/" + DepthStencilPath));
+	if (EngineAsset == AssetOwner::Engine) File = std::ifstream(FPPathManager::Get().GetEngineAssetPath("DepthStencil/" + DepthStencilPath));
+
+	if (!File.is_open())
+	{
+		std::cerr << DepthStencilPath << "파일 열기 실패\n";
+		return;
+	}
+
+	json JsonDepthStencilData;
+
+	try
+	{
+		File >> JsonDepthStencilData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPDepthStencilInfo DepthStencilInfo;
+
+	DepthStencilInfo.Name = JsonDepthStencilData["Name"].get<std::string>();
+	DepthStencilInfo.SizeX = JsonDepthStencilData["SizeX"].get<unsigned int>();
+	DepthStencilInfo.SizeY = JsonDepthStencilData["SizeY"].get<unsigned int>();
+	DepthStencilInfo.DepthStencilFormat = StringToFPDepthStencilFormat(JsonDepthStencilData["DepthStencilFormat"].get<std::string>());
+	DepthStencilInfo.ClearDepth = JsonDepthStencilData["ClearDepth"].get<float>();
+	DepthStencilInfo.ClearStencil = JsonDepthStencilData["ClearStencil"].get<unsigned int>();
+	DepthStencilInfo.MSAA = JsonDepthStencilData["MSAA"].get<unsigned int>();
+	DepthStencilInfo.ShaderResource = JsonDepthStencilData["ShaderResource"].get<bool>();
+	DepthStencilInfo.Owner = EngineAsset;
+
+	if (AssetManager->HasDepthStencilInfoData(DepthStencilInfo.Name))
+	{
+		std::cout << "같은 이름의 DepthStencil이 존재합니다." << "\n";
+		return;
+	}
+
+	//AssetManager에 Load한 정보 등록
+	AssetManager->AddDepthStencilInfoData(DepthStencilInfo.Name, DepthStencilInfo);
+}
+
+void FPAssetLoader::LoadDepthStencilState(std::string DepthStencilStatePath, AssetOwner EngineAsset)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::ifstream File(FPPathManager::Get().GetAssetPath("DepthStencilState/" + DepthStencilStatePath));
+	if (EngineAsset == AssetOwner::Engine) File = std::ifstream(FPPathManager::Get().GetEngineAssetPath("DepthStencilState/" + DepthStencilStatePath));
+
+	if (!File.is_open())
+	{
+		std::cerr << DepthStencilStatePath << "파일 열기 실패\n";
+		return;
+	}
+
+	json JsonDepthStencilStateData;
+
+	try
+	{
+		File >> JsonDepthStencilStateData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPDepthStencilStateInfo DepthStencilStateInfo;
+
+	DepthStencilStateInfo.Name = JsonDepthStencilStateData["Name"].get<std::string>();
+
+	DepthStencilStateInfo.DepthEnable = JsonDepthStencilStateData["DepthEnable"].get<bool>();
+	DepthStencilStateInfo.DepthWriteMask = StringToFPDepthWriteMask(JsonDepthStencilStateData["DepthWriteMask"].get<std::string>());
+	DepthStencilStateInfo.DepthFunc = StringToFPCompraisonFunc(JsonDepthStencilStateData["DepthFunc"].get<std::string>());
+
+	DepthStencilStateInfo.StencilEnable = JsonDepthStencilStateData["StencilEnable"].get<bool>();
+	DepthStencilStateInfo.StencilReadMask = JsonDepthStencilStateData["StencilReadMask"].get<unsigned int>();
+	DepthStencilStateInfo.StencilWriteMask = JsonDepthStencilStateData["StencilWriteMask"].get<unsigned int>();
+
+	const json& FrontFace = JsonDepthStencilStateData.at("FrontFace");
+	DepthStencilStateInfo.FrontFaceStencilFailOp = StringToFPStencilOP(FrontFace["StencilFailOp"].get<std::string>());
+	DepthStencilStateInfo.FrontStencilDepthFailOp = StringToFPStencilOP(FrontFace["StencilDepthFailOp"].get<std::string>());
+	DepthStencilStateInfo.FrontStencilPassOp = StringToFPStencilOP(FrontFace["StencilPassOp"].get<std::string>());
+	DepthStencilStateInfo.FrontStencilFunc = StringToFPCompraisonFunc(FrontFace["StencilFunc"].get<std::string>());
+
+	const json& BackFace = JsonDepthStencilStateData.at("BackFace");
+	DepthStencilStateInfo.BackFaceStencilFailOp = StringToFPStencilOP(BackFace["StencilFailOp"].get<std::string>());
+	DepthStencilStateInfo.BackStencilDepthFailOp = StringToFPStencilOP(BackFace["StencilDepthFailOp"].get<std::string>());
+	DepthStencilStateInfo.BackStencilPassOp = StringToFPStencilOP(BackFace["StencilPassOp"].get<std::string>());
+	DepthStencilStateInfo.BackStencilFunc = StringToFPCompraisonFunc(BackFace["StencilFunc"].get<std::string>());
+
+	DepthStencilStateInfo.Owner = EngineAsset;
+
+	if (AssetManager->HasDepthStencilStateInfoData(DepthStencilStateInfo.Name))
+	{
+		std::cout << "같은 이름의 DepthStencilState가 존재합니다." << "\n";
+		return;
+	}
+
+	//AssetManager에 Load한 정보 등록
+	AssetManager->AddDepthStencilStateInfoData(DepthStencilStateInfo.Name, DepthStencilStateInfo);
+}

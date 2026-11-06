@@ -561,7 +561,7 @@ void Renderer::MeshRenderPass()
 			{
 				void* TextureData = nullptr;
 				//Texture °¡Á®¿È
-				if (TextureItem.TextureType == Texture2D) { TextureData = AssetManager->GetTextureData(TextureItem.AssetName).TextureResource; }
+				if (TextureItem.TextureType == Texture2D) { TextureData = AssetManager->GetTextureData(TextureItem.AssetName).ShaderResourceView; }
 				if (TextureItem.TextureType == Texture2DArray) { TextureData = AssetManager->GetTextureArrayData(TextureItem.AssetName).TextureArraySRV; }
 
 				Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData);

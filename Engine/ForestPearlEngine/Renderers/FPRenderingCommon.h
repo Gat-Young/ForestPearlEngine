@@ -189,12 +189,10 @@ enum FPBlendingStateType
 	BS_MAX_
 };
 
-
-//Texture 데이터와 RenderTarget, DepthStencil Data가 공통 Type으로 관리되도록 구조체를 조정
 //Textue 데이터 구조체
 struct FPTextureData
 {
-	void* TextureResource = nullptr;
+	void* ShaderResourceView = nullptr;
 	void* TextureDESC = nullptr;
 };
 
@@ -213,9 +211,152 @@ struct FPTextureInfo
 };
 
 //RenderTarget
+
+enum class FPRenderTargetFormat
+{
+	R8,
+	RG8,
+	RGBA8,
+	RGBA8_SRGB,
+	R16F,
+	RGBA16F,
+	R32F,
+	RGBA32F,
+	RGBA10A2,
+
+
+	FPRenderTargetType_MAX_
+};
+
+FPRenderTargetFormat StringToFPRenderTargetFormat(const std::string& Name);
+
 struct FPRenderTargetTexture2DInfo
 {
+	std::string Name;
+	std::string Type;
+	unsigned int SizeX;
+	unsigned int SizeY;
+	FPRenderTargetFormat RenderTragetFormat = FPRenderTargetFormat::RGBA8;
+	FPVector4 ClearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+	unsigned int MSAA = 1;
+	bool MipMap = false;
+	AssetOwner Owner;
+};
 
+struct FPRenderTargetData
+{
+	void* Texture;
+	void* RenderTargetView;
+	void* ShaderResourceView;
+};
+
+//DepthStencill
+
+enum class FPDepthStencilFormat
+{
+	D16,
+	D24_S8_UINT,
+	D32F,
+	D32F_S8X24_UINT,
+
+	FPDepthStencilFormat_MAX_
+};
+
+FPDepthStencilFormat StringToFPDepthStencilFormat(const std::string& Name);
+
+struct FPDepthStencilInfo
+{
+	std::string Name;
+	unsigned int SizeX;
+	unsigned int SizeY;
+	FPDepthStencilFormat DepthStencilFormat = FPDepthStencilFormat::D24_S8_UINT;
+	float ClearDepth = 1.0;
+	unsigned int ClearStencil = 1;
+	unsigned int MSAA = 1;
+	bool ShaderResource = false;
+
+
+	AssetOwner Owner;
+};
+
+struct FPDepthStencilData
+{
+	void* Texture;
+	void* DepthStencilView;
+	void* ShaderResourceView;
+};
+
+
+//DepthStencilState
+enum class FPDepthWriteMask
+{
+	ZERO,
+	ALL,
+
+	FPDepthWriteMask_MAX_
+};
+
+FPDepthWriteMask StringToFPDepthWriteMask(const std::string& Name);
+
+enum class FPCompraisonFunc
+{
+	NERVER,
+	LESS,
+	EQUAL,
+	LESS_EQUAL,
+	GREATER,
+	NOT_EQUAL,
+	GREATER_EQUAL,
+	ALWAYS,
+
+	FPDepthFunc_MAX_
+};
+
+FPCompraisonFunc StringToFPCompraisonFunc(const std::string& Name);
+
+enum  class FPStencilOP
+{
+	KEEP,
+	ZERO,
+	REPLACE,
+	INCR_SAT,
+	DECR_SAT,
+	INVERT,
+	INCR,
+	DECR,
+
+	FPStencilFailOp_MAX_
+};
+
+FPStencilOP StringToFPStencilOP(const std::string& Name);
+
+struct FPDepthStencilStateInfo
+{
+	std::string Name;
+	bool DepthEnable;
+	FPDepthWriteMask DepthWriteMask;
+	FPCompraisonFunc DepthFunc;
+
+	bool StencilEnable;
+	unsigned int StencilReadMask;
+	unsigned int StencilWriteMask;
+
+	FPStencilOP FrontFaceStencilFailOp;
+	FPStencilOP FrontStencilDepthFailOp;
+	FPStencilOP FrontStencilPassOp;
+	FPCompraisonFunc FrontStencilFunc;
+
+	FPStencilOP BackFaceStencilFailOp;
+	FPStencilOP BackStencilDepthFailOp;
+	FPStencilOP BackStencilPassOp;
+	FPCompraisonFunc BackStencilFunc;
+
+	AssetOwner Owner;
+};
+
+struct FPDepthStencilStateData
+{
+	void* DepthStencilData;
 };
 
 
@@ -234,7 +375,12 @@ struct FPTextureArrayInfo
 enum FPTextureType
 {
 	Texture2D,
-	Texture2DArray
+	Texture2DArray,
+
+	RenderTargetTexture2D,
+	DepthStencilTexture2D,
+
+	FPTextureType_MAX_
 };
 
 FPTextureType StringToTextureType(const std::string& Name);

@@ -1212,15 +1212,15 @@ void FPAssetManager::MakeTexture(FPTextureInfo& TextureInfo)
 
 	if (TextureInfo.Type == "WIC")
 	{
-		RenderingDevice::GetRenderingDevice().CreateWICTextureFromFile(TextureResourcePath, &Data.TextureResource);
+		RenderingDevice::GetRenderingDevice().CreateWICTextureFromFile(TextureResourcePath, &Data.ShaderResourceView);
 	}
 
 	if (TextureInfo.Type == "DDS")
 	{
-		RenderingDevice::GetRenderingDevice().CreateDDSTextureFromFile(TextureResourcePath, &Data.TextureResource);
+		RenderingDevice::GetRenderingDevice().CreateDDSTextureFromFile(TextureResourcePath, &Data.ShaderResourceView);
 	}
 
-	RenderingDevice::GetRenderingDevice().GetTextureDesc(Data.TextureResource, &Data.TextureDESC);
+	RenderingDevice::GetRenderingDevice().GetTextureDesc(Data.ShaderResourceView, &Data.TextureDESC);
 
 	AddTextureData(TextureInfo.Name, Data);
 }
@@ -1274,7 +1274,7 @@ void FPAssetManager::MakeTextureArray(FPTextureArrayInfo& TextureInfo)
 	//Texture Data에서 Resource를 찾아서 TextureSources 배열에 넣음 (가능한 경우인지 체크 + 최소 Mip level을 찾음)
 	for (int i = 0; i < TextureInfo.ArraySize; ++i)
 	{
-		CheckTexture.push_back(GetTextureData(TextureInfo.SourceTextures[i]).TextureResource);
+		CheckTexture.push_back(GetTextureData(TextureInfo.SourceTextures[i]).ShaderResourceView);
 	}
 
 	RenderingDevice::GetRenderingDevice().CheckTextureArrayData(TextureInfo.Width, TextureInfo.Height, &CheckTexture, &TextureMiplevels ,&TextureSources, &MinMaplevels, &BaseDesc, &BaseSRVDesc);
@@ -1326,6 +1326,66 @@ void FPAssetManager::AddTextureArrayInfoData(std::string TextureArrayName, FPTex
 bool FPAssetManager::HasTextureArrayInfoData(std::string TextureArrayName)
 {
 	if (LoadedTextureArrayData.count(TextureArrayName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+FPRenderTargetTexture2DInfo& FPAssetManager::GetRenderTargetTexture2DInfoData(std::string RenderTargetTexture2DName)
+{
+	return LoadedRenderTargetTexture2DData[RenderTargetTexture2DName];
+}
+
+void FPAssetManager::AddRenderTargetTexture2DData(std::string RenderTargetTexture2DName, FPRenderTargetTexture2DInfo& RenderTargetTexture2DData)
+{
+	this->LoadedRenderTargetTexture2DData[RenderTargetTexture2DName] = RenderTargetTexture2DData;
+}
+
+bool FPAssetManager::HasRenderTargetTexture2DData(std::string RenderTargetTexture2DName)
+{
+	if (LoadedRenderTargetTexture2DData.count(RenderTargetTexture2DName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+FPDepthStencilInfo& FPAssetManager::GetDepthStencilInfoData(std::string DepthStencilName)
+{
+	return LoadedDepthStencilData[DepthStencilName];
+}
+
+void FPAssetManager::AddDepthStencilInfoData(std::string DepthStencilName, FPDepthStencilInfo& DepthStencilyData)
+{
+	this->LoadedDepthStencilData[DepthStencilName] = DepthStencilyData;
+}
+
+bool FPAssetManager::HasDepthStencilInfoData(std::string DepthStencilName)
+{
+	if (LoadedDepthStencilData.count(DepthStencilName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+FPDepthStencilStateInfo& FPAssetManager::GetDepthStencilStateInfoData(std::string DepthStencilStateName)
+{
+	return LoadedDepthStencilStateData[DepthStencilStateName];
+}
+
+void FPAssetManager::AddDepthStencilStateInfoData(std::string DepthStencilStateName, FPDepthStencilStateInfo& DepthStencilStateData)
+{
+	this->LoadedDepthStencilStateData[DepthStencilStateName] = DepthStencilStateData;
+}
+
+bool FPAssetManager::HasDepthStencilStateInfoData(std::string DepthStencilStateName)
+{
+	if (LoadedDepthStencilStateData.count(DepthStencilStateName) > 0)
 	{
 		return true;
 	}

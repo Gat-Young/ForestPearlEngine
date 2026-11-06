@@ -282,9 +282,9 @@ struct FPDepthStencilInfo
 
 struct FPDepthStencilData
 {
-	void* Texture;
-	void* DepthStencilView;
-	void* ShaderResourceView;
+	void* Texture = nullptr;
+	void* DepthStencilView = nullptr;
+	void* ShaderResourceView = nullptr;
 };
 
 
@@ -740,8 +740,8 @@ namespace RenderingData
 
 	struct alignas(16) LightDataItem
 	{
-		unsigned int LightType;
-		unsigned int padding[3];
+		unsigned long LightType;
+		float padding[3];
 		FPVector4 LightPosition;
 		FPVector4 Direction;
 		float Range;
@@ -755,8 +755,8 @@ namespace RenderingData
 
 	struct alignas(16) LightItem
 	{
-		unsigned int LightCnt = 0;
-		unsigned int Padding[3];
+		unsigned long LightCnt = 0;
+		float Padding[3];
 		LightDataItem Light[Light_MAX];
 	};
 

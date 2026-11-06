@@ -1428,11 +1428,13 @@ bool FPAssetManager::HastDepthStencilData(std::string DepthStencilName)
 	return false;
 }
 
-void FPAssetManager::MaketDepthStencil(FPDepthStencilInfo& TextureInfo)
+void FPAssetManager::MaketDepthStencil(FPDepthStencilInfo& DepthStecilInfo)
 {
 	FPDepthStencilData DepthStencilResource;
+	RenderingDevice::GetRenderingDevice().CreateDepthStencilTexture(DepthStecilInfo.SizeX, DepthStecilInfo.SizeY, DepthStecilInfo.MSAA, DepthStecilInfo.ShaderResource, DepthStecilInfo.DepthStencilFormat, &DepthStencilResource.Texture);
 
-	DepthStencilData[TextureInfo.Name] = DepthStencilResource;
+
+	DepthStencilData[DepthStecilInfo.Name] = DepthStencilResource;
 }
 
 FPDepthStencilStateInfo& FPAssetManager::GetDepthStencilStateInfoData(std::string DepthStencilStateName)

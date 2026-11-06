@@ -122,7 +122,7 @@ void DirLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout floa
     Spec = SpecularBlinPhongLight(N, L, V, LightData.Specular, Material.Specular, Material.Roughness);
     Amb = LightData.Ambient * Material.Ambient * Material.BaseColor;
     
-    OutDiffuse = OutDiffuse + (Diff + Amb) * LightData.LightColor;
+    OutDiffuse = OutDiffuse + ((Diff + Amb) * LightData.LightColor);
     OutSpecular = OutSpecular + Spec * LightData.LightColor;
 
 }
@@ -166,7 +166,7 @@ void PointLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout fl
     Spec = SpecularBlinPhongLight(N, L, V, LightData.Specular, Material.Specular, Material.Roughness) * att * Fade;
     Amb = LightData.Ambient * Material.Ambient * att * Fade * Material.BaseColor;
     
-    OutDiffuse = OutDiffuse + (Diff + Amb) * LightData.LightColor;
+    OutDiffuse = OutDiffuse + ((Diff + Amb) * LightData.LightColor);
     OutSpecular = OutSpecular + Spec * LightData.LightColor;
 }
 

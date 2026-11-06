@@ -186,7 +186,7 @@ public:
 	FPDepthStencilData& GetDepthStencilData(std::string DepthStencilName);
 	void AddtDepthStencilData(std::string DepthStencilName, FPDepthStencilData& TextureData);
 	bool HastDepthStencilData(std::string DepthStencilName);
-	void MaketDepthStencil(FPDepthStencilInfo& TextureInfo);
+	void MaketDepthStencil(FPDepthStencilInfo& DepthStecilInfo);
 
 
 	//DepthStencilState Info

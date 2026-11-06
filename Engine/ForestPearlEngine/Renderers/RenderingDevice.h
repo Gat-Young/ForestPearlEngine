@@ -136,6 +136,7 @@ class RenderingDevice
 		//DXGI Format Converter
 		DXGI_FORMAT FPRenderTargetFormatToDXGI_FORMAT(FPRenderTargetFormat& RenderTargetFormat);
 		DXGI_FORMAT FPDepthStencilFormatToDXGI_FORMAT(FPDepthStencilFormat& DepthStencilFormat);
+		DXGI_FORMAT DSVFormatToTextureFormat(DXGI_FORMAT& DSVFormat);
 		
 	public:
 		static RenderingDevice& GetRenderingDevice();
@@ -160,6 +161,7 @@ class RenderingDevice
 
 		//Depth Stencil Create
 		HRESULT CreateDepthStencil();
+		HRESULT CreateDepthStencilTexture(UINT SizeX, UINT SizeY, UINT MSAA, bool ShaderResource ,FPDepthStencilFormat& DepthStencilFormat, void** OutDSTex);
 
 		//Depth Stencil State Create
 

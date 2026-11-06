@@ -343,6 +343,37 @@ HRESULT RenderingDevice::CreateRTSRView(FPRenderTargetFormat& RenderTargetFormat
 	return hr;
 }
 
+HRESULT RenderingDevice::CreateDepthStencilTexture(UINT SizeX, UINT SizeY, UINT MSAA, bool ShaderResource, FPDepthStencilFormat& DepthStencilFormat, void** OutDSTex)
+{
+	HRESULT hr = S_OK;
+
+	//깊이 - 스텐실 버퍼용 정보 구성
+	D3D11_TEXTURE2D_DESC TextureDesc;
+	TextureDesc.Width = SizeX;
+	TextureDesc.Height = SizeY;
+	TextureDesc.MipLevels = 1;
+	TextureDesc.ArraySize = 1;
+	TextureDesc.Format = FPDepthStencilFormatToDXGI_FORMAT(DepthStencilFormat);						//깊이 버퍼 Format
+	TextureDesc.SampleDesc = { MSAA, 0 };				//MSAA 설정
+	TextureDesc.Usage = D3D11_USAGE_DEFAULT;
+	TextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;	//깊이-스텐실 버퍼용으로 설정
+	TextureDesc.CPUAccessFlags = 0;
+	TextureDesc.MiscFlags = 0;
+
+	if (ShaderResource)
+	{
+		TextureDesc.Format = DSVFormatToTextureFormat(TextureDesc.Format);			//ShaderResource로도 사용된다면 해당 해당 타입으로 변환
+		TextureDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;						//ShaderResource Binding 추가
+	}
+
+	ID3D11Texture2D* Texture;
+	hr = Device->CreateTexture2D(&TextureDesc, NULL, &Texture);
+	if (FAILED(hr)) { std::cout << "DepthStencil Texture Create Fail!" << "\n"; return hr; }
+	*OutDSTex = Texture;
+
+	return hr;
+}
+
 //
 // 깊이-스텐실 버퍼 생성
 //
@@ -367,7 +398,7 @@ HRESULT RenderingDevice::CreateDepthStencil()
 	hr = Device->CreateTexture2D(&TextureDesc, NULL, &DepthStencilBuffer);
 	assert(SUCCEEDED(hr) && "깊이-스텐실 버퍼 생성 실패");
 
-	//깊이-스텐실 버퍼용 리소스 뷰 정보 설정
+	//깊이-스텐실 버퍼용 정보 설정
 	D3D11_DEPTH_STENCIL_VIEW_DESC DepthStencilViewDesc;
 	ZeroMemory(&DepthStencilViewDesc, sizeof(DepthStencilViewDesc));
 	DepthStencilViewDesc.Format = TextureDesc.Format;

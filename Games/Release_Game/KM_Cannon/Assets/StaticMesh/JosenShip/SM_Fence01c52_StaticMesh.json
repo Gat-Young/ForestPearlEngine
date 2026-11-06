@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Fence01c52_StaticMesh",
+    "NodeName": "SM_Fence01c52",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_WoodR_SM_Fence01c52_StaticMesh_MaterialInstance"
+    }
+}

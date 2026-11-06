@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Horong_StaticMesh",
+    "NodeName": "SM_Horong",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_Hull_SM_Horong_StaticMesh_MaterialInstance"
+    }
+}

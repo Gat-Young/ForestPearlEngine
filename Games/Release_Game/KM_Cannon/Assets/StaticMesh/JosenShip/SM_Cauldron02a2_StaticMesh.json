@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Cauldron02a2_StaticMesh",
+    "NodeName": "SM_Cauldron02a2",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_Cauldron02a_SM_Cauldron02a2_StaticMesh_MaterialInstance"
+    }
+}

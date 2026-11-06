@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Bollard_StaticMesh",
+    "NodeName": "SM_Bollard",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_Hull_SM_Bollard_StaticMesh_MaterialInstance"
+    }
+}

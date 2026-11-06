@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Rope02a14_StaticMesh",
+    "NodeName": "SM_Rope02a14",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_Rope01a_SM_Rope02a14_StaticMesh_MaterialInstance"
+    }
+}

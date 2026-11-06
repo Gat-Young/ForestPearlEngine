@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Floor01a3_StaticMesh",
+    "NodeName": "SM_Floor01a3",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_Floor_SM_Floor01a3_StaticMesh_MaterialInstance"
+    }
+}

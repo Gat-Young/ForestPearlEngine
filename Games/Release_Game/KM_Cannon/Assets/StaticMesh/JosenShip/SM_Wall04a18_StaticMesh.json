@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Wall04a18_StaticMesh",
+    "NodeName": "SM_Wall04a18",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_WoodR_SM_Wall04a18_StaticMesh_MaterialInstance"
+    }
+}

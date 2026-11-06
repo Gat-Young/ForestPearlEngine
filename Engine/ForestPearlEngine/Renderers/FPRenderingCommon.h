@@ -272,7 +272,7 @@ struct FPDepthStencilInfo
 	unsigned int SizeY;
 	FPDepthStencilFormat DepthStencilFormat = FPDepthStencilFormat::D24_S8_UINT;
 	float ClearDepth = 1.0;
-	unsigned int ClearStencil = 1;
+	unsigned int ClearStencil = 0;
 	unsigned int MSAA = 1;
 	bool ShaderResource = false;
 

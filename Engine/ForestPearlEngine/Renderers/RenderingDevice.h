@@ -137,6 +137,11 @@ class RenderingDevice
 		DXGI_FORMAT FPRenderTargetFormatToDXGI_FORMAT(FPRenderTargetFormat& RenderTargetFormat);
 		DXGI_FORMAT FPDepthStencilFormatToDXGI_FORMAT(FPDepthStencilFormat& DepthStencilFormat);
 		DXGI_FORMAT DSVFormatToTextureFormat(DXGI_FORMAT& DSVFormat);
+		DXGI_FORMAT DSVFormatToSRVFormat(DXGI_FORMAT& DSVFormat);
+
+		D3D11_STENCIL_OP FPStencilOPToD3DStencilOP(FPStencilOP& StencilOP);
+		D3D11_COMPARISON_FUNC FPCompraisionFuncToD3DComparisonFunc(FPCompraisonFunc& CompraisonFunc);
+		D3D11_DEPTH_WRITE_MASK FPDepthWriteMaskToD3DDepthWriteMask(FPDepthWriteMask& DepthWriteMask);
 		
 	public:
 		static RenderingDevice& GetRenderingDevice();
@@ -162,8 +167,11 @@ class RenderingDevice
 		//Depth Stencil Create
 		HRESULT CreateDepthStencil();
 		HRESULT CreateDepthStencilTexture(UINT SizeX, UINT SizeY, UINT MSAA, bool ShaderResource ,FPDepthStencilFormat& DepthStencilFormat, void** OutDSTex);
+		HRESULT CreateDepthStencilView(FPDepthStencilFormat& DepthStencilFormat, UINT MSAA, void* InDSTex, void** OutDSView);
+		HRESULT CreateDepthStencilSRView(FPDepthStencilFormat& DepthStencilFormat, bool ShaderResource, UINT MSAA, void* InDSTex, void** OutDSSRView);
 
 		//Depth Stencil State Create
+		HRESULT CreateDepthStencilState(FPDepthStencilStateInfo& DepthStencilInfo, void** OutDSState);
 
 
 		HRESULT SetBackBufferToRenderTargetView();

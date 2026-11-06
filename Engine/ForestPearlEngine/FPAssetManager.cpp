@@ -137,6 +137,18 @@ void FPAssetManager::AllAssetDataCreate()
 		MakeRenderTarget(Asset);
 	}
 
+	//DepthStencil 持失
+	for (auto& [AssetName, Asset] : LoadedDepthStencilData)
+	{
+		MaketDepthStencil(Asset);
+	}
+
+	//DepthStencilState 持失
+	for (auto& [AssetName, Asset] : LoadedDepthStencilStateData)
+	{
+		MakeDepthStencilState(Asset);
+	}
+
 	//Fbx Load
 	for (auto& [AssetName, Asset] : LoadedStaticMeshData)
 	{
@@ -1432,8 +1444,8 @@ void FPAssetManager::MaketDepthStencil(FPDepthStencilInfo& DepthStecilInfo)
 {
 	FPDepthStencilData DepthStencilResource;
 	RenderingDevice::GetRenderingDevice().CreateDepthStencilTexture(DepthStecilInfo.SizeX, DepthStecilInfo.SizeY, DepthStecilInfo.MSAA, DepthStecilInfo.ShaderResource, DepthStecilInfo.DepthStencilFormat, &DepthStencilResource.Texture);
-
-
+	RenderingDevice::GetRenderingDevice().CreateDepthStencilView(DepthStecilInfo.DepthStencilFormat, DepthStecilInfo.MSAA, DepthStencilResource.Texture, &DepthStencilResource.DepthStencilView);
+	RenderingDevice::GetRenderingDevice().CreateDepthStencilSRView(DepthStecilInfo.DepthStencilFormat, DepthStecilInfo.ShaderResource, DepthStecilInfo.MSAA, DepthStencilResource.Texture, &DepthStencilResource.ShaderResourceView);
 	DepthStencilData[DepthStecilInfo.Name] = DepthStencilResource;
 }
 
@@ -1475,6 +1487,14 @@ bool FPAssetManager::HasDepthStencilStateData(std::string DepthStencilStateName)
 	}
 
 	return false;
+}
+
+void FPAssetManager::MakeDepthStencilState(FPDepthStencilStateInfo& DepthStencilStateInfo)
+{
+	FPDepthStencilStateData DSStateData;
+
+	RenderingDevice::GetRenderingDevice().CreateDepthStencilState(DepthStencilStateInfo, &DSStateData.DepthStencilData);
+	DepthStencilStateData[DepthStencilStateInfo.Name] = DSStateData;
 }
 
 FPMaterialData& FPAssetManager::GetMaterialData(std::string MaterialName)

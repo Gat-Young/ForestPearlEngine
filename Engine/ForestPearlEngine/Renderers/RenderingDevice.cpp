@@ -80,6 +80,115 @@ DXGI_FORMAT RenderingDevice::FPDepthStencilFormatToDXGI_FORMAT(FPDepthStencilFor
 	return DXGI_FORMAT_D24_UNORM_S8_UINT;
 }
 
+DXGI_FORMAT RenderingDevice::DSVFormatToTextureFormat(DXGI_FORMAT& DSVFormat)
+{
+	static const std::unordered_map<DXGI_FORMAT, DXGI_FORMAT> FormatMap =
+	{
+		{ DXGI_FORMAT_D16_UNORM,            DXGI_FORMAT_R16_TYPELESS },
+		{ DXGI_FORMAT_D24_UNORM_S8_UINT,    DXGI_FORMAT_R24G8_TYPELESS },
+		{ DXGI_FORMAT_D32_FLOAT,            DXGI_FORMAT_R32_TYPELESS },
+		{ DXGI_FORMAT_D32_FLOAT_S8X24_UINT, DXGI_FORMAT_R32G8X24_TYPELESS },
+	};
+
+	auto it = FormatMap.find(DSVFormat);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	return DSVFormat;
+}
+
+DXGI_FORMAT RenderingDevice::DSVFormatToSRVFormat(DXGI_FORMAT& DSVFormat)
+{
+	static const std::unordered_map<DXGI_FORMAT, DXGI_FORMAT> FormatMap =
+	{
+		{ DXGI_FORMAT_D16_UNORM,            DXGI_FORMAT_R16_UNORM },
+		{ DXGI_FORMAT_D24_UNORM_S8_UINT,    DXGI_FORMAT_R24_UNORM_X8_TYPELESS },
+		{ DXGI_FORMAT_D32_FLOAT,            DXGI_FORMAT_R32_FLOAT },
+		{ DXGI_FORMAT_D32_FLOAT_S8X24_UINT, DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS },
+	};
+
+	auto it = FormatMap.find(DSVFormat);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	return DSVFormat;
+}
+
+D3D11_STENCIL_OP RenderingDevice::FPStencilOPToD3DStencilOP(FPStencilOP& StencilOP)
+{
+	static const std::unordered_map<FPStencilOP, D3D11_STENCIL_OP> FormatMap =
+	{
+		{ FPStencilOP::KEEP,     D3D11_STENCIL_OP_KEEP },
+		{ FPStencilOP::ZERO,     D3D11_STENCIL_OP_ZERO },
+		{ FPStencilOP::REPLACE,  D3D11_STENCIL_OP_REPLACE },
+		{ FPStencilOP::INCR_SAT, D3D11_STENCIL_OP_INCR_SAT },
+		{ FPStencilOP::DECR_SAT, D3D11_STENCIL_OP_DECR_SAT },
+		{ FPStencilOP::INVERT,   D3D11_STENCIL_OP_INVERT },
+		{ FPStencilOP::INCR,     D3D11_STENCIL_OP_INCR },
+		{ FPStencilOP::DECR,     D3D11_STENCIL_OP_DECR },
+	};
+
+	auto it = FormatMap.find(StencilOP);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	//Default : KEEP
+	return D3D11_STENCIL_OP_KEEP;
+}
+
+D3D11_COMPARISON_FUNC RenderingDevice::FPCompraisionFuncToD3DComparisonFunc(FPCompraisonFunc& CompraisonFunc)
+{
+	static const std::unordered_map<FPCompraisonFunc, D3D11_COMPARISON_FUNC> FormatMap =
+	{
+		{ FPCompraisonFunc::NERVER,        D3D11_COMPARISON_NEVER },
+		{ FPCompraisonFunc::LESS,          D3D11_COMPARISON_LESS },
+		{ FPCompraisonFunc::EQUAL,         D3D11_COMPARISON_EQUAL },
+		{ FPCompraisonFunc::LESS_EQUAL,    D3D11_COMPARISON_LESS_EQUAL },
+		{ FPCompraisonFunc::GREATER,       D3D11_COMPARISON_GREATER },
+		{ FPCompraisonFunc::NOT_EQUAL,     D3D11_COMPARISON_NOT_EQUAL },
+		{ FPCompraisonFunc::GREATER_EQUAL, D3D11_COMPARISON_GREATER_EQUAL },
+		{ FPCompraisonFunc::ALWAYS,        D3D11_COMPARISON_ALWAYS },
+	};
+
+	auto it = FormatMap.find(CompraisonFunc);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	//Default : ALWAYS
+	return D3D11_COMPARISON_ALWAYS;
+}
+
+D3D11_DEPTH_WRITE_MASK RenderingDevice::FPDepthWriteMaskToD3DDepthWriteMask(FPDepthWriteMask& DepthWriteMask)
+{
+	static const std::unordered_map<FPDepthWriteMask, D3D11_DEPTH_WRITE_MASK> FormatMap =
+	{
+		{ FPDepthWriteMask::ZERO, D3D11_DEPTH_WRITE_MASK_ZERO },
+		{ FPDepthWriteMask::ALL,  D3D11_DEPTH_WRITE_MASK_ALL },
+	};
+
+	auto it = FormatMap.find(DepthWriteMask);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	//Default : ALL
+	return D3D11_DEPTH_WRITE_MASK_ALL;
+}
+
 //싱글톤 렌더링 디바이스 객체 가져오기
 RenderingDevice& RenderingDevice::GetRenderingDevice()
 {
@@ -296,7 +405,7 @@ HRESULT RenderingDevice::CreateRTView(FPRenderTargetFormat& RenderTargetFormat, 
 {
 	D3D11_RENDER_TARGET_VIEW_DESC  RTVDesc = {};
 
-	RTVDesc.Format = FPRenderTargetFormatToDXGI_FORMAT(RenderTargetFormat);		//Rexture 와 동일 Format  유지
+	RTVDesc.Format = FPRenderTargetFormatToDXGI_FORMAT(RenderTargetFormat);		//Texture 와 동일 Format  유지
 	RTVDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;						//2D RT
 	RTVDesc.Texture2D.MipSlice = 0;												//2D RT 용 추가 설정 : 밉맵 분할용 밉맵레벨 인덱스
 
@@ -324,7 +433,7 @@ HRESULT RenderingDevice::CreateRTSRView(FPRenderTargetFormat& RenderTargetFormat
 	
 	D3D11_SHADER_RESOURCE_VIEW_DESC  SRVVDesc = {};
 
-	SRVVDesc.Format = FPRenderTargetFormatToDXGI_FORMAT(RenderTargetFormat);		//Rexture 와 동일 Format  유지
+	SRVVDesc.Format = FPRenderTargetFormatToDXGI_FORMAT(RenderTargetFormat);		//Texture 와 동일 Format  유지
 	SRVVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;							//2D RT
 	SRVVDesc.Texture2D.MipLevels = -1;												//2D SRV용 추가 설정 : 밉맵 분할용 밉맵레벨 인덱스
 	SRVVDesc.Texture2D.MostDetailedMip = 0;
@@ -371,6 +480,94 @@ HRESULT RenderingDevice::CreateDepthStencilTexture(UINT SizeX, UINT SizeY, UINT 
 	if (FAILED(hr)) { std::cout << "DepthStencil Texture Create Fail!" << "\n"; return hr; }
 	*OutDSTex = Texture;
 
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateDepthStencilView(FPDepthStencilFormat& DepthStencilFormat, UINT MSAA, void* InDSTex, void** OutDSView)
+{
+	HRESULT hr = S_OK;
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC DSVDesc = {};
+	DSVDesc.Format = FPDepthStencilFormatToDXGI_FORMAT(DepthStencilFormat);
+	DSVDesc.Flags = 0;
+	DSVDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	DSVDesc.Texture2D.MipSlice = 0;
+
+	if (MSAA > 1)
+	{
+		DSVDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+		DSVDesc.Texture2DMS.UnusedField_NothingToDefine = 0;
+	}
+	
+	ID3D11DepthStencilView* DSV;
+	ID3D11Texture2D* DSTex = static_cast<ID3D11Texture2D*>(InDSTex);
+
+	hr = Device->CreateDepthStencilView(DSTex, &DSVDesc, &DSV);
+	if (FAILED(hr)) { std::cout << "DSV Create Fail!" << "\n"; return hr; }
+	
+	*OutDSView = DSV;
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateDepthStencilSRView(FPDepthStencilFormat& DepthStencilFormat, bool ShaderResource, UINT MSAA, void* InDSTex, void** OutDSSRView)
+{
+	HRESULT hr = S_OK;
+	if (!ShaderResource) return hr;
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+	DXGI_FORMAT DSVFormat = FPDepthStencilFormatToDXGI_FORMAT(DepthStencilFormat);
+	SRVDesc.Format = DSVFormatToSRVFormat(DSVFormat);
+	SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	SRVDesc.Texture2D.MostDetailedMip = 0;
+	SRVDesc.Texture2D.MipLevels = 1;
+	if (MSAA > 1)
+	{
+		SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
+		SRVDesc.Texture2DMS.UnusedField_NothingToDefine = 0;
+	}
+
+	ID3D11ShaderResourceView* DSSRV;
+	ID3D11Texture2D* DSTex = static_cast<ID3D11Texture2D*>(InDSTex);
+
+	hr = Device->CreateShaderResourceView(DSTex, &SRVDesc, &DSSRV);
+	if (FAILED(hr)) { std::cout << "DSSRV Create Fail!" << "\n"; return hr; }
+
+	*OutDSSRView = DSSRV;
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateDepthStencilState(FPDepthStencilStateInfo& DepthStencilInfo, void** OutDSState)
+{
+	HRESULT hr = S_OK;
+	D3D11_DEPTH_STENCIL_DESC Desc = {};
+
+	//Depth 설정
+	Desc.DepthEnable = DepthStencilInfo.DepthEnable ? TRUE : FALSE;
+	Desc.DepthWriteMask = FPDepthWriteMaskToD3DDepthWriteMask(DepthStencilInfo.DepthWriteMask);
+	Desc.DepthFunc = FPCompraisionFuncToD3DComparisonFunc(DepthStencilInfo.DepthFunc);
+
+	// Stencil 설정
+	Desc.StencilEnable = DepthStencilInfo.StencilEnable ? TRUE : FALSE;
+	Desc.StencilReadMask = static_cast<UINT8>(DepthStencilInfo.StencilReadMask);
+	Desc.StencilWriteMask = static_cast<UINT8>(DepthStencilInfo.StencilWriteMask);
+
+	// 앞면 Stencil 연산
+	Desc.FrontFace.StencilFailOp = FPStencilOPToD3DStencilOP(DepthStencilInfo.FrontFaceStencilFailOp);
+	Desc.FrontFace.StencilDepthFailOp = FPStencilOPToD3DStencilOP(DepthStencilInfo.FrontStencilDepthFailOp);
+	Desc.FrontFace.StencilPassOp = FPStencilOPToD3DStencilOP(DepthStencilInfo.FrontStencilPassOp);
+	Desc.FrontFace.StencilFunc = FPCompraisionFuncToD3DComparisonFunc(DepthStencilInfo.FrontStencilFunc);
+
+	// 뒷면 Stencil 연산
+	Desc.BackFace.StencilFailOp = FPStencilOPToD3DStencilOP(DepthStencilInfo.BackFaceStencilFailOp);
+	Desc.BackFace.StencilDepthFailOp = FPStencilOPToD3DStencilOP(DepthStencilInfo.BackStencilDepthFailOp);
+	Desc.BackFace.StencilPassOp = FPStencilOPToD3DStencilOP(DepthStencilInfo.BackStencilPassOp);
+	Desc.BackFace.StencilFunc = FPCompraisionFuncToD3DComparisonFunc(DepthStencilInfo.BackStencilFunc);
+
+	ID3D11DepthStencilState* State;
+	hr = Device->CreateDepthStencilState(&Desc, &State);
+	if (FAILED(hr)) { std::cout << "DepthStencil State Create Fail!" << "\n"; return hr; }
+
+	*OutDSState = State;
 	return hr;
 }
 

@@ -171,15 +171,34 @@ public:
 	void AddRenderTargetTexture2DData(std::string RenderTargetTexture2DName, FPRenderTargetTexture2DInfo& RenderTargetTexture2DData);
 	bool HasRenderTargetTexture2DData(std::string RenderTargetTexture2DName);
 
+	//Render Target Data
+	FPRenderTargetData& GetRenderTargetData(std::string RenderTargetName);
+	void AddRenderTargetData(std::string RenderTargetName, FPRenderTargetData& RenderTargetData);
+	bool HasRenderTargetData(std::string RenderTargetName);
+	void MakeRenderTarget(FPRenderTargetTexture2DInfo& RenderTargetInfo);
+
 	//DepthStencil Info
 	FPDepthStencilInfo& GetDepthStencilInfoData(std::string DepthStencilName);
 	void AddDepthStencilInfoData(std::string DepthStencilName, FPDepthStencilInfo& DepthStencilyData);
 	bool HasDepthStencilInfoData(std::string DepthStencilName);
 
+	//DepthStencil Data
+	FPDepthStencilData& GetDepthStencilData(std::string DepthStencilName);
+	void AddtDepthStencilData(std::string DepthStencilName, FPDepthStencilData& TextureData);
+	bool HastDepthStencilData(std::string DepthStencilName);
+	void MaketDepthStencil(FPDepthStencilInfo& TextureInfo);
+
+
 	//DepthStencilState Info
 	FPDepthStencilStateInfo& GetDepthStencilStateInfoData(std::string DepthStencilStateName);
 	void AddDepthStencilStateInfoData(std::string DepthStencilStateName, FPDepthStencilStateInfo& DepthStencilStateData);
 	bool HasDepthStencilStateInfoData(std::string DepthStencilStateName);
+
+	//DepthStencilState Data
+	FPDepthStencilStateData& GetDepthStencilStateData(std::string DepthStencilStateName);
+	void AddDepthStencilStateData(std::string DepthStencilStateName, FPDepthStencilStateData& DepthStencilStateData);
+	bool HasDepthStencilStateData(std::string DepthStencilStateName);
+	void MakeDepthStencilState(FPDepthStencilStateInfo& DepthStencilStateInfo);
 
 	//Material Info
 	FPMaterialData& GetMaterialData(std::string MaterialName);

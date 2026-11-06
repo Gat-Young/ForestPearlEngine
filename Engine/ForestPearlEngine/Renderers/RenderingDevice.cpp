@@ -33,6 +33,53 @@ RenderingDevice::RenderingDevice()
 	PixelShaderConstBuffer.resize(MAX_BufferSize);
 }
 
+DXGI_FORMAT RenderingDevice::FPRenderTargetFormatToDXGI_FORMAT(FPRenderTargetFormat& RenderTargetFormat)
+{
+	static const std::unordered_map<FPRenderTargetFormat, DXGI_FORMAT> FormatMap =
+	{
+		{ FPRenderTargetFormat::R8,         DXGI_FORMAT_R8_UNORM },
+		{ FPRenderTargetFormat::RG8,        DXGI_FORMAT_R8G8_UNORM },
+		{ FPRenderTargetFormat::RGBA8,      DXGI_FORMAT_R8G8B8A8_UNORM },
+		{ FPRenderTargetFormat::RGBA8_SRGB, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB },
+		{ FPRenderTargetFormat::R16F,       DXGI_FORMAT_R16_FLOAT },
+		{ FPRenderTargetFormat::RGBA16F,    DXGI_FORMAT_R16G16B16A16_FLOAT },
+		{ FPRenderTargetFormat::R32F,       DXGI_FORMAT_R32_FLOAT },
+		{ FPRenderTargetFormat::RGBA32F,    DXGI_FORMAT_R32G32B32A32_FLOAT },
+		{ FPRenderTargetFormat::RGBA10A2,   DXGI_FORMAT_R10G10B10A2_UNORM },
+	};
+
+	auto it = FormatMap.find(RenderTargetFormat);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	//기본값으로 설정된 RGBA8
+	return DXGI_FORMAT_R8G8B8A8_UNORM;
+}
+
+DXGI_FORMAT RenderingDevice::FPDepthStencilFormatToDXGI_FORMAT(FPDepthStencilFormat& DepthStencilFormat)
+{
+	static const std::unordered_map<FPDepthStencilFormat, DXGI_FORMAT> FormatMap =
+	{
+		{ FPDepthStencilFormat::D16,            DXGI_FORMAT_D16_UNORM },
+		{ FPDepthStencilFormat::D24_S8_UINT,     DXGI_FORMAT_D24_UNORM_S8_UINT },
+		{ FPDepthStencilFormat::D32F,            DXGI_FORMAT_D32_FLOAT },
+		{ FPDepthStencilFormat::D32F_S8X24_UINT, DXGI_FORMAT_D32_FLOAT_S8X24_UINT },
+	};
+
+	auto it = FormatMap.find(DepthStencilFormat);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	//기본값으로 설정된 D24_S8_UINT
+	return DXGI_FORMAT_D24_UNORM_S8_UINT;
+}
+
 //싱글톤 렌더링 디바이스 객체 가져오기
 RenderingDevice& RenderingDevice::GetRenderingDevice()
 {
@@ -193,6 +240,105 @@ HRESULT RenderingDevice::CreateSwapChain(HWND hwnd)
 		SwapChain.GetAddressOf());
 
 	assert(SUCCEEDED(hr) && "스왑체인 생성 실패\n");
+
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateRTTex(UINT SizeX, UINT SizeY, UINT MSAA, bool MipMap, FPRenderTargetFormat& RenderTargetFormat, void** OutRTTex, void** OutResolveTexture)
+{
+	HRESULT hr = S_OK;
+	//텍스처 정보 구성
+
+	//RenderTarget용 Texture
+	D3D11_TEXTURE2D_DESC TextureDesc = {};
+	TextureDesc.Width = SizeX;
+	TextureDesc.Height = SizeY;
+	TextureDesc.MipLevels = 1;					//MSAA를 사용하는 경우 MipLevels를 1로 설정
+	TextureDesc.ArraySize = 1;					//추후 다른 Type의 RT Tex를 만들때 변경 필요
+	TextureDesc.Format = FPRenderTargetFormatToDXGI_FORMAT(RenderTargetFormat);
+	TextureDesc.SampleDesc.Count = MSAA;		//기본 설정은 1이나 MSAA가 사용될 수 있으므로 SRV Texture는 Resolve함
+	TextureDesc.Usage = D3D11_USAGE_DEFAULT;
+	TextureDesc.BindFlags = D3D11_BIND_RENDER_TARGET;	//용도 RT
+	TextureDesc.CPUAccessFlags = 0;
+	TextureDesc.MiscFlags = 0;
+
+	ID3D11Texture2D* RTTex = nullptr;
+	hr = Device->CreateTexture2D(&TextureDesc, NULL, &RTTex);
+	if (FAILED(hr)) { std::cout << "RT Tex 생성 실패" << "\n"; }
+
+	//외부로 Return
+	*OutRTTex = RTTex;
+
+	//SRV용 Texture
+	//RenderTarget용 Texture와 구성은 같으나 일부 설정이 다름
+	TextureDesc.SampleDesc.Count = 1;		//Texture2D Sample 및 MipMap 생성을 위해서 MSAA 설정을 끈 Texture 생성
+	TextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;	//용도 Shader Resource
+	//자동 MipMap 설정을 킨 경우
+	if (MipMap)
+	{
+		TextureDesc.MipLevels = 0;	//전체 MipMap 생성
+		TextureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;	//용도 RT + SRV, MipMap 자동 생성을 위해
+		TextureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+	}
+
+
+	ID3D11Texture2D* SRVTex = nullptr;
+	hr = Device->CreateTexture2D(&TextureDesc, NULL, &SRVTex);
+	if (FAILED(hr)) { std::cout << "SRV Tex 생성 실패" << "\n"; return hr; }
+
+	//외부로 Return
+	*OutResolveTexture = SRVTex;
+
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateRTView(FPRenderTargetFormat& RenderTargetFormat, UINT MSAA, void* InRTTex, void** OutRTView)
+{
+	D3D11_RENDER_TARGET_VIEW_DESC  RTVDesc = {};
+
+	RTVDesc.Format = FPRenderTargetFormatToDXGI_FORMAT(RenderTargetFormat);		//Rexture 와 동일 Format  유지
+	RTVDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;						//2D RT
+	RTVDesc.Texture2D.MipSlice = 0;												//2D RT 용 추가 설정 : 밉맵 분할용 밉맵레벨 인덱스
+
+	//MSAA 설정 사용
+	if (MSAA > 1)
+	{
+		RTVDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
+		RTVDesc.Texture2DMS.UnusedField_NothingToDefine = 0;
+	}
+
+	//렌더타겟 뷰 생성
+	ID3D11RenderTargetView* RTView = nullptr;
+	ID3D11Texture2D* InTex = static_cast<ID3D11Texture2D*>(InRTTex);
+	HRESULT hr = Device->CreateRenderTargetView(InTex, &RTVDesc, &RTView);
+	if (FAILED(hr)) { std::cout << "RTV 생성 실패" << "\n"; return hr; }
+
+	//외부 리턴
+	*OutRTView = RTView;
+
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateRTSRView(FPRenderTargetFormat& RenderTargetFormat, void* InRTRelsolveTex, void** OutSRVView)
+{
+	
+	D3D11_SHADER_RESOURCE_VIEW_DESC  SRVVDesc = {};
+
+	SRVVDesc.Format = FPRenderTargetFormatToDXGI_FORMAT(RenderTargetFormat);		//Rexture 와 동일 Format  유지
+	SRVVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;							//2D RT
+	SRVVDesc.Texture2D.MipLevels = -1;												//2D SRV용 추가 설정 : 밉맵 분할용 밉맵레벨 인덱스
+	SRVVDesc.Texture2D.MostDetailedMip = 0;
+	//MSAA 설정은 필요시 진행
+	
+
+	//렌더타겟 뷰 생성
+	ID3D11ShaderResourceView* SRVView = nullptr;
+	ID3D11Texture2D* InTex = static_cast<ID3D11Texture2D*>(InRTRelsolveTex);
+	HRESULT hr = Device->CreateShaderResourceView(InTex, &SRVVDesc, &SRVView);
+	if (FAILED(hr)) { std::cout << "RTSRV 생성 실패" << "\n"; return hr; }
+
+	//외부 리턴
+	*OutSRVView = SRVView;
 
 	return hr;
 }

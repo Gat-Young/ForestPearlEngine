@@ -245,9 +245,10 @@ struct FPRenderTargetTexture2DInfo
 
 struct FPRenderTargetData
 {
-	void* Texture;
-	void* RenderTargetView;
-	void* ShaderResourceView;
+	void* Texture = nullptr;
+	void* ResolveTexture = nullptr;
+	void* RenderTargetView = nullptr;
+	void* ShaderResourceView = nullptr;
 };
 
 //DepthStencill

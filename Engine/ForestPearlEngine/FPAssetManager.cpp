@@ -131,6 +131,12 @@ void FPAssetManager::AllAssetDataCreate()
 		MakeTextureArray(Asset);
 	}
 
+	//RenderTarget »ı¼º
+	for (auto& [AssetName, Asset] : LoadedRenderTargetTexture2DData)
+	{
+		MakeRenderTarget(Asset);
+	}
+
 	//Fbx Load
 	for (auto& [AssetName, Asset] : LoadedStaticMeshData)
 	{
@@ -1353,6 +1359,35 @@ bool FPAssetManager::HasRenderTargetTexture2DData(std::string RenderTargetTextur
 	return false;
 }
 
+FPRenderTargetData& FPAssetManager::GetRenderTargetData(std::string RenderTargetName)
+{
+	return RenderTargetData[RenderTargetName];
+}
+
+void FPAssetManager::AddRenderTargetData(std::string RenderTargetName, FPRenderTargetData& RenderTargetData)
+{
+	this->RenderTargetData[RenderTargetName] = RenderTargetData;
+}
+
+bool FPAssetManager::HasRenderTargetData(std::string RenderTargetName)
+{
+	if (RenderTargetData.count(RenderTargetName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void FPAssetManager::MakeRenderTarget(FPRenderTargetTexture2DInfo& RenderTargetInfo)
+{
+	FPRenderTargetData RenderTargetResourceData;
+	RenderingDevice::GetRenderingDevice().CreateRTTex(RenderTargetInfo.SizeX, RenderTargetInfo.SizeY, RenderTargetInfo.MSAA, RenderTargetInfo.MipMap, RenderTargetInfo.RenderTragetFormat, &RenderTargetResourceData.Texture, &RenderTargetData.ResolveTexture);
+	RenderingDevice::GetRenderingDevice().CreateRTView(RenderTargetInfo.RenderTragetFormat, RenderTargetInfo.MSAA, RenderTargetResourceData.Texture, &RenderTargetResourceData.RenderTargetView);
+	RenderingDevice::GetRenderingDevice().CreateRTSRView(RenderTargetInfo.RenderTragetFormat, RenderTargetResourceData.ResolveTexture, &RenderTargetResourceData.ShaderResourceView);
+	RenderTargetData[RenderTargetInfo.Name] = RenderTargetResourceData;
+}
+
 FPDepthStencilInfo& FPAssetManager::GetDepthStencilInfoData(std::string DepthStencilName)
 {
 	return LoadedDepthStencilData[DepthStencilName];
@@ -1373,6 +1408,26 @@ bool FPAssetManager::HasDepthStencilInfoData(std::string DepthStencilName)
 	return false;
 }
 
+FPDepthStencilData& FPAssetManager::GetDepthStencilData(std::string DepthStencilName)
+{
+	return DepthStencilData[DepthStencilName];
+}
+
+void FPAssetManager::AddtDepthStencilData(std::string DepthStencilName, FPDepthStencilData& TextureData)
+{
+	this->DepthStencilData[DepthStencilName] = TextureData;
+}
+
+bool FPAssetManager::HastDepthStencilData(std::string DepthStencilName)
+{
+	if (DepthStencilData.count(DepthStencilName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 FPDepthStencilStateInfo& FPAssetManager::GetDepthStencilStateInfoData(std::string DepthStencilStateName)
 {
 	return LoadedDepthStencilStateData[DepthStencilStateName];
@@ -1386,6 +1441,26 @@ void FPAssetManager::AddDepthStencilStateInfoData(std::string DepthStencilStateN
 bool FPAssetManager::HasDepthStencilStateInfoData(std::string DepthStencilStateName)
 {
 	if (LoadedDepthStencilStateData.count(DepthStencilStateName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+FPDepthStencilStateData& FPAssetManager::GetDepthStencilStateData(std::string DepthStencilStateName)
+{
+	return DepthStencilStateData[DepthStencilStateName];
+}
+
+void FPAssetManager::AddDepthStencilStateData(std::string DepthStencilStateName, FPDepthStencilStateData& DepthStencilStateData)
+{
+	this->DepthStencilStateData[DepthStencilStateName] = DepthStencilStateData;
+}
+
+bool FPAssetManager::HasDepthStencilStateData(std::string DepthStencilStateName)
+{
+	if (DepthStencilStateData.count(DepthStencilStateName) > 0)
 	{
 		return true;
 	}

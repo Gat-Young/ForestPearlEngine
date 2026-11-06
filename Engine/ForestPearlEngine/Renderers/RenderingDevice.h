@@ -133,6 +133,10 @@ class RenderingDevice
 
 		XMFLOAT4 BackGroundColor = { 0, 0.125f, 0.3f, 1 };
 
+		//DXGI Format Converter
+		DXGI_FORMAT FPRenderTargetFormatToDXGI_FORMAT(FPRenderTargetFormat& RenderTargetFormat);
+		DXGI_FORMAT FPDepthStencilFormatToDXGI_FORMAT(FPDepthStencilFormat& DepthStencilFormat);
+		
 	public:
 		static RenderingDevice& GetRenderingDevice();
 
@@ -141,6 +145,7 @@ class RenderingDevice
 		HRESULT SetMSAA(int MSAA);
 		HRESULT SetAF(int AF);
 
+		//Device Resource »ý¼º
 		HRESULT CreateFactory();
 
 		HRESULT CreateHighSpecDevice();
@@ -148,7 +153,16 @@ class RenderingDevice
 
 		HRESULT CreateSwapChain(HWND hwnd);
 
+		//Render Target Create
+		HRESULT CreateRTTex(UINT SizeX, UINT SizeY, UINT MSAA, bool MipMap ,FPRenderTargetFormat& RenderTargetFormat,void** OutRTTex, void** OutResolveTexture);
+		HRESULT CreateRTView(FPRenderTargetFormat& RenderTargetFormat, UINT MSAA, void* InRTTex , void** OutRTView);
+		HRESULT CreateRTSRView(FPRenderTargetFormat& RenderTargetFormat, void* InRTRelsolveTex, void** OutSRVView);
+
+		//Depth Stencil Create
 		HRESULT CreateDepthStencil();
+
+		//Depth Stencil State Create
+
 
 		HRESULT SetBackBufferToRenderTargetView();
 

@@ -599,6 +599,20 @@ struct CameraItem
 	bool* TripleCam = nullptr;
 };
 
+//SceneCapture2D Component
+struct SceneCapture2DItem
+{
+	//카메라의 위치
+	FPMatrix* Location = nullptr;
+	FPMatrix* Rotation = nullptr;
+	FPMatrix* Scale = nullptr;
+
+	FPMatrix* View = nullptr;
+	FPMatrix* Projection = nullptr;
+
+	bool* Active = nullptr;			//카메라 사용 여부
+};
+
 struct UIContextItem
 {
 	int* Priority;

@@ -115,6 +115,9 @@
     <Filter Include="Assets\ShaderResource\Common\Bump">
       <UniqueIdentifier>{8e360594-20ea-45b9-bc5d-19afdcdb375f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Component\SceneCapture">
+      <UniqueIdentifier>{f2086061-7853-4d21-bdbf-d66d0f60a7c5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -326,6 +329,18 @@
     </ClInclude>
     <ClInclude Include="FPTexture2DArray.h">
       <Filter>RenderAsset</Filter>
+    </ClInclude>
+    <ClInclude Include="FPSceneCaptureComponent.h">
+      <Filter>Component\SceneCapture</Filter>
+    </ClInclude>
+    <ClInclude Include="FPSceneCaptureComponent2D.h">
+      <Filter>Component\SceneCapture</Filter>
+    </ClInclude>
+    <ClInclude Include="FPSceneCaptureComponentCube.h">
+      <Filter>Component\SceneCapture</Filter>
+    </ClInclude>
+    <ClInclude Include="FPPlanarReflectionComponent.h">
+      <Filter>Component\SceneCapture</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

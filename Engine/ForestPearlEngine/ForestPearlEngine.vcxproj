@@ -153,9 +153,13 @@
     <ClInclude Include="FPMaterial.h" />
     <ClInclude Include="FPMaterialInterface.h" />
     <ClInclude Include="FPMovementComponent.h" />
+    <ClInclude Include="FPPlanarReflectionComponent.h" />
     <ClInclude Include="FPPointLightComponent.h" />
     <ClInclude Include="FPPrimitiveComponent.h" />
     <ClInclude Include="FPRectLightComponent.h" />
+    <ClInclude Include="FPSceneCaptureComponent.h" />
+    <ClInclude Include="FPSceneCaptureComponent2D.h" />
+    <ClInclude Include="FPSceneCaptureComponentCube.h" />
     <ClInclude Include="FPSceneComponent.h" />
     <ClInclude Include="FPSkyLightComponent.h" />
     <ClInclude Include="FPSpotLightComponent.h" />

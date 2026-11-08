@@ -9,4 +9,15 @@ class FPSceneCaptureComponent2D : public FPSceneCaptureComponent
 		void SetRenderTarget(std::string& RenderTarget) override;
 		void SetCaptureEveryFrame(bool Active) override;
 		void CaptureScene() override;
+
+		//투영 변환 속성 제어 함수
+		void SetFov(float Fov) override;
+		void SetAspect(float Aspect) override;
+		void SetZn(float Zn) override;
+		void SetZf(float Zf) override;
+
+		//HiddenActors 운용 함수
+		void AddHiddenActor(FPActor* Acotr) override;
+		void RemoveHiddenAcotr(FPActor* Actor) override;
+		void EmptyHiddenActor() override;
 };

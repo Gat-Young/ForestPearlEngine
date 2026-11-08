@@ -75,7 +75,7 @@ void FPWorld::OpenLevel(std::string LevelName)
 	{
 		FPActor* SpawnActor = CreateClassInstnce<FPActor>(Data.ClassName);
 		SpawnActor->SetOuter(this);
-		SpawnActor->SetActorName(Data.ActorName);
+		SpawnActor->SetActorName(Data.ActorName.empty() ? GenerateUniqueActorName(Data.ClassName) : Data.ActorName);
 		SpawnActor->SetActorLocation({ Data.Location_x,Data.Location_y, Data.Location_z });
 		SpawnActor->SetActorRotation({ Data.Rotation_x, Data.Rotation_y, Data.Rotation_z });
 		SpawnActor->SetActorScale3D({ Data.Scale_x, Data.Scale_y, Data.Scale_Z });
@@ -99,11 +99,20 @@ FPActor* FPWorld::SpawnActor(std::string ActorClassName, std::string ActorName)
 	SpawnActor->SetOuter(this);
 	SpawnActor->Initialize();
 	SpawnActor->BeginPlay();
-	SpawnActor->SetActorName(ActorName);
+	SpawnActor->SetActorName(ActorName.empty() ? GenerateUniqueActorName(ActorClassName) : ActorName);
 
 	GameActorList.push_back(SpawnActor);
 
 	return SpawnActor;
+}
+
+std::string FPWorld::GenerateUniqueActorName(const std::string& ClassName)
+{
+	int& Count = ActorNameCounterMap[ClassName];
+	std::string GeneratedName = ClassName + "_" + std::to_string(Count);
+	Count++;
+
+	return GeneratedName;
 }
 
 FPAController* FPWorld::GetController(int index)

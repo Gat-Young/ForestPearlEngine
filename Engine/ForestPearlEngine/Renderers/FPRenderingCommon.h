@@ -529,8 +529,8 @@ struct RenderItem
 	int* Priority = nullptr;
 	bool* Active = nullptr;
 
-	//Actor Name
-	FPActor* OwnActor = nullptr;
+	//FPActor*
+	void* OwnActor = nullptr;
 
 	std::string* MeshPath = nullptr;
 	
@@ -618,6 +618,8 @@ struct SceneCaptureItem
 	std::string* RenderTarget = nullptr;								//사용하는 RenderTarget 이름
 
 	bool* CaptureEveryFrame = nullptr;
+
+	std::vector<void*>* HiddenActors = nullptr;
 };
 
 struct UIContextItem

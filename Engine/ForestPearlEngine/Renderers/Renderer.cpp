@@ -136,7 +136,7 @@ void Renderer::CreateMeshRenderList()
 
 		RenderingData::MeshRenderItem MeshRenderData;
 		MeshRenderData.Priority = *(RenderItemData.Priority);
-		MeshRenderData.ActorName = (*(RenderItemData.OwnActor)).GetName();
+		MeshRenderData.ActorName = static_cast<FPActor*>(RenderItemData.OwnActor)->GetName();
 		MeshRenderData.MeshPath = *(RenderItemData.MeshPath);
 		MeshRenderData.Location = *(RenderItemData.Location);
 		MeshRenderData.Rotation = *(RenderItemData.Rotation);

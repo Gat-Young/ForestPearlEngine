@@ -3,6 +3,8 @@
 #include "FPSceneCaptureList.h"
 #include <vector>
 
+class FPActor;
+
 class FPSceneCaptureComponent : public FPSceneComponent
 {
 	protected:
@@ -28,7 +30,7 @@ class FPSceneCaptureComponent : public FPSceneComponent
 		bool CaptureThisFrame = true;							//RenderList 생성시 확인후 False로 변경 해 줄 것
 
 		//해당 Actor들은 RenderTarget 캡처시 제외 함
-		std::vector<std::string> HiddenActors;					//숨길 Actor 이름 목록
+		std::vector<void*> HiddenActors;					//은닉 Actor의 목록 (void*)
 
 	public:
 		FPSceneCaptureComponent(FPActor* Owner);
@@ -38,4 +40,15 @@ class FPSceneCaptureComponent : public FPSceneComponent
 		virtual void SetRenderTarget(std::string& RenderTarget) = 0;
 		virtual void SetCaptureEveryFrame(bool Active) = 0;
 		virtual void CaptureScene() = 0;
+
+		//투영 변환 속성 제어 함수
+		virtual void SetFov(float Fov) = 0;
+		virtual void SetAspect(float Aspect) = 0;
+		virtual void SetZn(float Zn) = 0;
+		virtual void SetZf(float Zf) = 0;
+		
+		//HiddenActors 운용 함수
+		virtual void AddHiddenActor(FPActor* Acotr) = 0;
+		virtual void RemoveHiddenAcotr(FPActor* Actor) = 0;
+		virtual void EmptyHiddenActor() = 0;
 };

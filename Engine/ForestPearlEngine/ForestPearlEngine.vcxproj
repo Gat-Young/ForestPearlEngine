@@ -160,6 +160,7 @@
     <ClInclude Include="FPSceneCaptureComponent.h" />
     <ClInclude Include="FPSceneCaptureComponent2D.h" />
     <ClInclude Include="FPSceneCaptureComponentCube.h" />
+    <ClInclude Include="FPSceneCaptureList.h" />
     <ClInclude Include="FPSceneComponent.h" />
     <ClInclude Include="FPSkyLightComponent.h" />
     <ClInclude Include="FPSpotLightComponent.h" />
@@ -227,7 +228,12 @@
     <ClCompile Include="FPMaterial.cpp" />
     <ClCompile Include="FPMovementCompoent.cpp" />
     <ClCompile Include="FPMovementComponent.cpp" />
+    <ClCompile Include="FPPlanarReflectionComponent.cpp" />
     <ClCompile Include="FPPointLightComponent.cpp" />
+    <ClCompile Include="FPSceneCaptureComponent.cpp" />
+    <ClCompile Include="FPSceneCaptureComponent2D.cpp" />
+    <ClCompile Include="FPSceneCaptureComponentCube.cpp" />
+    <ClCompile Include="FPSceneCaptureList.cpp" />
     <ClCompile Include="FPSceneComponent.cpp" />
     <ClCompile Include="FPGameProjectClassRegistry.cpp" />
     <ClCompile Include="FPGameTimer.cpp" />

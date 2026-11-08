@@ -16,6 +16,10 @@ class FPWorld : public FPObject
 	protected:
 		std::vector<FPActor*> GameActorList;
 		std::unique_ptr<FPAGameMode> GameMode;
+		std::unordered_map<std::string, int> ActorNameCounterMap;
+
+		//ClassName 기준 유일한 Actor 이름 생성
+		std::string GenerateUniqueActorName(const std::string& ClassName);
 
 	public:
 		FPWorld();

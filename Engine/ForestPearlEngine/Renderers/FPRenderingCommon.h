@@ -618,6 +618,7 @@ struct SceneCaptureItem
 	std::string* RenderTarget = nullptr;								//사용하는 RenderTarget 이름
 
 	bool* CaptureEveryFrame = nullptr;
+	bool* CaptureThisFrame = nullptr;
 
 	std::vector<void*>* HiddenActors = nullptr;
 };
@@ -868,6 +869,22 @@ namespace RenderingData
 
 		FPConstantBufferRenderData VertexConstBuffer;
 		FPConstantBufferRenderData PixelConstBuffer;
+	};
+
+	//SceneCapture Component
+	struct SceneCaptureItem
+	{
+		//카메라의 위치
+		FPMatrix Location;
+		FPMatrix Rotation;
+		FPMatrix Scale;
+
+		FPMatrix View;
+		FPMatrix Projection;
+
+		std::string RenderTarget = nullptr;								//사용하는 RenderTarget 이름
+
+		std::vector<std::string> HiddenActors;
 	};
 
 	struct MeshRenderItemCompare

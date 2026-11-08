@@ -19,6 +19,7 @@ void FPSceneCaptureComponent2D::RegistSceneCaptureComponent()
 	SceneCaptureItem->Active = &(this->Active);
 	SceneCaptureItem->RenderTarget = &(this->RenderTarget);
 	SceneCaptureItem->CaptureEveryFrame = &(this->CaptureEveryFrame);
+	SceneCaptureItem->CaptureThisFrame = &(this->CaptureThisFrame);
 	SceneCaptureItem->HiddenActors = &(this->HiddenActors);
 }
 

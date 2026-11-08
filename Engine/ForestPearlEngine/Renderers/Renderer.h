@@ -67,6 +67,8 @@ class Renderer
 		//Light Render Item
 		std::vector<RenderingData::LightRenderItem> LightRenderList;
 
+		//SceneCapture Item
+		std::vector<RenderingData::SceneCaptureItem> SceneCaptureList;
 
 	public:
 		Renderer(RenderingDevice& Device);

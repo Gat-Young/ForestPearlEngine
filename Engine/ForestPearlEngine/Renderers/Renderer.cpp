@@ -18,6 +18,9 @@
 #include "../FPLightRenderList.h"
 #include "../FPMeshNormalRenderList.h"
 
+//맘에 안들기는 하는 데 우선..
+#include "../Object/Actor.h"
+
 
 //객체 해제/제거 매크로()
 #ifndef SafeRelease
@@ -133,6 +136,7 @@ void Renderer::CreateMeshRenderList()
 
 		RenderingData::MeshRenderItem MeshRenderData;
 		MeshRenderData.Priority = *(RenderItemData.Priority);
+		MeshRenderData.ActorName = (*(RenderItemData.OwnActor)).GetName();
 		MeshRenderData.MeshPath = *(RenderItemData.MeshPath);
 		MeshRenderData.Location = *(RenderItemData.Location);
 		MeshRenderData.Rotation = *(RenderItemData.Rotation);

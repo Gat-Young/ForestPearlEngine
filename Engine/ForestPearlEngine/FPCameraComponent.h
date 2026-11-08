@@ -1,9 +1,9 @@
 #pragma once
-#include "FPPrimitiveComponent.h"
+#include "FPSceneComponent.h"
 #include "../ForestPearlEngine/Define/FPMath.h"
 #include "FPCameraList.h"
 
-class FPCameraComponent : public FPPrimitiveComponent
+class FPCameraComponent : public FPSceneComponent
 {
 	public:
 		//카메라 속성

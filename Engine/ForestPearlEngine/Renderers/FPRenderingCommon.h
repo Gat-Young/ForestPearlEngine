@@ -529,6 +529,9 @@ struct RenderItem
 	int* Priority = nullptr;
 	bool* Active = nullptr;
 
+	//Actor Name
+	FPActor* OwnActor = nullptr;
+
 	std::string* MeshPath = nullptr;
 	
 	//핵심 데이터
@@ -599,8 +602,8 @@ struct CameraItem
 	bool* TripleCam = nullptr;
 };
 
-//SceneCapture2D Component
-struct SceneCapture2DItem
+//SceneCapture Component
+struct SceneCaptureItem
 {
 	//카메라의 위치
 	FPMatrix* Location = nullptr;
@@ -611,6 +614,10 @@ struct SceneCapture2DItem
 	FPMatrix* Projection = nullptr;
 
 	bool* Active = nullptr;			//카메라 사용 여부
+
+	std::string* RenderTarget = nullptr;								//사용하는 RenderTarget 이름
+
+	bool* CaptureEveryFrame = nullptr;
 };
 
 struct UIContextItem
@@ -841,6 +848,7 @@ namespace RenderingData
 	{
 		int Priority;
 
+		std::string ActorName;
 		std::string MeshPath;
 
 		//주요 정보

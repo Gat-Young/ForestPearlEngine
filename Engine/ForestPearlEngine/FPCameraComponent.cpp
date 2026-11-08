@@ -3,7 +3,7 @@
 #include "FPGameProjectSetting.h"
 
 
-FPCameraComponent::FPCameraComponent(FPActor* Owner) : FPPrimitiveComponent(Owner)
+FPCameraComponent::FPCameraComponent(FPActor* Owner) : FPSceneComponent(Owner)
 {
 	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
 	this->Aspect = GameProjectSetting->GetDisplayAspect();

@@ -30,6 +30,7 @@ void FPStaticMeshComponent::SetRenderItemData()
 	RenderItem->Priority = &(this->Priority);
 	RenderItem->Active = &(this->isActive);
 
+	RenderItem->OwnActor = (this->Owner);
 	RenderItem->MeshPath = StaticMesh->GetMeshPath();
 
 	RenderItem->Location = &(this->WorldTransform.LocationMatrix);

@@ -17,6 +17,7 @@
 #include "../FPViewPortClient.h"
 #include "../FPLightRenderList.h"
 #include "../FPMeshNormalRenderList.h"
+#include "../FPSceneCaptureList.h"
 
 //맘에 안들기는 하는 데 우선..
 #include "../Object/Actor.h"
@@ -429,6 +430,52 @@ void Renderer::CreateNormalRenderList()
 		NormalItem.NormalSign = -1.0f;
 		FPConstantBufferRenderDataUtil::UpdateConstantBuffer(NormalRenderData.VertexConstBuffer, 0, NormalItem);
 		this->NormalRenderList.push_back(NormalRenderData);
+	}
+}
+
+void Renderer::CreateSceneCaptureList()
+{
+	//List에 값이 있다면 우선 비운
+	SceneCaptureList.clear();
+
+	//Camera List
+	FPSceneCaptureList* SceneCaptureList = static_cast<FPSceneCaptureList*>(FPGameInstance::Get().GetSceneCaptureList());
+	std::vector<SceneCaptureItem> SceneCapList = SceneCaptureList->GetRenderList();
+
+	for (SceneCaptureItem& SceneCaptureItem : SceneCapList)
+	{
+		//CaptureComponent가 활성 상태가 아니라면 넘어감
+		if (!(*(SceneCaptureItem.Active))) continue;
+
+		bool CaptureEveryFrame = *(SceneCaptureItem.CaptureEveryFrame);
+		bool CaptureThisFrame = *(SceneCaptureItem.CaptureThisFrame);
+
+		//CaptureScene을 호출 한 경우 혹은 매 프레임이 Capture인 경우
+		if (CaptureThisFrame)
+		{
+			//SceneCaptureList에 항목을 만들어 서 추가
+			RenderingData::SceneCaptureItem RenderSceneCaptureItem;
+
+			RenderSceneCaptureItem.Location = *(SceneCaptureItem.Location);
+			RenderSceneCaptureItem.Rotation = *(SceneCaptureItem.Rotation);
+			RenderSceneCaptureItem.Scale = *(SceneCaptureItem.Scale);
+
+			RenderSceneCaptureItem.View = *(SceneCaptureItem.View);
+			RenderSceneCaptureItem.Projection = *(SceneCaptureItem.Projection);
+
+			RenderSceneCaptureItem.RenderTarget = *(SceneCaptureItem.RenderTarget);
+
+			//은닉 Actor 목록을 이름으로 변환하여 등록
+			for (void* HiddenActor : *(SceneCaptureItem.HiddenActors))
+			{
+				RenderSceneCaptureItem.HiddenActors.push_back(static_cast<FPActor*>(HiddenActor)->GetName());
+			}
+
+			this->SceneCaptureList.push_back(RenderSceneCaptureItem);
+		}
+
+		//CaptureEveryFrame을 따라감  (true면 계속 true, False면 호출시만 Capture 될꺼임)
+		*(SceneCaptureItem.CaptureThisFrame) = CaptureEveryFrame;
 	}
 }
 

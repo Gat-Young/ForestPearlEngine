@@ -80,6 +80,7 @@ class Renderer
 		void CreateUIRenderList();
 		void CreateLightRenderList();
 		void CreateNormalRenderList();
+		void CreateSceneCaptureList();
 
 		//RenderPass ÇÔ¼ö
 		void ClearBackBuffer();

@@ -68,12 +68,12 @@ void FPSceneCaptureComponent2D::CaptureScene()
 //HiddenActors 운용 함수
 void FPSceneCaptureComponent2D::AddHiddenActor(FPActor* Acotr)
 {
-	HiddenActors.push_back(static_cast<void*>(Acotr));
+	HiddenActors.push_back(Acotr->GetName());
 }
 
 void FPSceneCaptureComponent2D::RemoveHiddenAcotr(FPActor* Actor)
 {
-	auto RawIt = std::find(HiddenActors.begin(), HiddenActors.end(), static_cast<void*>(Actor));
+	auto RawIt = std::find(HiddenActors.begin(), HiddenActors.end(), Actor->GetName());
 
 	if (RawIt != HiddenActors.end())
 	{

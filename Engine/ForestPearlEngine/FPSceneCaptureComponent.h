@@ -30,7 +30,7 @@ class FPSceneCaptureComponent : public FPSceneComponent
 		bool CaptureThisFrame = true;							//RenderList 생성시 확인후 False로 변경 해 줄 것
 
 		//해당 Actor들은 RenderTarget 캡처시 제외 함
-		std::vector<void*> HiddenActors;					//은닉 Actor의 목록 (void*)
+		std::vector<std::string> HiddenActors;					//은닉 Actor의 목록
 
 	public:
 		FPSceneCaptureComponent(FPActor* Owner);

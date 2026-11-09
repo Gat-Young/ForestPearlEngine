@@ -137,7 +137,7 @@ void Renderer::CreateMeshRenderList()
 
 		RenderingData::MeshRenderItem MeshRenderData;
 		MeshRenderData.Priority = *(RenderItemData.Priority);
-		MeshRenderData.ActorName = static_cast<FPActor*>(RenderItemData.OwnActor)->GetName();
+		MeshRenderData.ActorName = static_cast<FPActor*>(RenderItemData.OwnActor)->GetName();		//살짝 맘에 들지는 않네...
 		MeshRenderData.MeshPath = *(RenderItemData.MeshPath);
 		MeshRenderData.Location = *(RenderItemData.Location);
 		MeshRenderData.Rotation = *(RenderItemData.Rotation);
@@ -465,11 +465,8 @@ void Renderer::CreateSceneCaptureList()
 
 			RenderSceneCaptureItem.RenderTarget = *(SceneCaptureItem.RenderTarget);
 
-			//은닉 Actor 목록을 이름으로 변환하여 등록
-			for (void* HiddenActor : *(SceneCaptureItem.HiddenActors))
-			{
-				RenderSceneCaptureItem.HiddenActors.push_back(static_cast<FPActor*>(HiddenActor)->GetName());
-			}
+			//Hidden Actor 명단을 그대로 복사
+			RenderSceneCaptureItem.HiddenActors = *(SceneCaptureItem.HiddenActors);
 
 			this->SceneCaptureList.push_back(RenderSceneCaptureItem);
 		}

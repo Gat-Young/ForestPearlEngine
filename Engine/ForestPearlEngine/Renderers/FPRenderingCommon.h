@@ -620,7 +620,7 @@ struct SceneCaptureItem
 	bool* CaptureEveryFrame = nullptr;
 	bool* CaptureThisFrame = nullptr;
 
-	std::vector<void*>* HiddenActors = nullptr;
+	std::vector<std::string>* HiddenActors = nullptr;
 };
 
 struct UIContextItem

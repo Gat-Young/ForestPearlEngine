@@ -527,6 +527,12 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 void Renderer::SceneCaptureRenderPass()
 {
+	//상수 버퍼 14개씩 Set
+	for (int i = 0; i < 14; ++i)
+	{
+		Device.VSSetConstantBuffers(i, 1);
+		Device.PSSetConstantBuffers(i, 1);
+	}
 }
 
 void Renderer::MeshRenderPass()

@@ -620,7 +620,7 @@ HRESULT RenderingDevice::SetBackBufferToRenderTargetView()
 	assert(SUCCEEDED(hr) && "백버퍼 가져오기 실패\n");
 
 	//획득한 백버퍼에 렌더타겟 뷰 생성(렌더타겟 "형"으로 설정함)
-	hr = Device->CreateRenderTargetView(BackBuffer, NULL, RenderTargetView.GetAddressOf());
+	hr = Device->CreateRenderTargetView(BackBuffer, NULL, BackBufferRenderTargetView.GetAddressOf());
 	assert(SUCCEEDED(hr) && "백버퍼 - 렌더타겟뷰 생성 실패\n");
 
 	BackBuffer->Release();
@@ -636,10 +636,33 @@ HRESULT RenderingDevice::OMSetRenderTargets()
 	//장치 출력병합기(Output Merger)에 렌더링 타겟 및 깊이-스탠실 버퍼 등록
 	DeviceContext->OMSetRenderTargets(
 		1,									//렌더타겟 개수. (max: D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT)
-		RenderTargetView.GetAddressOf(),	//렌더타겟("백버퍼") 등록.
+		BackBufferRenderTargetView.GetAddressOf(),	//렌더타겟("백버퍼") 등록.
 		DepthStencilBufferView.Get() //깊이 스텐실 버퍼 등록
 	);
 	
+	return hr;
+}
+
+//BackBufferRenderTarget Setting
+HRESULT RenderingDevice::OMSetBackBufferRenderTargets(UINT RenderTargetNum, void* InDepthStencilView)
+{
+	HRESULT hr = S_OK;
+
+	ID3D11DepthStencilView* DepthStencilView = static_cast<ID3D11DepthStencilView*>(InDepthStencilView);
+	DeviceContext->OMSetRenderTargets(RenderTargetNum, BackBufferRenderTargetView.GetAddressOf(), DepthStencilView);
+
+	return hr;
+}
+
+HRESULT RenderingDevice::OMSetRenderTargets(UINT RenderTargetNum, void* InRenderTargetView, void* InDepthStencilView)
+{
+	HRESULT hr = S_OK;
+
+	ID3D11RenderTargetView* RenderTargetView = static_cast<ID3D11RenderTargetView*>(InRenderTargetView);
+	ID3D11DepthStencilView* DepthStencilView = static_cast<ID3D11DepthStencilView*>(InDepthStencilView);
+
+	DeviceContext->OMSetRenderTargets(RenderTargetNum, &RenderTargetView, DepthStencilView);
+
 	return hr;
 }
 
@@ -683,7 +706,7 @@ HRESULT RenderingDevice::SetBackGroundColor(float R, float G, float B, float A)
 
 void RenderingDevice::ClearBackBuffer()
 {
-	DeviceContext->ClearRenderTargetView(RenderTargetView.Get(), (float*)&BackGroundColor);
+	DeviceContext->ClearRenderTargetView(BackBufferRenderTargetView.Get(), (float*)&BackGroundColor);
 	DeviceContext->ClearDepthStencilView(DepthStencilBufferView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
@@ -1998,7 +2021,7 @@ HRESULT RenderingDevice::DeviceFinalize()
 	//장치 상태 리셋 : 제거 전에 초기화 필수 (메모리 누수 방지)
 	if (DeviceContext) DeviceContext->ClearState();
 
-	RenderTargetView->Release();
+	BackBufferRenderTargetView->Release();
 	SwapChain->Release();
 	DeviceContext->Release();
 	Device->Release();
@@ -2308,7 +2331,7 @@ HRESULT RenderingDevice::DrawInstanced(UINT VertexCountPerInstance, UINT Instanc
 //RenderTargetView, Depth 관련 객체 해제
 void RenderingDevice::ResetRTVandDepthObj()
 {
-	RenderTargetView.Reset();
+	BackBufferRenderTargetView.Reset();
 	DepthStencilBuffer.Reset();
 	DepthStencilBufferView.Reset();
 }

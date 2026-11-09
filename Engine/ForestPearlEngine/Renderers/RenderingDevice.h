@@ -40,11 +40,17 @@ class RenderingDevice
 		ComPtr<ID3D11Device> Device = NULL;
 		ComPtr<ID3D11DeviceContext> DeviceContext = NULL;
 
+		//////////////////////////////////////////
+		//스왑체인 용 인터페이스는 Device에서 관리
+		// 
 		//D3D 스왑체인 인터페이스
 		ComPtr<IDXGISwapChain1>			SwapChain = NULL;
-		ComPtr<ID3D11RenderTargetView>	RenderTargetView = NULL;
+		ComPtr<ID3D11RenderTargetView>	BackBufferRenderTargetView = NULL;
 		ComPtr<ID3D11Texture2D>			DepthStencilBuffer = NULL;
 		ComPtr<ID3D11DepthStencilView>	DepthStencilBufferView = NULL;
+		//
+		//
+		////////////////////////////////////////
 
 
 		//Rasterizer 상태 객체
@@ -177,6 +183,8 @@ class RenderingDevice
 		HRESULT SetBackBufferToRenderTargetView();
 
 		HRESULT OMSetRenderTargets();
+		HRESULT OMSetBackBufferRenderTargets(UINT RenderTargetNum, void* InDepthStencilView);										//Back Buffer RenderTarget Setting
+		HRESULT OMSetRenderTargets(UINT RenderTargetNum, void* InRenderTargetView, void* InDepthStencilView);				//지정된 RenderTarget Setting
 
 		HRESULT OMResetRenderTargets();
 

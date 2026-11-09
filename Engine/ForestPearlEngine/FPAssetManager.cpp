@@ -1640,7 +1640,11 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 
 	for (const FPTextureParameterData& T : MaterialData.NamedTextures)
 	{
-		const bool AssetFound = (T.TextureType == Texture2D) ? HasTextureData(T.Name) : HasTextureArrayData(T.Name);
+		bool AssetFound = false;
+		if (T.TextureType == Texture2D) AssetFound = HasTextureData(T.Name);
+		if (T.TextureType == Texture2DArray) AssetFound = HasTextureArrayData(T.Name);
+		if (T.TextureType == RenderTargetTexture2D) AssetFound = HasRenderTargetData(T.Name);
+		if (T.TextureType == DepthStencilTexture2D) AssetFound = HastDepthStencilData(T.Name);
 		if (!AssetFound)
 		{
 			std::cout << "Material texture asset not loaded: " << T.Name << "\n";

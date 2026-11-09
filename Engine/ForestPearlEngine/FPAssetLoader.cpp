@@ -540,7 +540,7 @@ void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsse
 			Entry.Name = T.at("Asset").get<std::string>();
 
 			const std::string TextureType = T.at("TextureType").get<std::string>();
-			if (TextureType != "Texture2D" && TextureType != "Texture2DArray") { std::cout << "Texture2D, Texture2DArray외의 Type이 사용됨"; }
+			if (TextureType != "Texture2D" && TextureType != "Texture2DArray" && TextureType != "RenderTargetTexture2D" && TextureType != "DepthStencilTexture2D") { std::cout << "Texture2D, Texture2DArray외의 Type이 사용됨"; }
 
 			Entry.TextureType = StringToTextureType(TextureType);
 

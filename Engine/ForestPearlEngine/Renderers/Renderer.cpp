@@ -533,12 +533,163 @@ void Renderer::SceneCaptureRenderPass()
 	FPDepthStencilData& BackBufferDepthStencilData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilData("BackBufferDepthStencil");
 	Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
 
-	//상수 버퍼 14개씩 Set
+	//Constant Buffer Slot 14 Set
 	for (int i = 0; i < 14; ++i)
 	{
 		Device.VSSetConstantBuffers(i, 1);
 		Device.PSSetConstantBuffers(i, 1);
 	}
+
+	if (SceneCaptureList.empty()) return;
+
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	//Depth Stencil State Set
+	FPDepthStencilStateData& DepthStencilStateData = AssetManager->GetDepthStencilStateData(ZEnable ? "DS_DEPTH_ON" : "DS_DEPTH_OFF");
+	Device.OMSetDepthStencilState(DepthStencilStateData.DepthStencilData);
+
+	Device.OMSetBlendState(BS_ADD);
+
+	//Primitive Topology Set
+	Device.IASetPrimitiveTopology(Topology::TRIANGLELIST);
+
+	RenderingData::MVPConstBuffer MVPCB;
+
+	for (const RenderingData::SceneCaptureItem& CaptureItem : SceneCaptureList)
+	{
+		if (!AssetManager->HasRenderTargetData(CaptureItem.RenderTarget))
+		{
+			std::cout << "SceneCapture RenderTarget not loaded: " << CaptureItem.RenderTarget << "\n";
+			continue;
+		}
+
+		FPRenderTargetTexture2DInfo& CaptureRTInfo = AssetManager->GetRenderTargetTexture2DInfoData(CaptureItem.RenderTarget);
+		FPRenderTargetData& CaptureRTData = AssetManager->GetRenderTargetData(CaptureItem.RenderTarget);
+
+		//Capture RenderTarget as the output target
+		Device.ClearDepthStencilView(BackBufferDepthStencilData.DepthStencilView);
+		Device.OMSetRenderTargets(1, CaptureRTData.RenderTargetView, BackBufferDepthStencilData.DepthStencilView);
+		Device.ClearRenderTargetView(CaptureRTData.RenderTargetView, (float*)&CaptureRTInfo.ClearColor);
+
+		Device.SetViewPort(0.0f, 0.0f, (float)CaptureRTInfo.SizeX, (float)CaptureRTInfo.SizeY, 0.0f, 1.0f);
+
+		for (const RenderingData::MeshRenderItem& RenderItem : MeshRenderList)
+		{
+			//Skip Actors hidden from this Capture
+			if (std::find(CaptureItem.HiddenActors.begin(), CaptureItem.HiddenActors.end(), RenderItem.ActorName) != CaptureItem.HiddenActors.end())
+			{
+				continue;
+			}
+
+			//Fill/Cull mode Set
+			Device.UpdateRSSetState(bFill, !(RenderItem.TwoSided));
+
+			std::tuple<void*, void*, void*> VertexShaderData = AssetManager->GetVertexShader(RenderItem.VertexShaderPath);
+			std::pair<void*, void*> PixelShaderData = AssetManager->GetPixelShader(RenderItem.PixelShaderPath);
+
+			//Input Layout Set
+			Device.IASetInputLayout(std::get<2>(VertexShaderData));
+
+			//Shader Set
+			Device.VSSetShader(std::get<0>(VertexShaderData));
+			Device.PSSetShader(std::get<0>(PixelShaderData));
+
+			//Shader ConstBuffer Set
+
+			//vertex
+			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.VertexConstBuffer.ConstantBuffers)
+			{
+				unsigned int Slot = ConstantBufferInfo.Slot;
+				size_t Offset = ConstantBufferInfo.Offset;
+				size_t Size = ConstantBufferInfo.Size;
+
+				Device.UpdateVertexShaderSubresource(Slot, RenderItem.VertexConstBuffer.Buffer.data(), Offset, Size);
+			}
+
+			//Pixel
+			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.PixelConstBuffer.ConstantBuffers)
+			{
+				unsigned int Slot = ConstantBufferInfo.Slot;
+				size_t Offset = ConstantBufferInfo.Offset;
+				size_t Size = ConstantBufferInfo.Size;
+
+				Device.UpdatePixelShaderSubresource(Slot, RenderItem.PixelConstBuffer.Buffer.data(), Offset, Size);
+			}
+
+			//Texture Set
+			const std::vector<FPReflectionResourceInfo>& Resources = RenderItem.Resources;
+
+			for (const FPReflectionResourceInfo& TextureItem : Resources)
+			{
+				void* TextureData = nullptr;
+				//Texture Resolve
+				if (TextureItem.TextureType == Texture2D) { TextureData = AssetManager->GetTextureData(TextureItem.AssetName).ShaderResourceView; }
+				if (TextureItem.TextureType == Texture2DArray) { TextureData = AssetManager->GetTextureArrayData(TextureItem.AssetName).TextureArraySRV; }
+				if (TextureItem.TextureType == RenderTargetTexture2D) { TextureData = AssetManager->GetRenderTargetData(TextureItem.AssetName).ShaderResourceView; }
+				if (TextureItem.TextureType == DepthStencilTexture2D) { TextureData = AssetManager->GetDepthStencilData(TextureItem.AssetName).ShaderResourceView; }
+
+				Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData);
+			}
+			//Texture Set End.
+
+			//Sampler Set
+			const std::vector<FPReflectionSamplerInfo>& Samplers = RenderItem.Samplers;
+
+			for (const FPReflectionSamplerInfo& SamplerItem : Samplers)
+			{
+				Device.PSSetSamplers(SamplerItem.Slot, 1, SamplerItem.SamplerType);
+			}
+			//Sampler Set End.
+
+			FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData UVVB = AssetManager->GetUVVertexBuffer(RenderItem.MeshPath);
+			FPIndexBufferData IndexB = AssetManager->GetIndexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData TangentVB = AssetManager->GetTangentVertexBuffer(RenderItem.MeshPath);
+
+			//World/View/Proj matrix Set (HLSL is row-major, so operand order is the reverse of HLSL)
+			MVPCB.WorldMatrix = ((RenderItem.Scale) * (RenderItem.Rotation) * (RenderItem.Location)).Matrix;
+			MVPCB.InverseWorldMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WorldMatrix);
+			MVPCB.TranseposeWorldMatrix = DirectX::XMMatrixTranspose(MVPCB.WorldMatrix);
+			MVPCB.InverseTranseposeWorldMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWorldMatrix);
+
+			MVPCB.ViewMatrix = CaptureItem.View.Matrix;
+			MVPCB.InverseViewMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.ViewMatrix);
+			MVPCB.TranseposeViewMatrix = DirectX::XMMatrixTranspose(MVPCB.ViewMatrix);
+			MVPCB.InverseTranseposeViewMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseViewMatrix);
+
+			MVPCB.ProjMatrix = CaptureItem.Projection.Matrix;
+			MVPCB.InverseProjMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.ProjMatrix);
+			MVPCB.TranseposeProjMatrix = DirectX::XMMatrixTranspose(MVPCB.ProjMatrix);
+			MVPCB.InverseTranseposeProjMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseProjMatrix);
+
+			MVPCB.WVMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix;
+			MVPCB.InverseWVMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WVMatrix);
+			MVPCB.TranseposeWVMatrix = DirectX::XMMatrixTranspose(MVPCB.WVMatrix);
+			MVPCB.InverseTranseposeWVMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWVMatrix);
+
+			MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
+			MVPCB.InverseWVPMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WVPMatrix);
+			MVPCB.TranseposeWVPMatrix = DirectX::XMMatrixTranspose(MVPCB.WVPMatrix);
+			MVPCB.InverseTranseposeWVPMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWVPMatrix);
+
+			//Object ConstBuffer Update
+			Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
+			Device.UpdatePixelShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
+
+			Device.IASetVertexBuffers(0, 1, PositionVB.VertexBuffer, &(PositionVB.Stride), &(PositionVB.Offset));
+			Device.IASetVertexBuffers(1, 1, NormalVB.VertexBuffer, &(NormalVB.Stride), &(NormalVB.Offset));
+			Device.IASetVertexBuffers(2, 1, ColorVB.VertexBuffer, &(ColorVB.Stride), &(ColorVB.Offset));
+			Device.IASetVertexBuffers(3, 1, UVVB.VertexBuffer, &(UVVB.Stride), &(UVVB.Offset));
+			Device.IASetVertexBuffers(4, 1, TangentVB.VertexBuffer, &(TangentVB.Stride), &(TangentVB.Offset));
+			Device.IASetIndexBuffers(IndexB.IndexBuffer, IndexB.Offset);
+
+			Device.DrawIndexed(IndexB.Index_Cnt, 0, 0);																//Draw Call
+		}
+	}
+
+	Device.OMSetBlendState(BS_NULL_);
 }
 
 void Renderer::MeshRenderPass()
@@ -632,6 +783,8 @@ void Renderer::MeshRenderPass()
 				//Texture 가져옴
 				if (TextureItem.TextureType == Texture2D) { TextureData = AssetManager->GetTextureData(TextureItem.AssetName).ShaderResourceView; }
 				if (TextureItem.TextureType == Texture2DArray) { TextureData = AssetManager->GetTextureArrayData(TextureItem.AssetName).TextureArraySRV; }
+				if (TextureItem.TextureType == RenderTargetTexture2D) { TextureData = AssetManager->GetRenderTargetData(TextureItem.AssetName).ShaderResourceView; }
+				if (TextureItem.TextureType == DepthStencilTexture2D) { TextureData = AssetManager->GetDepthStencilData(TextureItem.AssetName).ShaderResourceView; }
 
 				Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData);
 			}

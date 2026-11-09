@@ -665,6 +665,18 @@ void RenderingDevice::ClearBackBuffer(void* InDepthStencilView)
 	DeviceContext->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
+void RenderingDevice::ClearRenderTargetView(void* InRenderTargetView, float* ClearColor)
+{
+	ID3D11RenderTargetView* RenderTargetView = static_cast<ID3D11RenderTargetView*>(InRenderTargetView);
+	DeviceContext->ClearRenderTargetView(RenderTargetView, ClearColor);
+}
+
+void RenderingDevice::ClearDepthStencilView(void* InDepthStencilView)
+{
+	ID3D11DepthStencilView* DepthStencilView = static_cast<ID3D11DepthStencilView*>(InDepthStencilView);
+	DeviceContext->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+}
+
 void RenderingDevice::RenderTargetPresent()
 {
 	//Present시 첫번째 인자 SyncInterval이 VSync 여부 ( 0 : 끔 , 1 : 켬(모니터 주사율에 맞춤) , 2 : 수직동기마다 출력)

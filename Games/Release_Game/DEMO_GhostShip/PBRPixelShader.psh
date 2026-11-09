@@ -1,0 +1,236 @@
+// box Rendering용
+
+// Pixel Light 운용 Shader
+// b2 : Light,  b3 : Material
+#include "Light.hlsli"
+
+//Tangent Space 운용 Shader
+#include "BumpMapping.hlsli"
+
+//상수 버퍼
+cbuffer ObejctConstBuffer : register(b0)
+{
+    matrix mWorld;
+    matrix mInverseWorld;
+    matrix mTranseposeWorld;
+    matrix mInverseTranseposeWorld;
+    
+    matrix mView;
+    matrix mInverseView;
+    matrix mTranseposeView;
+    matrix mInverseTranseposeView;
+    
+    matrix mProj;
+    matrix mInverseProj;
+    matrix mTranseposeProj;
+    matrix mInverseTranseposeProj;
+    
+    matrix mWV;
+    matrix mInverseWV;
+    matrix mTranseposeWV;
+    matrix mInverseTranseposeWV;
+    
+    matrix mWVP;
+    matrix mInverseWVP;
+    matrix mTranseposeWVP;
+    matrix mInverseTranseposeWVP;
+    
+};
+
+////////////////////////////////////////////////////////////////////////////// 
+//
+//! Pixel Shader Main : 픽셀 셰이더 메인 함수.
+//
+////////////////////////////////////////////////////////////////////////////// 
+
+//텍스처 객체 변수 : 엔진에서 공급됨, 레지스터 직접 지정. (기본값은 t0)
+
+//Texture2D TexBC : register(t0);
+
+//Texture2D TexAO : register(t3);
+
+//Texture2D TexMT : register(t1);
+
+//Texture2D TexNR : register(t2);
+
+//Texture2D TexRN : register(t3);
+
+
+////텍스처 셈플러 (직접지정)  기본값은 s0
+//SamplerState Smpler : register(s0);
+
+//float4 PS_Main(
+//                float4 pos : SV_POSITION, //[입력] 정점좌표. Vertex Position(Model Space, 3D) 
+//                float4 col : COLOR0, //[입력] 정점색. Vertex Color : "Diffuse" 
+//                float4 posv : TEXCOORD1, //[입력] WordlView 변환된 pos
+//                float2 uv : TEXCOORD0, //[입력] uv
+//                float4 T : TEXCOORD2, //[입력] WV변환된 Tangent
+//                float4 N : TEXCOORD3, //[입력] 역전치WV 변환된 normal
+//                bool IsFrontFace : SV_IsFrontFace //CULLMODE None일때 앞 뒷면 판단
+//                ) : SV_TARGET
+//{
+//    //텍스처 샘플링
+//    float4 DiffMap = TexDiff.Sample(Smpler, uv);
+//    float4 SpecMap = TexSpec.Sample(Smpler, uv);
+//    float4 BumpMap = TexBumpMap.Sample(Smpler, uv);
+    
+//    //Front Back 확인
+//    if (!IsFrontFace)
+//    {
+//        N = -N;
+//    }
+    
+//    //NormalMap 변환
+//    float3 BumpNormal = normalize(N.xyz);
+//    CalculateBumpNormal(BumpMap, T, N, BumpNormal);
+    
+//    float4 DiffuseLit;
+//    float4 SpecularLit;
+//    float4 EmissiveLit;
+    
+//    CalculateLight(posv, float4(BumpNormal, 0.0f), mView, DiffuseLit, SpecularLit, EmissiveLit);
+    
+//    float4 BaseCol = 1 * 1 * DiffMap;
+//    float4 SpecularCol = SpecMap * SpecularLit;
+    
+//    col = BaseCol + SpecularCol + EmissiveLit;
+    
+//    col = col * 0.00001 + BaseCol;
+    
+//    col.a = DiffMap.a;
+    
+//    return col;
+//}
+
+
+
+
+////////////////////////////////////////////////////////////////////////////// 
+////////////////////////////////////////////////////////////////////////////// 
+////////////////////////////////////////////////////////////////////////////// 
+////////////////////////////////////////////////////////////////////////////// 
+////////////////////////////////////////////////////////////////////////////// 
+////////////////////////////////////////////////////////////////////////////// 
+//
+// Pixel Shader 전역 데이터.
+//
+
+// 텍스처 객체 : 엔진에서 공급됨.(PBR 용)
+Texture2D g_texBase : register(t0); //BaseColor (Albedo)
+Texture2D g_texMetal : register(t1); //Metalic Map
+Texture2D g_texRough : register(t2); //Roughness Map
+Texture2D g_texNormal : register(t3); //Normal Map
+Texture2D g_texAO : register(t4); //AO Map
+TextureCube g_texEnv : register(t5); //Envmap (큐브)
+
+//텍스처 샘플러 (직접지정)(기본값은 s0)
+SamplerState smpAniso : register(s0);
+
+
+
+
+////////////////////////////////////////////////////////////////////////////// 
+//
+// Pixel Shader Main : 픽셀 셰이더 메인 함수.
+//
+////////////////////////////////////////////////////////////////////////////// 
+
+
+float4 PS_Main(
+				float4 pos : SV_POSITION, //[입력] (보간된) 픽셀별 좌표. (Screen, 2D)
+				//float4 diff : COLOR0,     //[입력] (보간된) 픽셀별 확산색. (Diffuse)
+				//float4 spec : COLOR1,     //[입력] (보간된) 픽셀별 정반사색. ("Specular")
+				float2 uv : TEXCOORD0, //[입력] 텍스처 좌표
+				float3 uvw : TEXCOORD1, //[입력] (보간된) 텍스처 좌표 (큐브멥용, 3성분)
+                float4 posv : TEXCOORD2, //[입력] (보간된) 픽셀별 정점 좌표 (View Space)
+                float4 nrm : TEXCOORD3 //[입력] (보간된) 픽셀별 노멀 (Model Space)
+				) : SV_TARGET //[출력] 색상.(필수), "렌더타겟" 으로 출력합니다.
+{
+
+    //-----------------
+	// 텍스쳐 셈플링
+    //-----------------
+    //이번 데모는 Base + Metal + Rough + AO 적용.★ 
+    float4 texBase = 1;
+    float4 texMetal = 1;
+    float4 texRough = 1;
+    float4 texNormal  = 0;    
+    float4 texAO = 1;
+    float4 tex = 0;
+    
+    //if (g_Mtrl.bTexOn)
+    {
+            texBase = g_texBase.Sample(smpAniso, uv); //sRGB8_A8
+            texMetal = g_texMetal.Sample(smpAniso, uv).r; //R8
+            texRough = g_texRough.Sample(smpAniso, uv).r; //R8 
+            texNormal = g_texNormal.Sample(smpAniso, uv);       //RGBA8
+            texAO = g_texAO.Sample(smpAniso, uv).r; //R8
+		
+        //사용할 텍스처 혼합.
+        tex = texBase * texMetal * texRough * texAO;
+        
+        if (!GetMapMode(METAL_))
+            texMetal = 0; //metal 미사용에 의한 zero 출력 방지.
+        
+        /*//사용할 텍스처 혼합.
+        if (GetMapMode(METAL_)) 
+              tex = texBase * texMetal * texRough * texAO;             
+        else  tex = texBase * texRough * texAO;              //metal 미사용에 의한 zero 출력 방지.
+        */
+    }
+    
+
+
+    //----------------
+    // 조명 계산.
+    //---------------- 
+    //조명 계산 1 (Diffuse Lighting)
+    float4 diff = { 0, 0, 0, 1 }; //기본값 처리.
+    if (g_Lit.bDiffOn)
+    {
+        //diff = DiffLight(nrm, mNWV, mView);                                //레거시 Diffuse (Lambert) 처리.
+        //diff = Diffuse_BRDF(nrm, mNWV, mView, texBase, texAO);             //Diffuse-BRDF 적용.    
+        diff = Diffuse_BRDF(nrm, mWV, mView, texBase, texMetal, texAO); //Diffuse-BRDF 적용.(v2) ★
+    }
+    
+        
+    
+    //조명 계산 2 (Specular Lighting) 
+    float4 spec = 0;
+    if (g_Lit.bSpecOn)
+    {
+        //spec = SpecLight(posv, nrm, mNWV, mView);                                     //레거시 Specular(BlinnPhong) 처리.
+        //spec = Specular_PreBRDF(posv, nrm, mNWV, mView, texRough);                    //레거시 Specular+ 적용.(Specular BRDF 선행 연구)
+        spec = Specular_PreBRDF(posv, nrm, mWV, mView, texBase, texMetal, texRough); //레거시 Specular+ 적용.(Specular BRDF 선행 연구)(v2) ★
+
+    }
+ 
+
+    //조명 꺼짐, 텍스처 사용시 예외처리.
+    //if (!g_Lit.bDiffOn && g_Mtrl.bTexOn) diff = 1;
+    
+
+   	//-----------------
+    // 텍스처 표시 선택 (디버깅, 데모 전용)
+    //------------------
+    float4 col = 1;
+    
+    //모든 조명이 꺼진경우, 텍스처 표시, (디버깅, 데모전용)
+    if (!g_Lit.bDiffOn && !g_Lit.bSpecOn)
+    {
+        diff = tex;
+        spec = 0;
+    }
+
+
+    //-------------
+    // 조명 혼합.
+    //-------------
+    col = diff + spec;
+
+     
+    return col;
+}
+
+
+

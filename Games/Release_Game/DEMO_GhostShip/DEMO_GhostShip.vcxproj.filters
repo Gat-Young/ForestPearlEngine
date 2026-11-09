@@ -37,6 +37,9 @@
     <Filter Include="Assets\GameSetting">
       <UniqueIdentifier>{670e47c6-0eab-415a-9cd6-96d7d145dfb7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\ShaderResource\Common">
+      <UniqueIdentifier>{c2e728b1-b15f-451c-8b88-a0f43c2d0898}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UI.h">
@@ -100,6 +103,9 @@
     <None Include="Assets\GameSetting\GameSetting.json">
       <Filter>Assets\GameSetting</Filter>
     </None>
+    <None Include="Light.hlsli">
+      <Filter>Assets\ShaderResource\Common</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\ShaderResource\ShipPixelShader.psh">
@@ -109,6 +115,12 @@
       <Filter>Assets\ShaderResource</Filter>
     </FxCompile>
     <FxCompile Include="Assets\ShaderResource\TerrainVertexShader.vsh">
+      <Filter>Assets\ShaderResource</Filter>
+    </FxCompile>
+    <FxCompile Include="PBRVertexShader.vsh">
+      <Filter>Assets\ShaderResource</Filter>
+    </FxCompile>
+    <FxCompile Include="PBRPixelShader.psh">
       <Filter>Assets\ShaderResource</Filter>
     </FxCompile>
   </ItemGroup>

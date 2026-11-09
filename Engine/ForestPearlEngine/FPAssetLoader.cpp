@@ -72,6 +72,10 @@ void FPAssetLoader::LoadGameSetting(std::string GameSettingPath)
 		// 전체 화면
 		OutSetting.FullScreen = Graphics.at("FullScreen").get<bool>();
 
+		// VSync / Refresh Rate
+		OutSetting.VSync = Graphics.at("VSync").get<bool>();
+		OutSetting.Hz = Graphics.at("Hz").get<int>();
+
 		AssetManager->UpdateGameSettingData(OutSetting);
 	}
 	catch (const json::exception& e)

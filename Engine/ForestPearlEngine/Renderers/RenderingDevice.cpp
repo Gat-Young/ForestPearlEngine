@@ -200,6 +200,10 @@ RenderingDevice& RenderingDevice::GetRenderingDevice()
 HRESULT RenderingDevice::SetMSAA(int MSAA) { this->dwAA = MSAA; return S_OK; }
 HRESULT RenderingDevice::SetAF(int AF) { this->dwAF = AF; return S_OK; }
 
+void RenderingDevice::SetVSync(bool VSync) { this->IsVSync = VSync; }
+void RenderingDevice::SetHz(int Hz) { this->RefreshRate = Hz; }
+void RenderingDevice::SetSwapChainRect(int Width, int Height) { this->SwapChainWidth = Width; this->SwapChainHeight = Height; }
+
 
 // DisplayMode 설정
 HRESULT RenderingDevice::SetDisplayMode(HWND hwnd)
@@ -319,8 +323,11 @@ HRESULT RenderingDevice::CreateSwapChain(HWND hwnd)
 	//Swap Chain 생성
 	DXGI_SWAP_CHAIN_DESC1 SwapChainDesc = {};
 	ZeroMemory(&SwapChainDesc, sizeof(SwapChainDesc));
-	SwapChainDesc.Width = DisplayMode.Width;						//해상도 결정(백버퍼 크기)
-	SwapChainDesc.Height = DisplayMode.Height;
+
+	int BackBufferWidth = (SwapChainWidth > 0) ? SwapChainWidth : DisplayMode.Width;
+	int BackBufferHeight = (SwapChainHeight > 0) ? SwapChainHeight : DisplayMode.Height;
+	SwapChainDesc.Width = BackBufferWidth;						//해상도 결정(백버퍼 크기)
+	SwapChainDesc.Height = BackBufferHeight;
 	SwapChainDesc.Format = DisplayMode.Format;						//백버퍼 색상규격
 	SwapChainDesc.Stereo = FALSE;									//스테레오 3D렌더링 옵션
 	SwapChainDesc.SampleDesc = { dwAA, 0 };							//멀티 샘플링 설정 {Count, Quality} AA 설정 "MSAA"
@@ -334,7 +341,7 @@ HRESULT RenderingDevice::CreateSwapChain(HWND hwnd)
 	//전체화면 모드 정보
 	DXGI_SWAP_CHAIN_FULLSCREEN_DESC FsDesc = {};
 	ZeroMemory(&FsDesc, sizeof(FsDesc));
-	FsDesc.RefreshRate.Numerator = IsVSync ? 60 : 0;				//버퍼 갱신율. (수직동기화 VSync 활성화시 표준갱신율 적용 : 60hz)
+	FsDesc.RefreshRate.Numerator = IsVSync ? RefreshRate : 0;				//버퍼 갱신율. (수직동기화 VSync 활성화시 표준갱신율 적용 : 60hz)
 	FsDesc.RefreshRate.Denominator = IsVSync ? 1 : 0;
 	FsDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	FsDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
@@ -571,47 +578,8 @@ HRESULT RenderingDevice::CreateDepthStencilState(FPDepthStencilStateInfo& DepthS
 	return hr;
 }
 
-//
-// 깊이-스텐실 버퍼 생성
-//
-HRESULT RenderingDevice::CreateDepthStencil()
-{
-	HRESULT hr = S_OK;
-
-	//깊이 - 스텐실 버퍼용 정보 구성
-	D3D11_TEXTURE2D_DESC TextureDesc;
-	TextureDesc.Width = DisplayMode.Width;
-	TextureDesc.Height = DisplayMode.Height;
-	TextureDesc.MipLevels = 1;
-	TextureDesc.ArraySize = 1;
-	TextureDesc.Format = DXGI_FORMAT_D32_FLOAT;			//32Bit 깊이 버퍼
-	TextureDesc.SampleDesc = { dwAA, 0 };				//AA 설정 "MSAA x4"
-	TextureDesc.Usage = D3D11_USAGE_DEFAULT;
-	TextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;	//깊이-스텐실 버퍼용으로 설정
-	TextureDesc.CPUAccessFlags = 0;
-	TextureDesc.MiscFlags = 0;
-
-	//깊이 버퍼 생성
-	hr = Device->CreateTexture2D(&TextureDesc, NULL, &DepthStencilBuffer);
-	assert(SUCCEEDED(hr) && "깊이-스텐실 버퍼 생성 실패");
-
-	//깊이-스텐실 버퍼용 정보 설정
-	D3D11_DEPTH_STENCIL_VIEW_DESC DepthStencilViewDesc;
-	ZeroMemory(&DepthStencilViewDesc, sizeof(DepthStencilViewDesc));
-	DepthStencilViewDesc.Format = TextureDesc.Format;
-	//DepthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;	//AA 없음
-	DepthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;	//+AA 설정 "MSAA"
-	DepthStencilViewDesc.Texture2D.MipSlice = 0;
-
-	//깊이 스텐실 버퍼 뷰 생성
-	Device->CreateDepthStencilView(DepthStencilBuffer.Get(), &DepthStencilViewDesc, &DepthStencilBufferView);
-	assert(SUCCEEDED(hr) && "깊이-스텐실 버퍼 뷰 생성 실패");
-
-	return hr;
-}
-
 //BackBuffer를 가져온 후 RenderTargetView 생성
-HRESULT RenderingDevice::SetBackBufferToRenderTargetView()
+HRESULT RenderingDevice::CreateBackBufferRenderTarget()
 {
 	HRESULT hr = S_OK;
 	//렌더 타겟(백버퍼) 획득
@@ -625,21 +593,6 @@ HRESULT RenderingDevice::SetBackBufferToRenderTargetView()
 
 	BackBuffer->Release();
 
-	return hr;
-}
-
-//장치 출력병합기(Output Merger)에 렌더링 타겟 및 깊이-스탠실 버퍼 등록
-HRESULT RenderingDevice::OMSetRenderTargets()
-{
-	HRESULT hr = S_OK;
-
-	//장치 출력병합기(Output Merger)에 렌더링 타겟 및 깊이-스탠실 버퍼 등록
-	DeviceContext->OMSetRenderTargets(
-		1,									//렌더타겟 개수. (max: D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT)
-		BackBufferRenderTargetView.GetAddressOf(),	//렌더타겟("백버퍼") 등록.
-		DepthStencilBufferView.Get() //깊이 스텐실 버퍼 등록
-	);
-	
 	return hr;
 }
 
@@ -704,10 +657,12 @@ HRESULT RenderingDevice::SetBackGroundColor(float R, float G, float B, float A)
 	return S_OK;
 }
 
-void RenderingDevice::ClearBackBuffer()
+void RenderingDevice::ClearBackBuffer(void* InDepthStencilView)
 {
+	ID3D11DepthStencilView* DepthStencilView = static_cast<ID3D11DepthStencilView*>(InDepthStencilView);
+
 	DeviceContext->ClearRenderTargetView(BackBufferRenderTargetView.Get(), (float*)&BackGroundColor);
-	DeviceContext->ClearDepthStencilView(DepthStencilBufferView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	DeviceContext->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
 void RenderingDevice::RenderTargetPresent()
@@ -1182,52 +1137,10 @@ HRESULT RenderingDevice::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD N
 	return hr;
 }
 
-HRESULT RenderingDevice::CreateDepthStencilStateCreate()
+void RenderingDevice::OMSetDepthStencilState(void* InDepthStencilState)
 {
-
-	HRESULT hr = S_OK;
-
-	//깊이/스텐실 상태 객체 생성 : 출력병합기 Output Merger 상태 조절
-
-	D3D11_DEPTH_STENCIL_DESC Ds;
-	//깊이 버퍼 설정 (기본값)
-	Ds.DepthEnable = TRUE;
-	Ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	Ds.DepthFunc = D3D11_COMPARISON_LESS;
-
-	//스텐실 버퍼 설정 (기본값)
-	Ds.StencilEnable = FALSE;
-
-	//깊이 버퍼 연산 객체들
-
-	//DS 상태 객체 0 : Z-Test On! (기본값)
-	Ds.DepthEnable = TRUE;
-	Ds.StencilEnable = FALSE;
-	Device->CreateDepthStencilState(&Ds, &DSState[DS_DEPTH_ON]);
-
-	//DS 상태 객체 1 : Z-Test Off!
-	Ds.DepthEnable = FALSE;
-	Device->CreateDepthStencilState(&Ds, &DSState[DS_DEPTH_OFF]);
-
-	//DS 상태 객체 2 : Z-Test On + Z-Write OFF
-	//Z-Test가 꺼지면, Z-Write 역시 비활성화
-	Ds.DepthEnable = TRUE;
-	Ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-	Device->CreateDepthStencilState(&Ds, &DSState[DS_DEPTH_WRITE_OFF]);
-
-	return hr;
-}
-
-void RenderingDevice::OMSetDepthStencilState(bool State)
-{
-	if (State)
-	{
-		DeviceContext->OMSetDepthStencilState(DSState[DS_DEPTH_ON], 0);
-	}
-	else
-	{
-		DeviceContext->OMSetDepthStencilState(DSState[DS_DEPTH_OFF], 0);
-	}
+	ID3D11DepthStencilState* DepthStencilState = static_cast<ID3D11DepthStencilState*>(InDepthStencilState);
+	DeviceContext->OMSetDepthStencilState(DepthStencilState, 0);
 }
 
 HRESULT RenderingDevice::CreateSamplers()
@@ -2332,14 +2245,15 @@ HRESULT RenderingDevice::DrawInstanced(UINT VertexCountPerInstance, UINT Instanc
 void RenderingDevice::ResetRTVandDepthObj()
 {
 	BackBufferRenderTargetView.Reset();
-	DepthStencilBuffer.Reset();
-	DepthStencilBufferView.Reset();
 }
 
 
 //SwapChainBuffer 크기 재설정
 void RenderingDevice::ResizeSwapChainBuffer(int Width, int Height)
 {
+	SwapChainWidth = Width;
+	SwapChainHeight = Height;
+
 	SwapChain->ResizeBuffers(0, Width, Height, DXGI_FORMAT_UNKNOWN, 0);
 }
 

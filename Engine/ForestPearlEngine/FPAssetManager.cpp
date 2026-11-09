@@ -1425,7 +1425,7 @@ FPDepthStencilData& FPAssetManager::GetDepthStencilData(std::string DepthStencil
 	return DepthStencilData[DepthStencilName];
 }
 
-void FPAssetManager::AddtDepthStencilData(std::string DepthStencilName, FPDepthStencilData& TextureData)
+void FPAssetManager::AddDepthStencilData(std::string DepthStencilName, FPDepthStencilData& TextureData)
 {
 	this->DepthStencilData[DepthStencilName] = TextureData;
 }
@@ -1442,6 +1442,15 @@ bool FPAssetManager::HastDepthStencilData(std::string DepthStencilName)
 
 void FPAssetManager::MaketDepthStencil(FPDepthStencilInfo& DepthStecilInfo)
 {
+	//¿Âƒ° ¡§ºˆ∏¶ µÓ∑œ¿Œ ø‰√ (Resize)ø°¡§«¿¿ª √∞ƒ‚ ±‚¡∏ ¡◊ø¯¿∫ ∑Æ¿ÓΩ‚
+	if (HastDepthStencilData(DepthStecilInfo.Name))
+	{
+		FPDepthStencilData& OldDepthStencilResource = DepthStencilData[DepthStecilInfo.Name];
+		if (OldDepthStencilResource.ShaderResourceView) static_cast<ID3D11ShaderResourceView*>(OldDepthStencilResource.ShaderResourceView)->Release();
+		if (OldDepthStencilResource.DepthStencilView) static_cast<ID3D11DepthStencilView*>(OldDepthStencilResource.DepthStencilView)->Release();
+		if (OldDepthStencilResource.Texture) static_cast<ID3D11Texture2D*>(OldDepthStencilResource.Texture)->Release();
+	}
+
 	FPDepthStencilData DepthStencilResource;
 	RenderingDevice::GetRenderingDevice().CreateDepthStencilTexture(DepthStecilInfo.SizeX, DepthStecilInfo.SizeY, DepthStecilInfo.MSAA, DepthStecilInfo.ShaderResource, DepthStecilInfo.DepthStencilFormat, &DepthStencilResource.Texture);
 	RenderingDevice::GetRenderingDevice().CreateDepthStencilView(DepthStecilInfo.DepthStencilFormat, DepthStecilInfo.MSAA, DepthStencilResource.Texture, &DepthStencilResource.DepthStencilView);

@@ -20,6 +20,10 @@ struct FPGameSettingData
 	int Height = 600;
 
 	bool FullScreen = false;
+
+	// Display
+	bool VSync = true;
+	int Hz = 60;
 };
 
 enum AssetOwner

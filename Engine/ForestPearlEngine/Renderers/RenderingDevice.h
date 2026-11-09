@@ -46,8 +46,6 @@ class RenderingDevice
 		//D3D 스왑체인 인터페이스
 		ComPtr<IDXGISwapChain1>			SwapChain = NULL;
 		ComPtr<ID3D11RenderTargetView>	BackBufferRenderTargetView = NULL;
-		ComPtr<ID3D11Texture2D>			DepthStencilBuffer = NULL;
-		ComPtr<ID3D11DepthStencilView>	DepthStencilBufferView = NULL;
 		//
 		//
 		////////////////////////////////////////
@@ -77,17 +75,6 @@ class RenderingDevice
 
 		//Rasterizer 상태 객체 배열
 		ID3D11RasterizerState* RState[RS_MAX_] = { NULL, };
-
-		//깊이/스텐실 테스트 상태들
-		enum {
-			DS_DEPTH_ON,			//깊이버퍼 ON! (기본값), 스텐실버퍼 off
-			DS_DEPTH_OFF,			//깊이버퍼 OFF
-			DS_DEPTH_WRITE_OFF,		//깊이버퍼 쓰기 끄기
-
-			DS_MAX_,
-		};
-		//깊이/스텐실 버퍼 상태 객체
-		ID3D11DepthStencilState* DSState[DS_MAX_];
 
 		//샘플러 상태 객체
 		ID3D11SamplerState* SamplerState[Sampler_MAX_];
@@ -135,6 +122,13 @@ class RenderingDevice
 		//전체화면 여부
 		bool IsFullScreen = false;
 
+		//Refresh Rate(Hz)
+		int RefreshRate = 60;
+
+		//SwapChain BackBuffer Rect Size (0 = use DisplayMode size)
+		int SwapChainWidth = 0;
+		int SwapChainHeight = 0;
+
 		const TCHAR* StrFeatureLevel = _T("N/A");
 
 		XMFLOAT4 BackGroundColor = { 0, 0.125f, 0.3f, 1 };
@@ -157,6 +151,10 @@ class RenderingDevice
 		HRESULT SetMSAA(int MSAA);
 		HRESULT SetAF(int AF);
 
+		void SetVSync(bool VSync);
+		void SetHz(int Hz);
+		void SetSwapChainRect(int Width, int Height);
+
 		//Device Resource 생성
 		HRESULT CreateFactory();
 
@@ -171,7 +169,6 @@ class RenderingDevice
 		HRESULT CreateRTSRView(FPRenderTargetFormat& RenderTargetFormat, void* InRTRelsolveTex, void** OutSRVView);
 
 		//Depth Stencil Create
-		HRESULT CreateDepthStencil();
 		HRESULT CreateDepthStencilTexture(UINT SizeX, UINT SizeY, UINT MSAA, bool ShaderResource ,FPDepthStencilFormat& DepthStencilFormat, void** OutDSTex);
 		HRESULT CreateDepthStencilView(FPDepthStencilFormat& DepthStencilFormat, UINT MSAA, void* InDSTex, void** OutDSView);
 		HRESULT CreateDepthStencilSRView(FPDepthStencilFormat& DepthStencilFormat, bool ShaderResource, UINT MSAA, void* InDSTex, void** OutDSSRView);
@@ -180,9 +177,8 @@ class RenderingDevice
 		HRESULT CreateDepthStencilState(FPDepthStencilStateInfo& DepthStencilInfo, void** OutDSState);
 
 
-		HRESULT SetBackBufferToRenderTargetView();
+		HRESULT CreateBackBufferRenderTarget();
 
-		HRESULT OMSetRenderTargets();
 		HRESULT OMSetBackBufferRenderTargets(UINT RenderTargetNum, void* InDepthStencilView);										//Back Buffer RenderTarget Setting
 		HRESULT OMSetRenderTargets(UINT RenderTargetNum, void* InRenderTargetView, void* InDepthStencilView);				//지정된 RenderTarget Setting
 
@@ -192,7 +188,7 @@ class RenderingDevice
 
 		//Background Color 변경
 		HRESULT SetBackGroundColor(float R, float G, float B, float A);
-		void ClearBackBuffer();
+		void ClearBackBuffer(void* InDepthStencilView);
 
 		void RenderTargetPresent();
 
@@ -243,11 +239,8 @@ class RenderingDevice
 		//입력 레이아웃 생성
 		HRESULT CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, ID3DBlob* InVSCode, ID3D11InputLayout** ReturnLayout);
 
-		//깊이 스텐실 버퍼 상태객체 생성
-		HRESULT CreateDepthStencilStateCreate();
-
 		//깊이 스텐실 버퍼 상태 설정
-		void OMSetDepthStencilState(bool State);
+		void OMSetDepthStencilState(void* InDepthStencilState);
 
 		//Sampler 상태객체 생성
 		HRESULT CreateSamplers();

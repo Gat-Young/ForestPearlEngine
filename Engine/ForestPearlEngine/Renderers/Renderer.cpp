@@ -493,13 +493,23 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 	hr = Device.CreateSwapChain(hwnd);
 	assert(SUCCEEDED(hr) && "스왑체인 생성 실패\n");
 
-	hr = Device.SetBackBufferToRenderTargetView();
+	hr = Device.CreateBackBufferRenderTarget();
 	assert(SUCCEEDED(hr) && "백버퍼 - 렌더타겟 설정 실패\n");
 
-	hr = Device.CreateDepthStencil();
-	assert(SUCCEEDED(hr) && "깊이-스텐실 버퍼 생성 실패\n");
+	//BackBuffer DepthStencil Info Regist
+	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
-	Device.OMSetRenderTargets();
+	FPDepthStencilInfo BackBufferDepthStencilInfo;
+	BackBufferDepthStencilInfo.Name = "BackBufferDepthStencil";
+	BackBufferDepthStencilInfo.SizeX = GameProjectSetting->GetDisplayWidth();
+	BackBufferDepthStencilInfo.SizeY = GameProjectSetting->GetDeisplayHeight();
+	BackBufferDepthStencilInfo.DepthStencilFormat = FPDepthStencilFormat::D32F;
+	BackBufferDepthStencilInfo.MSAA = GameProjectSetting->GetMSAA();
+	BackBufferDepthStencilInfo.ShaderResource = false;
+	BackBufferDepthStencilInfo.Owner = AssetOwner::Engine;
+
+	AssetManager->AddDepthStencilInfoData(BackBufferDepthStencilInfo.Name, BackBufferDepthStencilInfo);
 
 	Device.GetDeviceInfo();
 
@@ -508,25 +518,21 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 	shaderFactory = &ShaderFactory::GetShaderFactory();
 
-	Device.CreateDepthStencilStateCreate();
-
 	Device.RasterStateCreate();
 
 	//9232B의 ConstBuffer 생성
 	Device.CreateVertexShaderConstBuffer(9232);
 	Device.CreatePixelShaderConstBuffer(9232);
 
-	//상수 버퍼 14개씩 Set
-	for (int i = 0; i < 14; ++i)
-	{
-		Device.VSSetConstantBuffers(i, 1);
-		Device.PSSetConstantBuffers(i, 1);
-	}
 	return hr;
 }
 
 void Renderer::SceneCaptureRenderPass()
 {
+	//BackBuffer RenderTarget / DepthStencil Default Set
+	FPDepthStencilData& BackBufferDepthStencilData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilData("BackBufferDepthStencil");
+	Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
+
 	//상수 버퍼 14개씩 Set
 	for (int i = 0; i < 14; ++i)
 	{
@@ -537,6 +543,10 @@ void Renderer::SceneCaptureRenderPass()
 
 void Renderer::MeshRenderPass()
 {
+	//BackBuffer RenderTarget / DepthStencil Default Set
+	FPDepthStencilData& BackBufferDepthStencilData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilData("BackBufferDepthStencil");
+	Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
+
 	//상수 버퍼 14개씩 Set
 	for (int i = 0; i < 14; ++i)
 	{
@@ -545,7 +555,8 @@ void Renderer::MeshRenderPass()
 	}
 
 	//Depth Dtencill 상태 설정
-	Device.OMSetDepthStencilState(ZEnable);
+	FPDepthStencilStateData& DepthStencilStateData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilStateData(ZEnable ? "DS_DEPTH_ON" : "DS_DEPTH_OFF");
+	Device.OMSetDepthStencilState(DepthStencilStateData.DepthStencilData);
 
 	Device.OMSetBlendState(BS_ADD);
 
@@ -730,6 +741,10 @@ void Renderer::MeshRenderPass()
 
 void Renderer::GizmoRenderPass()
 {
+	//BackBuffer RenderTarget / DepthStencil Default Set
+	FPDepthStencilData& BackBufferDepthStencilData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilData("BackBufferDepthStencil");
+	Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
+
 	//상수 버퍼 14개씩 Set
 	for (int i = 0; i < 14; ++i)
 	{
@@ -738,7 +753,8 @@ void Renderer::GizmoRenderPass()
 	}
 
 	//Depth Dtencill 상태 설정
-	Device.OMSetDepthStencilState(ZEnable);
+	FPDepthStencilStateData& DepthStencilStateData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilStateData(ZEnable ? "DS_DEPTH_ON" : "DS_DEPTH_OFF");
+	Device.OMSetDepthStencilState(DepthStencilStateData.DepthStencilData);
 
 	//렌더링 모드 전환
 	Device.UpdateRSSetState(bFill, bCull);
@@ -869,6 +885,10 @@ void Renderer::NormalRenderPass()
 {
 	if (!bNormal) return;
 
+	//BackBuffer RenderTarget / DepthStencil Default Set
+	FPDepthStencilData& BackBufferDepthStencilData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilData("BackBufferDepthStencil");
+	Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
+
 	//상수 버퍼 14개씩 Set
 	for (int i = 0; i < 14; ++i)
 	{
@@ -877,7 +897,8 @@ void Renderer::NormalRenderPass()
 	}
 
 	//Depth Dtencill 상태 설정
-	Device.OMSetDepthStencilState(ZEnable);
+	FPDepthStencilStateData& DepthStencilStateData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilStateData(ZEnable ? "DS_DEPTH_ON" : "DS_DEPTH_OFF");
+	Device.OMSetDepthStencilState(DepthStencilStateData.DepthStencilData);
 
 	//렌더링 모드 전환
 	Device.UpdateRSSetState(bFill, bCull);
@@ -1007,6 +1028,10 @@ void Renderer::NormalRenderPass()
 
 void Renderer::UIRenderPass()
 {
+	//BackBuffer RenderTarget / DepthStencil Default Set
+	FPDepthStencilData& BackBufferDepthStencilData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilData("BackBufferDepthStencil");
+	Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
+
 	//상수 버퍼 14개씩 Set
 	for (int i = 0; i < 14; ++i)
 	{
@@ -1050,7 +1075,10 @@ RenderingDevice& Renderer::GetRenderingDevice()
 
 void Renderer::ClearBackBuffer()
 {
-	Device.ClearBackBuffer();
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	FPDepthStencilData& BackBufferDepthStencilData = AssetManager->GetDepthStencilData("BackBufferDepthStencil");
+
+	Device.ClearBackBuffer(BackBufferDepthStencilData.DepthStencilView);
 }
 
 void Renderer::RenderTargetPresent()
@@ -1081,14 +1109,20 @@ void Renderer::ResizeRenderTarget()
 	//Swapchain BackBuffer Resize
 	Device.ResizeSwapChainBuffer(GameProjectSetting->GetDisplayWidth(), GameProjectSetting->GetDeisplayHeight());
 
+	GameProjectSetting->SyncGameSettingData();
+
 	//새 BackBuffer로 RTV 생성
 	HRESULT hr = S_OK;
-	hr = Device.SetBackBufferToRenderTargetView();
+	hr = Device.CreateBackBufferRenderTarget();
 	assert(SUCCEEDED(hr) && "백버퍼 - 렌더타겟 설정 실패\n");
 
 	//새 Depth Buffer생성
-	hr = Device.CreateDepthStencil();
-	assert(SUCCEEDED(hr) && "깊이-스텐실 버퍼 생성 실패\n");
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	FPDepthStencilInfo& BackBufferDepthStencilInfo = AssetManager->GetDepthStencilInfoData("BackBufferDepthStencil");
+	BackBufferDepthStencilInfo.SizeX = GameProjectSetting->GetDisplayWidth();
+	BackBufferDepthStencilInfo.SizeY = GameProjectSetting->GetDeisplayHeight();
+	AssetManager->MaketDepthStencil(BackBufferDepthStencilInfo);
 
-	Device.OMSetRenderTargets();
+	FPDepthStencilData& BackBufferDepthStencilData = AssetManager->GetDepthStencilData("BackBufferDepthStencil");
+	Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
 }

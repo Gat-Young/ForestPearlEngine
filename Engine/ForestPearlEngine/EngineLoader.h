@@ -26,4 +26,9 @@ void LoadEngineAssets()
 
 	//Material Load
 	AssetLoader->LoadMaterial("DefaultMaterial.json", AssetOwner::Engine);
+
+	//DepthStencilState Load
+	AssetLoader->LoadDepthStencilState("DS_DEPTH_ON.json", AssetOwner::Engine);
+	AssetLoader->LoadDepthStencilState("DS_DEPTH_OFF.json", AssetOwner::Engine);
+	AssetLoader->LoadDepthStencilState("DS_DEPTH_WRITE_OFF.json", AssetOwner::Engine);
 };

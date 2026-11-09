@@ -22,6 +22,16 @@ void FPGameProjectSetting::SetFullScreen(bool FullScreen)
 	this->FullScreen = FullScreen;
 }
 
+void FPGameProjectSetting::SetVSync(bool VSync)
+{
+	this->VSync = VSync;
+}
+
+void FPGameProjectSetting::SetHz(int Hz)
+{
+	this->Hz = Hz;
+}
+
 void FPGameProjectSetting::ProjectSetting()
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
@@ -35,6 +45,23 @@ void FPGameProjectSetting::ProjectSetting()
 	MSAA = GameSettingData->MSAA;
 	AF = GameSettingData->AnisotropicFiltering;
 	FullScreen = GameSettingData->FullScreen;
+
+	VSync = GameSettingData->VSync;
+	Hz = GameSettingData->Hz;
+}
+
+void FPGameProjectSetting::SyncGameSettingData()
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	FPGameSettingData* GameSettingData = AssetManager->GetGameSettingData();
+
+	GameSettingData->Width = DisplayWidth;
+	GameSettingData->Height = DisplayHeight;
+	GameSettingData->MSAA = MSAA;
+	GameSettingData->AnisotropicFiltering = AF;
+	GameSettingData->FullScreen = FullScreen;
+	GameSettingData->VSync = VSync;
+	GameSettingData->Hz = Hz;
 }
 
 void FPGameProjectSetting::SetWinClassName(std::wstring WinClassName)
@@ -135,4 +162,14 @@ int FPGameProjectSetting::GetAF()
 bool FPGameProjectSetting::GetFullScreen()
 {
 	return FullScreen;
+}
+
+bool FPGameProjectSetting::GetVSync()
+{
+	return VSync;
+}
+
+int FPGameProjectSetting::GetHz()
+{
+	return Hz;
 }

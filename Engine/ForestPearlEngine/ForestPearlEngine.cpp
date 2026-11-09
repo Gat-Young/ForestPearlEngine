@@ -58,6 +58,9 @@ bool ForestPearlEngine::PreInitialize()
     RenderDevice = &RenderingDevice::GetRenderingDevice();
     RenderDevice->SetMSAA(GameProjectSetting->GetMSAA());
     RenderDevice->SetAF(GameProjectSetting->GetAF());
+    RenderDevice->SetVSync(GameProjectSetting->GetVSync());
+    RenderDevice->SetHz(GameProjectSetting->GetHz());
+    RenderDevice->SetSwapChainRect(GameProjectSetting->GetDisplayWidth(), GameProjectSetting->GetDeisplayHeight());
 
     //Render 등록
     Render = new Renderer(*RenderDevice);
@@ -73,6 +76,7 @@ bool ForestPearlEngine::PreInitialize()
 
     //등록된 모든 Asset Data 객체 만들기
     FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
     AssetManager->AllAssetDataCreate();
 
     return true;

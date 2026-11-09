@@ -89,6 +89,8 @@ class Renderer
 
 		HRESULT InitializeRenderer(HWND hwnd);
 
+		void SceneCaptureRenderPass();
+
 		void MeshRenderPass();
 
 		void GizmoRenderPass();

@@ -525,6 +525,10 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 	return hr;
 }
 
+void Renderer::SceneCaptureRenderPass()
+{
+}
+
 void Renderer::MeshRenderPass()
 {
 	//상수 버퍼 14개씩 Set

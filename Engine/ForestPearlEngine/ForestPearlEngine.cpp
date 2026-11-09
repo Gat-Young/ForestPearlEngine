@@ -115,6 +115,7 @@ void ForestPearlEngine::GameLoop()
         Render->CreateGizmoRenderList();
         Render->CreateNormalRenderList();
         Render->CreateUIRenderList();
+        Render->CreateSceneCaptureList();
 
         ///////////////////
         // Rendering
@@ -122,6 +123,7 @@ void ForestPearlEngine::GameLoop()
         // 단, Pass 별 객체를 만들기 보다는 Render Class에서 각 Pass의 함수를 만들어 호출 하는 방식으로 동작
         // Clear -> RenderPass 1 -> RenderPass 2 -> RenderPass 3 -> RenderPass N -> Preset 
         Render->ClearBackBuffer();
+        Render->SceneCaptureRenderPass();                   //Object를 그리기 전 반드시 먼저 수행
         Render->MeshRenderPass();
         Render->GizmoRenderPass();
         Render->NormalRenderPass();

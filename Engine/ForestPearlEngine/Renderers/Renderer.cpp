@@ -743,6 +743,24 @@ void Renderer::MeshRenderPass()
 
 	for (RenderingData::CameraItem& CamItem : CameraList)
 	{
+		bool UseCameraRenderTarget = AssetManager->HasRenderTargetData(CamItem.RenderTarget) && AssetManager->HastDepthStencilData(CamItem.DepthStencil);
+		FPRenderTargetData* CamRTData = nullptr;
+		FPRenderTargetTexture2DInfo* CamRTInfo = nullptr;
+
+		if (UseCameraRenderTarget)
+		{
+			CamRTData = &AssetManager->GetRenderTargetData(CamItem.RenderTarget);
+			CamRTInfo = &AssetManager->GetRenderTargetTexture2DInfoData(CamItem.RenderTarget);
+			FPDepthStencilData& CamDSData = AssetManager->GetDepthStencilData(CamItem.DepthStencil);
+
+			Device.OMSetRenderTargets(1, CamRTData->RenderTargetView, CamDSData.DepthStencilView);
+			Device.ClearRenderTargetView(CamRTData->RenderTargetView, (float*)&CamRTInfo->ClearColor);
+		}
+		else
+		{
+			Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
+		}
+
 		for(const RenderingData::MeshRenderItem& RenderItem : MeshRenderList)
 		{
 			/*
@@ -898,6 +916,11 @@ void Renderer::MeshRenderPass()
 
 				Device.DrawIndexed(IndexB.Index_Cnt, 0, 0);																//Draw Call
 			}
+		}
+
+		if (UseCameraRenderTarget)
+		{
+			Device.ResolveRenderTarget(CamRTInfo->RenderTragetFormat, CamRTData->Texture, CamRTData->ResolveTexture);
 		}
 	}
 
@@ -1243,16 +1266,18 @@ void Renderer::ClearDepthStencil()
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 	FPDepthStencilData& BackBufferDepthStencilData = AssetManager->GetDepthStencilData("BackBufferDepthStencil");
+	FPDepthStencilInfo& BackBufferDepthStencilInfo = AssetManager->GetDepthStencilInfoData("BackBufferDepthStencil");
 
 	//BackBuffer RenderTarget(Color) + BackBuffer DepthStencil Clear
-	Device.ClearBackBuffer(BackBufferDepthStencilData.DepthStencilView);
+	Device.ClearBackBuffer(BackBufferDepthStencilData.DepthStencilView, BackBufferDepthStencilInfo.ClearDepth, (UINT8)BackBufferDepthStencilInfo.ClearStencil);
 
-	//Clear every other registered DepthStencil
+	//Clear every other registered DepthStencil, using each asset's own ClearDepth/ClearStencil
 	for (auto& [DepthStencilName, DepthStencilData] : AssetManager->GetDepthStencilDataMap())
 	{
 		if (DepthStencilName == "BackBufferDepthStencil") continue;
 
-		Device.ClearDepthStencilView(DepthStencilData.DepthStencilView);
+		FPDepthStencilInfo& DepthStencilInfo = AssetManager->GetDepthStencilInfoData(DepthStencilName);
+		Device.ClearDepthStencilView(DepthStencilData.DepthStencilView, DepthStencilInfo.ClearDepth, (UINT8)DepthStencilInfo.ClearStencil);
 	}
 }
 

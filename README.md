@@ -47,7 +47,8 @@
 | 🎨 | **DX11 렌더러** | `Renderer`(프레임 흐름) + `RenderingDevice`(D3D11 래퍼) 2계층, **Render List → Render Pass(Mesh / Gizmo / Normal / UI)** 구조, 슬롯 규약이 있는 **상수 버퍼 바인딩**, `GameSetting.json` 기반 MSAA(스왑체인·깊이버퍼 SampleDesc), Priority 정렬, 멀티 뷰포트 |
 | 💡 | **통합 Light (Directional · Point, Per-Pixel)** | `FPLightComponentBase` 계열이 Light Render List에 등록 → 메시마다 **최대 64개**를 하나의 `LIGHT` 상수 버퍼(`b2`, 9232 byte)로 묶어 **픽셀 셰이더** `PixelLight.hlsli`에 전달. VS는 노멀 · 위치를 View 공간으로 변환해 보간만 하고, Directional · Point 모두 PS에서 Lambert Diffuse + **Blinn-Phong Specular**(`SpecularBlinPhong.hlsli`) + Ambient를 픽셀 단위로 계산(거리 감쇠, Range Fade). `CalculateLight`가 `Diffuse` · `Specular` · `Emissive`를 **각각 `out` 매개변수로 반환**해 PS마다 직접 합성(`col = col × Diffuse × tex + Specular + Emissive`) — Specular를 **텍스처(Specular Map)로 변조**하는 `DwarfPixelShader`(`TexSpec`, `t1`)도 추가됨. 과거 정점 단위 계산 코드는 `VertexLight.hlsli`로 남아 있지만 비활성 상태. 라이트 색(`LightColor`) 지원. 토치 예제 `ATorchLight` |
 | 🧵 | **Bump Mapping (Normal Map) · Tangent 생성** | FBX 로딩 시 `FPAssetManager::GenerateTangents`가 코너별 UV 면 탄젠트를 구해 **인접 삼각형끼리 각도 가중 평균 + Gram-Schmidt 직교화**로 부드럽게 섞은 뒤 5번째 정점 스트림(`TANGENT_VERTEX`, Input Slot 4)으로 추가. VS가 View 공간 Tangent/Normal(`T`/`N`)을 만들어 넘기면 `BumpMapping.hlsli::CalculateBumpNormal`이 TBN 행렬로 노멀 맵(`TexBumpMap`)을 View 공간 노멀로 바꿔 `CalculateLight`에 그대로 사용. `DwarfPixelShader` · 신규 `ToonLinkPixelShader`가 적용 |
-| 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 샘플러 36종(AF 단계는 `GameSetting.json`). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환. 슬롯마다 `FPTextureType`(`Texture2D` / `Texture2DArray`)을 함께 지정 |
+| 🪞 | **SceneCapture · RenderTarget (Mirror)** | `RenderTarget` · `DepthStencil` · `DepthStencilState`가 Material처럼 **JSON 에셋**이 됐습니다(예전엔 하드코딩이던 `DS_DEPTH_ON/OFF/WRITE_OFF`도 이제 JSON 3개). `FPSceneCaptureComponent2D`가 매 프레임 **Mesh Pass보다 먼저** `SceneCaptureRenderPass`로 전체 씬을 자기 RenderTarget에 그린 뒤 `ResolveSubresource`로 샘플 가능한 텍스처로 만들어 두면, 같은 프레임의 `MeshRenderPass`가 `TextureType: "RenderTargetTexture2D"`로 그 텍스처를 **보통 `Texture2D`처럼** Material에서 그대로 샘플링. 거울 데모 `AMirror` |
+| 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 샘플러 36종(AF 단계는 `GameSetting.json`). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환. 슬롯마다 `FPTextureType`(`Texture2D` / `Texture2DArray` / `RenderTargetTexture2D` / `DepthStencilTexture2D`)을 함께 지정 |
 | 🗂️ | **Texture2DArray** *(실험적)* | `LoadTexture2DArray`가 JSON(`Width/Height/ArraySize/SourceTextures[]`)을 읽어 이미 로드된 Texture2D들을 **`RenderingDevice::CheckTextureArrayData`로 포맷·해상도 검증 후 `CreateTextureArray2D`로 한 장의 `Texture2DArray` SRV로 합침**. `MeshRenderPass`는 Material 텍스처 슬롯의 `FPTextureType`에 따라 `GetTextureData`(Texture2D) 또는 `GetTextureArrayData`(Texture2DArray)에서 바인딩할 SRV를 고름. 아직 어떤 게임의 `LoadAssets()`에서도 호출되지 않는 템플릿 단계 |
 | ⚙️ | **GameSetting** | `Assets/GameSetting/GameSetting.json` → `FPAssetLoader::LoadGameSetting`이 읽어 `FPGameSettingData`로 저장 → `FPGameProjectSetting::ProjectSetting()`이 창 크기 · MSAA · AF · 전체화면 값을 반영, `RenderingDevice::SetMSAA/SetAF`로 렌더러에 전달 |
 | 🎭 | **데이터 기반 Material (Shader Reflection)** | Material JSON(`LoadMaterial`)이 셰이더의 **cbuffer 변수 · 텍스처 · 샘플러를 이름으로** 지정. `MakeMaterial`이 컴파일된 셰이더를 `D3DReflect`로 읽어 오프셋 · 슬롯(`b#` / `t#` / `s#`)을 자동 계산하고, 런타임에는 `SetParameter` / `SetNamedTexture` / `SetNamedSampler`로 이름을 통해 값을 바꿈. 재질 1개당 **기본 Material** + 메시마다 **Material Instance** 두 단계로 저장 (없으면 `DefaultMaterial` 사용). 계절 전환 예제(`Terrain`/`Tree`/`Windmill`/`ABox`, [F8](#계절-전환-season)) |
@@ -119,6 +120,7 @@ Engine/ForestPearlEngine/
 ├── FPLightRenderList.h / .cpp        # [SubSystem] 라이트 FPLightRenderItem 목록
 ├── FPTextRenderList.h / .cpp         # [SubSystem] 텍스트 UIContextItem 목록
 ├── FPCameraList.h / .cpp             # [SubSystem] CameraItem 목록
+├── FPSceneCaptureList.h / .cpp       # [SubSystem] SceneCaptureItem 목록 (RenderTarget에 비추는 가상 카메라)
 ├── FPViewPortClient.h / .cpp         # [SubSystem] 뷰포트 관리
 │
 ├── FPWorld.h / .cpp                  # World: Level 로드, Actor 목록, GameMode
@@ -140,8 +142,12 @@ Engine/ForestPearlEngine/
 ├── FPPrimitiveComponent.h            # 지오메트리 컴포넌트 베이스
 ├── FPMeshComponent.h / .cpp          # 메시 공통 (Fill / Cull / Priority / Material)
 ├── FPStaticMeshComponent.h / .cpp    # StaticMesh 렌더 + Socket Transform
-├── FPCameraComponent.h / .cpp        # View / Projection 계산
+├── FPCameraComponent.h / .cpp        # View / Projection 계산. RenderTarget/DepthStencil 지정 가능 — MeshRenderPass만 반영([SceneCapture](#scenecapture--rendertarget-mirror-데모) 참고)
 ├── FPSpringArmComponent.h / .cpp     # 스프링 암 (EndPoint Socket)
+├── FPSceneCaptureComponent.h / .cpp  # SceneCapture 베이스 (추상) — Fov/Aspect/Zn/Zf, RenderTarget·DepthStencil 이름, HiddenActors
+├── FPSceneCaptureComponent2D.h/.cpp  # 평면 RenderTarget으로 씬을 캡처 (구현체, 거울 데모가 사용)
+├── FPSceneCaptureComponentCube.h/.cpp# 큐브맵 캡처용 (빈 스텁)
+├── FPPlanarReflectionComponent.h/.cpp# 평면 반사 전용 (빈 스텁, `FPSceneCaptureComponent`만 상속)
 ├── FPGizmoComponent.h / .cpp         # 기즈모 베이스 (GizmoRenderItem 등록, Priority / Active)
 ├── FPGizmoGridComponent.h / .cpp     # Grid 라인 메시
 ├── FPGizmoAxisComponent.h / .cpp     # Axis 라인 메시
@@ -195,6 +201,9 @@ Engine/ForestPearlEngine/
 │   ├── Texture/                      # 텍스처 JSON (Default_Texture512 · Checker_bmp · Checker_dds)
 │   ├── Texture2DArray/               # Texture2DArray JSON (Texture2DArrayTemplate.json — 샘플 템플릿)
 │   ├── TextureResource/              # 이미지 원본 (*.dds · checker.bmp)
+│   ├── RenderTarget/                 # RenderTarget JSON (EX)RenderTargetTexture2D.json 등 — Texture2D만 구현, Canvas2D·Cube·Texture2DArray·Volume은 "추후 지원" 템플릿)
+│   ├── DepthStencil/                 # DepthStencil JSON (EX)DepthStencil.json)
+│   ├── DepthStencilState/            # DepthStencilState JSON — DS_DEPTH_ON / DS_DEPTH_OFF / DS_DEPTH_WRITE_OFF (엔진 기본, `LoadEngineAssets()`가 로드) + EX)DepthStencilState.json
 │   ├── Shader/                       # 셰이더 등록 JSON (Name · Path · InputLayout) — Default* · DefaultGizmo* · NormalDebug*
 │   └── ShaderResource/               # HLSL 소스와 컴파일 결과(bin/)
 │       ├── DefaultVertexShader.vsh   # 기본 Mesh VS (WVP 변환, 노멀 · posv를 View 공간으로 변환해 PS로 전달)
@@ -245,17 +254,21 @@ Games/Release_Game/Tri_World/
 ├── ADirectionalLight.h / .cpp     # Actor (Directional Light, F7로 색 순환)
 ├── ATorchLight.h / .cpp           # Actor (Point Light + 구 + Emissive, 1번 키로 On/Off)
 ├── ABox.h / .cpp                  # Actor (계절 전환 테스트용 상자, 텍스처 4장 블렌딩)
+├── ADwaf.h / .cpp                 # Pawn (Dwarf 캐릭터 모델, Specular Map · Bump Mapping 데모)
+├── AMirror.h / .cpp               # Pawn (거울 — Plane + SpringArm + SceneCaptureComponent2D, RenderTarget을 샘플링)
 ├── UI.h / .cpp                    # Actor (텍스트 UI)
 └── Assets/
     ├── Font/            Consolas10.sfont, 굴림9k.sfont
-    ├── Level/           TriWorld.json, ToonLink.json (현재 시작 레벨)
+    ├── Level/           TriWorld.json(`"class": "AMirror"` 포함), ToonLink.json (현재 시작 레벨)
     ├── Model/           Box/ · Terrain/ · ToonLink/ · Tree/ · Windmill/   (*.fbx — Windmill은 Windmill.fbx 하나로 통합)
     ├── StaticMesh/      Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/   (*_StaticMesh.json, 52개)
-    ├── Material/        Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/   (69개 — 모델별 폴더로 분리)
+    ├── Material/        Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/ · Mirror/   (Mirror_Material.json — RenderTarget을 텍스처로 샘플링)
     ├── Texture/         Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/   (*.json, 33개)
     ├── TextureResource/ Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/   (79개: png 48 · dds 16 · jpg 10 · bmp 2 · tga 3)
-    ├── Shader/          TerrainVertexShader.json 등 7개            (셰이더 등록 JSON, `BoxPixelShader.json` · `DwarfPixelShader.json` · `ToonLinkPixelShader.json` 추가)
-    └── ShaderResource/  TerrainVertexShader.vsh · TerrainPixelShader.psh · TreePixelShader.psh · WindmillWingBody.psh · BoxPixelShader.psh · DwarfPixelShader.psh · ToonLinkPixelShader.psh (+ bin/)
+    ├── RenderTarget/    Mirror_RenderTarget.json (512×512 RGBA8)
+    ├── DepthStencil/    Mirror_DepthStencil.json (512×512 D24_S8_UINT)
+    ├── Shader/          TerrainVertexShader.json 등 8개            (셰이더 등록 JSON, `BoxPixelShader.json` · `DwarfPixelShader.json` · `ToonLinkPixelShader.json` · `MirrorPixelShader.json` 추가)
+    └── ShaderResource/  TerrainVertexShader.vsh · TerrainPixelShader.psh · TreePixelShader.psh · WindmillWingBody.psh · BoxPixelShader.psh · DwarfPixelShader.psh · ToonLinkPixelShader.psh · MirrorPixelShader.psh (+ bin/)
 ```
 
 ---
@@ -328,7 +341,7 @@ classDiagram
 
 ### GameInstance SubSystem
 
-`FPGameInstance`는 싱글톤이며, 게임 실행 중 하나만 존재해야 하는 시스템 13개를 배열로 보관합니다.
+`FPGameInstance`는 싱글톤이며, 게임 실행 중 하나만 존재해야 하는 시스템 14개를 배열로 보관합니다.
 접근 방법은 모두 같습니다.
 
 ```cpp
@@ -349,6 +362,7 @@ FPAssetLoader* AssetLoader =
 | `FPLightRenderList` | `GetLightRenderList()` | 라이트 `FPLightRenderItem` 등록/해제 |
 | `FPTextRenderList` | `GetTextRenderList()` | 텍스트 `UIContextItem` 등록/해제 |
 | `FPCameraList` | `GetCameraList()` | `CameraItem` 등록/해제 |
+| `FPSceneCaptureList` | `GetSceneCaptureList()` | `SceneCaptureItem` 등록/해제. `FPSceneCaptureComponent2D` 등이 `RegistRenderList()`로 등록하며, `Renderer::CreateSceneCaptureList()`가 매 프레임 이 목록을 복사해 [SceneCapture 렌더 패스](#scenecapture--rendertarget-mirror-데모)를 돈다 |
 | `FPGameProjectSetting` | `GetGameProjectSetting()` | 윈도우 클래스/타이틀, 창 크기(기본 960×600), 클라이언트 영역 크기, Aspect, **MSAA / AF / FullScreen**(`GameSetting.json`에서 `ProjectSetting()`이 읽어 채움) |
 | `FPViewPortClient` | `GetViewPortClient()` | `MainGameViewPort` / `UIViewPort` / `TripleWaySplitViewPort` |
 
@@ -473,8 +487,10 @@ void ForestPearlEngine::GameLoop()
         Render->CreateGizmoRenderList();
         Render->CreateNormalRenderList();
         Render->CreateUIRenderList();
+        Render->CreateSceneCaptureList();  // RenderTarget에 비추는 가상 카메라 목록
 
-        Render->ClearBackBuffer();      // ④ Render Pass
+        Render->ClearDepthStencil();    // ④ Render Pass — 백버퍼 + 등록된 모든 DepthStencil을 미리 Clear
+        Render->SceneCaptureRenderPass();  // Mesh Pass보다 반드시 먼저: 거울 등의 RenderTarget을 이번 프레임 안에 채워 둠
         Render->MeshRenderPass();
         Render->GizmoRenderPass();
         Render->NormalRenderPass();     // bNormal(F6)이 꺼져 있으면 즉시 return
@@ -493,9 +509,10 @@ flowchart TD
     B2 --> B3["World::Tick"]
     B3 --> B4["GameMode::Tick → Controller::Tick<br/>입력 큐 처리, ControlRotation 적용"]
     B4 --> B5["모든 Actor::Tick<br/>RootComponent::Tick 재귀 - 행렬 갱신"]
-    B5 --> R["③ Render List 생성<br/>Cam · Light · Mesh · Gizmo · Normal · UI"]
-    R --> C["④ ClearBackBuffer"]
-    C --> D["MeshRenderPass"]
+    B5 --> R["③ Render List 생성<br/>Cam · Light · Mesh · Gizmo · Normal · UI · SceneCapture"]
+    R --> C["④ ClearDepthStencil<br/>백버퍼 + 모든 DepthStencil Clear"]
+    C --> SC["SceneCaptureRenderPass<br/>RenderTarget에 씬을 미리 그려 둠(거울 등)"]
+    SC --> D["MeshRenderPass"]
     D --> G["GizmoRenderPass"]
     G --> N["NormalRenderPass"]
     N --> E["UIRenderPass"]
@@ -603,8 +620,10 @@ void ForestPearlEngine::GameLoop()
         Render->CreateGizmoRenderList();
         Render->CreateNormalRenderList();
         Render->CreateUIRenderList();
+        Render->CreateSceneCaptureList();   // RenderTarget에 비추는 가상 카메라 목록
 
-        Render->ClearBackBuffer();          // ④ Render Pass
+        Render->ClearDepthStencil();        // ④ Render Pass — 백버퍼 + 등록된 모든 DepthStencil Clear
+        Render->SceneCaptureRenderPass();   // Mesh Pass보다 반드시 먼저
         Render->MeshRenderPass();
         Render->GizmoRenderPass();
         Render->NormalRenderPass();
@@ -616,9 +635,10 @@ void ForestPearlEngine::GameLoop()
 
 ```mermaid
 flowchart LR
-    T["Tick<br/>게임 로직"] --> L["Render List 생성<br/>Cam · Light · Mesh · Gizmo · Normal · UI"]
-    L --> C["ClearBackBuffer"]
-    C --> P1["MeshRenderPass"]
+    T["Tick<br/>게임 로직"] --> L["Render List 생성<br/>Cam · Light · Mesh · Gizmo · Normal · UI · SceneCapture"]
+    L --> C["ClearDepthStencil"]
+    C --> SC["SceneCaptureRenderPass"]
+    SC --> P1["MeshRenderPass"]
     P1 --> P2["GizmoRenderPass"]
     P2 --> PN["NormalRenderPass"]
     PN --> P3["UIRenderPass"]
@@ -627,6 +647,7 @@ flowchart LR
 
 | Pass | 읽는 목록 | Topology | 반복 단위 | 상수 버퍼 | 정렬 |
 |---|---|---|---|---|---|
+| `SceneCaptureRenderPass` | `SceneCaptureList` (스냅샷) × `MeshRenderList` | `TRIANGLELIST` | 캡처 항목 → 메시(전체, `HiddenActors`는 건너뜀) → 서브 메시 | Object(캡처의 View/Proj로 재계산) · Light · Material — `MeshRenderPass`와 동일한 바인딩 코드 재사용 | 없음. 각 캡처 항목을 순서대로 자신의 RenderTarget에 그리고 끝나면 바로 `Resolve` ([SceneCapture](#scenecapture--rendertarget-mirror-데모) 참고) |
 | `MeshRenderPass` | `MeshRenderList` | `TRIANGLELIST` | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Light · Material** (Renderer가 구성, [Light · Normal](#per-pixel-light--normal-line)) | `Priority` 오름차순 (+ 시작/종료 시 [Alpha Blend](#alpha-blend-초기-구현) 상태 On/Off). Rasterizer(Cull)는 **메시마다** 지정 ([Two Sided](#two-sided-material)) |
 | `GizmoRenderPass` | `GizmoRenderList` | `LINELIST` | 카메라 → 기즈모 → 뷰포트 → 서브 메시 | Object · ViewPort · Material | `Priority` 오름차순 |
 | `NormalRenderPass` | `NormalRenderList` | `LINELIST` (`DrawInstanced`) | 카메라 → 메시 → 뷰포트 → 서브 메시 | Object · ViewPort · **Normal Matrix** | 없음 (`bNormal`이 `true`일 때만 실행) |
@@ -645,33 +666,35 @@ flowchart LR
 | `CreateGizmoRenderList` | `GizmoRenderItem`에 대해 동일 |
 | `CreateNormalRenderList` | `Active`인 `NormalRenderItem`을 복사하고, 오브젝트마다 **Normal Matrix**(`transpose(inverse(World))`)와 `NormalLength`를 VS 상수 버퍼 슬롯 2(`b2`)로 등록. World 행렬식이 0이거나 비정상이면 해당 항목 제외 |
 | `CreateUIRenderList` | `active`인 텍스트만 복사하고 `UIViewPort`를 붙인 뒤 `Priority` 오름차순 정렬 |
+| `CreateSceneCaptureList` | `Active`이고 `CaptureThisFrame`인 `SceneCaptureItem`만 값으로 복사(Location · Rotation · Scale · View · Projection · RenderTarget · DepthStencil · HiddenActors). 복사한 뒤 `CaptureThisFrame`을 `CaptureEveryFrame` 값으로 되돌려, 1회성 `CaptureScene()` 호출은 그 프레임에만 캡처되게 함 |
 
 #### ⚠️ Render Pass 초기화가 불안정합니다
 
 현재 Render Pass에는 **공통 초기화(Begin) · 종료(End) 단계가 없습니다.** 각 Pass가 자기 함수 맨 앞에서 필요한 상태를 직접 지정하는 방식이며, 이 코드가 Pass마다 복사되어 있습니다. 어떤 상태를 누가 지정하는지가 Pass마다 다르고, 끝난 뒤 상태를 되돌리는 곳도 없어서 **Pass를 추가하거나 순서를 바꾸면 이전 Pass의 상태가 남아 결과가 달라질 수 있습니다.**
 
-| 상태 | `MeshRenderPass` | `GizmoRenderPass` | `NormalRenderPass` | `UIRenderPass` |
-|---|:-:|:-:|:-:|:-:|
-| 상수 버퍼 14개 바인딩 | ✔ | ✔ | ✔ | ✔ (사용하지 않는데도 바인딩) |
-| Depth Stencil State (`ZEnable`) | ✔ | ✔ | ✔ | ✘ |
-| Rasterizer State | ✔ (**메시마다**: `bFill`, Cull = `!TwoSided`) | ✔ (`bFill` / `bCull`, Pass 시작 시 1회) | ✔ (`bFill` / `bCull`, Pass 시작 시 1회) | ✘ |
-| Topology | `TRIANGLELIST` | `LINELIST` | `LINELIST` | ✘ |
-| InputLayout · VS · PS | 항목마다 | 항목마다 | 항목마다 | ✘ (SpriteBatch가 자체 지정) |
-| Blend State · RTV / DSV | **✔** (`BS_ADD`, [Alpha Blend](#alpha-blend-초기-구현)) | ✘ | ✘ | ✘ |
-| 종료 시 상태 복원 | **✔** (Blend만 `BS_NULL_`로 복원) | ✘ | ✘ | ✘ |
+| 상태 | `SceneCaptureRenderPass` | `MeshRenderPass` | `GizmoRenderPass` | `NormalRenderPass` | `UIRenderPass` |
+|---|:-:|:-:|:-:|:-:|:-:|
+| 상수 버퍼 14개 바인딩 | ✔ | ✔ | ✔ | ✔ | ✔ (사용하지 않는데도 바인딩) |
+| Depth Stencil State (`ZEnable`) | ✔ | ✔ | ✔ | ✔ | ✘ |
+| Rasterizer State | ✔ (**메시마다**: `bFill`, Cull = `!TwoSided`) | ✔ (**메시마다**: `bFill`, Cull = `!TwoSided`) | ✔ (`bFill` / `bCull`, Pass 시작 시 1회) | ✔ (`bFill` / `bCull`, Pass 시작 시 1회) | ✘ |
+| Topology | `TRIANGLELIST` | `TRIANGLELIST` | `LINELIST` | `LINELIST` | ✘ |
+| InputLayout · VS · PS | 항목마다 | 항목마다 | 항목마다 | 항목마다 | ✘ (SpriteBatch가 자체 지정) |
+| Blend State · RTV / DSV | **✔** (`BS_ADD`; 맨 앞에서 백버퍼 RTV/DSV 바인딩 후, 캡처 항목마다 그 캡처의 RTV/DSV로 다시 `OMSetRenderTargets`) | **✔** (`BS_ADD`, [Alpha Blend](#alpha-blend-초기-구현); 맨 앞에서 백버퍼로 한 번 바인딩한 뒤 **카메라마다** `RenderTarget`이 지정돼 있으면 그쪽으로 다시 `OMSetRenderTargets`) | ✘ (항상 백버퍼) | ✘ (항상 백버퍼) | ✘ |
+| 종료 시 상태 복원 | **✔** (Blend만 `BS_NULL_`로 복원) | **✔** (Blend만 `BS_NULL_`로 복원) | ✘ | ✘ | ✘ |
 
 확인된 불안정 요소는 다음과 같습니다.
 
 | 요소 | 내용 |
 |---|---|
-| **같은 초기화 코드가 Pass마다 복사됨** | 상수 버퍼 14개 바인딩, Depth / Rasterizer / Topology 설정, 슬롯 오프셋(`VS 2`, `PS 1`)과 MVP 상수 버퍼 계산이 Mesh · Gizmo · Normal에 거의 그대로 반복됩니다. 한 곳을 고치고 다른 곳을 놓치기 쉽습니다. 실제로 PS 뷰포트 슬롯 규칙이 Pass마다 달랐던 적이 있습니다 |
+| **같은 초기화 코드가 Pass마다 복사됨** | 상수 버퍼 14개 바인딩, Depth / Rasterizer / Topology 설정, 슬롯 오프셋(`VS 2`, `PS 1`)과 MVP 상수 버퍼 계산이 Mesh · Gizmo · Normal에 거의 그대로 반복됩니다. 한 곳을 고치고 다른 곳을 놓치기 쉽습니다. 실제로 PS 뷰포트 슬롯 규칙이 Pass마다 달랐던 적이 있습니다. **`SceneCaptureRenderPass`는 메시 하나를 그리는 코드 전체(셰이더 바인딩 · 상수 버퍼 갱신 · 텍스처 · 정점 버퍼 5개 · `DrawIndexed`)를 `MeshRenderPass`와 거의 그대로 다시 적어 넣은 가장 큰 사례**입니다 — 다만 `RenderItem.View`/`Projection` 대신 그 캡처 항목의 `View`/`Projection`을 쓰고, `ActorName`이 `HiddenActors`에 있으면 건너뜁니다 |
 | **주석과 실제 동작이 다름** | Gizmo · Normal Pass에도 "MeshRenderPass에서 …"라는 복사된 주석이 남아 있고, 슬롯 오프셋 값의 의미를 코드만으로 알 수 없습니다 |
 | **UI Pass는 상태를 지정하지 않음** | Depth · Rasterizer · Topology를 설정하지 않고 `SpriteBatch::Begin()` / `End()`가 바꾸는 상태(Blend · Depth · Rasterizer · Sampler 등)를 그대로 둡니다. 엔진은 이를 복원하지 않으므로 **다음 프레임의 첫 Pass로 상태가 이어집니다.** Depth / Rasterizer는 Mesh Pass가 다시 지정하지만, Blend State는 어떤 Pass도 지정하지 않습니다 |
-| **Blend State는 `MeshRenderPass`만 지정** | `MeshRenderPass`는 시작할 때 `OMSetBlendState(BS_ADD)`를 걸고 끝나면 `BS_NULL_`로 되돌리지만, Gizmo · Normal · UI Pass는 Blend State를 전혀 건드리지 않습니다. 메시별 On/Off는 없고 **모든 메시에 일괄 적용**됩니다 ([Alpha Blend](#alpha-blend-초기-구현) 참고). 렌더 타깃(RTV/DSV)은 여전히 초기화와 리사이즈 때 한 번만 바인딩되며, 다른 렌더 타깃을 쓰려면 사용한 뒤 직접 되돌려야 합니다 |
-| **IA · PS 슬롯이 해제되지 않음** | Mesh Pass가 바인딩한 Normal(1) · UV(3) 스트림, Index Buffer, 텍스처 `t#`, 샘플러 `s#`는 다음 Pass에도 남습니다. Gizmo Pass는 슬롯 1 · 3을 바인딩하지 않으므로 Mesh Pass가 남긴 버퍼가 그대로 걸려 있는 상태로 같은 Input Layout을 사용합니다 |
+| **Blend State는 `MeshRenderPass`/`SceneCaptureRenderPass`만 지정** | 둘 다 시작할 때 `OMSetBlendState(BS_ADD)`를 걸고 끝나면 `BS_NULL_`로 되돌리지만, Gizmo · Normal · UI Pass는 Blend State를 전혀 건드리지 않습니다. 메시별 On/Off는 없고 **모든 메시에 일괄 적용**됩니다 ([Alpha Blend](#alpha-blend-초기-구현) 참고) |
+| **`SceneCaptureRenderPass`가 끝나도 RTV/DSV를 백버퍼로 되돌리지 않음** | 캡처 항목을 모두 그린 뒤에도 장치에는 **마지막 캡처의 RenderTarget/DepthStencil이 그대로 바인딩된 채** 함수가 끝납니다. 바로 다음에 실행되는 `MeshRenderPass`가 자기 맨 앞에서 다시 `OMSetBackBufferRenderTargets`를 호출해 덮어쓰므로 지금은 문제가 되지 않지만, 두 Pass의 순서를 바꾸거나 둘 사이에 다른 Pass를 끼워 넣으면(위 "Pass를 만들거나 수정할 때의 규칙" 1번을 지키지 않으면) 그 Pass가 엉뚱한 렌더 타깃에 그리게 됩니다 |
+| **IA · PS 슬롯이 해제되지 않음** | Mesh Pass가 바인딩한 Normal(1) · UV(3) · Tangent(4) 스트림, Index Buffer, 텍스처 `t#`, 샘플러 `s#`는 다음 Pass에도 남습니다. Gizmo Pass는 슬롯 1 · 3 · 4를 바인딩하지 않으므로 Mesh Pass가 남긴 버퍼가 그대로 걸려 있는 상태로 같은 Input Layout을 사용합니다 |
 | **28개 상수 버퍼를 모든 Pass가 공유** | 같은 버퍼가 Pass마다 다른 의미로 쓰입니다 (VS `b2`: Mesh는 Light, Normal은 Normal Matrix, Material은 그 뒤 슬롯). 한 Pass가 쓰지 않은 슬롯에는 **이전 Pass의 값이 남아** 있습니다 |
-| **`Normal` Pass만 조기 반환이 있음** | `bNormal`이 `false`면 상수 버퍼 바인딩 전에 바로 반환합니다. 다른 Pass는 항상 전체 초기화를 수행하므로 Pass마다 진입 동작이 일관되지 않습니다 |
-| **Depth · Fill · Cull이 전역** | `ZEnable` · `bFill` · `bCull`이 Mesh · Gizmo · Normal에 똑같이 적용되어, 기즈모만 깊이 테스트를 끄거나 와이어프레임 없이 그리는 식의 Pass별 설정이 불가능합니다 |
+| **`Normal` · `SceneCapture` Pass는 조기 반환이 있음** | `NormalRenderPass`는 `bNormal`이 `false`면 상수 버퍼 바인딩 **전에** 바로 반환합니다. `SceneCaptureRenderPass`는 백버퍼 RTV/DSV 바인딩과 상수 버퍼 14개 바인딩을 **마친 뒤** `SceneCaptureList`가 비어 있으면 반환합니다(Depth Stencil State · Blend · Topology 지정 전) — 두 Pass의 조기 반환 시점이 서로 다릅니다 |
+| **Depth · Fill · Cull이 전역** | `ZEnable` · `bFill` · `bCull`이 Mesh · Gizmo · Normal · SceneCapture에 똑같이 적용되어, 기즈모만 깊이 테스트를 끄거나 와이어프레임 없이 그리는 식의 Pass별 설정이 불가능합니다 |
 
 **Pass를 만들거나 수정할 때의 규칙**
 
@@ -1085,6 +1108,160 @@ if (input.VertexID == 1) WorldPosition += WorldNormal * NormalLength;
 > [!NOTE]
 > 셰이더 에셋 로드는 `EngineLoader.h`의 `LoadEngineAssets()`가 처리합니다 (`DefaultGizmo*`, `NormalDebug*` 포함). Normal Line 전용 VS는 Input Layout이 다르므로 `LoadVertexShader` 대신 `LoadNormalDebugVertexShader`로 로드합니다.
 
+### SceneCapture · RenderTarget (Mirror 데모)
+
+`RenderTarget` · `DepthStencil` · `DepthStencilState`가 Material처럼 **JSON으로 등록하는 에셋**이 됐습니다. 이를 바탕으로 `FPSceneCaptureComponent2D`가 씬을 자신의 `RenderTarget`에 미리 그려 두면, 같은 프레임의 `MeshRenderPass`가 그 결과를 **보통의 `Texture2D`처럼** Material에서 샘플링할 수 있습니다 — Tri_World의 거울 데모 `AMirror`가 이 전체 경로를 보여 줍니다.
+
+```mermaid
+flowchart TD
+    A["FPSceneCaptureComponent2D::Tick<br/>자신만의 View/Projection 계산"] --> B["Renderer::CreateSceneCaptureList<br/>Active & CaptureThisFrame인 항목만 스냅샷"]
+    B --> C["SceneCaptureRenderPass<br/>캡처마다 자신의 RenderTarget/DepthStencil로 OMSetRenderTargets"]
+    C --> D["MeshRenderList 전체를 그 View/Projection으로 다시 그림<br/>(HiddenActors는 건너뜀)"]
+    D --> E["ResolveRenderTarget<br/>ResolveSubresource: RT Texture → SRV용 Resolve Texture"]
+    E --> F["같은 프레임의 MeshRenderPass<br/>Material Textures[]에 TextureType: RenderTargetTexture2D로 그대로 샘플링"]
+```
+
+#### RenderTarget 에셋
+
+```json
+// Assets/RenderTarget/Mirror_RenderTarget.json (Tri_World)
+{
+  "Name": "Mirror_RenderTarget",
+  "Type": "Texture2D",
+  "SizeX": 512, "SizeY": 512,
+  "RenderTargetFormat": "RGBA8",
+  "ClearColor": [ 1.0, 0.0, 1.0, 1.0 ],
+  "MSAA": 1,
+  "MipMap": false
+}
+```
+
+| 키 | 설명 |
+|---|---|
+| `Type` | 현재 `"Texture2D"`만 실제로 지원. 엔진 쪽 `EX)...(추후 지원).json` 예시 파일들(`Canvas2D` · `Cube` · `Texture2DArray` · `Volume`)은 이름 그대로 아직 미구현 |
+| `RenderTargetFormat` | `FPRenderTargetFormat`: `R8` · `RG8` · `RGBA8` · `RGBA8_SRGB` · `R16F` · `RGBA16F` · `R32F` · `RGBA32F` · `RGBA10A2` |
+| `ClearColor` | `SceneCaptureRenderPass`가 그 캡처를 그리기 **직전**(`Device.ClearRenderTargetView`)에 이 값으로 지움 |
+| `MSAA` | `1`보다 크면 멀티샘플 텍스처로 생성 |
+| `MipMap` | `true`면 Resolve Texture에 `D3D11_BIND_RENDER_TARGET\|SHADER_RESOURCE` + `D3D11_RESOURCE_MISC_GENERATE_MIPS`를 추가해 전체 밉맵을 만들 수 있게 함(자동 생성 호출은 현재 코드에 없음 — 바인드 플래그만 준비됨) |
+
+로더: `FPAssetLoader::LoadRenderTargetTexture2D(Path, Owner)` → `FPAssetManager::AddRenderTargetTexture2DData`(설명만). `AllAssetDataCreate()`가 모든 항목에 대해 `MakeRenderTarget(FPRenderTargetTexture2DInfo&)`를 호출해 실제 GPU 리소스(`FPRenderTargetData{Texture, ResolveTexture, RenderTargetView, ShaderResourceView}`)를 만듭니다.
+
+> [!IMPORTANT]
+> `MakeRenderTarget`은 **항상 텍스처 두 장**을 만듭니다 — `CreateRTTex`가 `BIND_RENDER_TARGET`(실제로 그려지는, `MSAA`만큼 샘플될 수 있는) 텍스처와 `BIND_SHADER_RESOURCE`(항상 싱글 샘플) 텍스처를 따로 생성하고, `RenderTargetView`는 첫 번째에, `ShaderResourceView`는 두 번째("Resolve Texture")에 만듭니다. `ResolveRenderTarget`(`ResolveSubresource`)로 첫 번째를 두 번째에 복사해야 비로소 Material에서 샘플링할 수 있는데, **`MSAA == 1`이어도 둘은 별개의 GPU 리소스라 이 Resolve가 항상 필요합니다** (소스 코드 주석: *"needed even when MSAA==1 because they are separate GPU resources"*). `SceneCaptureRenderPass`는 캡처 항목 하나를 다 그린 직후 바로 이 Resolve를 호출합니다.
+
+#### DepthStencil · DepthStencilState 에셋
+
+```json
+// Assets/DepthStencil/Mirror_DepthStencil.json (Tri_World)
+{ "Name": "Mirror_DepthStencil", "SizeX": 512, "SizeY": 512,
+  "DepthStencilFormat": "D24_S8_UINT", "ClearDepth": 1.0, "ClearStencil": 0,
+  "MSAA": 1, "ShaderResource": false }
+```
+```json
+// Assets/DepthStencilState/DS_DEPTH_ON.json (Engine)
+{ "Name": "DS_DEPTH_ON", "DepthEnable": true, "DepthWriteMask": "ALL", "DepthFunc": "LESS",
+  "StencilEnable": false, "StencilReadMask": 255, "StencilWriteMask": 255,
+  "FrontFace": { "StencilFailOp": "KEEP", "StencilDepthFailOp": "KEEP", "StencilPassOp": "KEEP", "StencilFunc": "ALWAYS" },
+  "BackFace":  { "StencilFailOp": "KEEP", "StencilDepthFailOp": "KEEP", "StencilPassOp": "KEEP", "StencilFunc": "ALWAYS" } }
+```
+
+`DepthStencilFormat`: `D16` · `D24_S8_UINT` · `D32F` · `D32F_S8X24_UINT`. `DepthStencilState` 필드는 `D3D11_DEPTH_STENCIL_DESC`에 거의 1:1로 매핑됩니다(`RenderingDevice::CreateDepthStencilState`).
+
+| 단계 | 내용 |
+|---|---|
+| 로더 | `FPAssetLoader::LoadDepthStencil` / `LoadDepthStencilState` |
+| Info/Data | DepthStencil: `Get/AddDepthStencilInfoData`, `Get/Add/Hast`<sup>**오타, 실제 이름**</sup>`DepthStencilData`, `Maket`<sup>**오타, 실제 이름**</sup>`DepthStencil`, `GetDepthStencilDataMap()`(주석조차 "살짝 아쉬움"). DepthStencilState: `Get/AddDepthStencilStateInfoData`, `Get/Add/HasDepthStencilStateData`, `MakeDepthStencilState` |
+| GPU 리소스 | `FPDepthStencilData{Texture, DepthStencilView, ShaderResourceView}`. `ShaderResource:false`면 `CreateDepthStencilSRView`가 그냥 `S_OK`만 반환(SRV 안 만듦) — `true`면 깊이 포맷을 `DSVFormatToSRVFormat`으로 바꿔 깊이값을 텍스처로 읽을 수 있게 함 |
+| Resize 대응 | `MaketDepthStencil`은 같은 이름이 이미 있으면 기존 SRV/DSV/Texture를 `Release()`한 뒤 다시 만듭니다(재해상도용) |
+
+**백버퍼 깊이 버퍼도 이제 `DepthStencil` 에셋 하나**입니다(`"BackBufferDepthStencil"`): JSON이 아니라 `Renderer::InitializeRenderer()`가 C++로 `FPDepthStencilInfo`를 직접 채워 `AddDepthStencilInfoData`로 등록하고, 그 뒤는 다른 `DepthStencil`과 똑같이 `AllAssetDataCreate()`가 `MaketDepthStencil`로 실제 리소스를 만듭니다. 리사이즈 시에는 `Renderer::ResizeRenderTarget`이 `SizeX/SizeY`를 갱신한 뒤 `MaketDepthStencil`을 **직접** 다시 호출합니다.
+
+> [!IMPORTANT]
+> 예전에 하드코딩돼 있던 `enum {DS_DEPTH_ON, DS_DEPTH_OFF, DS_DEPTH_WRITE_OFF}` + `ID3D11DepthStencilState* DSState[3]` 배열과 `OMSetDepthStencilState(bool)`이 전부 사라졌습니다. 지금은 `EngineLoader.h`가 그 세 가지를 **엔진 소유의 `DepthStencilState` JSON 3개**(`DS_DEPTH_ON` / `DS_DEPTH_OFF` / `DS_DEPTH_WRITE_OFF`)로 로드하고, `OMSetDepthStencilState(void* InDepthStencilState)`가 만들어진 **State 객체**를 직접 받습니다. `MeshRenderPass`/`GizmoRenderPass`/`NormalRenderPass`/`SceneCaptureRenderPass`는 모두 `ZEnable ? "DS_DEPTH_ON" : "DS_DEPTH_OFF"` 이름으로 `GetDepthStencilStateData`를 조회해 씁니다.
+
+> [!NOTE]
+> `ClearDepthStencilView(void* InDepthStencilView, float ClearDepth, UINT8 ClearStencil)`(`RenderingDevice.cpp`)가 `DeviceContext->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, ClearDepth, ClearStencil)`로 수정되어, `DepthStencil` JSON의 `ClearDepth`/`ClearStencil` 값을 실제로 사용합니다(예전엔 `D3D11_CLEAR_DEPTH`에 `1.0f, 0`을 항상 그대로 넘겨 JSON 값이 무시됐음). `Renderer::ClearDepthStencil()`이 `GetDepthStencilInfoData(이름)`으로 각 `DepthStencil`의 `ClearDepth`/`ClearStencil`을 가져와 넘깁니다(백버퍼 포함). `ClearBackBuffer`도 같은 방식으로 매개변수를 받습니다.
+
+#### TextureType 확장과 Material 연동
+
+```cpp
+// Renderers/FPRenderingCommon.h
+enum FPTextureType { Texture2D, Texture2DArray, RenderTargetTexture2D, DepthStencilTexture2D, FPTextureType_MAX_ };
+```
+
+Material JSON의 `Textures[].TextureType`에 `"RenderTargetTexture2D"` / `"DepthStencilTexture2D"`를 쓸 수 있습니다(`Mirror_Material.json`이 실제 예). 문제는 HLSL `Texture2D` 변수는 셰이더 리플렉션에도 **항상 `Texture2D`로만 보인다는 점**인데, `FPMaterial::SetNamedTexture`가 이를 호환 처리합니다.
+
+```cpp
+// FPMaterial.cpp — SetNamedTexture
+const bool IsRenderOrDepthAsset = (TextureType == RenderTargetTexture2D || TextureType == DepthStencilTexture2D);
+const bool TypeCompatible = (Resource.TextureType == TextureType) || (IsRenderOrDepthAsset && Resource.TextureType == Texture2D);
+if (!TypeCompatible || Resource.Slot >= 128) { /* 실패 처리 */ }
+...
+Resource.TextureType = TextureType;   // 리플렉션이 준 Texture2D를 요청한 실제 타입으로 덮어씀
+```
+
+리플렉션이 매겨 둔 `Texture2D`를 요청한 실제 타입(`RenderTargetTexture2D` 등)으로 **덮어써 두기 때문에**, 그 뒤 렌더링 시점에는 타입을 보고 바로 알맞은 저장소에서 SRV를 찾을 수 있습니다.
+
+```cpp
+// Renderer::MeshRenderPass / SceneCaptureRenderPass — 텍스처 바인딩, 두 Pass 모두 동일
+if (TextureItem.TextureType == Texture2D)             TextureData = AssetManager->GetTextureData(AssetName).ShaderResourceView;
+if (TextureItem.TextureType == Texture2DArray)        TextureData = AssetManager->GetTextureArrayData(AssetName).TextureArraySRV;
+if (TextureItem.TextureType == RenderTargetTexture2D) TextureData = AssetManager->GetRenderTargetData(AssetName).ShaderResourceView;
+if (TextureItem.TextureType == DepthStencilTexture2D) TextureData = AssetManager->GetDepthStencilData(AssetName).ShaderResourceView;
+Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData);
+```
+
+> [!NOTE]
+> `FPTextureData`의 SRV 필드도 이름이 `TextureResource` → **`ShaderResourceView`로 바뀌었습니다**, `FPRenderTargetData`/`FPDepthStencilData`와 이름을 맞춘 것입니다.
+
+#### SceneCaptureComponent 계열
+
+`FPSceneCaptureComponent`(추상, `FPSceneComponent` 상속) → `FPSceneCaptureComponent2D`(구현) / `FPSceneCaptureComponentCube`(빈 스텁, `{}`). `FPPlanarReflectionComponent`도 `class FPPlanarReflectionComponent : public FPSceneCaptureComponent {};`뿐인 **빈 스텁**이라, 기존 `FPSpotLightComponent`/`FPRectLightComponent`/`FPSkyLightComponent`처럼 아직 인스턴스화할 수 없습니다(부모의 순수 가상 함수를 하나도 구현하지 않음).
+
+| 항목 | 내용 |
+|---|---|
+| 기본값 | `Fov = 45°`, `Aspect = 960/600`, `Zn = 1`, `Zf = 300`(`FPCameraComponent`와 동일), `RenderTarget = "BackbufferRenderTarget"`(소문자 b — 실제로 이 이름의 에셋은 없어서, `SetRenderTarget`을 호출하지 않은 캡처는 매 프레임 "RenderTarget not loaded" 로그만 남김), `DepthStencil = "BackBufferDepthStencil"`, `CaptureEveryFrame = CaptureThisFrame = true` |
+| 등록 | `RegistSceneCaptureComponent()`가 `FPGameInstance::GetSceneCaptureList()`(새 14번째 SubSystem)에 `RegistRenderList()`로 등록하고, 자기 멤버 변수들의 **포인터**를 `SceneCaptureItem`에 꽂아 둠(Light·Camera와 같은 "포인터 등록, 매 프레임 역참조" 패턴) |
+| `Tick()` | `ViewMatrix = Translation(-Location) × Rotation.Transpose()`, `ProjectionMatrix = PerspectiveFovLH(Fov, Aspect, Zn, Zf)` — `FPCameraComponent::Tick()`과 같은 공식(공통 베이스로 추출되지는 않고 중복 구현) |
+| `AddHiddenActor` / `RemoveHiddenAcotr`<sup>(오타, 실제 이름)</sup> / `EmptyHiddenActor` | `FPActor*` → `Actor->GetName()` 문자열을 `HiddenActors`에 추가/제거/전체 삭제 |
+| 매 프레임 흐름 | `Renderer::CreateSceneCaptureList()`가 `Active && CaptureThisFrame`인 항목만 복사 → `SceneCaptureRenderPass()`가 캡처마다 **`MeshRenderList` 전체**를 그 캡처의 View/Projection으로 다시 그리고(`ActorName`이 `HiddenActors`에 있으면 `continue`) 끝나면 `ResolveRenderTarget` |
+
+`HiddenActors` 비교가 `RenderItem::ActorName`(문자열)으로 이루어지므로, 이를 뒷받침하는 두 가지가 같은 범위에서 함께 바뀌었습니다: `FPStaticMeshComponent::SetRenderItemData()`가 새 `RenderItem::OwnActor`(소유 액터 포인터)를 채우고 `Renderer::CreateMeshRenderList()`가 `MeshRenderData.ActorName = OwnActor->GetName()`으로 옮기며(작성자 주석: *"살짝 맘에 들지는 않네..."*), `FPWorld::SpawnActor`/`OpenLevel`은 이름을 안 준 액터에 `FPWorld::GenerateUniqueActorName(ClassName)`(`ClassName + "_" + 카운터`)로 **고유 이름을 자동 생성**하도록 바뀌었습니다(이전엔 빈 이름이 그대로 남을 수 있었음).
+
+> [!NOTE]
+> `FPCameraComponent`도 `RenderTarget`/`DepthStencil` 필드와 `Set/GetRenderTarget` · `Set/GetDepthStencil`을 똑같이 가지고 있고(`RenderingData::CameraItem`에도 두 필드가 있음), 베이스 클래스도 `FPPrimitiveComponent` → `FPSceneComponent`로 바뀌었습니다. 이제 `MeshRenderPass`가 **카메라마다** `CamItem.RenderTarget`/`DepthStencil`을 확인해, `AssetManager->HasRenderTargetData(...)`·`HastDepthStencilData(...)`가 모두 참이면(즉 `SetRenderTarget`으로 실제 에셋을 지정해 둔 카메라면) `Device.OMSetRenderTargets`로 그 RenderTarget에 그리고(그리기 전에 `ClearRenderTargetView`로 그 에셋의 `ClearColor`를 칠함) 다 그린 뒤 `ResolveRenderTarget`까지 호출합니다. 기본값(`"BackbufferRenderTarget"` 등 등록되지 않은 이름)이면 예전처럼 `OMSetBackBufferRenderTargets`를 씁니다. **다만 이 배선은 `MeshRenderPass`에만 들어가 있고, `GizmoRenderPass`/`NormalRenderPass`는 여전히 항상 백버퍼에만 그립니다** — `SceneCaptureRenderPass`가 `MeshRenderList`만 그리는 것과 같은 설계입니다(기즈모·Normal Line은 "화면에 떠 있는 디버그 오버레이"로 간주해 제외).
+
+#### 데모 — `AMirror` (거울)
+
+```cpp
+// Games/Release_Game/Tri_World/AMirror.cpp — Initialize()
+MirrorPlane = new FPStaticMeshComponent(this, "Plane_StaticMesh");     // 거울 표면
+MirrorPlane->SetRelativeRotation({-90.0f, 0.0f, 0.0f});
+MirrorPlane->SetMaterial(AssetManager->MakeMaterial("Mirror_Material"));
+
+SpringArm = new FPSpringArmComponent(this);                            // Player와 같은 오프셋/각도
+SpringArm->TargetArmLength = 20.0f;
+SpringArm->bUsePawnControlRotation = true;
+
+ScreenCaptureComponent = new FPSceneCaptureComponent2D(this);          // "거울 뒤의 카메라"
+ScreenCaptureComponent->SetupAttachment(SpringArm);
+ScreenCaptureComponent->SetRenderTarget("Mirror_RenderTarget");
+ScreenCaptureComponent->SetDepthStencil("Mirror_DepthStencil");
+ScreenCaptureComponent->AddHiddenActor(this);                          // 거울 자신은 반사에서 제외(무한 재귀 방지)
+ScreenCaptureComponent->SetAspect(1.0f);                               // 512×512 정사각 RenderTarget에 맞춤
+```
+
+| 항목 | 내용 |
+|---|---|
+| Material | `Mirror_Material.json` — `PixelShader: "MirrorPixelShader"`, `Parameters` 없음, `Textures: [{"Parameter":"MirrorTex","Asset":"Mirror_RenderTarget","TextureType":"RenderTargetTexture2D"}]` |
+| 셰이더 | `MirrorPixelShader.psh` — 라이팅 없이 `MirrorTex.Sample(Smpler, uv)`를 그대로 반환하는 가장 단순한 PS |
+| 입력 | 컨트롤러 0의 `IA_SetMoveCamera`/`IA_ZoomCamera`를 `CameraMove`/`CameraZoom`에 바인딩 — `AMirror`를 Possess하면 Player 카메라와 똑같은 조작으로 "거울 뒤 카메라"의 `SpringArm`을 움직이고 줌할 수 있음 |
+| 등록 | `ClassRegistry->Register<AMirror>("AMirror")`. `LoadAssets()`가 `MirrorPixelShader.json` · `Mirror_RenderTarget.json`(`LoadRenderTargetTexture2D`) · `Mirror_DepthStencil.json`(`LoadDepthStencil`) · `Mirror/Mirror_Material.json`을 등록 |
+| 배치 | `Assets/Level/TriWorld.json`에 `"class": "AMirror"`로 배치돼 있고, `GameController`의 `ControllPawn` 목록에도 추가되어 있어 다른 데모 Pawn들과 함께 Possess 전환으로 조종할 수 있음 |
+
+> [!NOTE]
+> 코드를 살피다 눈에 띈, 의도적인지 확실치 않은 변경 두 가지: `FPLightComponentBase`(추상 베이스)의 기본 `Ambient`가 `{0.2,0.2,0.2,1.0}` → `{0.2,0.2,0.2,0.2}`로 알파까지 `0.2`가 돼 버렸습니다(복사 실수처럼 보이지만 실제 사용되는 값은 아래 참고). 반면 `FPDirectionalLightComponent`의 생성자 자체 기본값은 `{0.2,...,1.0}` → `{0.35,0.35,0.35,1.0}`로 알파는 그대로 두고 밝기만 올렸는데, Directional Light를 만들 때 실제로 쓰이는 건 이쪽입니다.
+
 ### UI 렌더링 (`Renderer::UIRenderPass`)
 
 `UIRenderList`의 텍스트마다 `SpriteBatch::Begin()` → `UIViewPort`를 설정하고 `SpriteFont::DrawString()` → `End()` 순으로 출력합니다. 상수 버퍼는 사용하지 않습니다.
@@ -1097,10 +1274,10 @@ if (input.VertexID == 1) WorldPosition += WorldNormal * NormalLength;
 
 | 항목 | 내용 |
 |---|---|
-| 입력 레이아웃 | 속성마다 **별도 슬롯, 오프셋 0** — `POSITION`(float3, 슬롯 0), `NORMAL`(float3, 슬롯 1), `COLOR`(float4, 슬롯 2), `TEXCOORD`(float2, 슬롯 3). Normal Line 셰이더만 `POSITION`(0) · `NORMAL`(1)을 **Per-Instance**로 읽음 |
-| 기본 Mesh 셰이더 | `DefaultVertexShader.vso` — WVP 변환 + **통합 Light(Directional · Point)를 정점 단위로 계산**(`b0` Object, `b2` Light 블록, `b3` Material). `DefaultPixelShader.pso`는 보간된 정점 색에 **텍스처(`t0` / `s0`)를 곱해** 출력 |
+| 입력 레이아웃 | 속성마다 **별도 슬롯, 오프셋 0** — `POSITION`(float3, 슬롯 0), `NORMAL`(float3, 슬롯 1), `COLOR`(float4, 슬롯 2), `TEXCOORD`(float2, 슬롯 3), `TANGENT`(float4, 슬롯 4 — [Tangent 생성](#tangent-생성-fpassetmanagergeneratetangents) 참고). Mesh · Gizmo VS가 이 Input Layout을 공유해 Gizmo VS도 `TANGENT` 입력을 받아야 함. Normal Line 셰이더는 별도 Input Layout(`POSITION`(0) · `NORMAL`(1)만, **Per-Instance**로 읽음)을 씀 |
+| 기본 Mesh 셰이더 | `DefaultVertexShader.vso` — WVP 변환 + 노멀 · Tangent를 View 공간으로 옮겨 PS로 전달(`b0` Object). 라이팅 계산 자체는 **픽셀 단위**로 `DefaultPixelShader.pso`가 `PixelLight.hlsli::CalculateLight`로 수행(`b2` Light 블록, `b3` Material), 결과에 보간된 정점 색 · **텍스처(`t0` / `s0`)를 곱해** 출력 ([Per-Pixel Light](#per-pixel-light--normal-line) 참고) |
 | 기본 Gizmo 셰이더 | `DefaultGizmoVertexShader.vso` / `DefaultGizmoPixelShader.pso` — WVP 변환 후 정점 색 출력 (`b0`만 사용, 라이트 없음). Position · Color 스트림만 바인딩. `FPGizmoGridComponent` · `FPGizmoAxisComponent`가 사용 |
-| Normal Line 셰이더 | `NormalDebugVertexShader.vso` / `NormalDebugPixelShader.pso` — [Lambert Light · Normal Line](#lambert-light--normal-line) 참고. 전용 Input Layout을 쓰므로 `LoadNormalDebugVertexShader()`로 로드 |
+| Normal Line 셰이더 | `NormalDebugVertexShader.vso` / `NormalDebugPixelShader.pso` — [Per-Pixel Light · Normal Line](#per-pixel-light--normal-line) 참고. 전용 Input Layout을 쓰므로 `LoadNormalDebugVertexShader()`로 로드 |
 | 셰이더 로드 | 셰이더 JSON(`LoadVertexShader("X.json", owner)` / `LoadPixelShader`)로 등록 ([셰이더 JSON](#셰이더-json)). 컴파일된 `.vso` / `.pso`는 `AllAssetDataCreate()`가 로드 |
 | `FPMaterialInterface` | `SetParameter / GetParameter`(`float` · `FPVector2/3/4` · `std::vector<float>`), `SetParameterElement / GetParameterElement`(배열 요소), `SetNamedTexture / SetNamedSampler`, `SetTwoSided / GetTwoSided`, `SetVertexShader / SetPixelShader`, 셰이더 이름 Getter, `Get{Vertex,Pixel}ConstantBufferRenderData()`, `GetReflectionData()`, `UpdateMaterial(DeltaTime)`. 이전의 `Set/Get BaseColor · Diffuse · Ambient · Emissive`와 `SetTexture` · `AddTexture` · `DeleteTexture` · `GetTextureList`는 제거됨 |
 | `FPMaterial` | 보호 멤버 `VertexConstantBuffer` / `PixelConstantBuffer`(리플렉션이 크기를 정함)와 `ReflectionData`(`FPShaderReflectionData`: `Parameters` · `Resources` · `Samplers`)를 가짐. 생성자는 더 이상 텍스처 슬롯이나 색 상수 버퍼를 만들지 않으며, 모든 값은 `MakeMaterial`이 Material JSON에서 채움 |
@@ -1854,6 +2031,8 @@ Assets/
     "Graphics": {
       "MSAA": 8,
       "AnisotropicFiltering": 16,
+      "VSync": true,
+      "Hz": 60,
       "Resolution": {
         "Width": 960,
         "Height": 600
@@ -1869,8 +2048,13 @@ Assets/
 | `GameName` | 창 클래스/타이틀로 쓰임 (`FPGameProjectSetting::WinClassName` / `WinName`) |
 | `Graphics.MSAA` | 스왑체인·깊이버퍼 `SampleDesc.Count`. **짝수이고 8 이하**가 아니면 `1`(AA off)로 대체 |
 | `Graphics.AnisotropicFiltering` | Anisotropic 샘플러의 `MaxAnisotropy`. **짝수이고 16 이하**가 아니면 `1`로 대체 |
+| `Graphics.VSync` *(신규)* | `RenderingDevice::SetVSync()`에 전달 → `SwapChain->Present(IsVSync ? 1 : 0, 0)`의 SyncInterval |
+| `Graphics.Hz` *(신규)* | `RenderingDevice::SetHz()`. 현재는 값만 보관하며 SwapChain 생성 시 refresh rate로 직접 쓰이진 않음 |
 | `Graphics.Resolution.Width` / `Height` | 창 크기(`WinWidth` / `WinHeight`), `DisplayAspect` 계산에도 사용 |
 | `Graphics.FullScreen` | 전체화면 여부 (`FPGameProjectSetting::FullScreen`) |
+
+> [!NOTE]
+> `FPGameProjectSetting::SyncGameSettingData()`가 `DisplayWidth/Height · MSAA · AF · FullScreen · VSync · Hz`의 현재 값을 다시 `FPGameSettingData`로 되돌려 씁니다. `Renderer::ResizeRenderTarget()`이 리사이즈 뒤 이 함수를 호출해, 창 크기 변경이 메모리 상의 설정 데이터에도 반영되도록 합니다(파일에 다시 저장하지는 않음).
 
 ```mermaid
 flowchart LR
@@ -1999,6 +2183,9 @@ Material JSON의 `TwoSided`는 `FPMaterialData` → `FPMaterial::SetTwoSided()` 
 | [Texture2DArray](#5-texture2darray-json) | `Texture2DArray/` | `LoadTexture2DArray(file, owner)` | 텍스처 배열 1개 |
 | [StaticMesh](#6-staticmesh-json) | `StaticMesh/` | `LoadStaticMesh(file, owner)` | 메시 1개 (+ Socket, Material 참조) |
 | [Material](#7-material-json-전체-예시) | `Material/` | `LoadMaterial(file, owner)` | Material 1개 |
+| [RenderTarget](#scenecapture--rendertarget-mirror-데모) | `RenderTarget/` | `LoadRenderTargetTexture2D(file, owner)` | RenderTarget(현재 `Texture2D`만) 1개 |
+| [DepthStencil](#scenecapture--rendertarget-mirror-데모) | `DepthStencil/` | `LoadDepthStencil(file, owner)` | DepthStencil 1개 |
+| [DepthStencilState](#scenecapture--rendertarget-mirror-데모) | `DepthStencilState/` | `LoadDepthStencilState(file, owner)` | DepthStencilState 1개(엔진 기본 3종: `DS_DEPTH_ON`/`OFF`/`WRITE_OFF`) |
 
 > [!NOTE]
 > 모든 파일은 **JSON 문법을 정확히 지켜야** 합니다 (주석 · 후행 쉼표 불가 — 아래 예시의 `//` 주석은 설명용이므로 실제 파일에는 넣지 마세요). 파일을 열지 못하거나 파싱에 실패하면 콘솔에 메시지만 출력하고 그 에셋은 등록되지 않습니다. 필수 키가 없으면 로드 중 예외가 발생합니다.
@@ -2980,9 +3167,10 @@ auto* Body = new FPStaticMeshComponent(this, "Windmill_Body_StaticMesh");  // Lo
 |---|---|---|
 | `Fov` | 45° | 시야각 |
 | `Aspect` | 960 / 600 | 화면비 |
-| `Zn` / `Zf` | 1 / 100 | 근/원 평면 |
+| `Zn` / `Zf` | 1 / 300 | 근/원 평면 |
 | `Active` | `true` | 사용 여부 |
 | `OnTripleCam()` | — | 3분할 뷰포트 토글 |
+| `RenderTarget` / `DepthStencil` | `"BackbufferRenderTarget"` / `"BackBufferDepthStencil"` | `SetRenderTarget`/`SetDepthStencil`로 실제 RenderTarget/DepthStencil 에셋 이름을 지정하면 **`MeshRenderPass`가 이 카메라의 메시를 그 RenderTarget에 그리고 Resolve**합니다. 기본값(미지정)이면 백버퍼. `GizmoRenderPass`/`NormalRenderPass`는 아직 반영하지 않아 항상 백버퍼에 그림([SceneCapture](#scenecapture--rendertarget-mirror-데모) 참고) |
 
 컴포넌트의 월드 위치·회전으로 View 행렬을 만들기 때문에, SpringArm이나 다른 컴포넌트에 붙이는 것만으로 카메라가 움직입니다.
 
@@ -2994,6 +3182,17 @@ auto* Body = new FPStaticMeshComponent(this, "Windmill_Body_StaticMesh");  // Lo
 | `bUsePawnControlRotation` | `true`면 부모 회전 대신 **Controller의 회전**을 사용 |
 
 Pawn에서 `AddControllerYawInput(v)`, `AddControllerPitchInput(v)`를 호출하면 카메라가 회전합니다.
+
+#### `FPSceneCaptureComponent2D` — 씬을 텍스처로 캡처
+
+| 멤버 | 기본값 | 설명 |
+|---|---|---|
+| `Fov` / `Aspect` / `Zn` / `Zf` | 45° / 960·600 / 1 / 300 | `FPCameraComponent`와 동일한 투영 파라미터 |
+| `RenderTarget` / `DepthStencil` | `"BackbufferRenderTarget"`(소문자 b) / `"BackBufferDepthStencil"` | 캡처한 씬을 그릴 대상. 거울 데모는 `"Mirror_RenderTarget"` / `"Mirror_DepthStencil"`로 바꿈. 기본값인 `"BackbufferRenderTarget"`은 실제 에셋이 아니므로 `SetRenderTarget`을 부르지 않으면 매 프레임 로그만 남고 아무것도 그려지지 않음 |
+| `CaptureEveryFrame` / `CaptureThisFrame` | `true` / `true` | `false`로 두고 필요할 때만 `CaptureScene()`을 부르면 그 프레임에만 캡처(실시간 매핑 대신 스냅샷 용도) |
+| `AddHiddenActor(FPActor*)` / `RemoveHiddenAcotr` / `EmptyHiddenActor` | — | 이 캡처에서 **빼고** 그릴 액터 지정. 거울 자신처럼 캡처 카메라 바로 앞의 메시를 숨겨 무한 반사를 막는 용도 |
+
+컴포넌트의 월드 위치·회전으로 View/Projection을 계산하는 방식은 `FPCameraComponent`와 같습니다. 실제로 화면에 비추는 것은 `FPSceneCaptureComponent2D` 자신이 아니라, 매 프레임 `SceneCaptureRenderPass`가 이 컴포넌트가 등록해 둔 값으로 씬을 그려 `RenderTarget`을 채우는 쪽입니다 — 그 결과 텍스처를 Material에서 쓰려면 Material JSON의 `Textures[]`에 `"TextureType": "RenderTargetTexture2D"`로 같은 이름을 지정합니다([SceneCapture · RenderTarget](#scenecapture--rendertarget-mirror-데모) 참고).
 
 #### `FPGizmoGridComponent` · `FPGizmoAxisComponent` — Grid / Axis
 
@@ -3237,7 +3436,7 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 > [!NOTE]
 > `GameProjectLoader.cpp`의 `ReturnStartLevel()`은 다시 **`"TriWorld"`**를 반환합니다 (`//return "ToonLink";`은 주석 처리). ToonLink 캐릭터 단독 데모(`Assets/Level/ToonLink.json` — `Terrain` · `Axis` · `Grid` · `UI` · `ADirectionalLight` + `Link`)를 보려면 두 줄의 주석을 바꾸면 됩니다. `Player`는 `BodyAndHat` · `Hair` · `Face` · `Eye` · `EyeBrow` · `Mouth` · `Hand` · `Buckle` · `MasterSword_*`(4개) · `Shield_*`(2개) 등 StaticMeshComponent 15개로 구성되며, 각 서브메시는 [FBX 변환 도구](#fbx-변환-도구-fbxtostaticmeshjsontranslator)가 만든 StaticMesh + Material Instance + Texture JSON을 사용합니다 ([Material JSON](#material-json), [Alpha Blend](#alpha-blend-초기-구현) 참고).
 
-### 씬 구성 (`Assets/Level/TriWorld.json`, 액터 312개)
+### 씬 구성 (`Assets/Level/TriWorld.json`, 액터 314개)
 
 | 클래스 | 수 | 베이스 | 구성 | 설명 |
 |---|:-:|---|---|---|
@@ -3253,6 +3452,8 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 | `WindmillWing` | 1 | `FPPawn` | StaticMesh (날개) | `Windmill`의 `WingPoint1` Socket에 부착. Player에게 옮겨 붙일 수 있음. `WindmillWing_Material`(Two Sided) |
 | `TripleWindmillWing` | 1 | `FPPawn` | StaticMesh × 3 | 날개 → 날개 → 날개로 이어지는 3단 Socket 체인. `Windmill2`의 `TripleWingPoint`에 부착 |
 | `TripleWingWindmill` | 1 | `FPPawn` | StaticMesh × 4 | 몸체 + `UpScaleWingPoint1~3` Socket에 크기·속도가 다른 날개 3개 |
+| `ADwaf` | 1 | `FPPawn` | StaticMesh × 6 (Head·Body·Beard·Armor·Pack·Sword1) | Dwarf 캐릭터. [Specular Map](#per-pixel-light--normal-line) · [Bump Mapping](#per-pixel-light--normal-line)(`DwarfPixelShader`, `TexSpec`+`TexBumpMap`) 데모 |
+| `AMirror` | 1 | `FPPawn` | StaticMesh(Plane) + SpringArm + `FPSceneCaptureComponent2D` | 거울. 자신의 RenderTarget(`Mirror_RenderTarget`, 512×512)에 씬을 매 프레임 캡처해 `Mirror_Material`(`MirrorPixelShader`)로 그대로 샘플링 ([SceneCapture · RenderTarget](#scenecapture--rendertarget-mirror-데모) 참고) |
 
 ### Tri_World의 텍스처 · Material
 

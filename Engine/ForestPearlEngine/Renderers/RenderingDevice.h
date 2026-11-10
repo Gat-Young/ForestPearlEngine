@@ -189,9 +189,9 @@ class RenderingDevice
 
 		//Background Color º¯°æ
 		HRESULT SetBackGroundColor(float R, float G, float B, float A);
-		void ClearBackBuffer(void* InDepthStencilView);
+		void ClearBackBuffer(void* InDepthStencilView, float ClearDepth = 1.0f, UINT8 ClearStencil = 0);
 		void ClearRenderTargetView(void* InRenderTargetView, float* ClearColor);
-		void ClearDepthStencilView(void* InDepthStencilView);
+		void ClearDepthStencilView(void* InDepthStencilView, float ClearDepth = 1.0f, UINT8 ClearStencil = 0);
 
 		void RenderTargetPresent();
 

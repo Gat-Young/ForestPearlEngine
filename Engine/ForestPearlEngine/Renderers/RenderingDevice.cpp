@@ -665,12 +665,12 @@ HRESULT RenderingDevice::SetBackGroundColor(float R, float G, float B, float A)
 	return S_OK;
 }
 
-void RenderingDevice::ClearBackBuffer(void* InDepthStencilView)
+void RenderingDevice::ClearBackBuffer(void* InDepthStencilView, float ClearDepth, UINT8 ClearStencil)
 {
 	ID3D11DepthStencilView* DepthStencilView = static_cast<ID3D11DepthStencilView*>(InDepthStencilView);
 
 	DeviceContext->ClearRenderTargetView(BackBufferRenderTargetView.Get(), (float*)&BackGroundColor);
-	DeviceContext->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	DeviceContext->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, ClearDepth, ClearStencil);
 }
 
 void RenderingDevice::ClearRenderTargetView(void* InRenderTargetView, float* ClearColor)
@@ -679,10 +679,10 @@ void RenderingDevice::ClearRenderTargetView(void* InRenderTargetView, float* Cle
 	DeviceContext->ClearRenderTargetView(RenderTargetView, ClearColor);
 }
 
-void RenderingDevice::ClearDepthStencilView(void* InDepthStencilView)
+void RenderingDevice::ClearDepthStencilView(void* InDepthStencilView, float ClearDepth, UINT8 ClearStencil)
 {
 	ID3D11DepthStencilView* DepthStencilView = static_cast<ID3D11DepthStencilView*>(InDepthStencilView);
-	DeviceContext->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	DeviceContext->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, ClearDepth, ClearStencil);
 }
 
 void RenderingDevice::RenderTargetPresent()

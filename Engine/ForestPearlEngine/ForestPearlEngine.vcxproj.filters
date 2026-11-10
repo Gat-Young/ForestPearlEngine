@@ -115,6 +115,9 @@
     <Filter Include="Assets\ShaderResource\Common\Bump">
       <UniqueIdentifier>{8e360594-20ea-45b9-bc5d-19afdcdb375f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Component\SceneCapture">
+      <UniqueIdentifier>{f2086061-7853-4d21-bdbf-d66d0f60a7c5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -208,9 +211,6 @@
       <Filter>FPGameInstance\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FPAssetManager.h">
-      <Filter>FPGameInstance\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FPCameraList.h">
       <Filter>FPGameInstance\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FPGameInstance.h">
@@ -327,6 +327,24 @@
     <ClInclude Include="FPTexture2DArray.h">
       <Filter>RenderAsset</Filter>
     </ClInclude>
+    <ClInclude Include="FPSceneCaptureComponent.h">
+      <Filter>Component\SceneCapture</Filter>
+    </ClInclude>
+    <ClInclude Include="FPSceneCaptureComponent2D.h">
+      <Filter>Component\SceneCapture</Filter>
+    </ClInclude>
+    <ClInclude Include="FPSceneCaptureComponentCube.h">
+      <Filter>Component\SceneCapture</Filter>
+    </ClInclude>
+    <ClInclude Include="FPPlanarReflectionComponent.h">
+      <Filter>Component\SceneCapture</Filter>
+    </ClInclude>
+    <ClInclude Include="FPCameraList.h">
+      <Filter>FPGameInstance\RenderList\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="FPSceneCaptureList.h">
+      <Filter>FPGameInstance\RenderList\Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ForestPearlEngine.cpp">
@@ -390,9 +408,6 @@
       <Filter>FPGameInstance\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FPAssetManager.cpp">
-      <Filter>FPGameInstance\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FPCameraList.cpp">
       <Filter>FPGameInstance\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FPGameInstance.cpp">
@@ -487,6 +502,24 @@
     </ClCompile>
     <ClCompile Include="Renderers\FPConstantBufferCommon.cpp">
       <Filter>Renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="FPCameraList.cpp">
+      <Filter>FPGameInstance\RenderList\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="FPSceneCaptureList.cpp">
+      <Filter>FPGameInstance\RenderList\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="FPSceneCaptureComponent.cpp">
+      <Filter>Component\SceneCapture</Filter>
+    </ClCompile>
+    <ClCompile Include="FPSceneCaptureComponent2D.cpp">
+      <Filter>Component\SceneCapture</Filter>
+    </ClCompile>
+    <ClCompile Include="FPSceneCaptureComponentCube.cpp">
+      <Filter>Component\SceneCapture</Filter>
+    </ClCompile>
+    <ClCompile Include="FPPlanarReflectionComponent.cpp">
+      <Filter>Component\SceneCapture</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -33,6 +33,162 @@ RenderingDevice::RenderingDevice()
 	PixelShaderConstBuffer.resize(MAX_BufferSize);
 }
 
+DXGI_FORMAT RenderingDevice::FPRenderTargetFormatToDXGI_FORMAT(FPRenderTargetFormat& RenderTargetFormat)
+{
+	static const std::unordered_map<FPRenderTargetFormat, DXGI_FORMAT> FormatMap =
+	{
+		{ FPRenderTargetFormat::R8,         DXGI_FORMAT_R8_UNORM },
+		{ FPRenderTargetFormat::RG8,        DXGI_FORMAT_R8G8_UNORM },
+		{ FPRenderTargetFormat::RGBA8,      DXGI_FORMAT_R8G8B8A8_UNORM },
+		{ FPRenderTargetFormat::RGBA8_SRGB, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB },
+		{ FPRenderTargetFormat::R16F,       DXGI_FORMAT_R16_FLOAT },
+		{ FPRenderTargetFormat::RGBA16F,    DXGI_FORMAT_R16G16B16A16_FLOAT },
+		{ FPRenderTargetFormat::R32F,       DXGI_FORMAT_R32_FLOAT },
+		{ FPRenderTargetFormat::RGBA32F,    DXGI_FORMAT_R32G32B32A32_FLOAT },
+		{ FPRenderTargetFormat::RGBA10A2,   DXGI_FORMAT_R10G10B10A2_UNORM },
+	};
+
+	auto it = FormatMap.find(RenderTargetFormat);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	//기본값으로 설정된 RGBA8
+	return DXGI_FORMAT_R8G8B8A8_UNORM;
+}
+
+DXGI_FORMAT RenderingDevice::FPDepthStencilFormatToDXGI_FORMAT(FPDepthStencilFormat& DepthStencilFormat)
+{
+	static const std::unordered_map<FPDepthStencilFormat, DXGI_FORMAT> FormatMap =
+	{
+		{ FPDepthStencilFormat::D16,            DXGI_FORMAT_D16_UNORM },
+		{ FPDepthStencilFormat::D24_S8_UINT,     DXGI_FORMAT_D24_UNORM_S8_UINT },
+		{ FPDepthStencilFormat::D32F,            DXGI_FORMAT_D32_FLOAT },
+		{ FPDepthStencilFormat::D32F_S8X24_UINT, DXGI_FORMAT_D32_FLOAT_S8X24_UINT },
+	};
+
+	auto it = FormatMap.find(DepthStencilFormat);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	//기본값으로 설정된 D24_S8_UINT
+	return DXGI_FORMAT_D24_UNORM_S8_UINT;
+}
+
+DXGI_FORMAT RenderingDevice::DSVFormatToTextureFormat(DXGI_FORMAT& DSVFormat)
+{
+	static const std::unordered_map<DXGI_FORMAT, DXGI_FORMAT> FormatMap =
+	{
+		{ DXGI_FORMAT_D16_UNORM,            DXGI_FORMAT_R16_TYPELESS },
+		{ DXGI_FORMAT_D24_UNORM_S8_UINT,    DXGI_FORMAT_R24G8_TYPELESS },
+		{ DXGI_FORMAT_D32_FLOAT,            DXGI_FORMAT_R32_TYPELESS },
+		{ DXGI_FORMAT_D32_FLOAT_S8X24_UINT, DXGI_FORMAT_R32G8X24_TYPELESS },
+	};
+
+	auto it = FormatMap.find(DSVFormat);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	return DSVFormat;
+}
+
+DXGI_FORMAT RenderingDevice::DSVFormatToSRVFormat(DXGI_FORMAT& DSVFormat)
+{
+	static const std::unordered_map<DXGI_FORMAT, DXGI_FORMAT> FormatMap =
+	{
+		{ DXGI_FORMAT_D16_UNORM,            DXGI_FORMAT_R16_UNORM },
+		{ DXGI_FORMAT_D24_UNORM_S8_UINT,    DXGI_FORMAT_R24_UNORM_X8_TYPELESS },
+		{ DXGI_FORMAT_D32_FLOAT,            DXGI_FORMAT_R32_FLOAT },
+		{ DXGI_FORMAT_D32_FLOAT_S8X24_UINT, DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS },
+	};
+
+	auto it = FormatMap.find(DSVFormat);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	return DSVFormat;
+}
+
+D3D11_STENCIL_OP RenderingDevice::FPStencilOPToD3DStencilOP(FPStencilOP& StencilOP)
+{
+	static const std::unordered_map<FPStencilOP, D3D11_STENCIL_OP> FormatMap =
+	{
+		{ FPStencilOP::KEEP,     D3D11_STENCIL_OP_KEEP },
+		{ FPStencilOP::ZERO,     D3D11_STENCIL_OP_ZERO },
+		{ FPStencilOP::REPLACE,  D3D11_STENCIL_OP_REPLACE },
+		{ FPStencilOP::INCR_SAT, D3D11_STENCIL_OP_INCR_SAT },
+		{ FPStencilOP::DECR_SAT, D3D11_STENCIL_OP_DECR_SAT },
+		{ FPStencilOP::INVERT,   D3D11_STENCIL_OP_INVERT },
+		{ FPStencilOP::INCR,     D3D11_STENCIL_OP_INCR },
+		{ FPStencilOP::DECR,     D3D11_STENCIL_OP_DECR },
+	};
+
+	auto it = FormatMap.find(StencilOP);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	//Default : KEEP
+	return D3D11_STENCIL_OP_KEEP;
+}
+
+D3D11_COMPARISON_FUNC RenderingDevice::FPCompraisionFuncToD3DComparisonFunc(FPCompraisonFunc& CompraisonFunc)
+{
+	static const std::unordered_map<FPCompraisonFunc, D3D11_COMPARISON_FUNC> FormatMap =
+	{
+		{ FPCompraisonFunc::NERVER,        D3D11_COMPARISON_NEVER },
+		{ FPCompraisonFunc::LESS,          D3D11_COMPARISON_LESS },
+		{ FPCompraisonFunc::EQUAL,         D3D11_COMPARISON_EQUAL },
+		{ FPCompraisonFunc::LESS_EQUAL,    D3D11_COMPARISON_LESS_EQUAL },
+		{ FPCompraisonFunc::GREATER,       D3D11_COMPARISON_GREATER },
+		{ FPCompraisonFunc::NOT_EQUAL,     D3D11_COMPARISON_NOT_EQUAL },
+		{ FPCompraisonFunc::GREATER_EQUAL, D3D11_COMPARISON_GREATER_EQUAL },
+		{ FPCompraisonFunc::ALWAYS,        D3D11_COMPARISON_ALWAYS },
+	};
+
+	auto it = FormatMap.find(CompraisonFunc);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	//Default : ALWAYS
+	return D3D11_COMPARISON_ALWAYS;
+}
+
+D3D11_DEPTH_WRITE_MASK RenderingDevice::FPDepthWriteMaskToD3DDepthWriteMask(FPDepthWriteMask& DepthWriteMask)
+{
+	static const std::unordered_map<FPDepthWriteMask, D3D11_DEPTH_WRITE_MASK> FormatMap =
+	{
+		{ FPDepthWriteMask::ZERO, D3D11_DEPTH_WRITE_MASK_ZERO },
+		{ FPDepthWriteMask::ALL,  D3D11_DEPTH_WRITE_MASK_ALL },
+	};
+
+	auto it = FormatMap.find(DepthWriteMask);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	//Default : ALL
+	return D3D11_DEPTH_WRITE_MASK_ALL;
+}
+
 //싱글톤 렌더링 디바이스 객체 가져오기
 RenderingDevice& RenderingDevice::GetRenderingDevice()
 {
@@ -43,6 +199,10 @@ RenderingDevice& RenderingDevice::GetRenderingDevice()
 
 HRESULT RenderingDevice::SetMSAA(int MSAA) { this->dwAA = MSAA; return S_OK; }
 HRESULT RenderingDevice::SetAF(int AF) { this->dwAF = AF; return S_OK; }
+
+void RenderingDevice::SetVSync(bool VSync) { this->IsVSync = VSync; }
+void RenderingDevice::SetHz(int Hz) { this->RefreshRate = Hz; }
+void RenderingDevice::SetSwapChainRect(int Width, int Height) { this->SwapChainWidth = Width; this->SwapChainHeight = Height; }
 
 
 // DisplayMode 설정
@@ -163,8 +323,11 @@ HRESULT RenderingDevice::CreateSwapChain(HWND hwnd)
 	//Swap Chain 생성
 	DXGI_SWAP_CHAIN_DESC1 SwapChainDesc = {};
 	ZeroMemory(&SwapChainDesc, sizeof(SwapChainDesc));
-	SwapChainDesc.Width = DisplayMode.Width;						//해상도 결정(백버퍼 크기)
-	SwapChainDesc.Height = DisplayMode.Height;
+
+	int BackBufferWidth = (SwapChainWidth > 0) ? SwapChainWidth : DisplayMode.Width;
+	int BackBufferHeight = (SwapChainHeight > 0) ? SwapChainHeight : DisplayMode.Height;
+	SwapChainDesc.Width = BackBufferWidth;						//해상도 결정(백버퍼 크기)
+	SwapChainDesc.Height = BackBufferHeight;
 	SwapChainDesc.Format = DisplayMode.Format;						//백버퍼 색상규격
 	SwapChainDesc.Stereo = FALSE;									//스테레오 3D렌더링 옵션
 	SwapChainDesc.SampleDesc = { dwAA, 0 };							//멀티 샘플링 설정 {Count, Quality} AA 설정 "MSAA"
@@ -178,7 +341,7 @@ HRESULT RenderingDevice::CreateSwapChain(HWND hwnd)
 	//전체화면 모드 정보
 	DXGI_SWAP_CHAIN_FULLSCREEN_DESC FsDesc = {};
 	ZeroMemory(&FsDesc, sizeof(FsDesc));
-	FsDesc.RefreshRate.Numerator = IsVSync ? 60 : 0;				//버퍼 갱신율. (수직동기화 VSync 활성화시 표준갱신율 적용 : 60hz)
+	FsDesc.RefreshRate.Numerator = IsVSync ? RefreshRate : 0;				//버퍼 갱신율. (수직동기화 VSync 활성화시 표준갱신율 적용 : 60hz)
 	FsDesc.RefreshRate.Denominator = IsVSync ? 1 : 0;
 	FsDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	FsDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
@@ -197,47 +360,234 @@ HRESULT RenderingDevice::CreateSwapChain(HWND hwnd)
 	return hr;
 }
 
-//
-// 깊이-스텐실 버퍼 생성
-//
-HRESULT RenderingDevice::CreateDepthStencil()
+HRESULT RenderingDevice::CreateRTTex(UINT SizeX, UINT SizeY, UINT MSAA, bool MipMap, FPRenderTargetFormat& RenderTargetFormat, void** OutRTTex, void** OutResolveTexture)
+{
+	HRESULT hr = S_OK;
+	//텍스처 정보 구성
+
+	//RenderTarget용 Texture
+	D3D11_TEXTURE2D_DESC TextureDesc = {};
+	TextureDesc.Width = SizeX;
+	TextureDesc.Height = SizeY;
+	TextureDesc.MipLevels = 1;					//MSAA를 사용하는 경우 MipLevels를 1로 설정
+	TextureDesc.ArraySize = 1;					//추후 다른 Type의 RT Tex를 만들때 변경 필요
+	TextureDesc.Format = FPRenderTargetFormatToDXGI_FORMAT(RenderTargetFormat);
+	TextureDesc.SampleDesc.Count = MSAA;		//기본 설정은 1이나 MSAA가 사용될 수 있으므로 SRV Texture는 Resolve함
+	TextureDesc.Usage = D3D11_USAGE_DEFAULT;
+	TextureDesc.BindFlags = D3D11_BIND_RENDER_TARGET;	//용도 RT
+	TextureDesc.CPUAccessFlags = 0;
+	TextureDesc.MiscFlags = 0;
+
+	ID3D11Texture2D* RTTex = nullptr;
+	hr = Device->CreateTexture2D(&TextureDesc, NULL, &RTTex);
+	if (FAILED(hr)) { std::cout << "RT Tex 생성 실패" << "\n"; }
+
+	//외부로 Return
+	*OutRTTex = RTTex;
+
+	//SRV용 Texture
+	//RenderTarget용 Texture와 구성은 같으나 일부 설정이 다름
+	TextureDesc.SampleDesc.Count = 1;		//Texture2D Sample 및 MipMap 생성을 위해서 MSAA 설정을 끈 Texture 생성
+	TextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;	//용도 Shader Resource
+	//자동 MipMap 설정을 킨 경우
+	if (MipMap)
+	{
+		TextureDesc.MipLevels = 0;	//전체 MipMap 생성
+		TextureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;	//용도 RT + SRV, MipMap 자동 생성을 위해
+		TextureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+	}
+
+
+	ID3D11Texture2D* SRVTex = nullptr;
+	hr = Device->CreateTexture2D(&TextureDesc, NULL, &SRVTex);
+	if (FAILED(hr)) { std::cout << "SRV Tex 생성 실패" << "\n"; return hr; }
+
+	//외부로 Return
+	*OutResolveTexture = SRVTex;
+
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateRTView(FPRenderTargetFormat& RenderTargetFormat, UINT MSAA, void* InRTTex, void** OutRTView)
+{
+	D3D11_RENDER_TARGET_VIEW_DESC  RTVDesc = {};
+
+	RTVDesc.Format = FPRenderTargetFormatToDXGI_FORMAT(RenderTargetFormat);		//Texture 와 동일 Format  유지
+	RTVDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;						//2D RT
+	RTVDesc.Texture2D.MipSlice = 0;												//2D RT 용 추가 설정 : 밉맵 분할용 밉맵레벨 인덱스
+
+	//MSAA 설정 사용
+	if (MSAA > 1)
+	{
+		RTVDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
+		RTVDesc.Texture2DMS.UnusedField_NothingToDefine = 0;
+	}
+
+	//렌더타겟 뷰 생성
+	ID3D11RenderTargetView* RTView = nullptr;
+	ID3D11Texture2D* InTex = static_cast<ID3D11Texture2D*>(InRTTex);
+	HRESULT hr = Device->CreateRenderTargetView(InTex, &RTVDesc, &RTView);
+	if (FAILED(hr)) { std::cout << "RTV 생성 실패" << "\n"; return hr; }
+
+	//외부 리턴
+	*OutRTView = RTView;
+
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateRTSRView(FPRenderTargetFormat& RenderTargetFormat, void* InRTRelsolveTex, void** OutSRVView)
+{
+	
+	D3D11_SHADER_RESOURCE_VIEW_DESC  SRVVDesc = {};
+
+	SRVVDesc.Format = FPRenderTargetFormatToDXGI_FORMAT(RenderTargetFormat);		//Texture 와 동일 Format  유지
+	SRVVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;							//2D RT
+	SRVVDesc.Texture2D.MipLevels = -1;												//2D SRV용 추가 설정 : 밉맵 분할용 밉맵레벨 인덱스
+	SRVVDesc.Texture2D.MostDetailedMip = 0;
+	//MSAA 설정은 필요시 진행
+	
+
+	//렌더타겟 뷰 생성
+	ID3D11ShaderResourceView* SRVView = nullptr;
+	ID3D11Texture2D* InTex = static_cast<ID3D11Texture2D*>(InRTRelsolveTex);
+	HRESULT hr = Device->CreateShaderResourceView(InTex, &SRVVDesc, &SRVView);
+	if (FAILED(hr)) { std::cout << "RTSRV 생성 실패" << "\n"; return hr; }
+
+	//외부 리턴
+	*OutSRVView = SRVView;
+
+	return hr;
+}
+
+void RenderingDevice::ResolveRenderTarget(FPRenderTargetFormat& RenderTargetFormat, void* InRTTex, void* InResolveTex)
+{
+	// Resolve the MSAA (or plain) render target texture into its SRV-backed resolve texture; needed even when MSAA==1 because they are separate GPU resources.
+	ID3D11Texture2D* RTTex = static_cast<ID3D11Texture2D*>(InRTTex);
+	ID3D11Texture2D* ResolveTex = static_cast<ID3D11Texture2D*>(InResolveTex);
+	DeviceContext->ResolveSubresource(ResolveTex, 0, RTTex, 0, FPRenderTargetFormatToDXGI_FORMAT(RenderTargetFormat));
+}
+
+HRESULT RenderingDevice::CreateDepthStencilTexture(UINT SizeX, UINT SizeY, UINT MSAA, bool ShaderResource, FPDepthStencilFormat& DepthStencilFormat, void** OutDSTex)
 {
 	HRESULT hr = S_OK;
 
 	//깊이 - 스텐실 버퍼용 정보 구성
 	D3D11_TEXTURE2D_DESC TextureDesc;
-	TextureDesc.Width = DisplayMode.Width;
-	TextureDesc.Height = DisplayMode.Height;
+	TextureDesc.Width = SizeX;
+	TextureDesc.Height = SizeY;
 	TextureDesc.MipLevels = 1;
 	TextureDesc.ArraySize = 1;
-	TextureDesc.Format = DXGI_FORMAT_D32_FLOAT;			//32Bit 깊이 버퍼
-	TextureDesc.SampleDesc = { dwAA, 0 };				//AA 설정 "MSAA x4"
+	TextureDesc.Format = FPDepthStencilFormatToDXGI_FORMAT(DepthStencilFormat);						//깊이 버퍼 Format
+	TextureDesc.SampleDesc = { MSAA, 0 };				//MSAA 설정
 	TextureDesc.Usage = D3D11_USAGE_DEFAULT;
 	TextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;	//깊이-스텐실 버퍼용으로 설정
 	TextureDesc.CPUAccessFlags = 0;
 	TextureDesc.MiscFlags = 0;
 
-	//깊이 버퍼 생성
-	hr = Device->CreateTexture2D(&TextureDesc, NULL, &DepthStencilBuffer);
-	assert(SUCCEEDED(hr) && "깊이-스텐실 버퍼 생성 실패");
+	if (ShaderResource)
+	{
+		TextureDesc.Format = DSVFormatToTextureFormat(TextureDesc.Format);			//ShaderResource로도 사용된다면 해당 해당 타입으로 변환
+		TextureDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;						//ShaderResource Binding 추가
+	}
 
-	//깊이-스텐실 버퍼용 리소스 뷰 정보 설정
-	D3D11_DEPTH_STENCIL_VIEW_DESC DepthStencilViewDesc;
-	ZeroMemory(&DepthStencilViewDesc, sizeof(DepthStencilViewDesc));
-	DepthStencilViewDesc.Format = TextureDesc.Format;
-	//DepthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;	//AA 없음
-	DepthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;	//+AA 설정 "MSAA"
-	DepthStencilViewDesc.Texture2D.MipSlice = 0;
-
-	//깊이 스텐실 버퍼 뷰 생성
-	Device->CreateDepthStencilView(DepthStencilBuffer.Get(), &DepthStencilViewDesc, &DepthStencilBufferView);
-	assert(SUCCEEDED(hr) && "깊이-스텐실 버퍼 뷰 생성 실패");
+	ID3D11Texture2D* Texture;
+	hr = Device->CreateTexture2D(&TextureDesc, NULL, &Texture);
+	if (FAILED(hr)) { std::cout << "DepthStencil Texture Create Fail!" << "\n"; return hr; }
+	*OutDSTex = Texture;
 
 	return hr;
 }
 
+HRESULT RenderingDevice::CreateDepthStencilView(FPDepthStencilFormat& DepthStencilFormat, UINT MSAA, void* InDSTex, void** OutDSView)
+{
+	HRESULT hr = S_OK;
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC DSVDesc = {};
+	DSVDesc.Format = FPDepthStencilFormatToDXGI_FORMAT(DepthStencilFormat);
+	DSVDesc.Flags = 0;
+	DSVDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	DSVDesc.Texture2D.MipSlice = 0;
+
+	if (MSAA > 1)
+	{
+		DSVDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+		DSVDesc.Texture2DMS.UnusedField_NothingToDefine = 0;
+	}
+	
+	ID3D11DepthStencilView* DSV;
+	ID3D11Texture2D* DSTex = static_cast<ID3D11Texture2D*>(InDSTex);
+
+	hr = Device->CreateDepthStencilView(DSTex, &DSVDesc, &DSV);
+	if (FAILED(hr)) { std::cout << "DSV Create Fail!" << "\n"; return hr; }
+	
+	*OutDSView = DSV;
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateDepthStencilSRView(FPDepthStencilFormat& DepthStencilFormat, bool ShaderResource, UINT MSAA, void* InDSTex, void** OutDSSRView)
+{
+	HRESULT hr = S_OK;
+	if (!ShaderResource) return hr;
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+	DXGI_FORMAT DSVFormat = FPDepthStencilFormatToDXGI_FORMAT(DepthStencilFormat);
+	SRVDesc.Format = DSVFormatToSRVFormat(DSVFormat);
+	SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	SRVDesc.Texture2D.MostDetailedMip = 0;
+	SRVDesc.Texture2D.MipLevels = 1;
+	if (MSAA > 1)
+	{
+		SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
+		SRVDesc.Texture2DMS.UnusedField_NothingToDefine = 0;
+	}
+
+	ID3D11ShaderResourceView* DSSRV;
+	ID3D11Texture2D* DSTex = static_cast<ID3D11Texture2D*>(InDSTex);
+
+	hr = Device->CreateShaderResourceView(DSTex, &SRVDesc, &DSSRV);
+	if (FAILED(hr)) { std::cout << "DSSRV Create Fail!" << "\n"; return hr; }
+
+	*OutDSSRView = DSSRV;
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateDepthStencilState(FPDepthStencilStateInfo& DepthStencilInfo, void** OutDSState)
+{
+	HRESULT hr = S_OK;
+	D3D11_DEPTH_STENCIL_DESC Desc = {};
+
+	//Depth 설정
+	Desc.DepthEnable = DepthStencilInfo.DepthEnable ? TRUE : FALSE;
+	Desc.DepthWriteMask = FPDepthWriteMaskToD3DDepthWriteMask(DepthStencilInfo.DepthWriteMask);
+	Desc.DepthFunc = FPCompraisionFuncToD3DComparisonFunc(DepthStencilInfo.DepthFunc);
+
+	// Stencil 설정
+	Desc.StencilEnable = DepthStencilInfo.StencilEnable ? TRUE : FALSE;
+	Desc.StencilReadMask = static_cast<UINT8>(DepthStencilInfo.StencilReadMask);
+	Desc.StencilWriteMask = static_cast<UINT8>(DepthStencilInfo.StencilWriteMask);
+
+	// 앞면 Stencil 연산
+	Desc.FrontFace.StencilFailOp = FPStencilOPToD3DStencilOP(DepthStencilInfo.FrontFaceStencilFailOp);
+	Desc.FrontFace.StencilDepthFailOp = FPStencilOPToD3DStencilOP(DepthStencilInfo.FrontStencilDepthFailOp);
+	Desc.FrontFace.StencilPassOp = FPStencilOPToD3DStencilOP(DepthStencilInfo.FrontStencilPassOp);
+	Desc.FrontFace.StencilFunc = FPCompraisionFuncToD3DComparisonFunc(DepthStencilInfo.FrontStencilFunc);
+
+	// 뒷면 Stencil 연산
+	Desc.BackFace.StencilFailOp = FPStencilOPToD3DStencilOP(DepthStencilInfo.BackFaceStencilFailOp);
+	Desc.BackFace.StencilDepthFailOp = FPStencilOPToD3DStencilOP(DepthStencilInfo.BackStencilDepthFailOp);
+	Desc.BackFace.StencilPassOp = FPStencilOPToD3DStencilOP(DepthStencilInfo.BackStencilPassOp);
+	Desc.BackFace.StencilFunc = FPCompraisionFuncToD3DComparisonFunc(DepthStencilInfo.BackStencilFunc);
+
+	ID3D11DepthStencilState* State;
+	hr = Device->CreateDepthStencilState(&Desc, &State);
+	if (FAILED(hr)) { std::cout << "DepthStencil State Create Fail!" << "\n"; return hr; }
+
+	*OutDSState = State;
+	return hr;
+}
+
 //BackBuffer를 가져온 후 RenderTargetView 생성
-HRESULT RenderingDevice::SetBackBufferToRenderTargetView()
+HRESULT RenderingDevice::CreateBackBufferRenderTarget()
 {
 	HRESULT hr = S_OK;
 	//렌더 타겟(백버퍼) 획득
@@ -246,7 +596,7 @@ HRESULT RenderingDevice::SetBackBufferToRenderTargetView()
 	assert(SUCCEEDED(hr) && "백버퍼 가져오기 실패\n");
 
 	//획득한 백버퍼에 렌더타겟 뷰 생성(렌더타겟 "형"으로 설정함)
-	hr = Device->CreateRenderTargetView(BackBuffer, NULL, RenderTargetView.GetAddressOf());
+	hr = Device->CreateRenderTargetView(BackBuffer, NULL, BackBufferRenderTargetView.GetAddressOf());
 	assert(SUCCEEDED(hr) && "백버퍼 - 렌더타겟뷰 생성 실패\n");
 
 	BackBuffer->Release();
@@ -254,18 +604,26 @@ HRESULT RenderingDevice::SetBackBufferToRenderTargetView()
 	return hr;
 }
 
-//장치 출력병합기(Output Merger)에 렌더링 타겟 및 깊이-스탠실 버퍼 등록
-HRESULT RenderingDevice::OMSetRenderTargets()
+//BackBufferRenderTarget Setting
+HRESULT RenderingDevice::OMSetBackBufferRenderTargets(UINT RenderTargetNum, void* InDepthStencilView)
 {
 	HRESULT hr = S_OK;
 
-	//장치 출력병합기(Output Merger)에 렌더링 타겟 및 깊이-스탠실 버퍼 등록
-	DeviceContext->OMSetRenderTargets(
-		1,									//렌더타겟 개수. (max: D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT)
-		RenderTargetView.GetAddressOf(),	//렌더타겟("백버퍼") 등록.
-		DepthStencilBufferView.Get() //깊이 스텐실 버퍼 등록
-	);
-	
+	ID3D11DepthStencilView* DepthStencilView = static_cast<ID3D11DepthStencilView*>(InDepthStencilView);
+	DeviceContext->OMSetRenderTargets(RenderTargetNum, BackBufferRenderTargetView.GetAddressOf(), DepthStencilView);
+
+	return hr;
+}
+
+HRESULT RenderingDevice::OMSetRenderTargets(UINT RenderTargetNum, void* InRenderTargetView, void* InDepthStencilView)
+{
+	HRESULT hr = S_OK;
+
+	ID3D11RenderTargetView* RenderTargetView = static_cast<ID3D11RenderTargetView*>(InRenderTargetView);
+	ID3D11DepthStencilView* DepthStencilView = static_cast<ID3D11DepthStencilView*>(InDepthStencilView);
+
+	DeviceContext->OMSetRenderTargets(RenderTargetNum, &RenderTargetView, DepthStencilView);
+
 	return hr;
 }
 
@@ -307,10 +665,24 @@ HRESULT RenderingDevice::SetBackGroundColor(float R, float G, float B, float A)
 	return S_OK;
 }
 
-void RenderingDevice::ClearBackBuffer()
+void RenderingDevice::ClearBackBuffer(void* InDepthStencilView, float ClearDepth, UINT8 ClearStencil)
 {
-	DeviceContext->ClearRenderTargetView(RenderTargetView.Get(), (float*)&BackGroundColor);
-	DeviceContext->ClearDepthStencilView(DepthStencilBufferView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	ID3D11DepthStencilView* DepthStencilView = static_cast<ID3D11DepthStencilView*>(InDepthStencilView);
+
+	DeviceContext->ClearRenderTargetView(BackBufferRenderTargetView.Get(), (float*)&BackGroundColor);
+	DeviceContext->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, ClearDepth, ClearStencil);
+}
+
+void RenderingDevice::ClearRenderTargetView(void* InRenderTargetView, float* ClearColor)
+{
+	ID3D11RenderTargetView* RenderTargetView = static_cast<ID3D11RenderTargetView*>(InRenderTargetView);
+	DeviceContext->ClearRenderTargetView(RenderTargetView, ClearColor);
+}
+
+void RenderingDevice::ClearDepthStencilView(void* InDepthStencilView, float ClearDepth, UINT8 ClearStencil)
+{
+	ID3D11DepthStencilView* DepthStencilView = static_cast<ID3D11DepthStencilView*>(InDepthStencilView);
+	DeviceContext->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, ClearDepth, ClearStencil);
 }
 
 void RenderingDevice::RenderTargetPresent()
@@ -785,52 +1157,10 @@ HRESULT RenderingDevice::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD N
 	return hr;
 }
 
-HRESULT RenderingDevice::CreateDepthStencilStateCreate()
+void RenderingDevice::OMSetDepthStencilState(void* InDepthStencilState)
 {
-
-	HRESULT hr = S_OK;
-
-	//깊이/스텐실 상태 객체 생성 : 출력병합기 Output Merger 상태 조절
-
-	D3D11_DEPTH_STENCIL_DESC Ds;
-	//깊이 버퍼 설정 (기본값)
-	Ds.DepthEnable = TRUE;
-	Ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	Ds.DepthFunc = D3D11_COMPARISON_LESS;
-
-	//스텐실 버퍼 설정 (기본값)
-	Ds.StencilEnable = FALSE;
-
-	//깊이 버퍼 연산 객체들
-
-	//DS 상태 객체 0 : Z-Test On! (기본값)
-	Ds.DepthEnable = TRUE;
-	Ds.StencilEnable = FALSE;
-	Device->CreateDepthStencilState(&Ds, &DSState[DS_DEPTH_ON]);
-
-	//DS 상태 객체 1 : Z-Test Off!
-	Ds.DepthEnable = FALSE;
-	Device->CreateDepthStencilState(&Ds, &DSState[DS_DEPTH_OFF]);
-
-	//DS 상태 객체 2 : Z-Test On + Z-Write OFF
-	//Z-Test가 꺼지면, Z-Write 역시 비활성화
-	Ds.DepthEnable = TRUE;
-	Ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-	Device->CreateDepthStencilState(&Ds, &DSState[DS_DEPTH_WRITE_OFF]);
-
-	return hr;
-}
-
-void RenderingDevice::OMSetDepthStencilState(bool State)
-{
-	if (State)
-	{
-		DeviceContext->OMSetDepthStencilState(DSState[DS_DEPTH_ON], 0);
-	}
-	else
-	{
-		DeviceContext->OMSetDepthStencilState(DSState[DS_DEPTH_OFF], 0);
-	}
+	ID3D11DepthStencilState* DepthStencilState = static_cast<ID3D11DepthStencilState*>(InDepthStencilState);
+	DeviceContext->OMSetDepthStencilState(DepthStencilState, 0);
 }
 
 HRESULT RenderingDevice::CreateSamplers()
@@ -1624,7 +1954,7 @@ HRESULT RenderingDevice::DeviceFinalize()
 	//장치 상태 리셋 : 제거 전에 초기화 필수 (메모리 누수 방지)
 	if (DeviceContext) DeviceContext->ClearState();
 
-	RenderTargetView->Release();
+	BackBufferRenderTargetView->Release();
 	SwapChain->Release();
 	DeviceContext->Release();
 	Device->Release();
@@ -1934,15 +2264,16 @@ HRESULT RenderingDevice::DrawInstanced(UINT VertexCountPerInstance, UINT Instanc
 //RenderTargetView, Depth 관련 객체 해제
 void RenderingDevice::ResetRTVandDepthObj()
 {
-	RenderTargetView.Reset();
-	DepthStencilBuffer.Reset();
-	DepthStencilBufferView.Reset();
+	BackBufferRenderTargetView.Reset();
 }
 
 
 //SwapChainBuffer 크기 재설정
 void RenderingDevice::ResizeSwapChainBuffer(int Width, int Height)
 {
+	SwapChainWidth = Width;
+	SwapChainHeight = Height;
+
 	SwapChain->ResizeBuffers(0, Width, Height, DXGI_FORMAT_UNKNOWN, 0);
 }
 

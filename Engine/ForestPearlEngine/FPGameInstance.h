@@ -21,6 +21,7 @@ enum class GameInstanceSubSystemName : size_t
 	CameraList,
 	GameProjectSetting,
 	ViewPortClient,
+	SceneCaptureList,
 
 	GameInstanceSubSystemList_MAX
 };
@@ -71,6 +72,7 @@ class FPGameInstance : public FPObject
 		FPGameInstanceSubSystem* GetGizmoRenderList();
 		FPGameInstanceSubSystem* GetLightRenderList();
 		FPGameInstanceSubSystem* GetNormalRenderList();
+		FPGameInstanceSubSystem* GetSceneCaptureList();
 	
 
 		void Initialize();

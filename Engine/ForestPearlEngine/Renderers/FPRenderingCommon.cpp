@@ -86,6 +86,8 @@ FPTextureType StringToTextureType(const std::string& Name)
 	{
 		{ "Texture2D",      Texture2D },
 		{ "Texture2DArray", Texture2DArray },
+		{ "RenderTargetTexture2D",  RenderTargetTexture2D },
+		{ "DepthStencilTexture2D",  DepthStencilTexture2D },
 	};
 
 	auto it = TextureTypeMap.find(Name);
@@ -114,4 +116,120 @@ FPShaderType StringToFPShaderType(const std::string& ShaderType)
     }
 
     return FPShaderType::None;
+}
+
+FPRenderTargetFormat StringToFPRenderTargetFormat(const std::string& Name)
+{
+    static const std::unordered_map<std::string, FPRenderTargetFormat> FPRenderTargetFormatMap =
+    {
+        { "R8",         FPRenderTargetFormat::R8 },
+        { "RG8",        FPRenderTargetFormat::RG8 },
+        { "RGBA8",      FPRenderTargetFormat::RGBA8 },
+        { "RGBA8_SRGB", FPRenderTargetFormat::RGBA8_SRGB },
+        { "R16F",       FPRenderTargetFormat::R16F },
+        { "RGBA16F",    FPRenderTargetFormat::RGBA16F },
+        { "R32F",       FPRenderTargetFormat::R32F },
+        { "RGBA32F",    FPRenderTargetFormat::RGBA32F },
+        { "RGBA10A2",   FPRenderTargetFormat::RGBA10A2 },
+    };
+
+    auto it = FPRenderTargetFormatMap.find(Name);
+
+    if (it != FPRenderTargetFormatMap.end())
+    {
+        return it->second;
+    }
+
+    //기본값으로 설정된 RGBA8
+    return FPRenderTargetFormat::RGBA8;
+}
+
+FPDepthStencilFormat StringToFPDepthStencilFormat(const std::string& Name)
+{
+    static const std::unordered_map<std::string, FPDepthStencilFormat> FPDepthStencilFormatMap =
+    {
+        { "D16",            FPDepthStencilFormat::D16 },
+        { "D24_S8_UINT",     FPDepthStencilFormat::D24_S8_UINT },
+        { "D32F",            FPDepthStencilFormat::D32F },
+        { "D32F_S8X24_UINT", FPDepthStencilFormat::D32F_S8X24_UINT },
+    };
+
+    auto it = FPDepthStencilFormatMap.find(Name);
+
+    if (it != FPDepthStencilFormatMap.end())
+    {
+        return it->second;
+    }
+
+    //기본값으로 설정된 D24_S8_UINT
+    return FPDepthStencilFormat::D24_S8_UINT;
+}
+
+FPDepthWriteMask StringToFPDepthWriteMask(const std::string& Name)
+{
+    static const std::unordered_map<std::string, FPDepthWriteMask> FPDepthWriteMaskMap =
+    {
+        { "ZERO", FPDepthWriteMask::ZERO },
+        { "ALL",  FPDepthWriteMask::ALL },
+    };
+
+    auto it = FPDepthWriteMaskMap.find(Name);
+
+    if (it != FPDepthWriteMaskMap.end())
+    {
+        return it->second;
+    }
+
+    //기본값으로 설정된 ALL
+    return FPDepthWriteMask::ALL;
+}
+
+FPCompraisonFunc StringToFPCompraisonFunc(const std::string& Name)
+{
+    static const std::unordered_map<std::string, FPCompraisonFunc> FPCompraisonFuncMap =
+    {
+        { "NERVER",        FPCompraisonFunc::NERVER },
+        { "LESS",          FPCompraisonFunc::LESS },
+        { "EQUAL",         FPCompraisonFunc::EQUAL },
+        { "LESS_EQUAL",    FPCompraisonFunc::LESS_EQUAL },
+        { "GREATER",       FPCompraisonFunc::GREATER },
+        { "NOT_EQUAL",     FPCompraisonFunc::NOT_EQUAL },
+        { "GREATER_EQUAL", FPCompraisonFunc::GREATER_EQUAL },
+        { "ALWAYS",        FPCompraisonFunc::ALWAYS },
+    };
+
+    auto it = FPCompraisonFuncMap.find(Name);
+
+    if (it != FPCompraisonFuncMap.end())
+    {
+        return it->second;
+    }
+
+    //기본값으로 설정된 LESS
+    return FPCompraisonFunc::LESS;
+}
+
+FPStencilOP StringToFPStencilOP(const std::string& Name)
+{
+    static const std::unordered_map<std::string, FPStencilOP> FPStencilOPMap =
+    {
+        { "KEEP",     FPStencilOP::KEEP },
+        { "ZERO",     FPStencilOP::ZERO },
+        { "REPLACE",  FPStencilOP::REPLACE },
+        { "INCR_SAT", FPStencilOP::INCR_SAT },
+        { "DECR_SAT", FPStencilOP::DECR_SAT },
+        { "INVERT",   FPStencilOP::INVERT },
+        { "INCR",     FPStencilOP::INCR },
+        { "DECR",     FPStencilOP::DECR },
+    };
+
+    auto it = FPStencilOPMap.find(Name);
+
+    if (it != FPStencilOPMap.end())
+    {
+        return it->second;
+    }
+
+    //기본값으로 설정된 KEEP
+    return FPStencilOP::KEEP;
 }

@@ -1,0 +1,10 @@
+{
+  "Name": "RT_Texture2D",
+  "Type": "Texture2D",
+  "SizeX": 1024,
+  "SizeY": 1024,
+  "RenderTargetFormat": "RGBA8",
+  "ClearColor": [ 0.0, 0.0, 0.0, 1.0 ],
+  "MSAA": 4,
+  "MipMap": false
+}

@@ -1,0 +1,10 @@
+{
+  "Name": "DS_Scene",
+  "SizeX": 1920,
+  "SizeY": 1080,
+  "DepthStencilFormat": "D24_S8_UINT",
+  "ClearDepth": 1.0,
+  "ClearStencil": 0,
+  "MSAA": 1,
+  "ShaderResource": false
+}

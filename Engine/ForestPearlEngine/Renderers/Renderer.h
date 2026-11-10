@@ -67,6 +67,8 @@ class Renderer
 		//Light Render Item
 		std::vector<RenderingData::LightRenderItem> LightRenderList;
 
+		//SceneCapture Item
+		std::vector<RenderingData::SceneCaptureItem> SceneCaptureList;
 
 	public:
 		Renderer(RenderingDevice& Device);
@@ -78,13 +80,16 @@ class Renderer
 		void CreateUIRenderList();
 		void CreateLightRenderList();
 		void CreateNormalRenderList();
+		void CreateSceneCaptureList();
 
 		//RenderPass ÇÔ¼ö
-		void ClearBackBuffer();
+		void ClearDepthStencil();
 
 		void RenderTargetPresent();
 
 		HRESULT InitializeRenderer(HWND hwnd);
+
+		void SceneCaptureRenderPass();
 
 		void MeshRenderPass();
 

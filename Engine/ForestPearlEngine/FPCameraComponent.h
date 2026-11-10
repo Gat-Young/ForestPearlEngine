@@ -1,9 +1,9 @@
 #pragma once
-#include "FPPrimitiveComponent.h"
+#include "FPSceneComponent.h"
 #include "../ForestPearlEngine/Define/FPMath.h"
 #include "FPCameraList.h"
 
-class FPCameraComponent : public FPPrimitiveComponent
+class FPCameraComponent : public FPSceneComponent
 {
 	public:
 		//카메라 속성
@@ -24,6 +24,9 @@ class FPCameraComponent : public FPPrimitiveComponent
 
 		CameraItem* CamItem = nullptr;
 
+		std::string RenderTarget = "BackbufferRenderTarget";
+		std::string DepthStencil = "BackBufferDepthStencil";
+
 	public:
 		FPCameraComponent(FPActor* Owner);
 		~FPCameraComponent();
@@ -31,4 +34,9 @@ class FPCameraComponent : public FPPrimitiveComponent
 		void Tick() override;
 
 		void OnTripleCam();
+
+		void SetRenderTarget(std::string& RenderTarget);
+		std::string GetRenderTarget();
+		void SetDepthStencil(std::string& DepthStencil);
+		std::string GetDepthStencil();
 };

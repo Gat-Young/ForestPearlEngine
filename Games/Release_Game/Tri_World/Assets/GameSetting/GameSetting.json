@@ -4,6 +4,8 @@
     "Graphics": {
       "MSAA": 8,
       "AnisotropicFiltering": 16,
+      "VSync": true,
+      "Hz": 60,
       "Resolution": {
         "Width": 960,
         "Height": 600

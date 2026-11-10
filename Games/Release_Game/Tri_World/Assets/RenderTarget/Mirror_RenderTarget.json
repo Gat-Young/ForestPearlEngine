@@ -1,0 +1,10 @@
+{
+  "Name": "Mirror_RenderTarget",
+  "Type": "Texture2D",
+  "SizeX": 512,
+  "SizeY": 512,
+  "RenderTargetFormat": "RGBA8",
+  "ClearColor": [ 1.0, 0.0, 1.0, 1.0 ],
+  "MSAA": 1,
+  "MipMap": false
+}

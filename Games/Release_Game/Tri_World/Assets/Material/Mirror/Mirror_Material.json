@@ -1,0 +1,24 @@
+{
+    "Material": {
+        "Name": "Mirror_Material",
+        "VertexShader": "DefaultVertexShader",
+        "PixelShader": "MirrorPixelShader",
+        "TwoSided": false,
+        "Parameters": [],
+        "Textures": [
+            {
+                "Type": "PS",
+                "Parameter": "MirrorTex",
+                "Asset": "Mirror_RenderTarget",
+                "TextureType": "RenderTargetTexture2D"
+            }
+        ],
+        "Samplers": [
+            {
+                "Type": "PS",
+                "Parameter": "Smpler",
+                "SamplerType": "Filter_Bi_Linear_Sampler_CLAMP"
+            }
+        ]
+    }
+}

@@ -36,4 +36,13 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 
 		//Material Load
 		void LoadMaterial(std::string MaterialPath, AssetOwner EngineAsset);
+
+		//RenderTargetTexture2D Load
+		void LoadRenderTargetTexture2D(std::string RenderTargetTexture2DPath, AssetOwner EngineAsset);
+
+		//DepthStencil Load
+		void LoadDepthStencil(std::string DepthStencilPath, AssetOwner EngineAsset);
+
+		//DepthStencil State Laod
+		void LoadDepthStencilState(std::string DepthStencilStatePath, AssetOwner EngineAsset);
 };

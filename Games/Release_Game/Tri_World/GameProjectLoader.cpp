@@ -15,6 +15,7 @@
 #include "ATorchLight.h"
 #include "ABox.h"
 #include "ADwaf.h"
+#include "AMirror.h"
 
 void RegistProjectName()
 {
@@ -49,6 +50,7 @@ void LoadClassRegist()
 	ClassRegistry->Register<ATorchLight>("ATorchLight");
 	ClassRegistry->Register<ABox>("ABox");
 	ClassRegistry->Register<ADwaf>("ADwaf");
+	ClassRegistry->Register<AMirror>("AMirror");
 }
 
 void LoadAssets()
@@ -63,6 +65,11 @@ void LoadAssets()
 	AssetLoader->LoadPixelShader("BoxPixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("DwarfPixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("ToonLinkPixelShader.json", AssetOwner::User);
+	AssetLoader->LoadPixelShader("MirrorPixelShader.json", AssetOwner::User);
+
+	//Mirror RenderTarget / DepthStencil Load
+	AssetLoader->LoadRenderTargetTexture2D("Mirror_RenderTarget.json", AssetOwner::User);
+	AssetLoader->LoadDepthStencil("Mirror_DepthStencil.json", AssetOwner::User);
 
 	//Texture Load
 
@@ -174,6 +181,9 @@ void LoadAssets()
 
 	//Box Material
 	AssetLoader->LoadMaterial("Box/Box_Material.json", AssetOwner::User);
+
+	//Mirror Material
+	AssetLoader->LoadMaterial("Mirror/Mirror_Material.json", AssetOwner::User);
 
 	/////////////////////////
 	//Static_Mesh Load

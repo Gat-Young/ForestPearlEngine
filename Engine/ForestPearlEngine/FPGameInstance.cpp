@@ -13,6 +13,7 @@
 #include "FPGizmoRenderList.h"
 #include "FPLightRenderList.h"
 #include "FPMeshNormalRenderList.h"
+#include "FPSceneCaptureList.h"
 
 auto Cast_SizeT = [](GameInstanceSubSystemName Name) -> size_t {return static_cast<size_t>(Name); };
 
@@ -31,6 +32,7 @@ FPGameInstance::FPGameInstance()
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::CameraList)] = new FPCameraList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::GameProjectSetting)] = new FPGameProjectSetting();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::ViewPortClient)] = new FPViewPortClient();
+	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::SceneCaptureList)] = new FPSceneCaptureList();
 
 }
 
@@ -150,4 +152,9 @@ FPGameInstanceSubSystem* FPGameInstance::GetLightRenderList()
 FPGameInstanceSubSystem* FPGameInstance::GetNormalRenderList()
 {
 	return GetInstanceSubSystem(GameInstanceSubSystemName::NormalRenderList);
+}
+
+FPGameInstanceSubSystem* FPGameInstance::GetSceneCaptureList()
+{
+	return GetInstanceSubSystem(GameInstanceSubSystemName::SceneCaptureList);
 }

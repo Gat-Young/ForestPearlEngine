@@ -20,6 +20,10 @@ struct FPGameSettingData
 	int Height = 600;
 
 	bool FullScreen = false;
+
+	// Display
+	bool VSync = true;
+	int Hz = 60;
 };
 
 enum AssetOwner
@@ -192,7 +196,7 @@ enum FPBlendingStateType
 //Textue 데이터 구조체
 struct FPTextureData
 {
-	void* TextureResource = nullptr;
+	void* ShaderResourceView = nullptr;
 	void* TextureDESC = nullptr;
 };
 
@@ -210,6 +214,157 @@ struct FPTextureInfo
 	AssetOwner Owner;
 };
 
+//RenderTarget
+
+enum class FPRenderTargetFormat
+{
+	R8,
+	RG8,
+	RGBA8,
+	RGBA8_SRGB,
+	R16F,
+	RGBA16F,
+	R32F,
+	RGBA32F,
+	RGBA10A2,
+
+
+	FPRenderTargetType_MAX_
+};
+
+FPRenderTargetFormat StringToFPRenderTargetFormat(const std::string& Name);
+
+struct FPRenderTargetTexture2DInfo
+{
+	std::string Name;
+	std::string Type;
+	unsigned int SizeX;
+	unsigned int SizeY;
+	FPRenderTargetFormat RenderTragetFormat = FPRenderTargetFormat::RGBA8;
+	FPVector4 ClearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+	unsigned int MSAA = 1;
+	bool MipMap = false;
+	AssetOwner Owner;
+};
+
+struct FPRenderTargetData
+{
+	void* Texture = nullptr;
+	void* ResolveTexture = nullptr;
+	void* RenderTargetView = nullptr;
+	void* ShaderResourceView = nullptr;
+};
+
+//DepthStencill
+
+enum class FPDepthStencilFormat
+{
+	D16,
+	D24_S8_UINT,
+	D32F,
+	D32F_S8X24_UINT,
+
+	FPDepthStencilFormat_MAX_
+};
+
+FPDepthStencilFormat StringToFPDepthStencilFormat(const std::string& Name);
+
+struct FPDepthStencilInfo
+{
+	std::string Name;
+	unsigned int SizeX;
+	unsigned int SizeY;
+	FPDepthStencilFormat DepthStencilFormat = FPDepthStencilFormat::D24_S8_UINT;
+	float ClearDepth = 1.0;
+	unsigned int ClearStencil = 0;
+	unsigned int MSAA = 1;
+	bool ShaderResource = false;
+
+
+	AssetOwner Owner;
+};
+
+struct FPDepthStencilData
+{
+	void* Texture = nullptr;
+	void* DepthStencilView = nullptr;
+	void* ShaderResourceView = nullptr;
+};
+
+
+//DepthStencilState
+enum class FPDepthWriteMask
+{
+	ZERO,
+	ALL,
+
+	FPDepthWriteMask_MAX_
+};
+
+FPDepthWriteMask StringToFPDepthWriteMask(const std::string& Name);
+
+enum class FPCompraisonFunc
+{
+	NERVER,
+	LESS,
+	EQUAL,
+	LESS_EQUAL,
+	GREATER,
+	NOT_EQUAL,
+	GREATER_EQUAL,
+	ALWAYS,
+
+	FPDepthFunc_MAX_
+};
+
+FPCompraisonFunc StringToFPCompraisonFunc(const std::string& Name);
+
+enum  class FPStencilOP
+{
+	KEEP,
+	ZERO,
+	REPLACE,
+	INCR_SAT,
+	DECR_SAT,
+	INVERT,
+	INCR,
+	DECR,
+
+	FPStencilFailOp_MAX_
+};
+
+FPStencilOP StringToFPStencilOP(const std::string& Name);
+
+struct FPDepthStencilStateInfo
+{
+	std::string Name;
+	bool DepthEnable;
+	FPDepthWriteMask DepthWriteMask;
+	FPCompraisonFunc DepthFunc;
+
+	bool StencilEnable;
+	unsigned int StencilReadMask;
+	unsigned int StencilWriteMask;
+
+	FPStencilOP FrontFaceStencilFailOp;
+	FPStencilOP FrontStencilDepthFailOp;
+	FPStencilOP FrontStencilPassOp;
+	FPCompraisonFunc FrontStencilFunc;
+
+	FPStencilOP BackFaceStencilFailOp;
+	FPStencilOP BackStencilDepthFailOp;
+	FPStencilOP BackStencilPassOp;
+	FPCompraisonFunc BackStencilFunc;
+
+	AssetOwner Owner;
+};
+
+struct FPDepthStencilStateData
+{
+	void* DepthStencilData;
+};
+
+
 //Texture Array Info
 struct FPTextureArrayInfo
 {
@@ -225,7 +380,12 @@ struct FPTextureArrayInfo
 enum FPTextureType
 {
 	Texture2D,
-	Texture2DArray
+	Texture2DArray,
+
+	RenderTargetTexture2D,
+	DepthStencilTexture2D,
+
+	FPTextureType_MAX_
 };
 
 FPTextureType StringToTextureType(const std::string& Name);
@@ -373,6 +533,9 @@ struct RenderItem
 	int* Priority = nullptr;
 	bool* Active = nullptr;
 
+	//FPActor*
+	void* OwnActor = nullptr;
+
 	std::string* MeshPath = nullptr;
 	
 	//핵심 데이터
@@ -441,6 +604,31 @@ struct CameraItem
 
 	bool* Active = nullptr;			//카메라 사용 여부
 	bool* TripleCam = nullptr;
+
+	std::string* RenderTarget = nullptr;
+	std::string* DepthStencil = nullptr;
+};
+
+//SceneCapture Component
+struct SceneCaptureItem
+{
+	//카메라의 위치
+	FPMatrix* Location = nullptr;
+	FPMatrix* Rotation = nullptr;
+	FPMatrix* Scale = nullptr;
+
+	FPMatrix* View = nullptr;
+	FPMatrix* Projection = nullptr;
+
+	bool* Active = nullptr;			//카메라 사용 여부
+
+	std::string* RenderTarget = nullptr;								//사용하는 RenderTarget 이름
+	std::string* DepthStencil = nullptr;
+
+	bool* CaptureEveryFrame = nullptr;
+	bool* CaptureThisFrame = nullptr;
+
+	std::vector<std::string>* HiddenActors = nullptr;
 };
 
 struct UIContextItem
@@ -565,6 +753,9 @@ namespace RenderingData
 		FPMatrix View;
 		FPMatrix Projection;
 
+		std::string RenderTarget;
+		std::string DepthStencil;
+
 		std::vector<FPViewPort> ViewPort;
 	};
 
@@ -584,8 +775,8 @@ namespace RenderingData
 
 	struct alignas(16) LightDataItem
 	{
-		unsigned int LightType;
-		unsigned int padding[3];
+		unsigned long LightType;
+		float padding[3];
 		FPVector4 LightPosition;
 		FPVector4 Direction;
 		float Range;
@@ -599,8 +790,8 @@ namespace RenderingData
 
 	struct alignas(16) LightItem
 	{
-		unsigned int LightCnt = 0;
-		unsigned int Padding[3];
+		unsigned long LightCnt = 0;
+		float Padding[3];
 		LightDataItem Light[Light_MAX];
 	};
 
@@ -671,6 +862,7 @@ namespace RenderingData
 	{
 		int Priority;
 
+		std::string ActorName;
 		std::string MeshPath;
 
 		//주요 정보
@@ -688,6 +880,23 @@ namespace RenderingData
 
 		FPConstantBufferRenderData VertexConstBuffer;
 		FPConstantBufferRenderData PixelConstBuffer;
+	};
+
+	//SceneCapture Component
+	struct SceneCaptureItem
+	{
+		//카메라의 위치
+		FPMatrix Location;
+		FPMatrix Rotation;
+		FPMatrix Scale;
+
+		FPMatrix View;
+		FPMatrix Projection;
+
+		std::string RenderTarget;								//사용하는 RenderTarget 이름
+		std::string DepthStencil;
+
+		std::vector<std::string> HiddenActors;
 	};
 
 	struct MeshRenderItemCompare

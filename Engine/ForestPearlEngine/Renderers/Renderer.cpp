@@ -17,6 +17,10 @@
 #include "../FPViewPortClient.h"
 #include "../FPLightRenderList.h"
 #include "../FPMeshNormalRenderList.h"
+#include "../FPSceneCaptureList.h"
+
+//맘에 안들기는 하는 데 우선..
+#include "../Object/Actor.h"
 
 
 //객체 해제/제거 매크로()
@@ -92,6 +96,9 @@ void Renderer::CreateCamList()
 		RenderCamItem.View = *(CamItem.View);
 		RenderCamItem.Projection = *(CamItem.Projection);
 
+		RenderCamItem.RenderTarget = *(CamItem.RenderTarget);
+		RenderCamItem.DepthStencil = *(CamItem.DepthStencil);
+
 		for (FPViewPort* ViewPort : CamViewPorts)
 		{
 			RenderingData::FPViewPort RenderingViewPortData;
@@ -133,6 +140,7 @@ void Renderer::CreateMeshRenderList()
 
 		RenderingData::MeshRenderItem MeshRenderData;
 		MeshRenderData.Priority = *(RenderItemData.Priority);
+		MeshRenderData.ActorName = static_cast<FPActor*>(RenderItemData.OwnActor)->GetName();		//살짝 맘에 들지는 않네...
 		MeshRenderData.MeshPath = *(RenderItemData.MeshPath);
 		MeshRenderData.Location = *(RenderItemData.Location);
 		MeshRenderData.Rotation = *(RenderItemData.Rotation);
@@ -428,6 +436,50 @@ void Renderer::CreateNormalRenderList()
 	}
 }
 
+void Renderer::CreateSceneCaptureList()
+{
+	//List에 값이 있다면 우선 비운
+	SceneCaptureList.clear();
+
+	//Camera List
+	FPSceneCaptureList* SceneCaptureList = static_cast<FPSceneCaptureList*>(FPGameInstance::Get().GetSceneCaptureList());
+	std::vector<SceneCaptureItem> SceneCapList = SceneCaptureList->GetRenderList();
+
+	for (SceneCaptureItem& SceneCaptureItem : SceneCapList)
+	{
+		//CaptureComponent가 활성 상태가 아니라면 넘어감
+		if (!(*(SceneCaptureItem.Active))) continue;
+
+		bool CaptureEveryFrame = *(SceneCaptureItem.CaptureEveryFrame);
+		bool CaptureThisFrame = *(SceneCaptureItem.CaptureThisFrame);
+
+		//CaptureScene을 호출 한 경우 혹은 매 프레임이 Capture인 경우
+		if (CaptureThisFrame)
+		{
+			//SceneCaptureList에 항목을 만들어 서 추가
+			RenderingData::SceneCaptureItem RenderSceneCaptureItem;
+
+			RenderSceneCaptureItem.Location = *(SceneCaptureItem.Location);
+			RenderSceneCaptureItem.Rotation = *(SceneCaptureItem.Rotation);
+			RenderSceneCaptureItem.Scale = *(SceneCaptureItem.Scale);
+
+			RenderSceneCaptureItem.View = *(SceneCaptureItem.View);
+			RenderSceneCaptureItem.Projection = *(SceneCaptureItem.Projection);
+
+			RenderSceneCaptureItem.RenderTarget = *(SceneCaptureItem.RenderTarget);
+			RenderSceneCaptureItem.DepthStencil = *(SceneCaptureItem.DepthStencil);
+
+			//Hidden Actor 명단을 그대로 복사
+			RenderSceneCaptureItem.HiddenActors = *(SceneCaptureItem.HiddenActors);
+
+			this->SceneCaptureList.push_back(RenderSceneCaptureItem);
+		}
+
+		//CaptureEveryFrame을 따라감  (true면 계속 true, False면 호출시만 Capture 될꺼임)
+		*(SceneCaptureItem.CaptureThisFrame) = CaptureEveryFrame;
+	}
+}
+
 HRESULT Renderer::InitializeRenderer(HWND hwnd)
 {
 	HRESULT hr = S_OK;
@@ -445,13 +497,23 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 	hr = Device.CreateSwapChain(hwnd);
 	assert(SUCCEEDED(hr) && "스왑체인 생성 실패\n");
 
-	hr = Device.SetBackBufferToRenderTargetView();
+	hr = Device.CreateBackBufferRenderTarget();
 	assert(SUCCEEDED(hr) && "백버퍼 - 렌더타겟 설정 실패\n");
 
-	hr = Device.CreateDepthStencil();
-	assert(SUCCEEDED(hr) && "깊이-스텐실 버퍼 생성 실패\n");
+	//BackBuffer DepthStencil Info Regist
+	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
-	Device.OMSetRenderTargets();
+	FPDepthStencilInfo BackBufferDepthStencilInfo;
+	BackBufferDepthStencilInfo.Name = "BackBufferDepthStencil";
+	BackBufferDepthStencilInfo.SizeX = GameProjectSetting->GetDisplayWidth();
+	BackBufferDepthStencilInfo.SizeY = GameProjectSetting->GetDeisplayHeight();
+	BackBufferDepthStencilInfo.DepthStencilFormat = FPDepthStencilFormat::D32F;
+	BackBufferDepthStencilInfo.MSAA = GameProjectSetting->GetMSAA();
+	BackBufferDepthStencilInfo.ShaderResource = false;
+	BackBufferDepthStencilInfo.Owner = AssetOwner::Engine;
+
+	AssetManager->AddDepthStencilInfoData(BackBufferDepthStencilInfo.Name, BackBufferDepthStencilInfo);
 
 	Device.GetDeviceInfo();
 
@@ -460,25 +522,195 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 	shaderFactory = &ShaderFactory::GetShaderFactory();
 
-	Device.CreateDepthStencilStateCreate();
-
 	Device.RasterStateCreate();
 
 	//9232B의 ConstBuffer 생성
 	Device.CreateVertexShaderConstBuffer(9232);
 	Device.CreatePixelShaderConstBuffer(9232);
 
-	//상수 버퍼 14개씩 Set
+	return hr;
+}
+
+void Renderer::SceneCaptureRenderPass()
+{
+	//BackBuffer RenderTarget / DepthStencil Default Set
+	FPDepthStencilData& BackBufferDepthStencilData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilData("BackBufferDepthStencil");
+	Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
+
+	//Constant Buffer Slot 14 Set
 	for (int i = 0; i < 14; ++i)
 	{
 		Device.VSSetConstantBuffers(i, 1);
 		Device.PSSetConstantBuffers(i, 1);
 	}
-	return hr;
+
+	if (SceneCaptureList.empty()) return;
+
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	//Depth Stencil State Set
+	FPDepthStencilStateData& DepthStencilStateData = AssetManager->GetDepthStencilStateData(ZEnable ? "DS_DEPTH_ON" : "DS_DEPTH_OFF");
+	Device.OMSetDepthStencilState(DepthStencilStateData.DepthStencilData);
+
+	Device.OMSetBlendState(BS_ADD);
+
+	//Primitive Topology Set
+	Device.IASetPrimitiveTopology(Topology::TRIANGLELIST);
+
+	RenderingData::MVPConstBuffer MVPCB;
+
+	for (const RenderingData::SceneCaptureItem& CaptureItem : SceneCaptureList)
+	{
+		if (!AssetManager->HasRenderTargetData(CaptureItem.RenderTarget))
+		{
+			std::cout << "SceneCapture RenderTarget not loaded: " << CaptureItem.RenderTarget << "\n";
+			continue;
+		}
+
+		if (!AssetManager->HastDepthStencilData(CaptureItem.DepthStencil))
+		{
+			std::cout << "SceneCapture DepthStencil not loaded: " << CaptureItem.DepthStencil << "\n";
+			continue;
+		}
+
+		FPRenderTargetTexture2DInfo& CaptureRTInfo = AssetManager->GetRenderTargetTexture2DInfoData(CaptureItem.RenderTarget);
+		FPRenderTargetData& CaptureRTData = AssetManager->GetRenderTargetData(CaptureItem.RenderTarget);
+		FPDepthStencilData& CaptureDSData = AssetManager->GetDepthStencilData(CaptureItem.DepthStencil);
+
+		//Capture RenderTarget as the output target
+		Device.OMSetRenderTargets(1, CaptureRTData.RenderTargetView, CaptureDSData.DepthStencilView);
+		Device.ClearRenderTargetView(CaptureRTData.RenderTargetView, (float*)&CaptureRTInfo.ClearColor);
+
+		Device.SetViewPort(0.0f, 0.0f, (float)CaptureRTInfo.SizeX, (float)CaptureRTInfo.SizeY, 0.0f, 1.0f);
+
+		for (const RenderingData::MeshRenderItem& RenderItem : MeshRenderList)
+		{
+			//Skip Actors hidden from this Capture
+			if (std::find(CaptureItem.HiddenActors.begin(), CaptureItem.HiddenActors.end(), RenderItem.ActorName) != CaptureItem.HiddenActors.end())
+			{
+				continue;
+			}
+
+			//Fill/Cull mode Set
+			Device.UpdateRSSetState(bFill, !(RenderItem.TwoSided));
+
+			std::tuple<void*, void*, void*> VertexShaderData = AssetManager->GetVertexShader(RenderItem.VertexShaderPath);
+			std::pair<void*, void*> PixelShaderData = AssetManager->GetPixelShader(RenderItem.PixelShaderPath);
+
+			//Input Layout Set
+			Device.IASetInputLayout(std::get<2>(VertexShaderData));
+
+			//Shader Set
+			Device.VSSetShader(std::get<0>(VertexShaderData));
+			Device.PSSetShader(std::get<0>(PixelShaderData));
+
+			//Shader ConstBuffer Set
+
+			//vertex
+			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.VertexConstBuffer.ConstantBuffers)
+			{
+				unsigned int Slot = ConstantBufferInfo.Slot;
+				size_t Offset = ConstantBufferInfo.Offset;
+				size_t Size = ConstantBufferInfo.Size;
+
+				Device.UpdateVertexShaderSubresource(Slot, RenderItem.VertexConstBuffer.Buffer.data(), Offset, Size);
+			}
+
+			//Pixel
+			for (FPConstantBufferInfo ConstantBufferInfo : RenderItem.PixelConstBuffer.ConstantBuffers)
+			{
+				unsigned int Slot = ConstantBufferInfo.Slot;
+				size_t Offset = ConstantBufferInfo.Offset;
+				size_t Size = ConstantBufferInfo.Size;
+
+				Device.UpdatePixelShaderSubresource(Slot, RenderItem.PixelConstBuffer.Buffer.data(), Offset, Size);
+			}
+
+			//Texture Set
+			const std::vector<FPReflectionResourceInfo>& Resources = RenderItem.Resources;
+
+			for (const FPReflectionResourceInfo& TextureItem : Resources)
+			{
+				void* TextureData = nullptr;
+				//Texture Resolve
+				if (TextureItem.TextureType == Texture2D) { TextureData = AssetManager->GetTextureData(TextureItem.AssetName).ShaderResourceView; }
+				if (TextureItem.TextureType == Texture2DArray) { TextureData = AssetManager->GetTextureArrayData(TextureItem.AssetName).TextureArraySRV; }
+				if (TextureItem.TextureType == RenderTargetTexture2D) { TextureData = AssetManager->GetRenderTargetData(TextureItem.AssetName).ShaderResourceView; }
+				if (TextureItem.TextureType == DepthStencilTexture2D) { TextureData = AssetManager->GetDepthStencilData(TextureItem.AssetName).ShaderResourceView; }
+
+				Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData);
+			}
+			//Texture Set End.
+
+			//Sampler Set
+			const std::vector<FPReflectionSamplerInfo>& Samplers = RenderItem.Samplers;
+
+			for (const FPReflectionSamplerInfo& SamplerItem : Samplers)
+			{
+				Device.PSSetSamplers(SamplerItem.Slot, 1, SamplerItem.SamplerType);
+			}
+			//Sampler Set End.
+
+			FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData UVVB = AssetManager->GetUVVertexBuffer(RenderItem.MeshPath);
+			FPIndexBufferData IndexB = AssetManager->GetIndexBuffer(RenderItem.MeshPath);
+			FPVertexBufferData TangentVB = AssetManager->GetTangentVertexBuffer(RenderItem.MeshPath);
+
+			//World/View/Proj matrix Set (HLSL is row-major, so operand order is the reverse of HLSL)
+			MVPCB.WorldMatrix = ((RenderItem.Scale) * (RenderItem.Rotation) * (RenderItem.Location)).Matrix;
+			MVPCB.InverseWorldMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WorldMatrix);
+			MVPCB.TranseposeWorldMatrix = DirectX::XMMatrixTranspose(MVPCB.WorldMatrix);
+			MVPCB.InverseTranseposeWorldMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWorldMatrix);
+
+			MVPCB.ViewMatrix = CaptureItem.View.Matrix;
+			MVPCB.InverseViewMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.ViewMatrix);
+			MVPCB.TranseposeViewMatrix = DirectX::XMMatrixTranspose(MVPCB.ViewMatrix);
+			MVPCB.InverseTranseposeViewMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseViewMatrix);
+
+			MVPCB.ProjMatrix = CaptureItem.Projection.Matrix;
+			MVPCB.InverseProjMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.ProjMatrix);
+			MVPCB.TranseposeProjMatrix = DirectX::XMMatrixTranspose(MVPCB.ProjMatrix);
+			MVPCB.InverseTranseposeProjMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseProjMatrix);
+
+			MVPCB.WVMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix;
+			MVPCB.InverseWVMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WVMatrix);
+			MVPCB.TranseposeWVMatrix = DirectX::XMMatrixTranspose(MVPCB.WVMatrix);
+			MVPCB.InverseTranseposeWVMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWVMatrix);
+
+			MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
+			MVPCB.InverseWVPMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WVPMatrix);
+			MVPCB.TranseposeWVPMatrix = DirectX::XMMatrixTranspose(MVPCB.WVPMatrix);
+			MVPCB.InverseTranseposeWVPMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWVPMatrix);
+
+			//Object ConstBuffer Update
+			Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
+			Device.UpdatePixelShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
+
+			Device.IASetVertexBuffers(0, 1, PositionVB.VertexBuffer, &(PositionVB.Stride), &(PositionVB.Offset));
+			Device.IASetVertexBuffers(1, 1, NormalVB.VertexBuffer, &(NormalVB.Stride), &(NormalVB.Offset));
+			Device.IASetVertexBuffers(2, 1, ColorVB.VertexBuffer, &(ColorVB.Stride), &(ColorVB.Offset));
+			Device.IASetVertexBuffers(3, 1, UVVB.VertexBuffer, &(UVVB.Stride), &(UVVB.Offset));
+			Device.IASetVertexBuffers(4, 1, TangentVB.VertexBuffer, &(TangentVB.Stride), &(TangentVB.Offset));
+			Device.IASetIndexBuffers(IndexB.IndexBuffer, IndexB.Offset);
+
+			Device.DrawIndexed(IndexB.Index_Cnt, 0, 0);																//Draw Call
+		}
+
+		//모두 그렸다면 Resolve <- 반드시..MSAA Texture를 일반 Texture로 변환
+		Device.ResolveRenderTarget(CaptureRTInfo.RenderTragetFormat, CaptureRTData.Texture, CaptureRTData.ResolveTexture);
+	}
+
+	Device.OMSetBlendState(BS_NULL_);
 }
 
 void Renderer::MeshRenderPass()
 {
+	//BackBuffer RenderTarget / DepthStencil Default Set
+	FPDepthStencilData& BackBufferDepthStencilData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilData("BackBufferDepthStencil");
+	Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
+
 	//상수 버퍼 14개씩 Set
 	for (int i = 0; i < 14; ++i)
 	{
@@ -487,7 +719,8 @@ void Renderer::MeshRenderPass()
 	}
 
 	//Depth Dtencill 상태 설정
-	Device.OMSetDepthStencilState(ZEnable);
+	FPDepthStencilStateData& DepthStencilStateData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilStateData(ZEnable ? "DS_DEPTH_ON" : "DS_DEPTH_OFF");
+	Device.OMSetDepthStencilState(DepthStencilStateData.DepthStencilData);
 
 	Device.OMSetBlendState(BS_ADD);
 
@@ -510,6 +743,24 @@ void Renderer::MeshRenderPass()
 
 	for (RenderingData::CameraItem& CamItem : CameraList)
 	{
+		bool UseCameraRenderTarget = AssetManager->HasRenderTargetData(CamItem.RenderTarget) && AssetManager->HastDepthStencilData(CamItem.DepthStencil);
+		FPRenderTargetData* CamRTData = nullptr;
+		FPRenderTargetTexture2DInfo* CamRTInfo = nullptr;
+
+		if (UseCameraRenderTarget)
+		{
+			CamRTData = &AssetManager->GetRenderTargetData(CamItem.RenderTarget);
+			CamRTInfo = &AssetManager->GetRenderTargetTexture2DInfoData(CamItem.RenderTarget);
+			FPDepthStencilData& CamDSData = AssetManager->GetDepthStencilData(CamItem.DepthStencil);
+
+			Device.OMSetRenderTargets(1, CamRTData->RenderTargetView, CamDSData.DepthStencilView);
+			Device.ClearRenderTargetView(CamRTData->RenderTargetView, (float*)&CamRTInfo->ClearColor);
+		}
+		else
+		{
+			Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
+		}
+
 		for(const RenderingData::MeshRenderItem& RenderItem : MeshRenderList)
 		{
 			/*
@@ -561,8 +812,10 @@ void Renderer::MeshRenderPass()
 			{
 				void* TextureData = nullptr;
 				//Texture 가져옴
-				if (TextureItem.TextureType == Texture2D) { TextureData = AssetManager->GetTextureData(TextureItem.AssetName).TextureResource; }
+				if (TextureItem.TextureType == Texture2D) { TextureData = AssetManager->GetTextureData(TextureItem.AssetName).ShaderResourceView; }
 				if (TextureItem.TextureType == Texture2DArray) { TextureData = AssetManager->GetTextureArrayData(TextureItem.AssetName).TextureArraySRV; }
+				if (TextureItem.TextureType == RenderTargetTexture2D) { TextureData = AssetManager->GetRenderTargetData(TextureItem.AssetName).ShaderResourceView; }
+				if (TextureItem.TextureType == DepthStencilTexture2D) { TextureData = AssetManager->GetDepthStencilData(TextureItem.AssetName).ShaderResourceView; }
 
 				Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData);
 			}
@@ -664,6 +917,11 @@ void Renderer::MeshRenderPass()
 				Device.DrawIndexed(IndexB.Index_Cnt, 0, 0);																//Draw Call
 			}
 		}
+
+		if (UseCameraRenderTarget)
+		{
+			Device.ResolveRenderTarget(CamRTInfo->RenderTragetFormat, CamRTData->Texture, CamRTData->ResolveTexture);
+		}
 	}
 
 	Device.OMSetBlendState(BS_NULL_);
@@ -672,6 +930,10 @@ void Renderer::MeshRenderPass()
 
 void Renderer::GizmoRenderPass()
 {
+	//BackBuffer RenderTarget / DepthStencil Default Set
+	FPDepthStencilData& BackBufferDepthStencilData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilData("BackBufferDepthStencil");
+	Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
+
 	//상수 버퍼 14개씩 Set
 	for (int i = 0; i < 14; ++i)
 	{
@@ -680,7 +942,8 @@ void Renderer::GizmoRenderPass()
 	}
 
 	//Depth Dtencill 상태 설정
-	Device.OMSetDepthStencilState(ZEnable);
+	FPDepthStencilStateData& DepthStencilStateData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilStateData(ZEnable ? "DS_DEPTH_ON" : "DS_DEPTH_OFF");
+	Device.OMSetDepthStencilState(DepthStencilStateData.DepthStencilData);
 
 	//렌더링 모드 전환
 	Device.UpdateRSSetState(bFill, bCull);
@@ -811,6 +1074,10 @@ void Renderer::NormalRenderPass()
 {
 	if (!bNormal) return;
 
+	//BackBuffer RenderTarget / DepthStencil Default Set
+	FPDepthStencilData& BackBufferDepthStencilData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilData("BackBufferDepthStencil");
+	Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
+
 	//상수 버퍼 14개씩 Set
 	for (int i = 0; i < 14; ++i)
 	{
@@ -819,7 +1086,8 @@ void Renderer::NormalRenderPass()
 	}
 
 	//Depth Dtencill 상태 설정
-	Device.OMSetDepthStencilState(ZEnable);
+	FPDepthStencilStateData& DepthStencilStateData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilStateData(ZEnable ? "DS_DEPTH_ON" : "DS_DEPTH_OFF");
+	Device.OMSetDepthStencilState(DepthStencilStateData.DepthStencilData);
 
 	//렌더링 모드 전환
 	Device.UpdateRSSetState(bFill, bCull);
@@ -949,6 +1217,10 @@ void Renderer::NormalRenderPass()
 
 void Renderer::UIRenderPass()
 {
+	//BackBuffer RenderTarget / DepthStencil Default Set
+	FPDepthStencilData& BackBufferDepthStencilData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilData("BackBufferDepthStencil");
+	Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
+
 	//상수 버퍼 14개씩 Set
 	for (int i = 0; i < 14; ++i)
 	{
@@ -990,9 +1262,23 @@ RenderingDevice& Renderer::GetRenderingDevice()
 	return Device;
 }
 
-void Renderer::ClearBackBuffer()
+void Renderer::ClearDepthStencil()
 {
-	Device.ClearBackBuffer();
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	FPDepthStencilData& BackBufferDepthStencilData = AssetManager->GetDepthStencilData("BackBufferDepthStencil");
+	FPDepthStencilInfo& BackBufferDepthStencilInfo = AssetManager->GetDepthStencilInfoData("BackBufferDepthStencil");
+
+	//BackBuffer RenderTarget(Color) + BackBuffer DepthStencil Clear
+	Device.ClearBackBuffer(BackBufferDepthStencilData.DepthStencilView, BackBufferDepthStencilInfo.ClearDepth, (UINT8)BackBufferDepthStencilInfo.ClearStencil);
+
+	//Clear every other registered DepthStencil, using each asset's own ClearDepth/ClearStencil
+	for (auto& [DepthStencilName, DepthStencilData] : AssetManager->GetDepthStencilDataMap())
+	{
+		if (DepthStencilName == "BackBufferDepthStencil") continue;
+
+		FPDepthStencilInfo& DepthStencilInfo = AssetManager->GetDepthStencilInfoData(DepthStencilName);
+		Device.ClearDepthStencilView(DepthStencilData.DepthStencilView, DepthStencilInfo.ClearDepth, (UINT8)DepthStencilInfo.ClearStencil);
+	}
 }
 
 void Renderer::RenderTargetPresent()
@@ -1023,14 +1309,20 @@ void Renderer::ResizeRenderTarget()
 	//Swapchain BackBuffer Resize
 	Device.ResizeSwapChainBuffer(GameProjectSetting->GetDisplayWidth(), GameProjectSetting->GetDeisplayHeight());
 
+	GameProjectSetting->SyncGameSettingData();
+
 	//새 BackBuffer로 RTV 생성
 	HRESULT hr = S_OK;
-	hr = Device.SetBackBufferToRenderTargetView();
+	hr = Device.CreateBackBufferRenderTarget();
 	assert(SUCCEEDED(hr) && "백버퍼 - 렌더타겟 설정 실패\n");
 
 	//새 Depth Buffer생성
-	hr = Device.CreateDepthStencil();
-	assert(SUCCEEDED(hr) && "깊이-스텐실 버퍼 생성 실패\n");
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	FPDepthStencilInfo& BackBufferDepthStencilInfo = AssetManager->GetDepthStencilInfoData("BackBufferDepthStencil");
+	BackBufferDepthStencilInfo.SizeX = GameProjectSetting->GetDisplayWidth();
+	BackBufferDepthStencilInfo.SizeY = GameProjectSetting->GetDeisplayHeight();
+	AssetManager->MaketDepthStencil(BackBufferDepthStencilInfo);
 
-	Device.OMSetRenderTargets();
+	FPDepthStencilData& BackBufferDepthStencilData = AssetManager->GetDepthStencilData("BackBufferDepthStencil");
+	Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
 }

@@ -22,7 +22,8 @@ class FPSceneCaptureComponent : public FPSceneComponent
 		FPMatrix ProjectionMatrix;								//Projection Matrix
 		bool Active = true;										//카메라 사용 여부
 
-		std::string RenderTarget;								//사용하는 RenderTarget 이름
+		std::string RenderTarget = "BackbufferRenderTarget";								//사용하는 RenderTarget 이름
+		std::string DepthStencil = "BackBufferDepthStencil";								//사용하는 DepthStencil 이름
 
 		//SceneCapture 속성
 		bool CaptureEveryFrame = true;
@@ -38,6 +39,7 @@ class FPSceneCaptureComponent : public FPSceneComponent
 		virtual void RegistSceneCaptureComponent() = 0;
 		virtual void SetActive(bool Active) = 0;
 		virtual void SetRenderTarget(std::string& RenderTarget) = 0;
+		virtual void SetDepthStencil(std::string& DepthStencil) = 0;
 		virtual void SetCaptureEveryFrame(bool Active) = 0;
 		virtual void CaptureScene() = 0;
 
@@ -51,4 +53,7 @@ class FPSceneCaptureComponent : public FPSceneComponent
 		virtual void AddHiddenActor(FPActor* Acotr) = 0;
 		virtual void RemoveHiddenAcotr(FPActor* Actor) = 0;
 		virtual void EmptyHiddenActor() = 0;
+
+		std::string GetRenderTarget() { return RenderTarget; };
+		std::string GetDepthStencil() { return DepthStencil; };
 };

@@ -604,6 +604,9 @@ struct CameraItem
 
 	bool* Active = nullptr;			//카메라 사용 여부
 	bool* TripleCam = nullptr;
+
+	std::string* RenderTarget = nullptr;
+	std::string* DepthStencil = nullptr;
 };
 
 //SceneCapture Component
@@ -620,6 +623,7 @@ struct SceneCaptureItem
 	bool* Active = nullptr;			//카메라 사용 여부
 
 	std::string* RenderTarget = nullptr;								//사용하는 RenderTarget 이름
+	std::string* DepthStencil = nullptr;
 
 	bool* CaptureEveryFrame = nullptr;
 	bool* CaptureThisFrame = nullptr;
@@ -748,6 +752,9 @@ namespace RenderingData
 
 		FPMatrix View;
 		FPMatrix Projection;
+
+		std::string RenderTarget;
+		std::string DepthStencil;
 
 		std::vector<FPViewPort> ViewPort;
 	};
@@ -887,6 +894,7 @@ namespace RenderingData
 		FPMatrix Projection;
 
 		std::string RenderTarget = nullptr;								//사용하는 RenderTarget 이름
+		std::string DepthStencil;
 
 		std::vector<std::string> HiddenActors;
 	};

@@ -30,6 +30,9 @@ void FPCameraComponent::RegistCamera()
 
 	CamItem->Active = &(this->Active);
 	CamItem->TripleCam = &(this->TripleCame);
+
+	CamItem->RenderTarget = &(this->RenderTarget);
+	CamItem->DepthStencil = &(this->DepthStencil);
 }
 
 void FPCameraComponent::Tick()
@@ -46,4 +49,24 @@ void FPCameraComponent::Tick()
 void FPCameraComponent::OnTripleCam()
 {
 	TripleCame = !TripleCame;
+}
+
+void FPCameraComponent::SetRenderTarget(std::string& RenderTarget)
+{
+	this->RenderTarget = RenderTarget;
+}
+
+std::string FPCameraComponent::GetRenderTarget()
+{
+	return this->RenderTarget;
+}
+
+void FPCameraComponent::SetDepthStencil(std::string& DepthStencil)
+{
+	this->DepthStencil = DepthStencil;
+}
+
+std::string FPCameraComponent::GetDepthStencil()
+{
+	return this->DepthStencil;
 }

@@ -83,7 +83,7 @@ class Renderer
 		void CreateSceneCaptureList();
 
 		//RenderPass ÇÔ¼ö
-		void ClearBackBuffer();
+		void ClearDepthStencil();
 
 		void RenderTargetPresent();
 

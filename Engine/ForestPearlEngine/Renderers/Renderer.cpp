@@ -96,6 +96,9 @@ void Renderer::CreateCamList()
 		RenderCamItem.View = *(CamItem.View);
 		RenderCamItem.Projection = *(CamItem.Projection);
 
+		RenderCamItem.RenderTarget = *(CamItem.RenderTarget);
+		RenderCamItem.DepthStencil = *(CamItem.DepthStencil);
+
 		for (FPViewPort* ViewPort : CamViewPorts)
 		{
 			RenderingData::FPViewPort RenderingViewPortData;
@@ -464,6 +467,7 @@ void Renderer::CreateSceneCaptureList()
 			RenderSceneCaptureItem.Projection = *(SceneCaptureItem.Projection);
 
 			RenderSceneCaptureItem.RenderTarget = *(SceneCaptureItem.RenderTarget);
+			RenderSceneCaptureItem.DepthStencil = *(SceneCaptureItem.DepthStencil);
 
 			//Hidden Actor 명단을 그대로 복사
 			RenderSceneCaptureItem.HiddenActors = *(SceneCaptureItem.HiddenActors);
@@ -563,12 +567,18 @@ void Renderer::SceneCaptureRenderPass()
 			continue;
 		}
 
+		if (!AssetManager->HastDepthStencilData(CaptureItem.DepthStencil))
+		{
+			std::cout << "SceneCapture DepthStencil not loaded: " << CaptureItem.DepthStencil << "\n";
+			continue;
+		}
+
 		FPRenderTargetTexture2DInfo& CaptureRTInfo = AssetManager->GetRenderTargetTexture2DInfoData(CaptureItem.RenderTarget);
 		FPRenderTargetData& CaptureRTData = AssetManager->GetRenderTargetData(CaptureItem.RenderTarget);
+		FPDepthStencilData& CaptureDSData = AssetManager->GetDepthStencilData(CaptureItem.DepthStencil);
 
 		//Capture RenderTarget as the output target
-		Device.ClearDepthStencilView(BackBufferDepthStencilData.DepthStencilView);
-		Device.OMSetRenderTargets(1, CaptureRTData.RenderTargetView, BackBufferDepthStencilData.DepthStencilView);
+		Device.OMSetRenderTargets(1, CaptureRTData.RenderTargetView, CaptureDSData.DepthStencilView);
 		Device.ClearRenderTargetView(CaptureRTData.RenderTargetView, (float*)&CaptureRTInfo.ClearColor);
 
 		Device.SetViewPort(0.0f, 0.0f, (float)CaptureRTInfo.SizeX, (float)CaptureRTInfo.SizeY, 0.0f, 1.0f);
@@ -1226,12 +1236,21 @@ RenderingDevice& Renderer::GetRenderingDevice()
 	return Device;
 }
 
-void Renderer::ClearBackBuffer()
+void Renderer::ClearDepthStencil()
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 	FPDepthStencilData& BackBufferDepthStencilData = AssetManager->GetDepthStencilData("BackBufferDepthStencil");
 
+	//BackBuffer RenderTarget(Color) + BackBuffer DepthStencil Clear
 	Device.ClearBackBuffer(BackBufferDepthStencilData.DepthStencilView);
+
+	//Clear every other registered DepthStencil
+	for (auto& [DepthStencilName, DepthStencilData] : AssetManager->GetDepthStencilDataMap())
+	{
+		if (DepthStencilName == "BackBufferDepthStencil") continue;
+
+		Device.ClearDepthStencilView(DepthStencilData.DepthStencilView);
+	}
 }
 
 void Renderer::RenderTargetPresent()

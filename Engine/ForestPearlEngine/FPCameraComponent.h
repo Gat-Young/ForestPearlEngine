@@ -24,6 +24,9 @@ class FPCameraComponent : public FPSceneComponent
 
 		CameraItem* CamItem = nullptr;
 
+		std::string RenderTarget = "BackbufferRenderTarget";
+		std::string DepthStencil = "BackBufferDepthStencil";
+
 	public:
 		FPCameraComponent(FPActor* Owner);
 		~FPCameraComponent();
@@ -31,4 +34,9 @@ class FPCameraComponent : public FPSceneComponent
 		void Tick() override;
 
 		void OnTripleCam();
+
+		void SetRenderTarget(std::string& RenderTarget);
+		std::string GetRenderTarget();
+		void SetDepthStencil(std::string& DepthStencil);
+		std::string GetDepthStencil();
 };

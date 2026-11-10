@@ -18,6 +18,7 @@ void FPSceneCaptureComponent2D::RegistSceneCaptureComponent()
 
 	SceneCaptureItem->Active = &(this->Active);
 	SceneCaptureItem->RenderTarget = &(this->RenderTarget);
+	SceneCaptureItem->DepthStencil = &(this->DepthStencil);
 	SceneCaptureItem->CaptureEveryFrame = &(this->CaptureEveryFrame);
 	SceneCaptureItem->CaptureThisFrame = &(this->CaptureThisFrame);
 	SceneCaptureItem->HiddenActors = &(this->HiddenActors);
@@ -31,6 +32,11 @@ void FPSceneCaptureComponent2D::SetActive(bool Active)
 void FPSceneCaptureComponent2D::SetRenderTarget(std::string& RenderTarget)
 {
 	this->RenderTarget = RenderTarget;
+}
+
+void FPSceneCaptureComponent2D::SetDepthStencil(std::string& DepthStencil)
+{
+	this->DepthStencil = DepthStencil;
 }
 
 void FPSceneCaptureComponent2D::SetCaptureEveryFrame(bool Active)

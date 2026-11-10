@@ -1458,6 +1458,12 @@ void FPAssetManager::MaketDepthStencil(FPDepthStencilInfo& DepthStecilInfo)
 	DepthStencilData[DepthStecilInfo.Name] = DepthStencilResource;
 }
 
+//»ìÂ¦ ¾Æ½¬¿ò
+std::unordered_map<std::string, FPDepthStencilData>& FPAssetManager::GetDepthStencilDataMap()
+{
+	return DepthStencilData;
+}
+
 FPDepthStencilStateInfo& FPAssetManager::GetDepthStencilStateInfoData(std::string DepthStencilStateName)
 {
 	return LoadedDepthStencilStateData[DepthStencilStateName];

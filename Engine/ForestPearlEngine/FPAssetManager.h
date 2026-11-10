@@ -187,6 +187,7 @@ public:
 	void AddDepthStencilData(std::string DepthStencilName, FPDepthStencilData& TextureData);
 	bool HastDepthStencilData(std::string DepthStencilName);
 	void MaketDepthStencil(FPDepthStencilInfo& DepthStecilInfo);
+	std::unordered_map<std::string, FPDepthStencilData>& GetDepthStencilDataMap(); //»ìÂ¦ ¾Æ½¬¿ò
 
 
 	//DepthStencilState Info

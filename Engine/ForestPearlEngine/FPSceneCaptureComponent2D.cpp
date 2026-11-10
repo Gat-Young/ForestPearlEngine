@@ -2,6 +2,11 @@
 #include "FPGameInstance.h"
 #include <algorithm>
 
+//Owner 생성 시점에 등록(기반 클래스 생성자에서 순수가상함수를 호출할 수 없어 파생 생성자에서 직접 호출)
+FPSceneCaptureComponent2D::FPSceneCaptureComponent2D(FPActor* Owner) : FPSceneCaptureComponent(Owner)
+{
+	RegistSceneCaptureComponent();
+}
 
 //SceneCaptureComponent를 등록
 void FPSceneCaptureComponent2D::RegistSceneCaptureComponent()
@@ -69,6 +74,14 @@ void FPSceneCaptureComponent2D::SetZf(float Zf)
 void FPSceneCaptureComponent2D::CaptureScene()
 {
 	this->CaptureThisFrame = true;
+}
+
+void FPSceneCaptureComponent2D::Tick()
+{
+	__super::Tick();
+
+	ViewMatrix = MatrtixTranslation(-WorldTransform.Location) * WorldTransform.RotationMatrix.Transpose();
+	ProjectionMatrix = MatrixPerspectiveFovLH(Fov, Aspect, Zn, Zf);
 }
 
 //HiddenActors 운용 함수

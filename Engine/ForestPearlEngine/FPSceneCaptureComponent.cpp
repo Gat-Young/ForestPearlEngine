@@ -4,7 +4,6 @@
 
 FPSceneCaptureComponent::FPSceneCaptureComponent(FPActor* Owner) : FPSceneComponent(Owner)
 {
-	RegistSceneCaptureComponent();
 }
 
 FPSceneCaptureComponent::~FPSceneCaptureComponent()

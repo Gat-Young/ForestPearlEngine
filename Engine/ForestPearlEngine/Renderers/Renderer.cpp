@@ -697,6 +697,9 @@ void Renderer::SceneCaptureRenderPass()
 
 			Device.DrawIndexed(IndexB.Index_Cnt, 0, 0);																//Draw Call
 		}
+
+		//모두 그렸다면 Resolve <- 반드시..MSAA Texture를 일반 Texture로 변환
+		Device.ResolveRenderTarget(CaptureRTInfo.RenderTragetFormat, CaptureRTData.Texture, CaptureRTData.ResolveTexture);
 	}
 
 	Device.OMSetBlendState(BS_NULL_);

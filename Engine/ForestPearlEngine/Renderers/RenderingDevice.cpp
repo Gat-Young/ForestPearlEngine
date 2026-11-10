@@ -459,6 +459,14 @@ HRESULT RenderingDevice::CreateRTSRView(FPRenderTargetFormat& RenderTargetFormat
 	return hr;
 }
 
+void RenderingDevice::ResolveRenderTarget(FPRenderTargetFormat& RenderTargetFormat, void* InRTTex, void* InResolveTex)
+{
+	// Resolve the MSAA (or plain) render target texture into its SRV-backed resolve texture; needed even when MSAA==1 because they are separate GPU resources.
+	ID3D11Texture2D* RTTex = static_cast<ID3D11Texture2D*>(InRTTex);
+	ID3D11Texture2D* ResolveTex = static_cast<ID3D11Texture2D*>(InResolveTex);
+	DeviceContext->ResolveSubresource(ResolveTex, 0, RTTex, 0, FPRenderTargetFormatToDXGI_FORMAT(RenderTargetFormat));
+}
+
 HRESULT RenderingDevice::CreateDepthStencilTexture(UINT SizeX, UINT SizeY, UINT MSAA, bool ShaderResource, FPDepthStencilFormat& DepthStencilFormat, void** OutDSTex)
 {
 	HRESULT hr = S_OK;

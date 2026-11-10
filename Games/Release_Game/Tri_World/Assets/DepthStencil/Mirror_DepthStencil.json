@@ -1,0 +1,10 @@
+{
+  "Name": "Mirror_DepthStencil",
+  "SizeX": 512,
+  "SizeY": 512,
+  "DepthStencilFormat": "D24_S8_UINT",
+  "ClearDepth": 1.0,
+  "ClearStencil": 0,
+  "MSAA": 1,
+  "ShaderResource": false
+}

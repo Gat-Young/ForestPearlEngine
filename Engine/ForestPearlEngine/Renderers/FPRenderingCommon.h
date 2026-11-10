@@ -893,7 +893,7 @@ namespace RenderingData
 		FPMatrix View;
 		FPMatrix Projection;
 
-		std::string RenderTarget = nullptr;								//사용하는 RenderTarget 이름
+		std::string RenderTarget;								//사용하는 RenderTarget 이름
 		std::string DepthStencil;
 
 		std::vector<std::string> HiddenActors;

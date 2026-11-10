@@ -22,6 +22,7 @@
 #include "TripleWindmillWing.h"
 #include "Terrain.h"
 #include "ABox.h"
+#include "AMirror.h"
 
 #include <iostream>
 
@@ -143,6 +144,7 @@ void GameController::BeginPlay()
 	
 	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "TripleWingWindmill")));
 	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "ADwaf")));
+	ControllPawn.push_back(static_cast<FPPawn*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "AMirror")));
 	ControllPawnSize = ControllPawn.size();
 }
 

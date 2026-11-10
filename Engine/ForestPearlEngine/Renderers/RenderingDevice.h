@@ -167,6 +167,7 @@ class RenderingDevice
 		HRESULT CreateRTTex(UINT SizeX, UINT SizeY, UINT MSAA, bool MipMap ,FPRenderTargetFormat& RenderTargetFormat,void** OutRTTex, void** OutResolveTexture);
 		HRESULT CreateRTView(FPRenderTargetFormat& RenderTargetFormat, UINT MSAA, void* InRTTex , void** OutRTView);
 		HRESULT CreateRTSRView(FPRenderTargetFormat& RenderTargetFormat, void* InRTRelsolveTex, void** OutSRVView);
+		void ResolveRenderTarget(FPRenderTargetFormat& RenderTargetFormat, void* InRTTex, void* InResolveTex);		//MSAA RT -> SRV Resolve Texture Resolve
 
 		//Depth Stencil Create
 		HRESULT CreateDepthStencilTexture(UINT SizeX, UINT SizeY, UINT MSAA, bool ShaderResource ,FPDepthStencilFormat& DepthStencilFormat, void** OutDSTex);

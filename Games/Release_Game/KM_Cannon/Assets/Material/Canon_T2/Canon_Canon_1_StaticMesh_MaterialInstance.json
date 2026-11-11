@@ -2,7 +2,7 @@
     "Material": {
         "Name": "Canon_Canon_1_StaticMesh_MaterialInstance",
         "VertexShader": "DefaultVertexShader",
-        "PixelShader": "DefaultPixelShader",
+        "PixelShader": "BlenderCannonPixelShader",
         "TwoSided": false,
         "Parameters": [
             {

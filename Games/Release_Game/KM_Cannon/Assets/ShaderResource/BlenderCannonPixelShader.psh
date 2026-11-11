@@ -1,0 +1,123 @@
+// Blender-exported Canon_T2 cannon material shader == BlenderCannonPixelShader
+// JSON Samplers.Parameter 
+
+// b2 : Light,  b3 : Material
+#include "PixelLight.hlsli"
+
+//cBuffer
+cbuffer ObejctConstBuffer : register(b0)
+{
+    matrix mWorld;
+    matrix mInverseWorld;
+    matrix mTranseposeWorld;
+    matrix mInverseTranseposeWorld;
+    
+    matrix mView;
+    matrix mInverseView;
+    matrix mTranseposeView;
+    matrix mInverseTranseposeView;
+    
+    matrix mProj;
+    matrix mInverseProj;
+    matrix mTranseposeProj;
+    matrix mInverseTranseposeProj;
+    
+    matrix mWV;
+    matrix mInverseWV;
+    matrix mTranseposeWV;
+    matrix mInverseTranseposeWV;
+    
+    matrix mWVP;
+    matrix mInverseWVP;
+    matrix mTranseposeWVP;
+    matrix mInverseTranseposeWVP;
+    
+};
+
+Texture2D DiffuseColor : register(t0);
+Texture2D NormalMap : register(t1);
+Texture2D ReflectionFactor : register(t2);
+Texture2D ShininessExponent : register(t3);
+
+SamplerState DiffuseColorSampler : register(s0);
+SamplerState NormalMapSampler : register(s1);
+SamplerState ReflectionFactorSampler : register(s2);
+SamplerState ShininessExponentSampler : register(s3);
+
+float3 SafeNormalize(float3 Value, float3 Fallback)
+{
+    float LengthSquared = dot(Value, Value);
+    return LengthSquared > 1e-8f ? Value * rsqrt(LengthSquared) : Fallback;
+}
+
+float4 PS_Main(
+                float4 pos : SV_POSITION,   //Vertex Position(Model Space, 3D) 
+                float4 col : COLOR0,        // Vertex Color : "Diffuse" 
+                float4 posv : TEXCOORD1,    //WordlView
+                float2 uv : TEXCOORD0,      //uv
+                float4 T : TEXCOORD2,       //Tangent
+                float4 N : TEXCOORD3,       //normal
+                bool IsFrontFace : SV_IsFrontFace
+                ) : SV_TARGET
+{
+    float4 ColorMap = DiffuseColor.Sample(DiffuseColorSampler, uv);
+    float3 NormalTS = NormalMap.Sample(NormalMapSampler, uv).xyz * 2.0f - 1.0f;
+    float Metallic = saturate(ReflectionFactor.Sample(ReflectionFactorSampler, uv).r);
+    float Roughness = clamp(
+        ShininessExponent.Sample(ShininessExponentSampler, uv).r * Material.Roughness.r,
+        0.04f, 1.0f);
+
+    float3 NormalVS = SafeNormalize(N.xyz, float3(0, 1, 0));
+    float3 Tangent = T.xyz - NormalVS * dot(NormalVS, T.xyz);
+    if (dot(Tangent, Tangent) > 1e-8f)
+    {
+        Tangent = normalize(Tangent);
+        float3 Bitangent = (T.w < 0.0f ? -1.0f : 1.0f) * cross(NormalVS, Tangent);
+        NormalVS = SafeNormalize(
+            Tangent * NormalTS.x + Bitangent * NormalTS.y + NormalVS * NormalTS.z,
+            NormalVS);
+    }
+    if (!IsFrontFace) NormalVS = -NormalVS;
+
+    float3 BaseColor = ColorMap.rgb * Material.BaseColor.rgb;
+    float3 Diffuse = BaseColor * Material.Diffuse.rgb * (1.0f - Metallic);
+    float3 Specular = lerp(Material.Specular.rgb, BaseColor, Metallic);
+    float Shininess = lerp(128.0f, 2.0f, Roughness);
+    float3 View = SafeNormalize(-posv.xyz, float3(0, 0, 1));
+    float3 Result = Material.Emissive.rgb * Material.BaseColor.rgb;
+
+    
+    // Blinn-Phong (view space)
+    for (uint i = 0; i < min(LightCnt, (uint)Light_MAX); ++i)
+    {
+        float3 Direction = float3(0, 1, 0);
+        float Attenuation = 1.0f;
+        if (Light[i].LightType == LightType_Direction)
+        {
+            Direction = mul(mView, float4(Light[i].Direction.xyz, 0)).xyz;
+        }
+        else if (Light[i].LightType == LightType_Point)
+        {
+            Direction = mul(mView, Light[i].LightPosition).xyz - posv.xyz;
+            float Distance = length(Direction);
+            if (Light[i].Range <= 0 || Distance > Light[i].Range) continue;
+            float Fade = 1.0f - smoothstep(Light[i].Range * 0.8f, Light[i].Range, Distance);
+            Attenuation = Fade / max(dot(Light[i].Attenuation.xyz,
+                float3(1, Distance, Distance * Distance)), 0.0001f);
+        }
+        else continue;
+
+        float3 L = SafeNormalize(Direction, float3(0, 1, 0));
+        float NdotL = saturate(dot(NormalVS, L));
+        float3 HalfVector = L + View;
+        float SpecularAmount = 0;
+        if (NdotL > 0 && dot(HalfVector, HalfVector) > 1e-8f)
+            SpecularAmount = pow(saturate(dot(NormalVS, normalize(HalfVector))), Shininess);
+
+        float3 Ambient = BaseColor * Material.Ambient.rgb * Light[i].Ambient.rgb;
+        Result += (Diffuse * Light[i].Diffuse.rgb * NdotL
+            + Specular * Light[i].Specular.rgb * SpecularAmount + Ambient)
+            * Light[i].LightColor.rgb * Attenuation;
+    }
+    return float4(Result, ColorMap.a * Material.BaseColor.a);
+}

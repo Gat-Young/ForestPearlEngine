@@ -2,7 +2,7 @@
     "Material": {
         "Name": "Canon_Material",
         "VertexShader": "DefaultVertexShader",
-        "PixelShader": "DefaultPixelShader",
+        "PixelShader": "BlenderCannonPixelShader",
         "TwoSided": false,
         "Parameters": [
             {

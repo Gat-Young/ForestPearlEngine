@@ -102,6 +102,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Assets\ShaderResource\BlenderCannonPixelShader.psh">
+      <Filter>Assets\ShaderResource</Filter>
+    </FxCompile>
     <FxCompile Include="Assets\ShaderResource\ShipPixelShader.psh">
       <Filter>Assets\ShaderResource</Filter>
     </FxCompile>

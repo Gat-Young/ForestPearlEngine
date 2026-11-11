@@ -42,6 +42,29 @@ void LoadAssets()
 	//Material Load
 	//StaticMesh Load
 
+	// FBX material-property shader and Canon_T2 resources.
+	{
+		//Shader
+		{
+			AssetLoader->LoadPixelShader("BlenderCannonPixelShader.json", AssetOwner::User);
+		}
+		//Texture
+		{
+			AssetLoader->LoadTexture("Canon_T2/Canon_Low_Canon_BaseColor_png.json", AssetOwner::User);
+			AssetLoader->LoadTexture("Canon_T2/Canon_Low_Canon_Normal_png.json", AssetOwner::User);
+			AssetLoader->LoadTexture("Canon_T2/Canon_Low_Canon_Metallic_png.json", AssetOwner::User);
+			AssetLoader->LoadTexture("Canon_T2/Canon_Low_Canon_Roughness_png.json", AssetOwner::User);
+		}
+		//Material
+		{
+			AssetLoader->LoadMaterial("Canon_T2/Canon_Canon_1_StaticMesh_MaterialInstance.json", AssetOwner::User);
+		}
+		//StaticMesh
+		{
+			AssetLoader->LoadStaticMesh("Canon_T2/Canon_1_StaticMesh.json", AssetOwner::User);
+		}
+	}
+
 	//Terrain
 	{
 		//Shader Load

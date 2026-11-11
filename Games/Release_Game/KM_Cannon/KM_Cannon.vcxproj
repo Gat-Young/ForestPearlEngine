@@ -44,6 +44,13 @@
     <None Include="Assets\Level\KM_Cannon.json" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Assets\ShaderResource\BlenderCannonPixelShader.psh">
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+      <EntryPointName>PS_Main</EntryPointName>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileOutput>$(ProjectDir)Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+    </FxCompile>
     <FxCompile Include="Assets\ShaderResource\ShipPixelShader.psh">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>

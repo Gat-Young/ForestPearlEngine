@@ -1,0 +1,100 @@
+{
+    "Material": {
+        "Name": "Canon_Canon_1_StaticMesh_MaterialInstance",
+        "VertexShader": "DefaultVertexShader",
+        "PixelShader": "DefaultPixelShader",
+        "TwoSided": false,
+        "Parameters": [
+            {
+                "Type": "PS",
+                "ConstantBuffer": "MaterialConstBuffer",
+                "Values": {
+                    "Material.BaseColor": [
+                        0.09083804488182068,
+                        0.09083804488182068,
+                        0.09083804488182068,
+                        1.0
+                    ],
+                    "Material.Diffuse": [
+                        0.09083804488182068,
+                        0.09083804488182068,
+                        0.09083804488182068,
+                        1.0
+                    ],
+                    "Material.Ambient": [
+                        0.05087608844041824,
+                        0.05087608844041824,
+                        0.05087608844041824,
+                        1.0
+                    ],
+                    "Material.Specular": [
+                        0.09083804488182068,
+                        0.09083804488182068,
+                        0.09083804488182068,
+                        1.0
+                    ],
+                    "Material.Roughness": [
+                        0.2496240735054016,
+                        0.2496240735054016,
+                        0.2496240735054016,
+                        1.0
+                    ],
+                    "Material.Emissive": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            }
+        ],
+        "Textures": [
+            {
+                "Type": "PS",
+                "Parameter": "DiffuseColor",
+                "Asset": "Canon_Low_Canon_BaseColor_png",
+                "TextureType": "Texture2D"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "NormalMap",
+                "Asset": "Canon_Low_Canon_Normal_png",
+                "TextureType": "Texture2D"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "ReflectionFactor",
+                "Asset": "Canon_Low_Canon_Metallic_png",
+                "TextureType": "Texture2D"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "ShininessExponent",
+                "Asset": "Canon_Low_Canon_Roughness_png",
+                "TextureType": "Texture2D"
+            }
+        ],
+        "Samplers": [
+            {
+                "Type": "PS",
+                "Parameter": "DiffuseColor",
+                "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "NormalMap",
+                "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "ReflectionFactor",
+                "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "ShininessExponent",
+                "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
+            }
+        ]
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "Name": "Canon_1_StaticMesh",
+    "NodeName": "Canon_1",
+    "MeshData": [
+        {
+            "Path": "Canon_T2/Canon_T2.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "Canon_Canon_1_StaticMesh_MaterialInstance"
+    }
+}

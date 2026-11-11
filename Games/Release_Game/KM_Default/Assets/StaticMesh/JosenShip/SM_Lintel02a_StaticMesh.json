@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Lintel02a_StaticMesh",
+    "NodeName": "SM_Lintel02a",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_Lintel01a_SM_Lintel02a_StaticMesh_MaterialInstance"
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Stair01a_StaticMesh",
+    "NodeName": "SM_Stair01a",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_WoodR_SM_Stair01a_StaticMesh_MaterialInstance"
+    }
+}

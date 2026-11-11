@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Straw_Bag5_StaticMesh",
+    "NodeName": "SM_Straw_Bag5",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_StrawBag_SM_Straw_Bag5_StaticMesh_MaterialInstance"
+    }
+}

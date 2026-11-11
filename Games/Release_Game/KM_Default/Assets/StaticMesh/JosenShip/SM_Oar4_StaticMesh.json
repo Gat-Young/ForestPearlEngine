@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Oar4_StaticMesh",
+    "NodeName": "SM_Oar4",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_Hull_SM_Oar4_StaticMesh_MaterialInstance"
+    }
+}

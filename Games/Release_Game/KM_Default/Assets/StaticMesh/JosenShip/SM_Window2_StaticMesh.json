@@ -1,0 +1,14 @@
+{
+    "Name": "SM_Window2_StaticMesh",
+    "NodeName": "SM_Window2",
+    "MeshData": [
+        {
+            "Path": "JosenShip/JosenShip.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "MI_Window_SM_Window2_StaticMesh_MaterialInstance"
+    }
+}

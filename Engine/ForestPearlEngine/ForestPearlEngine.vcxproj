@@ -398,8 +398,8 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Games\Release_Game\KM_Default\KM_Default.vcxproj">
-      <Project>{a936864c-b1bc-497b-9397-f498009b4d48}</Project>
+    <ProjectReference Include="..\..\Games\Release_Game\KM_Cannon\KM_Cannon.vcxproj">
+      <Project>{b32b42ad-999e-48fd-ab2e-beedb1963fdd}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

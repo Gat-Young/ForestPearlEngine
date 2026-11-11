@@ -13,7 +13,15 @@
       }
     },
 
-   
+    {
+   "class": "Cannon",
+   "name": "Cannon01",
+   "transform": {         
+     "location": {          "x": 2.8,          "y": 3.45,          "z": -8.0        },
+     "rotation": {          "x": 0.0,          "y": 0.0,          "z": 0.0        },
+     "scale": {              "x": 0.33,          "y": 0.33,          "z": 0.33        }   
+   }
+ },
 
     {
       "class": "Axis",

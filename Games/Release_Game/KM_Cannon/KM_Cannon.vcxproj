@@ -25,6 +25,7 @@
     <ClInclude Include="GameMode.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Ship.h" />
+    <ClInclude Include="Cannon.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="UI.h" />
   </ItemGroup>
@@ -36,6 +37,7 @@
     <ClCompile Include="GameProjectLoader.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Ship.cpp" />
+    <ClCompile Include="Cannon.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="UI.cpp" />
   </ItemGroup>

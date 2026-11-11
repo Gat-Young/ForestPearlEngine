@@ -44,6 +44,10 @@ SamplerState NormalMapSampler : register(s1);
 SamplerState ReflectionFactorSampler : register(s2);
 SamplerState ShininessExponentSampler : register(s3);
 
+
+static const float CannonExposure = 80.0f;  // 1 = original lighting intensity.
+static const float CannonFillLight = 0.30f; // 0 = no unlit texture contribution.
+
 float3 SafeNormalize(float3 Value, float3 Fallback)
 {
     float LengthSquared = dot(Value, Value);
@@ -119,5 +123,7 @@ float4 PS_Main(
             + Specular * Light[i].Specular.rgb * SpecularAmount + Ambient)
             * Light[i].LightColor.rgb * Attenuation;
     }
+    
+    Result = Result * CannonExposure + ColorMap.rgb * CannonFillLight;
     return float4(Result, ColorMap.a * Material.BaseColor.a);
 }

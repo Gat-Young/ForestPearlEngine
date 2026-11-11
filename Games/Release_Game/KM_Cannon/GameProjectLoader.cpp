@@ -5,6 +5,7 @@
 #include "GameMode.h"
 #include "Grid.h"
 #include "Ship.h"
+#include "Cannon.h"
 #include "UI.h"
 #include "Terrain.h"
 
@@ -28,6 +29,7 @@ void LoadClassRegist()
 	ClassRegistry->Register<GameController>("GameController");
 	ClassRegistry->Register<UI>("UI");
 	ClassRegistry->Register<Ship>("Ship");
+	ClassRegistry->Register<Cannon>("Cannon");
 	ClassRegistry->Register<Grid>("Grid");
 	ClassRegistry->Register<Axis>("Axis");
 	ClassRegistry->Register<Terrain>("Terrain");

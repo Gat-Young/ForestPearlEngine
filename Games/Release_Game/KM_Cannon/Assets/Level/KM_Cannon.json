@@ -2,51 +2,26 @@
   "gamemode": "GameMode",
 
   "actors": [
+
     {
       "class": "Terrain",
       "name": "Ground",
       "transform": {
-        "location": {
-          "x": 0.0,
-          "y": -0.5,
-          "z": 0.0
-        },
-
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-
-        "scale": {
-          "x": 128.0,
-          "y": 1.0,
-          "z": 128.0
-        }
+        "location": {          "x": 0.0,          "y": -0.5,          "z": 0.0          },
+        "rotation": {          "x": 0.0,          "y": 0.0,          "z": 0.0        },
+        "scale": {             "x": 128.0,          "y": 1.0,          "z": 128.0        }
       }
     },
+
+   
 
     {
       "class": "Axis",
       "name": "SystemAxis",
       "transform": {
-        "location": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-
-        "scale": {
-          "x": 1.0,
-          "y": 1.0,
-          "z": 1.0
-        }
+        "location": {          "x": 0.0,          "y": 0.0,          "z": 0.0        },
+        "rotation": {          "x": 0.0,          "y": 0.0,          "z": 0.0        },
+        "scale": {             "x": 1.0,          "y": 1.0,          "z": 1.0        }
       }
     },
 
@@ -54,48 +29,19 @@
       "class": "Grid",
       "name": "SystemGrid",
       "transform": {
-        "location": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-
-        "scale": {
-          "x": 1.0,
-          "y": 1.0,
-          "z": 1.0
-        }
+        "location": {          "x": 0.0,          "y": 0.0,          "z": 0.0        },
+        "rotation": {          "x": 0.0,          "y": 0.0,          "z": 0.0        },
+        "scale": {             "x": 1.0,          "y": 1.0,          "z": 1.0        }
       }
     },
-
 
     {
       "class": "UI",
       "name": "SystemUI",
       "transform": {
-        "location": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-
-        "scale": {
-          "x": 1.0,
-          "y": 1.0,
-          "z": 1.0
-        }
+        "location": {          "x": 0.0,          "y": 0.0,          "z": 0.0        },
+        "rotation": {          "x": 0.0,          "y": 0.0,          "z": 0.0        },
+        "scale": {          "x": 1.0,          "y": 1.0,          "z": 1.0        }
       }
     },
 
@@ -103,23 +49,9 @@
       "class": "Ship",
       "name": "DEMO_Ship",
       "transform": {
-        "location": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-
-        "scale": {
-          "x": 1.0,
-          "y": 1.0,
-          "z": 1.0
-        }
+        "location": {          "x": 0.0,          "y": 0.0,          "z": 0.0        },
+        "rotation": {          "x": 0.0,          "y": 0.0,          "z": 0.0        },
+        "scale": {          "x": 1.0,          "y": 1.0,          "z": 1.0        }
       }
     },
 
@@ -127,23 +59,9 @@
       "class": "ADirectionalLight",
       "name": "DirectionalLight",
       "transform": {
-        "location": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-
-        "scale": {
-          "x": 1.0,
-          "y": 1.0,
-          "z": 1.0
-        }
+        "location": {          "x": 0.0,          "y": 0.0,          "z": 0.0        },
+        "rotation": {          "x": 0.0,          "y": 0.0,          "z": 0.0        },
+        "scale": {          "x": 1.0,          "y": 1.0,          "z": 1.0        }
       }
     }
   ]

@@ -16,6 +16,14 @@ private:
 	//무조건 1개만 보유
 	FPGameSettingData* GameSettingData = nullptr;
 
+	//Built-in Engine Asset
+	// 엔진에서 기능상 필요한 Asset, 실제 GPU데이터는 ResourceList를 통해 동일하게 관리
+	// ex) Quad2D_Mesh
+	std::unordered_map<std::string, FPMeshData> LoadedBuiltInMesh;
+	std::unordered_map<std::string, FPMaterialData> LoadedBuiltinMaterialData;
+	std::unordered_map<std::string, FPVertexShaderData> LoadedBuiltInVertexShaderData;
+	std::unordered_map<std::string, FPPixelShaderData> LoadedBuiltInPixelShaderData;
+
 	//Data List
 	std::unordered_map<std::string, FPTextureInfo> LoadedTextureData;
 	std::unordered_map<std::string, FPTextureArrayInfo> LoadedTextureArrayData;
@@ -94,6 +102,26 @@ public:
 
 	//FBX Load
 	void LoadFbxData(FPStaticMeshData& StaticMeshData);
+
+	//BuiltIn Mesh
+	void AddBuiltInMeshData(std::string MeshName, FPMeshData& MeshData);
+	FPMeshData& GetBuiltInMeshData(std::string MeshName);
+	bool HasBuiltInMeshData(std::string MeshName);
+
+	//BuiltIn Material
+	FPMaterialData& GetBuiltInMaterialData(std::string MaterialName);
+	void AddBuiltInMaterialData(std::string MaterialName, FPMaterialData& MaterialData);
+	bool HasBuiltInMaterialData(std::string MaterialName);
+
+	//BuiltIn Vertex Shader
+	FPVertexShaderData& GetBuiltInVertexShaderData(std::string VertexShaderName);
+	void AddBuiltInVertexShaderData(std::string VertexShaderName, FPVertexShaderData& VertexShaderData);
+	bool HasBuiltInVertexShaderData(std::string VertexShaderName);
+
+	//BuiltIn Pixel Shader
+	FPPixelShaderData& GetBuiltInPixelShaderData(std::string PixelShaderName);
+	void AddBuiltInPixelShaderData(std::string PixelShaderName, FPPixelShaderData& PixelShaderData);
+	bool HasBuiltInPixelShaderData(std::string PixelShaderName);
 
 	//Mesh
 	void AddMeshData(std::string ModelNodeName, FPMeshData& MeshData);

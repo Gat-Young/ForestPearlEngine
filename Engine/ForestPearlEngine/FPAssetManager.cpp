@@ -119,6 +119,24 @@ void FPAssetManager::MakePixelShader(FPPixelShaderData& PixelShaderData)
 //葛电 Asset Data 按眉甫 积己
 void FPAssetManager::AllAssetDataCreate()
 {
+	//BuiltIn Mesh Buffer 积己
+	for (auto& [AssetName, Asset] : LoadedBuiltInMesh)
+	{
+		MakeMeshBuffer(Asset);
+	}
+
+	//BuiltIn Vertex Shader 积己
+	for (auto& [AssetName, Asset] : LoadedBuiltInVertexShaderData)
+	{
+		MakeVertexShader(Asset);
+	}
+
+	//BuiltIn Pixel Shader 积己
+	for (auto& [AssetName, Asset] : LoadedBuiltInPixelShaderData)
+	{
+		MakePixelShader(Asset);
+	}
+
 	//Texture 积己
 	for (auto& [AssetName, Asset] : LoadedTextureData)
 	{
@@ -224,6 +242,25 @@ FPMeshData& FPAssetManager::GetMeshData(std::string FbxPath)
 bool FPAssetManager::HasMeshData(std::string ModelNodeName)
 {
 	if (LoadedMeshData.count(ModelNodeName) <= 0)
+	{
+		return false;
+	}
+	return true;
+}
+
+void FPAssetManager::AddBuiltInMeshData(std::string MeshName, FPMeshData& MeshData)
+{
+	LoadedBuiltInMesh[MeshName] = MeshData;
+}
+
+FPMeshData& FPAssetManager::GetBuiltInMeshData(std::string MeshName)
+{
+	return LoadedBuiltInMesh[MeshName];
+}
+
+bool FPAssetManager::HasBuiltInMeshData(std::string MeshName)
+{
+	if (LoadedBuiltInMesh.count(MeshName) <= 0)
 	{
 		return false;
 	}
@@ -1532,6 +1569,26 @@ bool FPAssetManager::HasMaterialData(std::string MaterialName)
 	return false;
 }
 
+FPMaterialData& FPAssetManager::GetBuiltInMaterialData(std::string MaterialName)
+{
+	return this->LoadedBuiltinMaterialData[MaterialName];
+}
+
+void FPAssetManager::AddBuiltInMaterialData(std::string MaterialName, FPMaterialData& MaterialData)
+{
+	this->LoadedBuiltinMaterialData[MaterialName] = MaterialData;
+}
+
+bool FPAssetManager::HasBuiltInMaterialData(std::string MaterialName)
+{
+	if (LoadedBuiltinMaterialData.count(MaterialName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 bool FPAssetManager::HasGameSettingData()
 {
 	if (GameSettingData != nullptr)
@@ -1698,6 +1755,26 @@ bool FPAssetManager::HasVertexShaderData(std::string VertexShaderName)
 	return false;
 }
 
+FPVertexShaderData& FPAssetManager::GetBuiltInVertexShaderData(std::string VertexShaderName)
+{
+	return this->LoadedBuiltInVertexShaderData[VertexShaderName];
+}
+
+void FPAssetManager::AddBuiltInVertexShaderData(std::string VertexShaderName, FPVertexShaderData& VertexShaderData)
+{
+	this->LoadedBuiltInVertexShaderData[VertexShaderName] = VertexShaderData;
+}
+
+bool FPAssetManager::HasBuiltInVertexShaderData(std::string VertexShaderName)
+{
+	if (LoadedBuiltInVertexShaderData.count(VertexShaderName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 FPPixelShaderData& FPAssetManager::GetPixelShaderData(std::string PixelShaderName)
 {
 	return this->LoadedPixelShaderData[PixelShaderName];
@@ -1711,6 +1788,26 @@ void FPAssetManager::AddPixelShaderData(std::string PixelShaderName, FPPixelShad
 bool FPAssetManager::HasPixelShaderData(std::string PixelShaderName)
 {
 	if (LoadedPixelShaderData.count(PixelShaderName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+FPPixelShaderData& FPAssetManager::GetBuiltInPixelShaderData(std::string PixelShaderName)
+{
+	return this->LoadedBuiltInPixelShaderData[PixelShaderName];
+}
+
+void FPAssetManager::AddBuiltInPixelShaderData(std::string PixelShaderName, FPPixelShaderData& PixelShaderData)
+{
+	this->LoadedBuiltInPixelShaderData[PixelShaderName] = PixelShaderData;
+}
+
+bool FPAssetManager::HasBuiltInPixelShaderData(std::string PixelShaderName)
+{
+	if (LoadedBuiltInPixelShaderData.count(PixelShaderName) > 0)
 	{
 		return true;
 	}

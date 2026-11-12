@@ -6,6 +6,13 @@ void LoadEngineAssets()
 {
 	FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
 
+	//BuiltIn Mesh Load
+	AssetLoader->LoadBuiltInStaticMesh("Quad2D_Mesh.json");
+
+	//BuiltIn Vertex/Pixel Shader Load
+	AssetLoader->LoadBuiltInVertexShader("DefaultQuad2DVertexShader.json");
+	AssetLoader->LoadBuiltInPixelShader("DefaultQuad2DPixelShader.json");
+
 	//Default Vertex/Pixel Shader
 	AssetLoader->LoadVertexShader("DefaultVertexShader.json", AssetOwner::Engine);
 	AssetLoader->LoadPixelShader("DefaultPixelShader.json", AssetOwner::Engine);

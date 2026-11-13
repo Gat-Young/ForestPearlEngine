@@ -1,0 +1,9 @@
+{
+  "Name": "BackBufferDepthStencil",
+  "ScaleX": 1.0,
+  "ScaleY": 1.0,
+  "DepthStencilFormat": "D32F",
+  "ClearDepth": 1.0,
+  "ClearStencil": 0,
+  "ShaderResource": false
+}

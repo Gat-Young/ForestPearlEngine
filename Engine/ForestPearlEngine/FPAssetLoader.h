@@ -21,6 +21,9 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 		void LoadBuiltInMaterial(std::string BuiltInMaterialPath);
 		void LoadBuiltInVertexShader(std::string BuiltInVertexShaderPath);
 		void LoadBuiltInPixelShader(std::string BuiltInPixelShaderPath);
+		void LoadBuiltInRenderTargetTexture2D(std::string BuiltInRenderTargetTexture2DPath);
+		void LoadBuiltInDepthStencil(std::string BuiltInDepthStencilPath);
+
 
 		//Level Load
 		void LoadLevelData(std::string LevelName, std::string LevelPath, AssetOwner EngineAsset);

@@ -3,6 +3,7 @@
 #include <set>
 #include "Utility/FPPathManager.h"
 #include "FPGameInstance.h"
+#include "FPGameProjectSetting.h"
 #include "FPMaterial.h"
 #include "FPMaterialInterface.h"
 #include "FPStaticMesh.h"
@@ -137,6 +138,18 @@ void FPAssetManager::AllAssetDataCreate()
 		MakePixelShader(Asset);
 	}
 
+	//BuiltIn Render Target 생성
+	for (auto& [AssetName, Asset] : LoadedBuiltInRenderTargetTexture2DData)
+	{
+		MakeBuiltInRenderTarget(Asset);
+	}
+
+	//BuiltIn DepthStencil 생성
+	for (auto& [AssetName, Asset] : LoadedBuiltInDepthStencilData)
+	{
+		MakeBuiltInDepthStencil(Asset);
+	}
+
 	//Texture 생성
 	for (auto& [AssetName, Asset] : LoadedTextureData)
 	{
@@ -158,7 +171,7 @@ void FPAssetManager::AllAssetDataCreate()
 	//DepthStencil 생성
 	for (auto& [AssetName, Asset] : LoadedDepthStencilData)
 	{
-		MaketDepthStencil(Asset);
+		MakeDepthStencil(Asset);
 	}
 
 	//DepthStencilState 생성
@@ -1428,13 +1441,59 @@ bool FPAssetManager::HasRenderTargetData(std::string RenderTargetName)
 	return false;
 }
 
+FPRenderTargetTexture2DInfo& FPAssetManager::GetBuiltInRenderTargetTexture2DInfoData(std::string RenderTargetTexture2DName)
+{
+	return LoadedBuiltInRenderTargetTexture2DData[RenderTargetTexture2DName];
+}
+
+void FPAssetManager::AddBuiltInRenderTargetTexture2DData(std::string RenderTargetTexture2DName, FPRenderTargetTexture2DInfo& RenderTargetTexture2DData)
+{
+	this->LoadedBuiltInRenderTargetTexture2DData[RenderTargetTexture2DName] = RenderTargetTexture2DData;
+}
+
+bool FPAssetManager::HasBuiltInRenderTargetTexture2DData(std::string RenderTargetTexture2DName)
+{
+	if (LoadedBuiltInRenderTargetTexture2DData.count(RenderTargetTexture2DName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 void FPAssetManager::MakeRenderTarget(FPRenderTargetTexture2DInfo& RenderTargetInfo)
 {
+	//해상도 재생성 시 기존 자원 해제
+	if (HasRenderTargetData(RenderTargetInfo.Name))
+	{
+		FPRenderTargetData& OldRenderTargetResource = RenderTargetData[RenderTargetInfo.Name];
+		if (OldRenderTargetResource.ShaderResourceView) static_cast<ID3D11ShaderResourceView*>(OldRenderTargetResource.ShaderResourceView)->Release();
+		if (OldRenderTargetResource.RenderTargetView) static_cast<ID3D11RenderTargetView*>(OldRenderTargetResource.RenderTargetView)->Release();
+		if (OldRenderTargetResource.ResolveTexture) static_cast<ID3D11Texture2D*>(OldRenderTargetResource.ResolveTexture)->Release();
+		if (OldRenderTargetResource.Texture) static_cast<ID3D11Texture2D*>(OldRenderTargetResource.Texture)->Release();
+	}
+
 	FPRenderTargetData RenderTargetResourceData;
 	RenderingDevice::GetRenderingDevice().CreateRTTex(RenderTargetInfo.SizeX, RenderTargetInfo.SizeY, RenderTargetInfo.MSAA, RenderTargetInfo.MipMap, RenderTargetInfo.RenderTragetFormat, &RenderTargetResourceData.Texture, &RenderTargetResourceData.ResolveTexture);
 	RenderingDevice::GetRenderingDevice().CreateRTView(RenderTargetInfo.RenderTragetFormat, RenderTargetInfo.MSAA, RenderTargetResourceData.Texture, &RenderTargetResourceData.RenderTargetView);
 	RenderingDevice::GetRenderingDevice().CreateRTSRView(RenderTargetInfo.RenderTragetFormat, RenderTargetResourceData.ResolveTexture, &RenderTargetResourceData.ShaderResourceView);
 	RenderTargetData[RenderTargetInfo.Name] = RenderTargetResourceData;
+}
+
+void FPAssetManager::MakeBuiltInRenderTarget(FPRenderTargetTexture2DInfo& RenderTargetInfo)
+{
+	//해상도가 바뀔 때마다 크기를 다시 계산한다
+	if (HasGameSettingData())
+	{
+		RenderTargetInfo.SizeX = static_cast<unsigned int>(GameSettingData->Width * RenderTargetInfo.ScaleX);
+		RenderTargetInfo.SizeY = static_cast<unsigned int>(GameSettingData->Height * RenderTargetInfo.ScaleY);
+	}
+
+	//MSAA는 항상 FPGameProjectSetting과 동일하다 (바뀌어도 다시 맞춤)
+	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
+	RenderTargetInfo.MSAA = GameProjectSetting->GetMSAA();
+
+	MakeRenderTarget(RenderTargetInfo);
 }
 
 FPDepthStencilInfo& FPAssetManager::GetDepthStencilInfoData(std::string DepthStencilName)
@@ -1477,9 +1536,28 @@ bool FPAssetManager::HastDepthStencilData(std::string DepthStencilName)
 	return false;
 }
 
-void FPAssetManager::MaketDepthStencil(FPDepthStencilInfo& DepthStecilInfo)
+FPDepthStencilInfo& FPAssetManager::GetBuiltInDepthStencilInfoData(std::string DepthStencilName)
 {
-	//장치 정수를 등록인 요초(Resize)에정퓽을 챨콰 기존 죽원은 량쟀썩
+	return LoadedBuiltInDepthStencilData[DepthStencilName];
+}
+
+void FPAssetManager::AddBuiltInDepthStencilInfoData(std::string DepthStencilName, FPDepthStencilInfo& DepthStencilyData)
+{
+	this->LoadedBuiltInDepthStencilData[DepthStencilName] = DepthStencilyData;
+}
+
+bool FPAssetManager::HasBuiltInDepthStencilInfoData(std::string DepthStencilName)
+{
+	if (LoadedBuiltInDepthStencilData.count(DepthStencilName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void FPAssetManager::MakeDepthStencil(FPDepthStencilInfo& DepthStecilInfo)
+{
 	if (HastDepthStencilData(DepthStecilInfo.Name))
 	{
 		FPDepthStencilData& OldDepthStencilResource = DepthStencilData[DepthStecilInfo.Name];
@@ -1493,6 +1571,35 @@ void FPAssetManager::MaketDepthStencil(FPDepthStencilInfo& DepthStecilInfo)
 	RenderingDevice::GetRenderingDevice().CreateDepthStencilView(DepthStecilInfo.DepthStencilFormat, DepthStecilInfo.MSAA, DepthStencilResource.Texture, &DepthStencilResource.DepthStencilView);
 	RenderingDevice::GetRenderingDevice().CreateDepthStencilSRView(DepthStecilInfo.DepthStencilFormat, DepthStecilInfo.ShaderResource, DepthStecilInfo.MSAA, DepthStencilResource.Texture, &DepthStencilResource.ShaderResourceView);
 	DepthStencilData[DepthStecilInfo.Name] = DepthStencilResource;
+}
+
+void FPAssetManager::MakeBuiltInDepthStencil(FPDepthStencilInfo& DepthStecilInfo)
+{
+	//해상도가 바뀔 때마다 크기를 다시 계산한다
+	if (HasGameSettingData())
+	{
+		DepthStecilInfo.SizeX = static_cast<unsigned int>(GameSettingData->Width * DepthStecilInfo.ScaleX);
+		DepthStecilInfo.SizeY = static_cast<unsigned int>(GameSettingData->Height * DepthStecilInfo.ScaleY);
+	}
+
+	//MSAA는 항상 FPGameProjectSetting과 동일하다 (바뀌어도 다시 맞춤)
+	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
+	DepthStecilInfo.MSAA = GameProjectSetting->GetMSAA();
+
+	MakeDepthStencil(DepthStecilInfo);
+}
+
+void FPAssetManager::ResizeBuiltInRenderTargetAndDepthStencil()
+{
+	for (auto& [AssetName, Asset] : LoadedBuiltInRenderTargetTexture2DData)
+	{
+		MakeBuiltInRenderTarget(Asset);
+	}
+
+	for (auto& [AssetName, Asset] : LoadedBuiltInDepthStencilData)
+	{
+		MakeBuiltInDepthStencil(Asset);
+	}
 }
 
 //살짝 아쉬움

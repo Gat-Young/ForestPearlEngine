@@ -240,6 +240,8 @@ struct FPRenderTargetTexture2DInfo
 	std::string Type;
 	unsigned int SizeX;
 	unsigned int SizeY;
+	float ScaleX;
+	float ScaleY;
 	FPRenderTargetFormat RenderTragetFormat = FPRenderTargetFormat::RGBA8;
 	FPVector4 ClearColor = {0.0f, 0.0f, 0.0f, 1.0f};
 	unsigned int MSAA = 1;
@@ -274,6 +276,8 @@ struct FPDepthStencilInfo
 	std::string Name;
 	unsigned int SizeX;
 	unsigned int SizeY;
+	float ScaleX;
+	float ScaleY;
 	FPDepthStencilFormat DepthStencilFormat = FPDepthStencilFormat::D24_S8_UINT;
 	float ClearDepth = 1.0;
 	unsigned int ClearStencil = 0;
@@ -603,10 +607,6 @@ struct CameraItem
 	FPMatrix* Projection = nullptr;
 
 	bool* Active = nullptr;			//카메라 사용 여부
-	bool* TripleCam = nullptr;
-
-	std::string* RenderTarget = nullptr;
-	std::string* DepthStencil = nullptr;
 };
 
 //SceneCapture Component
@@ -730,19 +730,6 @@ namespace RenderingData
 		FPConstantBufferRenderData PixelConstBuffer;
 	};
 
-	struct FPViewPort
-	{
-		float TopLeftX = 0.0f;
-		float TopLeftY = 0.0f;
-		float Width;
-		float Height;
-		float MinDepth = 0.0f;
-		float MaxDepth = 1.0f;
-
-		FPConstantBufferRenderData VertexConstBuffer;
-		FPConstantBufferRenderData PixelConstBuffer;
-	};
-
 	struct CameraItem
 	{
 		//카메라의 위치
@@ -752,11 +739,6 @@ namespace RenderingData
 
 		FPMatrix View;
 		FPMatrix Projection;
-
-		std::string RenderTarget;
-		std::string DepthStencil;
-
-		std::vector<FPViewPort> ViewPort;
 	};
 
 	struct UIContextItem
@@ -767,8 +749,6 @@ namespace RenderingData
 		int y;
 		FPVector4 color;
 		std::basic_string<TCHAR> msg;
-
-		std::vector<FPViewPort> ViewPort;
 	};
 
 	constexpr unsigned int Light_MAX = 64;

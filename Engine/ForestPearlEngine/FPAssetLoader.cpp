@@ -419,6 +419,107 @@ void FPAssetLoader::LoadBuiltInPixelShader(std::string BuiltInPixelShaderPath)
 	AssetManager->AddBuiltInPixelShaderData(PixelShaderData.Name, PixelShaderData);
 }
 
+void FPAssetLoader::LoadBuiltInRenderTargetTexture2D(std::string BuiltInRenderTargetTexture2DPath)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::ifstream File(FPPathManager::Get().GetEngineAssetPath("BuiltIn/RenderTarget/" + BuiltInRenderTargetTexture2DPath));
+
+	if (!File.is_open())
+	{
+		std::cerr << BuiltInRenderTargetTexture2DPath << ".json 파일 열기 실패\n";
+		return;
+	}
+
+	json JsonRenderTargetData;
+
+	try
+	{
+		File >> JsonRenderTargetData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPRenderTargetTexture2DInfo RenderTargetInfo;
+
+	RenderTargetInfo.Name = JsonRenderTargetData["Name"].get<std::string>();
+	RenderTargetInfo.Type = JsonRenderTargetData["Type"].get<std::string>();
+	RenderTargetInfo.ScaleX = JsonRenderTargetData["ScaleX"].get<float>();
+	RenderTargetInfo.ScaleY = JsonRenderTargetData["ScaleY"].get<float>();
+	RenderTargetInfo.SizeX = 0;
+	RenderTargetInfo.SizeY = 0;
+	RenderTargetInfo.RenderTragetFormat = StringToFPRenderTargetFormat(JsonRenderTargetData["RenderTargetFormat"].get<std::string>());
+
+	const json& ClearColor = JsonRenderTargetData["ClearColor"];
+	RenderTargetInfo.ClearColor = FPVector4(ClearColor[0].get<float>(), ClearColor[1].get<float>(), ClearColor[2].get<float>(), ClearColor[3].get<float>());
+
+	RenderTargetInfo.MipMap = JsonRenderTargetData["MipMap"].get<bool>();
+	RenderTargetInfo.Owner = AssetOwner::Engine;
+
+	if (AssetManager->HasBuiltInRenderTargetTexture2DData(RenderTargetInfo.Name))
+	{
+		std::cout << "같은 이름의 BuiltIn RenderTarget이 존재합니다." << "\n";
+		return;
+	}
+
+	AssetManager->AddBuiltInRenderTargetTexture2DData(RenderTargetInfo.Name, RenderTargetInfo);
+}
+
+void FPAssetLoader::LoadBuiltInDepthStencil(std::string BuiltInDepthStencilPath)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::ifstream File(FPPathManager::Get().GetEngineAssetPath("BuiltIn/DepthStencil/" + BuiltInDepthStencilPath));
+
+	if (!File.is_open())
+	{
+		std::cerr << BuiltInDepthStencilPath << ".json 파일 열기 실패\n";
+		return;
+	}
+
+	json JsonDepthStencilData;
+
+	try
+	{
+		File >> JsonDepthStencilData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPDepthStencilInfo DepthStencilInfo;
+
+	DepthStencilInfo.Name = JsonDepthStencilData["Name"].get<std::string>();
+	DepthStencilInfo.ScaleX = JsonDepthStencilData["ScaleX"].get<float>();
+	DepthStencilInfo.ScaleY = JsonDepthStencilData["ScaleY"].get<float>();
+	DepthStencilInfo.SizeX = 0;
+	DepthStencilInfo.SizeY = 0;
+	DepthStencilInfo.DepthStencilFormat = StringToFPDepthStencilFormat(JsonDepthStencilData["DepthStencilFormat"].get<std::string>());
+	DepthStencilInfo.ClearDepth = JsonDepthStencilData["ClearDepth"].get<float>();
+	DepthStencilInfo.ClearStencil = JsonDepthStencilData["ClearStencil"].get<unsigned int>();
+	DepthStencilInfo.ShaderResource = JsonDepthStencilData["ShaderResource"].get<bool>();
+	DepthStencilInfo.Owner = AssetOwner::Engine;
+
+	if (AssetManager->HasBuiltInDepthStencilInfoData(DepthStencilInfo.Name))
+	{
+		std::cout << "같은 이름의 BuiltIn DepthStencil이 존재합니다." << "\n";
+		return;
+	}
+
+	AssetManager->AddBuiltInDepthStencilInfoData(DepthStencilInfo.Name, DepthStencilInfo);
+}
+
 //Level 정보를 저장
 void FPAssetLoader::LoadLevelData(std::string LevelName, std::string LevelPath, AssetOwner EngineAsset)
 {

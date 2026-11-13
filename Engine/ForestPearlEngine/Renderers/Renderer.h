@@ -70,6 +70,14 @@ class Renderer
 		//SceneCapture Item
 		std::vector<RenderingData::SceneCaptureItem> SceneCaptureList;
 
+
+		//Quad2D Render
+		//Quad Mesh에 지정된 InRenderTarget을 BackBuffer로 Draw 
+		void Quad2DRenderPass(std::string& InRenderTarget);
+
+		//Aspect-corrected ViewPort size (Letterbox / Pillarbox)
+		void CalculateViewPortSize(float Width, float Height, float& OutTopLeftX, float& OutTopLeftY, float& OutWidth, float& OutHeight);
+
 	public:
 		Renderer(RenderingDevice& Device);
 

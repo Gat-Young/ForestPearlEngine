@@ -13,6 +13,13 @@ void LoadEngineAssets()
 	AssetLoader->LoadBuiltInVertexShader("DefaultQuad2DVertexShader.json");
 	AssetLoader->LoadBuiltInPixelShader("DefaultQuad2DPixelShader.json");
 
+	//BackBuffer DepthStencil BuiltIn Load
+	AssetLoader->LoadBuiltInDepthStencil("BackBufferDepthStencil.json");
+
+	//BuiltIn RenderTarget Load
+	AssetLoader->LoadBuiltInRenderTargetTexture2D("MeshRenderPass_RenderTargetTexture2D-BuiltIn.json");
+	AssetLoader->LoadBuiltInRenderTargetTexture2D("GizmoRenderPass_RenderTargetTexture2D-BuiltIn.json");
+
 	//Default Vertex/Pixel Shader
 	AssetLoader->LoadVertexShader("DefaultVertexShader.json", AssetOwner::Engine);
 	AssetLoader->LoadPixelShader("DefaultPixelShader.json", AssetOwner::Engine);

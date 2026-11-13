@@ -8,7 +8,6 @@
 #include "EngineLoader.h"
 #include "Systems/InputSystem.h"
 #include "FPGameProjectSetting.h"
-#include "FPViewPortClient.h"
 #include "FPAssetManager.h"
 #include <iostream>
 #include "MCLOG.h"
@@ -40,9 +39,6 @@ bool ForestPearlEngine::PreInitialize()
                 );
     GameProjectSetting->SetHWND(Hwnd);
     GameProjectSetting->CalculateDisplaySize();
-
-    FPViewPortClient* ViewPort = static_cast<FPViewPortClient*>(FPGameInstance::Get().GetViewPortClient());
-    ViewPort->CreateViewPort();
 
     if (Hwnd == nullptr)
     {
@@ -237,9 +233,6 @@ LRESULT CALLBACK ForestPearlEngine::WndProc(HWND hWnd, UINT message, WPARAM wPar
         GameProjectSetting->SetWinWidth(Width);
         GameProjectSetting->SetWinHeight(Height);
         GameProjectSetting->CalculateDisplaySize();
-
-        FPViewPortClient* ViewPortClient = static_cast<FPViewPortClient*>(FPGameInstance::Get().GetViewPortClient());
-        ViewPortClient->CalculateAllViewPortSize();
 
         if (Engine != nullptr && Engine->Render != nullptr)
         {

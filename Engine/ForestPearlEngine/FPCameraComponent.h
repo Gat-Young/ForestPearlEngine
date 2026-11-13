@@ -20,23 +20,12 @@ class FPCameraComponent : public FPSceneComponent
 		FPMatrix ProjectionMatrix;
 
 		bool Active = true;			//카메라 사용 여부
-		bool TripleCame = false;	//(임시) 3-분할 카메라 사용 여부
 
 		CameraItem* CamItem = nullptr;
-
-		std::string RenderTarget = "BackbufferRenderTarget";
-		std::string DepthStencil = "BackBufferDepthStencil";
 
 	public:
 		FPCameraComponent(FPActor* Owner);
 		~FPCameraComponent();
 		void RegistCamera();
 		void Tick() override;
-
-		void OnTripleCam();
-
-		void SetRenderTarget(std::string& RenderTarget);
-		std::string GetRenderTarget();
-		void SetDepthStencil(std::string& DepthStencil);
-		std::string GetDepthStencil();
 };

@@ -2,7 +2,7 @@
   "GameSetting": {
     "GameName": "Tri_World",
     "Graphics": {
-      "MSAA": 8,
+      "MSAA": 4,
       "AnisotropicFiltering": 16,
       "VSync": true,
       "Hz": 60,

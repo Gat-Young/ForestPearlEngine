@@ -131,7 +131,7 @@ class RenderingDevice
 
 		const TCHAR* StrFeatureLevel = _T("N/A");
 
-		XMFLOAT4 BackGroundColor = { 0, 0.125f, 0.3f, 1 };
+		XMFLOAT4 BackGroundColor = { 0, 1, 0, 1 };
 
 		//DXGI Format Converter
 		DXGI_FORMAT FPRenderTargetFormatToDXGI_FORMAT(FPRenderTargetFormat& RenderTargetFormat);

@@ -41,7 +41,7 @@ void FPGameProjectSetting::ProjectSetting()
 	WinName = FPPathManager::Get().StringToWString(GameSettingData->GameName);
 	WinWidth = GameSettingData->Width;
 	WinHeight = GameSettingData->Height;
-	DisplayAspect = WinWidth / WinHeight;
+	DisplayAspect = (float)WinWidth / (float)WinHeight;
 	MSAA = GameSettingData->MSAA;
 	AF = GameSettingData->AnisotropicFiltering;
 	FullScreen = GameSettingData->FullScreen;

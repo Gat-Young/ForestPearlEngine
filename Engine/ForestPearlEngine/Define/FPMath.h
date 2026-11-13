@@ -244,6 +244,26 @@ struct FPMatrix
 		return FPMatrix(DirectX::XMMatrixTranspose(Matrix));
 	}
 
+	static FPMatrix MatrixIdentity()
+	{
+		return FPMatrix(DirectX::XMMatrixIdentity());
+	}
+
+	static FPMatrix MatrixOrthographicOffCenterLH(float ViewLeft, float ViewRight, float ViewBottom, float ViewTop, float NearZ, float FarZ)
+	{
+		return FPMatrix(DirectX::XMMatrixOrthographicOffCenterLH(ViewLeft, ViewRight, ViewBottom, ViewTop, NearZ, FarZ));
+	}
+
+	static FPMatrix MatrixScaling(float x, float y, float z)
+	{
+		return FPMatrix(DirectX::XMMatrixScaling(x, y, z));
+	}
+
+	static FPMatrix MatrixTranslation(float x, float y, float z)
+	{
+		return FPMatrix(DirectX::XMMatrixTranslation(x, y, z));
+	}
+
 };
 
 float Dot(const FPVector3& A, const FPVector3& B);

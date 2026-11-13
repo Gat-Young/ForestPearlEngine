@@ -84,6 +84,442 @@ void FPAssetLoader::LoadGameSetting(std::string GameSettingPath)
 	}
 }
 
+void FPAssetLoader::LoadBuiltInStaticMesh(std::string BuiltInStaticMeshPath)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::ifstream File(FPPathManager::Get().GetEngineAssetPath("BuiltIn/StaticMesh/" + BuiltInStaticMeshPath));
+
+	if (!File.is_open())
+	{
+		std::cerr << BuiltInStaticMeshPath << ".json 파일 열기 실패\n";
+		return;
+	}
+
+	json JsonStaticMeshData;
+
+	try
+	{
+		File >> JsonStaticMeshData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPMeshData MeshData;
+	MeshData.Name = JsonStaticMeshData.at("Name").get<std::string>();
+	MeshData.NodeName = JsonStaticMeshData.at("NodeName").get<std::string>();
+
+	if (AssetManager->HasBuiltInMeshData(MeshData.Name))
+	{
+		std::cout << "같은 이름의 BuiltInMesh가 존재합니다." << "\n";
+		return;
+	}
+
+	if (JsonStaticMeshData.contains("Position_Vertices"))
+	{
+		for (const json& P : JsonStaticMeshData.at("Position_Vertices"))
+		{
+			POSITION_VERTEX Position;
+			Position.x = P.value("x", 0.0f);
+			Position.y = P.value("y", 0.0f);
+			Position.z = P.value("z", 0.0f);
+			MeshData.Position_Vertices.push_back(Position);
+		}
+	}
+
+	if (JsonStaticMeshData.contains("Normal_Vertices"))
+	{
+		for (const json& N : JsonStaticMeshData.at("Normal_Vertices"))
+		{
+			NORMAL_VERTEX Normal;
+			Normal.nx = N.value("nx", 0.0f);
+			Normal.ny = N.value("ny", 0.0f);
+			Normal.nz = N.value("nz", 0.0f);
+			MeshData.Normal_Vertices.push_back(Normal);
+		}
+	}
+
+	if (JsonStaticMeshData.contains("Color_Vertices"))
+	{
+		for (const json& C : JsonStaticMeshData.at("Color_Vertices"))
+		{
+			MeshData.Color_Vertices.push_back(ReadColor(C));
+		}
+	}
+
+	if (JsonStaticMeshData.contains("UV_Vertices"))
+	{
+		for (const json& UV : JsonStaticMeshData.at("UV_Vertices"))
+		{
+			UV_VERTEX UVVertex;
+			UVVertex.u = UV.value("u", 0.0f);
+			UVVertex.v = UV.value("v", 0.0f);
+			MeshData.UV_Vertices.push_back(UVVertex);
+		}
+	}
+
+	if (JsonStaticMeshData.contains("Tangent_Vertices"))
+	{
+		for (const json& T : JsonStaticMeshData.at("Tangent_Vertices"))
+		{
+			TANGENT_VERTEX Tangent;
+			Tangent.x = T.value("x", 0.0f);
+			Tangent.y = T.value("y", 0.0f);
+			Tangent.z = T.value("z", 0.0f);
+			Tangent.w = T.value("w", 1.0f);
+			MeshData.Tangent_Vertices.push_back(Tangent);
+		}
+	}
+
+	if (JsonStaticMeshData.contains("Index"))
+	{
+		for (const json& I : JsonStaticMeshData.at("Index"))
+		{
+			INDEX_32BIT Index;
+			Index.A = I.at("A").get<unsigned long>();
+			Index.B = I.at("B").get<unsigned long>();
+			Index.C = I.at("C").get<unsigned long>();
+			MeshData.Index.push_back(Index);
+		}
+	}
+
+	if (JsonStaticMeshData.contains("VertexAdjacency"))
+	{
+		for (const json& Adjacency : JsonStaticMeshData.at("VertexAdjacency"))
+		{
+			std::vector<uint32_t> AdjacencyList;
+			for (const json& Value : Adjacency)
+			{
+				AdjacencyList.push_back(Value.get<uint32_t>());
+			}
+			MeshData.VertexAdjacency.push_back(std::move(AdjacencyList));
+		}
+	}
+
+	AssetManager->AddBuiltInMeshData(MeshData.Name, MeshData);
+}
+
+void FPAssetLoader::LoadBuiltInMaterial(std::string BuiltInMaterialPath)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::ifstream File(FPPathManager::Get().GetEngineAssetPath("BuiltIn/Material/" + BuiltInMaterialPath));
+
+	if (!File.is_open())
+	{
+		std::cerr << BuiltInMaterialPath << ".json 파일 열기 실패\n";
+		return;
+	}
+
+	json JsonMaterialData;
+
+	try
+	{
+		File >> JsonMaterialData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPMaterialData MaterialData;
+
+	// Material 객체
+	const json& Material = JsonMaterialData.at("Material");
+
+	MaterialData.Name = Material.at("Name").get<std::string>();
+
+	MaterialData.VertexShader = Material.at("VertexShader").get<std::string>();
+
+	MaterialData.PixelShader = Material.at("PixelShader").get<std::string>();
+
+	//Two Side
+	MaterialData.TwoSided = Material.value("TwoSided", false);
+
+
+	//Material Parameter 정보 가져오기
+	const json& Groups = Material.at("Parameters");
+
+	for (const json& Group : Groups)
+	{
+		//VS, PS 인지 구분
+		const FPShaderType Stage = StringToFPShaderType(Group.at("Type").get<std::string>());
+		if (Stage == FPShaderType::None) { std::cout << "Material의 Type은 VS or PS여야 합니다!" << "\n"; }
+
+		//상수 버퍼이름 가져오기
+		const std::string CB = Group.at("ConstantBuffer").get<std::string>();
+
+		//상수 버퍼에 있는 실수 데이터(float, float2, float3, float4) 내부 요소 가져오기
+		const json Values = Group.at("Values");
+
+		for (json::const_iterator It = Values.begin(); It != Values.end(); ++It)
+		{
+			FPFloatParameterData Entry;
+			Entry.Type = Stage;
+			Entry.ConstantBufferName = CB;
+			Entry.ParameterName = It.key();
+
+			const json& Value = It.value();
+
+			if (Value.is_number())		// float 타입 처리
+			{
+				Entry.Values.push_back(Value.get<float>());
+			}
+			else if (Value.is_array())	// float2, float3, float4 처리, float[] ,float2[], float3[], float4[] 처리
+			{
+				for (const json& X : Value)
+				{
+					Entry.Values.push_back(X.get<float>());
+				}
+			}
+
+			MaterialData.Parameters.push_back(std::move(Entry));
+		}
+	}
+
+	// Texture 처리
+	if (Material.contains("Textures"))
+	{
+		const json& Textures = Material.at("Textures");
+
+		for (const json& T : Textures)
+		{
+			FPTextureParameterData Entry;
+			Entry.Type = StringToFPShaderType(T.at("Type").get<std::string>());
+			Entry.Parameter = T.at("Parameter").get<std::string>();
+			Entry.Name = T.at("Asset").get<std::string>();
+
+			const std::string TextureType = T.at("TextureType").get<std::string>();
+			if (TextureType != "Texture2D" && TextureType != "Texture2DArray" && TextureType != "RenderTargetTexture2D" && TextureType != "DepthStencilTexture2D") { std::cout << "Texture2D, Texture2DArray외의 Type이 사용됨"; }
+
+			Entry.TextureType = StringToTextureType(TextureType);
+
+			//Texture 배열에 대한 처리
+			json::const_iterator It = T.find("ArrayIndex");
+			if (It == T.end()) Entry.ArrayIndex = 0;
+			else
+			{
+				const uint64_t Raw = It->get<uint64_t>();
+				Entry.ArrayIndex = static_cast<unsigned int>(Raw);
+			}
+
+			MaterialData.NamedTextures.push_back(std::move(Entry));
+		}
+	}
+
+	// Sampler 처리
+	if (Material.contains("Samplers"))
+	{
+		const json& Samplers = Material.at("Samplers");
+
+		for (const json& S : Samplers)
+		{
+			FPSamplerParameterData Entry;
+			Entry.Type = StringToFPShaderType(S.at("Type").get<std::string>());
+			Entry.Parameter = S.at("Parameter").get<std::string>();
+
+			//Sampler 배열에 대한 처리
+			json::const_iterator It = S.find("ArrayIndex");
+			if (It == S.end()) Entry.ArrayIndex = 0;
+			else
+			{
+				const uint64_t Raw = It->get<uint64_t>();
+				Entry.ArrayIndex = static_cast<unsigned int>(Raw);
+			}
+
+			const std::string SamplerType = S.at("SamplerType").get<std::string>();
+			Entry.SamplerType = StringToSamplerType(SamplerType);
+			MaterialData.NamedSamplers.push_back(std::move(Entry));
+		}
+	}
+
+	MaterialData.Owner = AssetOwner::Engine;
+
+	AssetManager->AddBuiltInMaterialData(MaterialData.Name, MaterialData);
+}
+
+void FPAssetLoader::LoadBuiltInVertexShader(std::string BuiltInVertexShaderPath)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::ifstream File(FPPathManager::Get().GetEngineAssetPath("BuiltIn/Shader/" + BuiltInVertexShaderPath));
+
+	if (!File.is_open())
+	{
+		std::cerr << BuiltInVertexShaderPath << ".json 파일 열기 실패\n";
+		return;
+	}
+
+	json ShaderData;
+
+	try
+	{
+		File >> ShaderData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPVertexShaderData VertexShaderData;
+	VertexShaderData.Name = ShaderData.at("Name").get<std::string>();
+	VertexShaderData.Path = ShaderData.at("Path").get<std::string>();
+	VertexShaderData.InputLayout = ShaderData.at("InputLayout").get<std::string>();
+	VertexShaderData.Owner = AssetOwner::Engine;
+
+	AssetManager->AddBuiltInVertexShaderData(VertexShaderData.Name, VertexShaderData);
+}
+
+void FPAssetLoader::LoadBuiltInPixelShader(std::string BuiltInPixelShaderPath)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::ifstream File(FPPathManager::Get().GetEngineAssetPath("BuiltIn/Shader/" + BuiltInPixelShaderPath));
+
+	if (!File.is_open())
+	{
+		std::cerr << BuiltInPixelShaderPath << ".json 파일 열기 실패\n";
+		return;
+	}
+
+	json ShaderData;
+
+	try
+	{
+		File >> ShaderData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPPixelShaderData PixelShaderData;
+	PixelShaderData.Name = ShaderData.at("Name").get<std::string>();
+	PixelShaderData.Path = ShaderData.at("Path").get<std::string>();
+	PixelShaderData.Owner = AssetOwner::Engine;
+
+	AssetManager->AddBuiltInPixelShaderData(PixelShaderData.Name, PixelShaderData);
+}
+
+void FPAssetLoader::LoadBuiltInRenderTargetTexture2D(std::string BuiltInRenderTargetTexture2DPath)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::ifstream File(FPPathManager::Get().GetEngineAssetPath("BuiltIn/RenderTarget/" + BuiltInRenderTargetTexture2DPath));
+
+	if (!File.is_open())
+	{
+		std::cerr << BuiltInRenderTargetTexture2DPath << ".json 파일 열기 실패\n";
+		return;
+	}
+
+	json JsonRenderTargetData;
+
+	try
+	{
+		File >> JsonRenderTargetData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPRenderTargetTexture2DInfo RenderTargetInfo;
+
+	RenderTargetInfo.Name = JsonRenderTargetData["Name"].get<std::string>();
+	RenderTargetInfo.Type = JsonRenderTargetData["Type"].get<std::string>();
+	RenderTargetInfo.ScaleX = JsonRenderTargetData["ScaleX"].get<float>();
+	RenderTargetInfo.ScaleY = JsonRenderTargetData["ScaleY"].get<float>();
+	RenderTargetInfo.SizeX = 0;
+	RenderTargetInfo.SizeY = 0;
+	RenderTargetInfo.RenderTragetFormat = StringToFPRenderTargetFormat(JsonRenderTargetData["RenderTargetFormat"].get<std::string>());
+
+	const json& ClearColor = JsonRenderTargetData["ClearColor"];
+	RenderTargetInfo.ClearColor = FPVector4(ClearColor[0].get<float>(), ClearColor[1].get<float>(), ClearColor[2].get<float>(), ClearColor[3].get<float>());
+
+	RenderTargetInfo.MipMap = JsonRenderTargetData["MipMap"].get<bool>();
+	RenderTargetInfo.Owner = AssetOwner::Engine;
+
+	if (AssetManager->HasBuiltInRenderTargetTexture2DData(RenderTargetInfo.Name))
+	{
+		std::cout << "같은 이름의 BuiltIn RenderTarget이 존재합니다." << "\n";
+		return;
+	}
+
+	AssetManager->AddBuiltInRenderTargetTexture2DData(RenderTargetInfo.Name, RenderTargetInfo);
+}
+
+void FPAssetLoader::LoadBuiltInDepthStencil(std::string BuiltInDepthStencilPath)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::ifstream File(FPPathManager::Get().GetEngineAssetPath("BuiltIn/DepthStencil/" + BuiltInDepthStencilPath));
+
+	if (!File.is_open())
+	{
+		std::cerr << BuiltInDepthStencilPath << ".json 파일 열기 실패\n";
+		return;
+	}
+
+	json JsonDepthStencilData;
+
+	try
+	{
+		File >> JsonDepthStencilData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPDepthStencilInfo DepthStencilInfo;
+
+	DepthStencilInfo.Name = JsonDepthStencilData["Name"].get<std::string>();
+	DepthStencilInfo.ScaleX = JsonDepthStencilData["ScaleX"].get<float>();
+	DepthStencilInfo.ScaleY = JsonDepthStencilData["ScaleY"].get<float>();
+	DepthStencilInfo.SizeX = 0;
+	DepthStencilInfo.SizeY = 0;
+	DepthStencilInfo.DepthStencilFormat = StringToFPDepthStencilFormat(JsonDepthStencilData["DepthStencilFormat"].get<std::string>());
+	DepthStencilInfo.ClearDepth = JsonDepthStencilData["ClearDepth"].get<float>();
+	DepthStencilInfo.ClearStencil = JsonDepthStencilData["ClearStencil"].get<unsigned int>();
+	DepthStencilInfo.ShaderResource = JsonDepthStencilData["ShaderResource"].get<bool>();
+	DepthStencilInfo.Owner = AssetOwner::Engine;
+
+	if (AssetManager->HasBuiltInDepthStencilInfoData(DepthStencilInfo.Name))
+	{
+		std::cout << "같은 이름의 BuiltIn DepthStencil이 존재합니다." << "\n";
+		return;
+	}
+
+	AssetManager->AddBuiltInDepthStencilInfoData(DepthStencilInfo.Name, DepthStencilInfo);
+}
+
 //Level 정보를 저장
 void FPAssetLoader::LoadLevelData(std::string LevelName, std::string LevelPath, AssetOwner EngineAsset)
 {

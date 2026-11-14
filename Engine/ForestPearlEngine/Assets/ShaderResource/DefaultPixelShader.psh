@@ -75,8 +75,6 @@ float4 PS_Main(
     
     col = col * DiffuseLit * tex + SpecularLit + EmissiveLit + col * AmbientLit * tex;
     
-    col = col * 0.0000001 + AmbientLit * tex;
-    
     col.a = tex.a;
 
     return col;

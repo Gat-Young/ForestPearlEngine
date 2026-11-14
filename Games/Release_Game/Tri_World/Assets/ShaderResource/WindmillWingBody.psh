@@ -41,7 +41,7 @@ cbuffer ObejctConstBuffer : register(b0)
 ////////////////////////////////////////////////////////////////////////////// 
 
 //계절 변화용 상수 버퍼
-cbuffer SeasonConstBuffer : register(b1)
+cbuffer SeasonConstBuffer : register(b4)
 {
     float4 WinterColor;
     float SeasonCnt;
@@ -84,14 +84,15 @@ float4 PS_Main(
     float4 DiffuseLit;
     float4 SpecularLit;
     float4 EmissiveLit;
+    float4 AmbientLit;
     
-    CalculateLight(posv, N, mView, DiffuseLit, SpecularLit, EmissiveLit);
+    CalculateLight(posv, N, mView, DiffuseLit, SpecularLit, EmissiveLit, AmbientLit);
     
     float4 tex = TexDiff.Sample(Smpler, uv);
     float4 tex2 = TexDiff2.Sample(Smpler, uv);
     float4 SnowMask = TexSnowMask.Sample(Smpler, uv);
     
-    float4 Base = DiffuseLit * col * tex * tex2 + SpecularLit + EmissiveLit;
+    float4 Base = DiffuseLit * col * tex * tex2 + SpecularLit + EmissiveLit + col * AmbientLit * tex * tex2;
     
     //여름
     if (SeasonCnt == 0 || SeasonCnt == 1)

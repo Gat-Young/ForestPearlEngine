@@ -90,6 +90,12 @@
     <ClInclude Include="ADwaf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AUtaTeapot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ASkyLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="UI.cpp">
@@ -144,6 +150,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ADwaf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AUtaTeapot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ASkyLight.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

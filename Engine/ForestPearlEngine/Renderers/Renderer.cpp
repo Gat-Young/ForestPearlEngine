@@ -15,6 +15,7 @@
 #include "../FPCameraList.h"
 #include "../FPGizmoRenderList.h"
 #include "../FPLightRenderList.h"
+#include "../FPSkyLightRenderList.h"
 #include "../FPMeshNormalRenderList.h"
 #include "../FPSceneCaptureList.h"
 
@@ -353,6 +354,15 @@ void Renderer::CreateMeshRenderList()
 		//PixelBuffer에 등록 2번은 Light
 		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.PixelConstBuffer, 2, LightBuffer);
 
+		//SkyLight 처리 (PixelBuffer의 슬롯 1번은 SkyLight)
+		RenderingData::FPSkyLightDataItem SkyLightDataItem{};
+		if (!FPSkyLightList.empty())
+		{
+			SkyLightDataItem = FPSkyLightList[0].SkyLightDataItem;
+		}
+
+		FPConstantBufferRenderDataUtil::AddConstantBuffer(MeshRenderData.PixelConstBuffer, 1, SkyLightDataItem);
+
 		//Material 처리
 		MeshRenderData.VertexShaderPath = *(RenderItemData.VertexShaderPath);
 		MeshRenderData.PixelShaderPath = *(RenderItemData.PixelShaderPath);
@@ -463,6 +473,30 @@ void Renderer::CreateLightRenderList()
 	}
 
 
+}
+
+void Renderer::CreateSkyLightRenderList()
+{
+	FPSkyLightList.clear();
+
+	FPSkyLightRenderList* SkyLightRenderList = static_cast<FPSkyLightRenderList*>(FPGameInstance::Get().GetSkyLightRenderList());
+	std::vector<FPSkyLightRenderItem> RenderList = SkyLightRenderList->GetRenderList();
+
+	for (FPSkyLightRenderItem SkyLightItem : RenderList)
+	{
+		//활성 상태가 아니라면 넘어감
+		if (!*(SkyLightItem.Active))
+		{
+			continue;
+		}
+
+		RenderingData::FPSkyLightRenderItem SkyLightRenderingData;
+		SkyLightRenderingData.SkyLightDataItem.LightColor = *(SkyLightItem.LightColor);
+		SkyLightRenderingData.SkyLightDataItem.LightIntensity = *(SkyLightItem.LightIntensity);
+		SkyLightRenderingData.CubeMap = *(SkyLightItem.CubeMap);
+
+		FPSkyLightList.push_back(SkyLightRenderingData);
+	}
 }
 
 void Renderer::CreateNormalRenderList()
@@ -720,6 +754,15 @@ void Renderer::SceneCaptureRenderPass()
 			}
 			//Sampler Set End.
 
+
+			//SkyLight 환경맵 텍스처/샘플러 고정 바인딩 (EnvTex : t127, EnvSampler : s15)
+			void* EnvTextureData = nullptr;
+			if (!FPSkyLightList.empty() && AssetManager->HasTextureData(FPSkyLightList[0].CubeMap))
+			{
+				EnvTextureData = AssetManager->GetTextureData(FPSkyLightList[0].CubeMap).ShaderResourceView;
+			}
+			Device.PSSetShaderResources(127, 1, EnvTextureData);
+			Device.PSSetSamplers(15, 1, FPSamplerType::Filter_Tri_Linear_Sampler_CLAMP);
 			FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
 			FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.MeshPath);
 			FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);
@@ -916,6 +959,15 @@ void Renderer::MeshRenderPass()
 			}
 
 			//Sampler 셋팅 End.
+
+			//SkyLight 환경맵 텍스처/샘플러 고정 바인딩 (EnvTex : t127, EnvSampler : s15)
+			void* EnvTextureData = nullptr;
+			if (!FPSkyLightList.empty() && AssetManager->HasTextureData(FPSkyLightList[0].CubeMap))
+			{
+				EnvTextureData = AssetManager->GetTextureData(FPSkyLightList[0].CubeMap).ShaderResourceView;
+			}
+			Device.PSSetShaderResources(127, 1, EnvTextureData);
+			Device.PSSetSamplers(15, 1, FPSamplerType::Filter_Tri_Linear_Sampler_CLAMP);
 			FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
 			FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.MeshPath);
 			FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);

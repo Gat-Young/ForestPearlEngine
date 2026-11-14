@@ -35,11 +35,6 @@ cbuffer ObejctConstBuffer : register(b0)
     
 };
 
-cbuffer ViewPortConstBuffer : register(b1)
-{
-
-};
-
 //VS 출력 구조체
 struct VSOutput
 {
@@ -50,8 +45,6 @@ struct VSOutput
     float4 T    : TEXCOORD2;
     float4 N    : TEXCOORD3;
 };
- 
- 
 
 ////////////////////////////////////////////////////////////////////////////// 
 //

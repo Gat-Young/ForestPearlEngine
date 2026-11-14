@@ -682,6 +682,16 @@ struct FPLightRenderItem
 	FPMatrix* Scale = nullptr;
 };
 
+struct FPSkyLightRenderItem
+{
+	bool* Active = nullptr;
+
+	float* LightIntensity = nullptr;
+	FPVector4* LightColor = nullptr;
+
+	std::string* CubeMap = nullptr;
+};
+
 namespace RenderingData
 {
 
@@ -749,6 +759,19 @@ namespace RenderingData
 		int y;
 		FPVector4 color;
 		std::basic_string<TCHAR> msg;
+	};
+
+	struct alignas(16) FPSkyLightDataItem
+	{
+		FPVector4 LightColor;
+		float LightIntensity;
+	};
+
+	struct FPSkyLightRenderItem
+	{
+		FPSkyLightDataItem SkyLightDataItem;
+
+		std::string CubeMap;
 	};
 
 	constexpr unsigned int Light_MAX = 64;

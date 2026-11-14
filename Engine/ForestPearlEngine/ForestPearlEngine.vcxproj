@@ -149,6 +149,7 @@
     <ClInclude Include="FPLightComponent.h" />
     <ClInclude Include="FPLightComponentBase.h" />
     <ClInclude Include="FPLightRenderList.h" />
+    <ClInclude Include="FPSkyLightRenderList.h" />
     <ClInclude Include="FPLocalLightComponent.h" />
     <ClInclude Include="FPMaterial.h" />
     <ClInclude Include="FPMaterialInterface.h" />
@@ -224,6 +225,7 @@
     <ClCompile Include="FPLightComponent.cpp" />
     <ClCompile Include="FPLightComponentBase.cpp" />
     <ClCompile Include="FPLightRenderList.cpp" />
+    <ClCompile Include="FPSkyLightRenderList.cpp" />
     <ClCompile Include="FPLocalLightComponent.cpp" />
     <ClCompile Include="FPMaterial.cpp" />
     <ClCompile Include="FPMovementCompoent.cpp" />
@@ -237,6 +239,7 @@
     <ClCompile Include="FPSceneComponent.cpp" />
     <ClCompile Include="FPGameProjectClassRegistry.cpp" />
     <ClCompile Include="FPGameTimer.cpp" />
+    <ClCompile Include="FPSkyLightComponent.cpp" />
     <ClCompile Include="FPSpringArmComponent.cpp" />
     <ClCompile Include="FPStaticMesh.cpp" />
     <ClCompile Include="FPStaticMeshComponent.cpp" />
@@ -292,11 +295,6 @@
     <None Include="Assets\Texture\Checker_bmp.json" />
     <None Include="Assets\Texture\Checker_dds.json" />
     <None Include="Assets\Texture\Default_Texture512.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Games\Release_Game\Tri_World\Tri_World.vcxproj">
-      <Project>{874c49a3-fd56-4137-9cfa-a3bd1b70917e}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\BuiltIn\ShaderResource\DefaultQuad2DPixelShader.psh">
@@ -445,6 +443,11 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
       <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Games\Release_Game\Tri_World\Tri_World.vcxproj">
+      <Project>{874c49a3-fd56-4137-9cfa-a3bd1b70917e}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

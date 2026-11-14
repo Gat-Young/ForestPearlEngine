@@ -111,6 +111,7 @@ void ForestPearlEngine::GameLoop()
         // Game 로직이 모두 종료된 후 Render 요소들을 각 Queue에 넣어 Render에 보내줌
         Render->CreateCamList();
         Render->CreateLightRenderList();
+        Render->CreateSkyLightRenderList();
         Render->CreateMeshRenderList();
         Render->CreateGizmoRenderList();
         Render->CreateNormalRenderList();

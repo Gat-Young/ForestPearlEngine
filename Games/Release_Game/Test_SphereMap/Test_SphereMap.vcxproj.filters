@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{a0c4e4f0-1111-4a9c-9a1a-111111111111}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{a0c4e4f0-2222-4a9c-9a1a-222222222222}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{a0c4e4f0-3333-4a9c-9a1a-333333333333}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ADirectionalLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ASkyLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AUtaTeapot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameMode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ADirectionalLight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ASkyLight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AUtaTeapot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameMode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameProjectLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\GameSetting\GameSetting.json">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\Level\Test_SphereMap.json">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\Material\UtaTeapot\Default_UtaTeapot_Up_StaticMesh_MaterialInstance.json">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\Material\UtaTeapot\default_UtaTeapot_Bottom_StaticMesh_MaterialInstance.json">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\UtaTeapot\UtaTeapot_Up_StaticMesh.json">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\StaticMesh\UtaTeapot\UtaTeapot_Bottom_StaticMesh.json">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\Texture\UtaTeapot\Default_baseColor_png.json">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\Texture\SphereMap\Cross_Roads_Probe_bmp.json">
+      <Filter>Assets</Filter>
+    </None>
+  </ItemGroup>
+</Project>

@@ -20,6 +20,29 @@
 //광원 최대 개수
 #define     Light_MAX           64
 
+//텍스처 객체 변수 : 엔진에서 공급됨, 레지스터 직접 지정. (기본값은 t0)
+Texture2D EnvTex : register(t127);
+
+//텍스처 셈플러 (직접지정)  기본값은 s0
+SamplerState EnvSampler : register(s15);
+
+cbuffer SkyLightConstantBuffer : register(b1)
+{
+    float4 LightColor;
+    float LightIntensity;
+};
+
+
+    //환경광 텍스처 좌표 계산
+static const float4x4 MatrixEnv =
+{
+    0.5f, 0.0f, 0.0f, 0.5f,
+        0.0f, -0.5f, 0.0f, 0.5f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+};
+
+
 struct LIGHT
 {
     uint LightType;
@@ -67,12 +90,14 @@ void DirLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout floa
 void PointLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout float4 OutDiffuse, inout float4 OutSpecular);
 void SpotLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout float4 OutDiffuse, inout float4 OutSpecular);
 void RectLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout float4 OutDiffuse, inout float4 OutSpecular);
+void EnvLight(float4 nrm, inout float4 OutAmbient);
 
-void CalculateLight(float4 posv, float4 nrm, matrix mView, out float4 OutDiffuse, out float4 OutSpecular, out float4 OutEmissive)
+void CalculateLight(float4 posv, float4 nrm, matrix mView, out float4 OutDiffuse, out float4 OutSpecular, out float4 OutEmissive, out float4 OutAmbient)
 {
     OutDiffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
     OutSpecular = float4(0.0f, 0.0f, 0.0f, 0.0f);
     OutEmissive = (Material.Emissive * Material.BaseColor);
+    OutAmbient = float4(0.0f, 0.0f, 0.0f, 0.0f);
     
     for (uint i = 0; i < min(LightCnt, (uint) Light_MAX); ++i)
     {
@@ -95,6 +120,9 @@ void CalculateLight(float4 posv, float4 nrm, matrix mView, out float4 OutDiffuse
                 break;
         }
     }
+    
+    EnvLight(nrm, OutAmbient);
+
 }
 
 
@@ -184,5 +212,19 @@ void RectLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout flo
     float4 Col = { 0.0f, 0.0f, 0.0f, 0.0f };
     OutDiffuse = OutDiffuse + Col;
     OutSpecular = OutSpecular + Col;
+}
+
+void EnvLight(float4 nrm, inout float4 OutAmbient)
+{
+    float4 Normal = float4(nrm.xyz, 0.0f);
+    float4 N = Normal;
+    N.w = 0;
+    N = normalize(N);
+   
+    float2 EnvUV = mul(MatrixEnv, float4(N.xyz, 1.0f)).xy;
+
+    
+    
+    OutAmbient = EnvTex.Sample(EnvSampler, EnvUV) * LightColor * LightIntensity * Material.BaseColor;
 }
 #endif

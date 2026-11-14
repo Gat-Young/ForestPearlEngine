@@ -15,6 +15,7 @@ namespace RenderingData
 	struct GizmoRenderItemCompare;
 	struct UIRenderItemCompare;
 	struct LightRenderItem;
+	struct FPSkyLightRenderItem;
 }
 
 class Renderer
@@ -67,6 +68,9 @@ class Renderer
 		//Light Render Item
 		std::vector<RenderingData::LightRenderItem> LightRenderList;
 
+		//SkyLight Render Item
+		std::vector<RenderingData::FPSkyLightRenderItem> FPSkyLightList;
+
 		//SceneCapture Item
 		std::vector<RenderingData::SceneCaptureItem> SceneCaptureList;
 
@@ -87,6 +91,7 @@ class Renderer
 		void CreateGizmoRenderList();
 		void CreateUIRenderList();
 		void CreateLightRenderList();
+		void CreateSkyLightRenderList();
 		void CreateNormalRenderList();
 		void CreateSceneCaptureList();
 

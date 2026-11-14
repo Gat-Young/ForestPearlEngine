@@ -315,6 +315,9 @@
     <ClInclude Include="FPLightRenderList.h">
       <Filter>FPGameInstance\RenderList\Header</Filter>
     </ClInclude>
+    <ClInclude Include="FPSkyLightRenderList.h">
+      <Filter>FPGameInstance\RenderList\Header</Filter>
+    </ClInclude>
     <ClInclude Include="FPMeshRenderList.h">
       <Filter>FPGameInstance\RenderList\Header</Filter>
     </ClInclude>
@@ -485,6 +488,9 @@
     <ClCompile Include="FPLightRenderList.cpp">
       <Filter>FPGameInstance\RenderList\Source</Filter>
     </ClCompile>
+    <ClCompile Include="FPSkyLightRenderList.cpp">
+      <Filter>FPGameInstance\RenderList\Source</Filter>
+    </ClCompile>
     <ClCompile Include="FPMeshRenderList.cpp">
       <Filter>FPGameInstance\RenderList\Source</Filter>
     </ClCompile>
@@ -529,6 +535,9 @@
     </ClCompile>
     <ClCompile Include="FPPlanarReflectionComponent.cpp">
       <Filter>Component\SceneCapture</Filter>
+    </ClCompile>
+    <ClCompile Include="FPSkyLightComponent.cpp">
+      <Filter>Component\Light</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

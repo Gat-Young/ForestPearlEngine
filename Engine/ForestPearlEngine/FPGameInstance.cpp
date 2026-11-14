@@ -12,6 +12,7 @@
 #include "FPViewPortClient.h"
 #include "FPGizmoRenderList.h"
 #include "FPLightRenderList.h"
+#include "FPSkyLightRenderList.h"
 #include "FPMeshNormalRenderList.h"
 #include "FPSceneCaptureList.h"
 
@@ -28,6 +29,7 @@ FPGameInstance::FPGameInstance()
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::TextRenderList)] = new FPTextRenderList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::GizmoRenderList)] = new FPGizmoRenderList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::LightRenderList)] = new FPLightRenderList();
+	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::SkyLightRenderList)] = new FPSkyLightRenderList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::NormalRenderList)] = new FPMeshNormalRenderList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::CameraList)] = new FPCameraList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::GameProjectSetting)] = new FPGameProjectSetting();
@@ -147,6 +149,11 @@ FPGameInstanceSubSystem* FPGameInstance::GetGizmoRenderList()
 FPGameInstanceSubSystem* FPGameInstance::GetLightRenderList()
 {
 	return GetInstanceSubSystem(GameInstanceSubSystemName::LightRenderList);
+}
+
+FPGameInstanceSubSystem* FPGameInstance::GetSkyLightRenderList()
+{
+	return GetInstanceSubSystem(GameInstanceSubSystemName::SkyLightRenderList);
 }
 
 FPGameInstanceSubSystem* FPGameInstance::GetNormalRenderList()

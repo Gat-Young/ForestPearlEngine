@@ -33,12 +33,6 @@ cbuffer ObejctConstBuffer : register(b0)
     
 };
 
-cbuffer ViewPortConstBuffer : register(b1)
-{
-
-};
-
-
 cbuffer NormalDebugConstBuffer : register(b2)
 {
     matrix mNormal;

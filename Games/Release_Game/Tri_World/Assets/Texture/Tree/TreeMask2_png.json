@@ -1,5 +1,6 @@
 {
   "Name": "TreeMask2_png",
   "Path": "Tree/mask2.png",
-  "Type": "WIC"
+  "Type": "WIC",
+  "CubeMap": false
 }

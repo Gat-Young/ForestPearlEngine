@@ -211,6 +211,7 @@ struct FPTextureInfo
 	std::string Name;
 	std::string Path;
 	std::string Type;
+	bool CubeMap = false;			//CubeMap Texture 생성 여부
 	AssetOwner Owner;
 };
 
@@ -388,6 +389,8 @@ enum FPTextureType
 
 	RenderTargetTexture2D,
 	DepthStencilTexture2D,
+
+	CubeMap,
 
 	FPTextureType_MAX_
 };

@@ -300,7 +300,7 @@ void FPAssetLoader::LoadBuiltInMaterial(std::string BuiltInMaterialPath)
 			Entry.Name = T.at("Asset").get<std::string>();
 
 			const std::string TextureType = T.at("TextureType").get<std::string>();
-			if (TextureType != "Texture2D" && TextureType != "Texture2DArray" && TextureType != "RenderTargetTexture2D" && TextureType != "DepthStencilTexture2D") { std::cout << "Texture2D, Texture2DArray외의 Type이 사용됨"; }
+			if (TextureType != "Texture2D" && TextureType != "Texture2DArray" && TextureType != "RenderTargetTexture2D" && TextureType != "DepthStencilTexture2D" && TextureType != "CubeMap") { std::cout << "Texture2D, Texture2DArray, CubeMap외의 Type이 사용됨"; }
 
 			Entry.TextureType = StringToTextureType(TextureType);
 
@@ -815,6 +815,7 @@ void FPAssetLoader::LoadTexture(std::string TexturePath, AssetOwner EngineAsset)
 	TextureInfo.Name = JsonTextureData["Name"].get<std::string>();
 	TextureInfo.Path = JsonTextureData["Path"].get<std::string>();
 	TextureInfo.Type = JsonTextureData["Type"].get<std::string>();
+	TextureInfo.CubeMap = JsonTextureData.value("CubeMap", false);
 	TextureInfo.Owner = EngineAsset;
 
 	if (AssetManager->HasTextureData(TextureInfo.Name))
@@ -976,7 +977,7 @@ void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsse
 			Entry.Name = T.at("Asset").get<std::string>();
 
 			const std::string TextureType = T.at("TextureType").get<std::string>();
-			if (TextureType != "Texture2D" && TextureType != "Texture2DArray" && TextureType != "RenderTargetTexture2D" && TextureType != "DepthStencilTexture2D") { std::cout << "Texture2D, Texture2DArray외의 Type이 사용됨"; }
+			if (TextureType != "Texture2D" && TextureType != "Texture2DArray" && TextureType != "RenderTargetTexture2D" && TextureType != "DepthStencilTexture2D" && TextureType != "CubeMap") { std::cout << "Texture2D, Texture2DArray, CubeMap외의 Type이 사용됨"; }
 
 			Entry.TextureType = StringToTextureType(TextureType);
 

@@ -1,5 +1,6 @@
 {
     "Name": "DwarfHead_dds",
     "Path": "Dwaf/DwarfHead.dds",
-    "Type": "DDS"
+    "Type": "DDS",
+    "CubeMap": false
 }

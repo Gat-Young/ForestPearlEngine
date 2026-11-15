@@ -1,5 +1,6 @@
 {
   "Name" :  "Checker_dds",
   "Path": "checker.dds",
-  "Type": "DDS"
+  "Type": "DDS",
+  "CubeMap": false
 }

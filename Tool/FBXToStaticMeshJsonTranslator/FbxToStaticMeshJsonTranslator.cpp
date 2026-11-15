@@ -410,6 +410,8 @@ void FbxToStaticMeshJsonTranslator::ExportMaterialTextures(const ufbx_material& 
 			TextureFileJson["Name"] = TextureName;
 			TextureFileJson["Path"] = ModelName.empty() ? TextureFileName : (ModelName + "/" + TextureFileName);
 			TextureFileJson["Type"] = DetermineTextureType(ExtensionNoDot);
+			// FBX 머티리얼 텍스처는 큐브맵을 구분할 수 없어 항상 false로 내보낸다.
+			TextureFileJson["CubeMap"] = false;
 
 			const std::filesystem::path OutputPath = JsonOutputDirectory / "Texture" / (TextureName + ".json");
 			SaveJsonToFile(TextureFileJson, OutputPath);

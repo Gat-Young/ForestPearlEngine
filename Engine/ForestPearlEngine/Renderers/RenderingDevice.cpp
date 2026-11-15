@@ -1985,18 +1985,27 @@ HRESULT RenderingDevice::CreateWICTextureFromFile(std::string& FilePath, void** 
 	std::wstring TexturePath(FilePath.begin(), FilePath.end());
 	//hr = DirectX::CreateWICTextureFromFile(DevicePointer, TexturePath.c_str(), nullptr, &TextureRV);
 
-	hr = DirectX::CreateWICTextureFromFileEx(DevicePointer, DeviceContextPointer, TexturePath.c_str(), 0, 				//Mip-map 텍스처 생성.
-		D3D11_USAGE_DEFAULT,
-		D3D11_BIND_SHADER_RESOURCE,
-		0,
-		D3D11_RESOURCE_MISC_GENERATE_MIPS,		//밉멥 생성 플래그.★
+	size_t Maxsize = 0;
+	D3D11_USAGE Usage = D3D11_USAGE_DEFAULT;
+	unsigned int BindFlag = D3D11_BIND_SHADER_RESOURCE;	// 밉맵이 없고 압축 포맷이 아닌 경우에만 DirectXTK가 자동으로 RenderTarget/GenerateMips를 붙여줌
+	unsigned int CpuAccessFlag = 0;
+	unsigned int MiscFlag = 0;
+
+	hr = DirectX::CreateWICTextureFromFileEx(DevicePointer, DeviceContextPointer, TexturePath.c_str(), 
+		Maxsize, 								//Mip-map 텍스처 생성.
+		Usage,
+		BindFlag,
+		CpuAccessFlag,
+		MiscFlag,		//밉멥 생성 플래그.★
 		WIC_LOADER_DEFAULT,
 		nullptr, &TextureRV);
+
 	if (FAILED(hr))
 	{
 		std::cout << FilePath << " 텍스처 로드 실패" << "\n";
 		return hr;
 	}
+
 	*TextureResourceView = TextureRV;
 	return hr;
 }
@@ -2010,7 +2019,22 @@ HRESULT RenderingDevice::CreateDDSTextureFromFile(std::string& FilePath, void** 
 	ID3D11ShaderResourceView* TextureRV = nullptr;
 
 	std::wstring TexturePath(FilePath.begin(), FilePath.end());
-	hr = DirectX::CreateDDSTextureFromFile(DevicePointer, DeviceContextPointer, TexturePath.c_str(), nullptr, &TextureRV);
+
+	size_t Maxsize = 0;
+	D3D11_USAGE Usage = D3D11_USAGE_DEFAULT;
+	unsigned int BindFlag = D3D11_BIND_SHADER_RESOURCE;	// 밉맵이 없고 압축 포맷이 아닌 경우에만 DirectXTK가 자동으로 RenderTarget/GenerateMips를 붙여줌
+	unsigned int CpuAccessFlag = 0;
+	unsigned int MiscFlag = 0;
+
+	hr = DirectX::CreateDDSTextureFromFileEx(DevicePointer, DeviceContextPointer, TexturePath.c_str(), 
+											Maxsize,
+											Usage,
+											BindFlag,
+											CpuAccessFlag,
+											MiscFlag,
+											DDS_LOADER_DEFAULT,
+											nullptr,
+											&TextureRV);
 
 
 	if (FAILED(hr))
@@ -2018,6 +2042,78 @@ HRESULT RenderingDevice::CreateDDSTextureFromFile(std::string& FilePath, void** 
 		std::cout << FilePath << " 텍스처 로드 실패" << "\n";
 		return hr;
 	}
+	*TextureResourceView = TextureRV;
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateWICCubeTextureFromFile(std::string& FilePath, void** TextureResourceView)
+{
+	HRESULT hr = S_OK;
+
+	ID3D11Device* DevicePointer = Device.Get();
+	ID3D11DeviceContext* DeviceContextPointer = DeviceContext.Get();
+	ID3D11ShaderResourceView* TextureRV = nullptr;
+
+	std::wstring TexturePath(FilePath.begin(), FilePath.end());
+
+	size_t Maxsize = 0;
+	D3D11_USAGE Usage = D3D11_USAGE_DEFAULT;
+	unsigned int BindFlag = D3D11_BIND_SHADER_RESOURCE;	// 밉맵이 없고 압축 포맷이 아닌 경우에만 DirectXTK가 자동으로 RenderTarget/GenerateMips를 붙여줌
+	unsigned int CpuAccessFlag = 0;
+	unsigned int MiscFlag = D3D11_RESOURCE_MISC_TEXTURECUBE;
+
+
+	hr = DirectX::CreateWICTextureFromFileEx(DevicePointer, DeviceContextPointer, TexturePath.c_str(),
+		Maxsize, 								//Mip-map 텍스처 생성.
+		Usage,
+		BindFlag,
+		CpuAccessFlag,
+		MiscFlag,		//밉멥 생성 플래그.★
+		WIC_LOADER_DEFAULT,
+		nullptr, &TextureRV);
+
+	if (FAILED(hr))
+	{
+		std::cout << FilePath << " 큐브맵 텍스처 로드 실패" << "\n";
+		return hr;
+	}
+
+	*TextureResourceView = TextureRV;
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateDDSCubeTextureFromFile(std::string& FilePath, void** TextureResourceView)
+{
+	HRESULT hr = S_OK;
+
+	ID3D11Device* DevicePointer = Device.Get();
+	ID3D11DeviceContext* DeviceContextPointer = DeviceContext.Get();
+	ID3D11ShaderResourceView* TextureRV = nullptr;
+
+	std::wstring TexturePath(FilePath.begin(), FilePath.end());
+
+	size_t Maxsize = 0;
+	D3D11_USAGE Usage = D3D11_USAGE_DEFAULT;
+	unsigned int BindFlag = D3D11_BIND_SHADER_RESOURCE;	// 밉맵이 없고 압축 포맷이 아닌 경우에만 DirectXTK가 자동으로 RenderTarget/GenerateMips를 붙여줌
+	unsigned int CpuAccessFlag = 0;
+	unsigned int MiscFlag = D3D11_RESOURCE_MISC_TEXTURECUBE;
+
+
+	hr = DirectX::CreateDDSTextureFromFileEx(DevicePointer, DeviceContextPointer, TexturePath.c_str(),
+												Maxsize, 								//Mip-map 텍스처 생성.
+												Usage,
+												BindFlag,
+												CpuAccessFlag,
+												MiscFlag,		//밉멥 생성 플래그.★
+												DDS_LOADER_DEFAULT,
+												nullptr, &TextureRV);
+
+	if (FAILED(hr))
+	{
+		std::cout << FilePath << " 큐브맵 텍스처 로드 실패" << "\n";
+		return hr;
+	}
+
 	*TextureResourceView = TextureRV;
 	return hr;
 }

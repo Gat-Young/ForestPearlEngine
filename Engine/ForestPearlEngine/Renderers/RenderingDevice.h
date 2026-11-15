@@ -207,6 +207,10 @@ class RenderingDevice
 		HRESULT CreateWICTextureFromFile(std::string& FilePath, void** TextureResourceView);
 		HRESULT CreateDDSTextureFromFile(std::string& FilePath, void** TextureResourceView);
 
+		//CubeMap Texture¿ë
+		HRESULT CreateWICCubeTextureFromFile(std::string& FilePath, void** TextureResourceView);
+		HRESULT CreateDDSCubeTextureFromFile(std::string& FilePath, void** TextureResourceView);
+
 		HRESULT GetTextureDesc(void* TextureResourceView, void** Desc);
 
 		//TextureArray¿ë

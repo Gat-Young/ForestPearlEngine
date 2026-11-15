@@ -1,5 +1,6 @@
 {
     "Name": "Pack_dds",
     "Path": "Dwaf/Pack.dds",
-    "Type": "DDS"
+    "Type": "DDS",
+    "CubeMap": false
 }

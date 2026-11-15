@@ -1,5 +1,6 @@
 {
   "Name" : "Checker_bmp",
   "Path": "checker.bmp",
-  "Type": "WIC"
+  "Type": "WIC",
+  "CubeMap": false
 }

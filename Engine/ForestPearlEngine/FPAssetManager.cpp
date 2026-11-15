@@ -1280,12 +1280,26 @@ void FPAssetManager::MakeTexture(FPTextureInfo& TextureInfo)
 
 	if (TextureInfo.Type == "WIC")
 	{
-		RenderingDevice::GetRenderingDevice().CreateWICTextureFromFile(TextureResourcePath, &Data.ShaderResourceView);
+		if (TextureInfo.CubeMap)
+		{
+			RenderingDevice::GetRenderingDevice().CreateWICCubeTextureFromFile(TextureResourcePath, &Data.ShaderResourceView);
+		}
+		else
+		{
+			RenderingDevice::GetRenderingDevice().CreateWICTextureFromFile(TextureResourcePath, &Data.ShaderResourceView);
+		}
 	}
 
 	if (TextureInfo.Type == "DDS")
 	{
-		RenderingDevice::GetRenderingDevice().CreateDDSTextureFromFile(TextureResourcePath, &Data.ShaderResourceView);
+		if (TextureInfo.CubeMap)
+		{
+			RenderingDevice::GetRenderingDevice().CreateDDSCubeTextureFromFile(TextureResourcePath, &Data.ShaderResourceView);
+		}
+		else
+		{
+			RenderingDevice::GetRenderingDevice().CreateDDSTextureFromFile(TextureResourcePath, &Data.ShaderResourceView);
+		}
 	}
 
 	RenderingDevice::GetRenderingDevice().GetTextureDesc(Data.ShaderResourceView, &Data.TextureDESC);
@@ -1815,6 +1829,7 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 		if (T.TextureType == Texture2DArray) AssetFound = HasTextureArrayData(T.Name);
 		if (T.TextureType == RenderTargetTexture2D) AssetFound = HasRenderTargetData(T.Name);
 		if (T.TextureType == DepthStencilTexture2D) AssetFound = HastDepthStencilData(T.Name);
+		if (T.TextureType == CubeMap) AssetFound = HasTextureData(T.Name);
 		if (!AssetFound)
 		{
 			std::cout << "Material texture asset not loaded: " << T.Name << "\n";

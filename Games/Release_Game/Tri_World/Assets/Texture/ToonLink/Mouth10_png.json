@@ -1,5 +1,6 @@
 {
     "Name": "Mouth10_png",
     "Path": "ToonLink/mouth10.png",
-    "Type": "WIC"
+    "Type": "WIC",
+    "CubeMap": false
 }

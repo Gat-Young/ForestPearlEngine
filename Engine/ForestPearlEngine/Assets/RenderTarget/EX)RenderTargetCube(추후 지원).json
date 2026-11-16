@@ -1,0 +1,10 @@
+{
+  "Name": "RT_Cube",
+  "Type": "Cube",
+  "SizeX": 512,
+  "SizeY": 512,
+  "RenderTargetFormat": "RGBA16F",
+  "ClearColor": [ 0.0, 0.0, 0.0, 1.0 ],
+  "MSAA": 1,
+  "MipMap": true
+}

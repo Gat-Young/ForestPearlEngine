@@ -8,7 +8,6 @@
 #include "EngineLoader.h"
 #include "Systems/InputSystem.h"
 #include "FPGameProjectSetting.h"
-#include "FPViewPortClient.h"
 #include "FPAssetManager.h"
 #include <iostream>
 #include "MCLOG.h"
@@ -41,9 +40,6 @@ bool ForestPearlEngine::PreInitialize()
     GameProjectSetting->SetHWND(Hwnd);
     GameProjectSetting->CalculateDisplaySize();
 
-    FPViewPortClient* ViewPort = static_cast<FPViewPortClient*>(FPGameInstance::Get().GetViewPortClient());
-    ViewPort->CreateViewPort();
-
     if (Hwnd == nullptr)
     {
         //std::cout << "윈도우 생성 실패" << std::endl;
@@ -58,6 +54,9 @@ bool ForestPearlEngine::PreInitialize()
     RenderDevice = &RenderingDevice::GetRenderingDevice();
     RenderDevice->SetMSAA(GameProjectSetting->GetMSAA());
     RenderDevice->SetAF(GameProjectSetting->GetAF());
+    RenderDevice->SetVSync(GameProjectSetting->GetVSync());
+    RenderDevice->SetHz(GameProjectSetting->GetHz());
+    RenderDevice->SetSwapChainRect(GameProjectSetting->GetDisplayWidth(), GameProjectSetting->GetDeisplayHeight());
 
     //Render 등록
     Render = new Renderer(*RenderDevice);
@@ -73,6 +72,7 @@ bool ForestPearlEngine::PreInitialize()
 
     //등록된 모든 Asset Data 객체 만들기
     FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
     AssetManager->AllAssetDataCreate();
 
     return true;
@@ -111,17 +111,20 @@ void ForestPearlEngine::GameLoop()
         // Game 로직이 모두 종료된 후 Render 요소들을 각 Queue에 넣어 Render에 보내줌
         Render->CreateCamList();
         Render->CreateLightRenderList();
+        Render->CreateSkyLightRenderList();
         Render->CreateMeshRenderList();
         Render->CreateGizmoRenderList();
         Render->CreateNormalRenderList();
         Render->CreateUIRenderList();
+        Render->CreateSceneCaptureList();
 
         ///////////////////
         // Rendering
         // Render Pass의 개념으로 동작
         // 단, Pass 별 객체를 만들기 보다는 Render Class에서 각 Pass의 함수를 만들어 호출 하는 방식으로 동작
         // Clear -> RenderPass 1 -> RenderPass 2 -> RenderPass 3 -> RenderPass N -> Preset 
-        Render->ClearBackBuffer();
+        Render->ClearDepthStencil();
+        Render->SceneCaptureRenderPass();                   //Object를 그리기 전 반드시 먼저 수행
         Render->MeshRenderPass();
         Render->GizmoRenderPass();
         Render->NormalRenderPass();
@@ -231,9 +234,6 @@ LRESULT CALLBACK ForestPearlEngine::WndProc(HWND hWnd, UINT message, WPARAM wPar
         GameProjectSetting->SetWinWidth(Width);
         GameProjectSetting->SetWinHeight(Height);
         GameProjectSetting->CalculateDisplaySize();
-
-        FPViewPortClient* ViewPortClient = static_cast<FPViewPortClient*>(FPGameInstance::Get().GetViewPortClient());
-        ViewPortClient->CalculateAllViewPortSize();
 
         if (Engine != nullptr && Engine->Render != nullptr)
         {

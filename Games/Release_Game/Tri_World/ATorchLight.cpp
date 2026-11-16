@@ -24,6 +24,7 @@ ATorchLight::ATorchLight()
 
 	LightComponent->SetRange(100.0f);
 
+	LightProbe->SetPriority(-1);
 	LightComponent->SetActive(isActive);
 	LightProbe->SetActive(isActive);
 }

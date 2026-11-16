@@ -149,13 +149,19 @@
     <ClInclude Include="FPLightComponent.h" />
     <ClInclude Include="FPLightComponentBase.h" />
     <ClInclude Include="FPLightRenderList.h" />
+    <ClInclude Include="FPSkyLightRenderList.h" />
     <ClInclude Include="FPLocalLightComponent.h" />
     <ClInclude Include="FPMaterial.h" />
     <ClInclude Include="FPMaterialInterface.h" />
     <ClInclude Include="FPMovementComponent.h" />
+    <ClInclude Include="FPPlanarReflectionComponent.h" />
     <ClInclude Include="FPPointLightComponent.h" />
     <ClInclude Include="FPPrimitiveComponent.h" />
     <ClInclude Include="FPRectLightComponent.h" />
+    <ClInclude Include="FPSceneCaptureComponent.h" />
+    <ClInclude Include="FPSceneCaptureComponent2D.h" />
+    <ClInclude Include="FPSceneCaptureComponentCube.h" />
+    <ClInclude Include="FPSceneCaptureList.h" />
     <ClInclude Include="FPSceneComponent.h" />
     <ClInclude Include="FPSkyLightComponent.h" />
     <ClInclude Include="FPSpotLightComponent.h" />
@@ -219,14 +225,21 @@
     <ClCompile Include="FPLightComponent.cpp" />
     <ClCompile Include="FPLightComponentBase.cpp" />
     <ClCompile Include="FPLightRenderList.cpp" />
+    <ClCompile Include="FPSkyLightRenderList.cpp" />
     <ClCompile Include="FPLocalLightComponent.cpp" />
     <ClCompile Include="FPMaterial.cpp" />
     <ClCompile Include="FPMovementCompoent.cpp" />
     <ClCompile Include="FPMovementComponent.cpp" />
+    <ClCompile Include="FPPlanarReflectionComponent.cpp" />
     <ClCompile Include="FPPointLightComponent.cpp" />
+    <ClCompile Include="FPSceneCaptureComponent.cpp" />
+    <ClCompile Include="FPSceneCaptureComponent2D.cpp" />
+    <ClCompile Include="FPSceneCaptureComponentCube.cpp" />
+    <ClCompile Include="FPSceneCaptureList.cpp" />
     <ClCompile Include="FPSceneComponent.cpp" />
     <ClCompile Include="FPGameProjectClassRegistry.cpp" />
     <ClCompile Include="FPGameTimer.cpp" />
+    <ClCompile Include="FPSkyLightComponent.cpp" />
     <ClCompile Include="FPSpringArmComponent.cpp" />
     <ClCompile Include="FPStaticMesh.cpp" />
     <ClCompile Include="FPStaticMeshComponent.cpp" />
@@ -284,6 +297,40 @@
     <None Include="Assets\Texture\Default_Texture512.json" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Assets\BuiltIn\ShaderResource\DefaultQuad2DPixelShader.psh">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\</AdditionalIncludeDirectories>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS_Main</EntryPointName>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\</AdditionalIncludeDirectories>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS_Main</EntryPointName>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Assets\BuiltIn\ShaderResource\DefaultQuad2DVertexShader.vsh">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\</AdditionalIncludeDirectories>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS_Main</EntryPointName>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\</AdditionalIncludeDirectories>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VS_Main</EntryPointName>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).vso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).vso</ObjectFileOutput>
+    </FxCompile>
     <FxCompile Include="Assets\ShaderResource\DefaultGizmoPixelShader.psh">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PS_Main</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -398,8 +445,8 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Games\Release_Game\KM_Cannon\KM_Cannon.vcxproj">
-      <Project>{b32b42ad-999e-48fd-ab2e-beedb1963fdd}</Project>
+    <ProjectReference Include="..\..\Games\Release_Game\Tri_World\Tri_World.vcxproj">
+      <Project>{874c49a3-fd56-4137-9cfa-a3bd1b70917e}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

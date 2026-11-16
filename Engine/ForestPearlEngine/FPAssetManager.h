@@ -16,6 +16,18 @@ private:
 	//무조건 1개만 보유
 	FPGameSettingData* GameSettingData = nullptr;
 
+	//Built-in Engine Asset
+	// 엔진에서 기능상 필요한 Asset, 실제 GPU데이터는 ResourceList를 통해 동일하게 관리
+	// ex) Quad2D_Mesh, 화면 해상도를 따라가는 RenderTarget, DepthStencil 등
+	std::unordered_map<std::string, FPMeshData> LoadedBuiltInMesh;
+	std::unordered_map<std::string, FPMaterialData> LoadedBuiltinMaterialData;
+	std::unordered_map<std::string, FPVertexShaderData> LoadedBuiltInVertexShaderData;
+	std::unordered_map<std::string, FPPixelShaderData> LoadedBuiltInPixelShaderData;
+
+	std::unordered_map<std::string, FPRenderTargetTexture2DInfo> LoadedBuiltInRenderTargetTexture2DData;
+	std::unordered_map<std::string, FPDepthStencilInfo> LoadedBuiltInDepthStencilData;
+
+
 	//Data List
 	std::unordered_map<std::string, FPTextureInfo> LoadedTextureData;
 	std::unordered_map<std::string, FPTextureArrayInfo> LoadedTextureArrayData;
@@ -27,7 +39,7 @@ private:
 	std::unordered_map<std::string, std::vector<FPActorData> > LevelData;
 	std::unordered_map<std::string, std::string> GameModeData;
 
-	//Resource List
+	//Resource List (실제 GPU 객체)
 	std::unordered_map<std::string, FPVertexBufferData> MeshPositionVertexBuffer;
 	std::unordered_map<std::string, FPVertexBufferData> MeshNormalVertexBuffer;
 	std::unordered_map<std::string, FPVertexBufferData> MeshUVVertexBuffer;
@@ -42,6 +54,18 @@ private:
 	//Texture
 	std::unordered_map<std::string, FPTextureData> TextureData;
 	std::unordered_map<std::string, FPTextureArrayData> TextureArrayData;
+
+	//RenderTarget
+	std::unordered_map<std::string, FPRenderTargetTexture2DInfo> LoadedRenderTargetTexture2DData;
+	std::unordered_map<std::string, FPRenderTargetData> RenderTargetData;
+
+	//DepthStencil
+	std::unordered_map<std::string, FPDepthStencilInfo> LoadedDepthStencilData;
+	std::unordered_map<std::string, FPDepthStencilData> DepthStencilData;
+
+	//DepthStencill State
+	std::unordered_map<std::string, FPDepthStencilStateInfo> LoadedDepthStencilStateData;
+	std::unordered_map<std::string, FPDepthStencilStateData> DepthStencilStateData;
 
 	bool CalculateTriangleTangent(const POSITION_VERTEX& P0, const POSITION_VERTEX& P1, const POSITION_VERTEX& P2,
 									const UV_VERTEX& UV0, const UV_VERTEX& UV1, const UV_VERTEX& UV2,
@@ -82,6 +106,39 @@ public:
 
 	//FBX Load
 	void LoadFbxData(FPStaticMeshData& StaticMeshData);
+
+	//BuiltIn Mesh
+	void AddBuiltInMeshData(std::string MeshName, FPMeshData& MeshData);
+	FPMeshData& GetBuiltInMeshData(std::string MeshName);
+	bool HasBuiltInMeshData(std::string MeshName);
+
+	//BuiltIn Material
+	FPMaterialData& GetBuiltInMaterialData(std::string MaterialName);
+	void AddBuiltInMaterialData(std::string MaterialName, FPMaterialData& MaterialData);
+	bool HasBuiltInMaterialData(std::string MaterialName);
+
+	//BuiltIn Vertex Shader
+	FPVertexShaderData& GetBuiltInVertexShaderData(std::string VertexShaderName);
+	void AddBuiltInVertexShaderData(std::string VertexShaderName, FPVertexShaderData& VertexShaderData);
+	bool HasBuiltInVertexShaderData(std::string VertexShaderName);
+
+	//BuiltIn Pixel Shader
+	FPPixelShaderData& GetBuiltInPixelShaderData(std::string PixelShaderName);
+	void AddBuiltInPixelShaderData(std::string PixelShaderName, FPPixelShaderData& PixelShaderData);
+	bool HasBuiltInPixelShaderData(std::string PixelShaderName);
+
+	//BuiltIn Render Target Texture 2D Info
+	FPRenderTargetTexture2DInfo& GetBuiltInRenderTargetTexture2DInfoData(std::string RenderTargetTexture2DName);
+	void AddBuiltInRenderTargetTexture2DData(std::string RenderTargetTexture2DName, FPRenderTargetTexture2DInfo& RenderTargetTexture2DData);
+	bool HasBuiltInRenderTargetTexture2DData(std::string RenderTargetTexture2DName);
+
+	//BuiltIn DepthStencil Info
+	FPDepthStencilInfo& GetBuiltInDepthStencilInfoData(std::string DepthStencilName);
+	void AddBuiltInDepthStencilInfoData(std::string DepthStencilName, FPDepthStencilInfo& DepthStencilyData);
+	bool HasBuiltInDepthStencilInfoData(std::string DepthStencilName);
+
+	//BuiltIn Render Target / DepthStencil 전체 크기 갱신 (해상도 대응)
+	void ResizeBuiltInRenderTargetAndDepthStencil();
 
 	//Mesh
 	void AddMeshData(std::string ModelNodeName, FPMeshData& MeshData);
@@ -153,8 +210,45 @@ public:
 	FPTextureArrayInfo& GetTextureArrayInfoData(std::string TextureArrayName);
 	void AddTextureArrayInfoData(std::string TextureArrayName, FPTextureArrayInfo& TextureArrayData);
 	bool HasTextureArrayInfoData(std::string TextureArrayName);
+	
+	//Render Target Texture 2D Info
+	FPRenderTargetTexture2DInfo& GetRenderTargetTexture2DInfoData(std::string RenderTargetTexture2DName);
+	void AddRenderTargetTexture2DData(std::string RenderTargetTexture2DName, FPRenderTargetTexture2DInfo& RenderTargetTexture2DData);
+	bool HasRenderTargetTexture2DData(std::string RenderTargetTexture2DName);
 
-	//Material
+	//Render Target Data
+	FPRenderTargetData& GetRenderTargetData(std::string RenderTargetName);
+	void AddRenderTargetData(std::string RenderTargetName, FPRenderTargetData& RenderTargetData);
+	bool HasRenderTargetData(std::string RenderTargetName);
+	void MakeRenderTarget(FPRenderTargetTexture2DInfo& RenderTargetInfo);
+	void MakeBuiltInRenderTarget(FPRenderTargetTexture2DInfo& RenderTargetInfo);
+
+	//DepthStencil Info
+	FPDepthStencilInfo& GetDepthStencilInfoData(std::string DepthStencilName);
+	void AddDepthStencilInfoData(std::string DepthStencilName, FPDepthStencilInfo& DepthStencilyData);
+	bool HasDepthStencilInfoData(std::string DepthStencilName);
+
+	//DepthStencil Data
+	FPDepthStencilData& GetDepthStencilData(std::string DepthStencilName);
+	void AddDepthStencilData(std::string DepthStencilName, FPDepthStencilData& TextureData);
+	bool HastDepthStencilData(std::string DepthStencilName);
+	void MakeDepthStencil(FPDepthStencilInfo& DepthStecilInfo);
+	void MakeBuiltInDepthStencil(FPDepthStencilInfo& DepthStecilInfo);
+	std::unordered_map<std::string, FPDepthStencilData>& GetDepthStencilDataMap(); //살짝 아쉬움
+
+
+	//DepthStencilState Info
+	FPDepthStencilStateInfo& GetDepthStencilStateInfoData(std::string DepthStencilStateName);
+	void AddDepthStencilStateInfoData(std::string DepthStencilStateName, FPDepthStencilStateInfo& DepthStencilStateData);
+	bool HasDepthStencilStateInfoData(std::string DepthStencilStateName);
+
+	//DepthStencilState Data
+	FPDepthStencilStateData& GetDepthStencilStateData(std::string DepthStencilStateName);
+	void AddDepthStencilStateData(std::string DepthStencilStateName, FPDepthStencilStateData& DepthStencilStateData);
+	bool HasDepthStencilStateData(std::string DepthStencilStateName);
+	void MakeDepthStencilState(FPDepthStencilStateInfo& DepthStencilStateInfo);
+
+	//Material Info
 	FPMaterialData& GetMaterialData(std::string MaterialName);
 	void AddMaterialData(std::string MaterialName, FPMaterialData& MaterialData);
 	bool HasMaterialData(std::string MaterialName);

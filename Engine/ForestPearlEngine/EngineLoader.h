@@ -6,6 +6,20 @@ void LoadEngineAssets()
 {
 	FPAssetLoader* AssetLoader = static_cast<FPAssetLoader*>(FPGameInstance::Get().GetAssetLoader());
 
+	//BuiltIn Mesh Load
+	AssetLoader->LoadBuiltInStaticMesh("Quad2D_Mesh.json");
+
+	//BuiltIn Vertex/Pixel Shader Load
+	AssetLoader->LoadBuiltInVertexShader("DefaultQuad2DVertexShader.json");
+	AssetLoader->LoadBuiltInPixelShader("DefaultQuad2DPixelShader.json");
+
+	//BackBuffer DepthStencil BuiltIn Load
+	AssetLoader->LoadBuiltInDepthStencil("BackBufferDepthStencil.json");
+
+	//BuiltIn RenderTarget Load
+	AssetLoader->LoadBuiltInRenderTargetTexture2D("MeshRenderPass_RenderTargetTexture2D-BuiltIn.json");
+	AssetLoader->LoadBuiltInRenderTargetTexture2D("GizmoRenderPass_RenderTargetTexture2D-BuiltIn.json");
+
 	//Default Vertex/Pixel Shader
 	AssetLoader->LoadVertexShader("DefaultVertexShader.json", AssetOwner::Engine);
 	AssetLoader->LoadPixelShader("DefaultPixelShader.json", AssetOwner::Engine);
@@ -26,4 +40,9 @@ void LoadEngineAssets()
 
 	//Material Load
 	AssetLoader->LoadMaterial("DefaultMaterial.json", AssetOwner::Engine);
+
+	//DepthStencilState Load
+	AssetLoader->LoadDepthStencilState("DS_DEPTH_ON.json", AssetOwner::Engine);
+	AssetLoader->LoadDepthStencilState("DS_DEPTH_OFF.json", AssetOwner::Engine);
+	AssetLoader->LoadDepthStencilState("DS_DEPTH_WRITE_OFF.json", AssetOwner::Engine);
 };

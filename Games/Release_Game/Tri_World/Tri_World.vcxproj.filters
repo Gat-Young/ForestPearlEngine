@@ -84,7 +84,16 @@
     <ClInclude Include="ABox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AMirror.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="ADwaf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AUtaTeapot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ASkyLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -137,7 +146,16 @@
     <ClCompile Include="ABox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AMirror.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="ADwaf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AUtaTeapot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ASkyLight.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -163,6 +181,9 @@
       <Filter>Assets\ShaderResource</Filter>
     </FxCompile>
     <FxCompile Include="Assets\ShaderResource\BoxPixelShader.psh">
+      <Filter>Assets\ShaderResource</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\MirrorPixelShader.psh">
       <Filter>Assets\ShaderResource</Filter>
     </FxCompile>
     <FxCompile Include="Assets\ShaderResource\DwarfPixelShader.psh">

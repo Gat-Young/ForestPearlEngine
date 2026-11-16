@@ -10,7 +10,7 @@ void CalculateBumpNormal(float4 texNorm, float4 T, float3 N, out float3 Normal)
     //탄젠트 기저, 정규 직교화
     float3 Tangent = normalize(T.xyz - (dot(NormalVS, T.xyz) * NormalVS));
     float H = T.w < 0.0f ? -1.0f : 1.0f;
-    float3 BiTangent = H * cross(NormalVS, T.xyz);
+    float3 BiTangent = H * cross(NormalVS, Tangent);
     
     float3x3 TBN = {
                         Tangent.x, BiTangent.x, NormalVS.x,

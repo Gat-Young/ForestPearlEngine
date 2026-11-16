@@ -12,7 +12,9 @@
 #include "FPViewPortClient.h"
 #include "FPGizmoRenderList.h"
 #include "FPLightRenderList.h"
+#include "FPSkyLightRenderList.h"
 #include "FPMeshNormalRenderList.h"
+#include "FPSceneCaptureList.h"
 
 auto Cast_SizeT = [](GameInstanceSubSystemName Name) -> size_t {return static_cast<size_t>(Name); };
 
@@ -27,10 +29,12 @@ FPGameInstance::FPGameInstance()
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::TextRenderList)] = new FPTextRenderList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::GizmoRenderList)] = new FPGizmoRenderList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::LightRenderList)] = new FPLightRenderList();
+	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::SkyLightRenderList)] = new FPSkyLightRenderList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::NormalRenderList)] = new FPMeshNormalRenderList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::CameraList)] = new FPCameraList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::GameProjectSetting)] = new FPGameProjectSetting();
-	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::ViewPortClient)] = new FPViewPortClient();
+	//GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::ViewPortClient)] = new FPViewPortClient();
+	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::SceneCaptureList)] = new FPSceneCaptureList();
 
 }
 
@@ -147,7 +151,17 @@ FPGameInstanceSubSystem* FPGameInstance::GetLightRenderList()
 	return GetInstanceSubSystem(GameInstanceSubSystemName::LightRenderList);
 }
 
+FPGameInstanceSubSystem* FPGameInstance::GetSkyLightRenderList()
+{
+	return GetInstanceSubSystem(GameInstanceSubSystemName::SkyLightRenderList);
+}
+
 FPGameInstanceSubSystem* FPGameInstance::GetNormalRenderList()
 {
 	return GetInstanceSubSystem(GameInstanceSubSystemName::NormalRenderList);
+}
+
+FPGameInstanceSubSystem* FPGameInstance::GetSceneCaptureList()
+{
+	return GetInstanceSubSystem(GameInstanceSubSystemName::SceneCaptureList);
 }

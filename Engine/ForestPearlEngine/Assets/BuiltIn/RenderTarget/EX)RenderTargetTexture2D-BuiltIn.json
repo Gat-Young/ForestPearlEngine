@@ -1,0 +1,9 @@
+{
+  "Name": "RT_Texture2D",
+  "Type": "Texture2D",
+  "ScaleX": 1.0,
+  "ScaleY": 1.0,
+  "RenderTargetFormat": "RGBA8",
+  "ClearColor": [ 0.0, 0.0, 0.0, 1.0 ],
+  "MipMap": false
+}

@@ -3,7 +3,7 @@
 #include "FPGameProjectSetting.h"
 
 
-FPCameraComponent::FPCameraComponent(FPActor* Owner) : FPPrimitiveComponent(Owner)
+FPCameraComponent::FPCameraComponent(FPActor* Owner) : FPSceneComponent(Owner)
 {
 	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
 	this->Aspect = GameProjectSetting->GetDisplayAspect();
@@ -29,7 +29,6 @@ void FPCameraComponent::RegistCamera()
 	CamItem->Projection = &(this->ProjectionMatrix);
 
 	CamItem->Active = &(this->Active);
-	CamItem->TripleCam = &(this->TripleCame);
 }
 
 void FPCameraComponent::Tick()
@@ -43,7 +42,3 @@ void FPCameraComponent::Tick()
 	
 }
 
-void FPCameraComponent::OnTripleCam()
-{
-	TripleCame = !TripleCame;
-}

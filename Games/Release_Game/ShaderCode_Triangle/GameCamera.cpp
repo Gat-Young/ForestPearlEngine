@@ -20,8 +20,6 @@ void GameCamera::Initialize()
 	if (Controller == nullptr)
 		return;
 
-	Controller->GetInputComponent().BindMethod("IA_OnTripleCam", this, EKeyState::Down, &GameCamera::OnTripleCam);
-
 }
 
 void GameCamera::BeginPlay()
@@ -32,9 +30,4 @@ void GameCamera::Tick()
 {
 
 	__super::Tick();
-}
-
-void GameCamera::OnTripleCam(FInputValue Value)
-{
-	Camera->OnTripleCam();
 }

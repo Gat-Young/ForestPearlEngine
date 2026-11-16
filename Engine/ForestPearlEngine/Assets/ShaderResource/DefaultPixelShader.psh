@@ -64,15 +64,16 @@ float4 PS_Main(
     }
     
         
-    float4 DiffuseLit;
-    float4 SpecularLit;
-    float4 EmissiveLit;
+    float4 DiffuseLit = 0;
+    float4 SpecularLit = 0;
+    float4 EmissiveLit = 0;
+    float4 AmbientLit = 0;
     
-    CalculateLight(posv, N, mView, DiffuseLit, SpecularLit, EmissiveLit);
+    CalculateLight(posv, N, mView, DiffuseLit, SpecularLit, EmissiveLit, AmbientLit);
     
     float4 tex = TexDiff.Sample(Smpler, uv);
     
-    col = col * DiffuseLit * tex + SpecularLit + EmissiveLit;
+    col = col * DiffuseLit * tex + SpecularLit + EmissiveLit + col * AmbientLit * tex;
     
     col.a = tex.a;
 

@@ -1,0 +1,74 @@
+//
+// 기본 Quad 2D 운용 PixelShader Source
+//
+//
+//
+// <지원 기능>
+// 1. 단일 텍스처 멥핑
+// 2. 조명 없음
+
+//상수 버퍼
+cbuffer ObejctConstBuffer : register(b0)
+{
+    matrix mWorld;
+    matrix mInverseWorld;
+    matrix mTranseposeWorld;
+    matrix mInverseTranseposeWorld;
+    
+    matrix mView;
+    matrix mInverseView;
+    matrix mTranseposeView;
+    matrix mInverseTranseposeView;
+    
+    matrix mProj;
+    matrix mInverseProj;
+    matrix mTranseposeProj;
+    matrix mInverseTranseposeProj;
+    
+    matrix mWV;
+    matrix mInverseWV;
+    matrix mTranseposeWV;
+    matrix mInverseTranseposeWV;
+    
+    matrix mWVP;
+    matrix mInverseWVP;
+    matrix mTranseposeWVP;
+    matrix mInverseTranseposeWVP;
+    
+};
+
+//텍스처 객체 변수 : 엔진에서 공급됨, 레지스터 직접 지정. (기본값은 t0)
+Texture2D TexDiff : register(t0);
+
+//텍스처 셈플러 (직접지정)  기본값은 s0
+SamplerState Smpler : register(s0);
+
+////////////////////////////////////////////////////////////////////////////// 
+//
+// Pixel Shader Main : 픽셀 셰이더 메인 함수.
+//
+////////////////////////////////////////////////////////////////////////////// 
+
+float4 PS_Main(
+                float4 pos : SV_POSITION, //[입력] 정점좌표. Vertex Position(Model Space, 3D) 
+                float4 col : COLOR0, //[입력] 정점색. Vertex Color : "Diffuse" 
+                float4 posv : TEXCOORD1, //[입력] WordlView 변환된 pos
+                float2 uv : TEXCOORD0, //[입력] uv
+                float4 T : TEXCOORD2, //[입력] WV변환된 Tangent
+                float4 N : TEXCOORD3, //[입력] 역전치WV 변환된 normal
+                bool IsFrontFace : SV_IsFrontFace //CULLMODE None일때 앞 뒷면 판단
+                ) : SV_TARGET   //[출력] "렌더 타겟"으로 출력함
+{
+    //텍스처 샘플링
+    
+    if (!IsFrontFace)
+    {
+        N = -N;
+    }
+    
+    float4 tex = TexDiff.Sample(Smpler, uv);
+    
+    col = tex;
+
+    return col;
+}

@@ -1,9 +1,9 @@
 #pragma once
-#include "FPPrimitiveComponent.h"
+#include "FPSceneComponent.h"
 #include "../ForestPearlEngine/Define/FPMath.h"
 #include "FPCameraList.h"
 
-class FPCameraComponent : public FPPrimitiveComponent
+class FPCameraComponent : public FPSceneComponent
 {
 	public:
 		//카메라 속성
@@ -20,7 +20,6 @@ class FPCameraComponent : public FPPrimitiveComponent
 		FPMatrix ProjectionMatrix;
 
 		bool Active = true;			//카메라 사용 여부
-		bool TripleCame = false;	//(임시) 3-분할 카메라 사용 여부
 
 		CameraItem* CamItem = nullptr;
 
@@ -29,6 +28,4 @@ class FPCameraComponent : public FPPrimitiveComponent
 		~FPCameraComponent();
 		void RegistCamera();
 		void Tick() override;
-
-		void OnTripleCam();
 };

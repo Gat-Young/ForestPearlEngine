@@ -293,8 +293,80 @@
     },
 
     {
+      "class": "AUtaTeapot",
+      "name": "UtaTeapot_1",
+      "transform": {
+        "location": {
+          "x": -3.0,
+          "y": 0.0,
+          "z": -20.0
+        },
+
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+
+        "scale": {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        }
+      }
+    },
+
+    {
+      "class": "AMirror",
+      "name": "Mirror_1",
+      "transform": {
+        "location": {
+          "x": 20.0,
+          "y": 2.0,
+          "z": 0.0
+        },
+
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+
+        "scale": {
+          "x": 5.0,
+          "y": 5.0,
+          "z": 5.0
+        }
+      }
+    },
+
+    {
       "class": "ADirectionalLight",
       "name": "DirectionalLight",
+      "transform": {
+        "location": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+
+        "scale": {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        }
+      }
+    },
+
+    {
+      "class": "ASkyLight",
+      "name": "SkyLight_1",
       "transform": {
         "location": {
           "x": 0.0,

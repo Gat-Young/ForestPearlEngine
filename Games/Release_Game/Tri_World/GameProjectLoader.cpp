@@ -15,6 +15,9 @@
 #include "ATorchLight.h"
 #include "ABox.h"
 #include "ADwaf.h"
+#include "AMirror.h"
+#include "AUtaTeapot.h"
+#include "ASkyLight.h"
 
 void RegistProjectName()
 {
@@ -49,6 +52,9 @@ void LoadClassRegist()
 	ClassRegistry->Register<ATorchLight>("ATorchLight");
 	ClassRegistry->Register<ABox>("ABox");
 	ClassRegistry->Register<ADwaf>("ADwaf");
+	ClassRegistry->Register<AMirror>("AMirror");
+	ClassRegistry->Register<AUtaTeapot>("AUtaTeapot");
+	ClassRegistry->Register<ASkyLight>("ASkyLight");
 }
 
 void LoadAssets()
@@ -63,6 +69,11 @@ void LoadAssets()
 	AssetLoader->LoadPixelShader("BoxPixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("DwarfPixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("ToonLinkPixelShader.json", AssetOwner::User);
+	AssetLoader->LoadPixelShader("MirrorPixelShader.json", AssetOwner::User);
+
+	//Mirror RenderTarget / DepthStencil Load
+	AssetLoader->LoadRenderTargetTexture2D("Mirror_RenderTarget.json", AssetOwner::User);
+	AssetLoader->LoadDepthStencil("Mirror_DepthStencil.json", AssetOwner::User);
 
 	//Texture Load
 
@@ -131,7 +142,13 @@ void LoadAssets()
 	AssetLoader->LoadTexture("Terrain/lnd_micro16_dds.json", AssetOwner::User);
 	AssetLoader->LoadTexture("Terrain/Field_micro02_dds.json", AssetOwner::User);
 	AssetLoader->LoadTexture("Terrain/mask2_png.json", AssetOwner::User);
-	
+
+	//UtaTeapot Texture
+	AssetLoader->LoadTexture("UtaTeapot/Default_baseColor_png.json", AssetOwner::User);
+
+	//SphereMap Texture
+	AssetLoader->LoadTexture("SphereMap/Cross_Roads_Probe_bmp.json", AssetOwner::User);
+
 
 	//Material Load
 
@@ -175,6 +192,13 @@ void LoadAssets()
 	//Box Material
 	AssetLoader->LoadMaterial("Box/Box_Material.json", AssetOwner::User);
 
+	//Mirror Material
+	AssetLoader->LoadMaterial("Mirror/Mirror_Material.json", AssetOwner::User);
+
+	//UtaTeapot Material
+	AssetLoader->LoadMaterial("UtaTeapot/Default_UtaTeapot_Up_StaticMesh_MaterialInstance.json", AssetOwner::User);
+	AssetLoader->LoadMaterial("UtaTeapot/default_UtaTeapot_Bottom_StaticMesh_MaterialInstance.json", AssetOwner::User);
+
 	/////////////////////////
 	//Static_Mesh Load
 
@@ -217,6 +241,10 @@ void LoadAssets()
 	AssetLoader->LoadStaticMesh("Dwaf/Dwarf.x_SceneRoot_Head_StaticMesh.json", AssetOwner::User);
 	AssetLoader->LoadStaticMesh("Dwaf/Dwarf.x_SceneRoot_Pack_StaticMesh.json", AssetOwner::User);
 	AssetLoader->LoadStaticMesh("Dwaf/Dwarf.x_SceneRoot_Sword1_StaticMesh.json", AssetOwner::User);
+
+	//UtaTeapot Static Mesh
+	AssetLoader->LoadStaticMesh("UtaTeapot/UtaTeapot_Up_StaticMesh.json", AssetOwner::User);
+	AssetLoader->LoadStaticMesh("UtaTeapot/UtaTeapot_Bottom_StaticMesh.json", AssetOwner::User);
 }
 
 std::string ReturnStartLevel()

@@ -15,6 +15,7 @@ namespace RenderingData
 	struct GizmoRenderItemCompare;
 	struct UIRenderItemCompare;
 	struct LightRenderItem;
+	struct FPSkyLightRenderItem;
 }
 
 class Renderer
@@ -67,6 +68,19 @@ class Renderer
 		//Light Render Item
 		std::vector<RenderingData::LightRenderItem> LightRenderList;
 
+		//SkyLight Render Item
+		std::vector<RenderingData::FPSkyLightRenderItem> FPSkyLightList;
+
+		//SceneCapture Item
+		std::vector<RenderingData::SceneCaptureItem> SceneCaptureList;
+
+
+		//Quad2D Render
+		//Quad Mesh에 지정된 InRenderTarget을 BackBuffer로 Draw 
+		void Quad2DRenderPass(std::string& InRenderTarget);
+
+		//Aspect-corrected ViewPort size (Letterbox / Pillarbox)
+		void CalculateViewPortSize(float Width, float Height, float& OutTopLeftX, float& OutTopLeftY, float& OutWidth, float& OutHeight);
 
 	public:
 		Renderer(RenderingDevice& Device);
@@ -77,14 +91,18 @@ class Renderer
 		void CreateGizmoRenderList();
 		void CreateUIRenderList();
 		void CreateLightRenderList();
+		void CreateSkyLightRenderList();
 		void CreateNormalRenderList();
+		void CreateSceneCaptureList();
 
 		//RenderPass 함수
-		void ClearBackBuffer();
+		void ClearDepthStencil();
 
 		void RenderTargetPresent();
 
 		HRESULT InitializeRenderer(HWND hwnd);
+
+		void SceneCaptureRenderPass();
 
 		void MeshRenderPass();
 

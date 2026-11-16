@@ -1,0 +1,14 @@
+{
+    "Name": "UtaTeapot_Up_StaticMesh",
+    "NodeName": "UtaTeapot_Up",
+    "MeshData": [
+        {
+            "Path": "UtaTeapot/UtaTeapot.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "Default_UtaTeapot_Up_StaticMesh_MaterialInstance"
+    }
+}

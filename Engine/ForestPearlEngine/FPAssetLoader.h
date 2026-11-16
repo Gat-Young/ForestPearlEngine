@@ -16,6 +16,15 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 		//GameSetting
 		void LoadGameSetting(std::string GameSettingPath);
 
+		//BuiltInAssetLoad
+		void LoadBuiltInStaticMesh(std::string BuiltInStaticMeshPath);
+		void LoadBuiltInMaterial(std::string BuiltInMaterialPath);
+		void LoadBuiltInVertexShader(std::string BuiltInVertexShaderPath);
+		void LoadBuiltInPixelShader(std::string BuiltInPixelShaderPath);
+		void LoadBuiltInRenderTargetTexture2D(std::string BuiltInRenderTargetTexture2DPath);
+		void LoadBuiltInDepthStencil(std::string BuiltInDepthStencilPath);
+
+
 		//Level Load
 		void LoadLevelData(std::string LevelName, std::string LevelPath, AssetOwner EngineAsset);
 
@@ -36,4 +45,13 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 
 		//Material Load
 		void LoadMaterial(std::string MaterialPath, AssetOwner EngineAsset);
+
+		//RenderTargetTexture2D Load
+		void LoadRenderTargetTexture2D(std::string RenderTargetTexture2DPath, AssetOwner EngineAsset);
+
+		//DepthStencil Load
+		void LoadDepthStencil(std::string DepthStencilPath, AssetOwner EngineAsset);
+
+		//DepthStencil State Laod
+		void LoadDepthStencilState(std::string DepthStencilStatePath, AssetOwner EngineAsset);
 };

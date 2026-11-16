@@ -18,6 +18,8 @@ class FPGameProjectSetting : public FPGameInstanceSubSystem
 		int MSAA = 1;
 		int AF = 1;
 		bool FullScreen = false;
+		bool VSync = true;
+		int Hz = 60;
 
 		HWND hwnd;
 
@@ -37,7 +39,10 @@ class FPGameProjectSetting : public FPGameInstanceSubSystem
 		void SetMSAA(int MSAA);
 		void SetAF(int AF);
 		void SetFullScreen(bool FullScreen);
+		void SetVSync(bool VSync);
+		void SetHz(int Hz);
 		void ProjectSetting();
+		void SyncGameSettingData();
 
 		std::wstring GetWinClassName();
 		std::wstring GetWinName();
@@ -49,6 +54,8 @@ class FPGameProjectSetting : public FPGameInstanceSubSystem
 		int GetMSAA();
 		int GetAF();
 		bool GetFullScreen();
+		bool GetVSync();
+		int GetHz();
 
 		void CalculateDisplaySize();
 };

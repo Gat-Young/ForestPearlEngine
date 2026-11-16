@@ -4,6 +4,8 @@
         "VertexShader": "DefaultVertexShader",
         "PixelShader": "MirrorPixelShader",
         "TwoSided": false,
+        "BlendState": "BS_ADD",
+        "DepthStencilState": "DS_DEPTH_ON",
         "Parameters": [],
         "Textures": [
             {

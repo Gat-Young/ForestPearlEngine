@@ -4,6 +4,8 @@
         "VertexShader": "DefaultQuad2DVertexShader",
         "PixelShader": "DefaultQuad2DPixelShader",
         "TwoSided": false,
+        "BlendState": "BS_ADD",
+        "DepthStencilState": "DS_DEPTH_ON",
         "Parameters": [ ],
         "Textures": [
             {

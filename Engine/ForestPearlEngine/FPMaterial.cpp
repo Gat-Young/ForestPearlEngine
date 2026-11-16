@@ -374,6 +374,26 @@ bool* FPMaterial::GetTwoSided()
 	return &TwoSided;
 }
 
+void FPMaterial::SetBlendState(std::string BlendState)
+{
+	this->BlendState = BlendState;
+}
+
+void FPMaterial::SetDepthStencilState(std::string DepthStencilState)
+{
+	this->DepthStencilState = DepthStencilState;
+}
+
+std::string* FPMaterial::GetBlendState()
+{
+	return &(this->BlendState);
+}
+
+std::string* FPMaterial::GetDepthStencilState()
+{
+	return &(this->DepthStencilState);
+}
+
 void FPMaterial::UpdateMaterial(float DeltaTime)
 {
 	//FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, MaterialVertexConstantBuffer);

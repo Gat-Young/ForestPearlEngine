@@ -1,0 +1,17 @@
+{
+  "Name": "BS_ADD",
+  "AlphaToCoverageEnable": true,
+  "IndependentBlendEnable": false,
+  "RenderTargets": [
+    {
+      "BlendEnable": true,
+      "SrcBlend": "SRC_ALPHA",
+      "DestBlend": "INV_SRC_ALPHA",
+      "BlendOp": "ADD",
+      "SrcBlendAlpha": "ONE",
+      "DestBlendAlpha": "ZERO",
+      "BlendOpAlpha": "ADD",
+      "RenderTargetWriteMask": ["RED", "GREEN", "BLUE", "ALPHA"]
+    }
+  ]
+}

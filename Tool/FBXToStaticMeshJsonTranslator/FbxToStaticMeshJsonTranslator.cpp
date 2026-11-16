@@ -286,6 +286,8 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 		BaseMaterialBody["VertexShader"] = "DefaultVertexShader";
 		BaseMaterialBody["PixelShader"] = "DefaultPixelShader";
 		BaseMaterialBody["TwoSided"] = bTwoSided;
+		BaseMaterialBody["BlendState"] = "BS_ADD";
+		BaseMaterialBody["DepthStencilState"] = "DS_DEPTH_ON";
 		BaseMaterialBody["Parameters"] = ParametersArray;
 
 		json BaseMaterialFileJson;
@@ -309,6 +311,8 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 	MaterialInstanceBody["VertexShader"] = "DefaultVertexShader";
 	MaterialInstanceBody["PixelShader"] = "DefaultPixelShader";
 	MaterialInstanceBody["TwoSided"] = bTwoSided;
+	MaterialInstanceBody["BlendState"] = "BS_ADD";
+	MaterialInstanceBody["DepthStencilState"] = "DS_DEPTH_ON";
 	MaterialInstanceBody["Parameters"] = ParametersArray;
 	MaterialInstanceBody["Textures"] = TexturesArray;
 	MaterialInstanceBody["Samplers"] = SamplersArray;

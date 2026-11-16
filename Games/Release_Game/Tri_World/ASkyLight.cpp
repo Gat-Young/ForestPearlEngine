@@ -5,6 +5,7 @@ ASkyLight::ASkyLight()
 {
 	SkyLightComponent = new FPSkyLightComponent(this);
 	SkyLightComponent->SetCubeMap("uffizi_cross_dds");
+	SkyLightComponent->SetLightIntnesity(0.5f);
 }
 
 ASkyLight::~ASkyLight()

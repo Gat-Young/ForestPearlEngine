@@ -14,6 +14,9 @@ class FPMaterial : public FPMaterialInterface
 		//Two Side 여부 <Two Side 체크시 해당 메시는 Cull 하지 않으며 Back Normal을 사용> (기본값 : False)
 		bool TwoSided = false;
 
+		std::string BlendState = "BS_ADD";
+		std::string DepthStencilState = "DS_DEPTH_ON";
+
 		// 셰이더 분석 결과는 FPMaterial이 보관하며 GPU 작업은 하지 않음
 		FPShaderReflectionData ReflectionData;
 
@@ -53,6 +56,11 @@ class FPMaterial : public FPMaterialInterface
 
 		void SetTwoSided(bool isTwoSide) override;
 		bool* GetTwoSided()override;
+
+		void SetBlendState(std::string BlendState) override;
+		void SetDepthStencilState(std::string DepthStencilState) override;
+		std::string* GetBlendState() override;
+		std::string* GetDepthStencilState() override;
 
 		//상속 받은 구현체에서 반드시 Super를 호출 할 것
 		virtual void UpdateMaterial(float DeltaTime) override;

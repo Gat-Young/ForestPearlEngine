@@ -79,9 +79,6 @@ class RenderingDevice
 		//샘플러 상태 객체
 		ID3D11SamplerState* SamplerState[Sampler_MAX_];
 
-		//색상, 알파 혼합 관리 객체
-		ID3D11BlendState* BlendStateObject[BS_MAX_];
-
 		DXGI_MODE_DESC1 DisplayMode;
 
 		//해당 설정을 Project Setting 에서 할 수 있도록 변경
@@ -142,6 +139,10 @@ class RenderingDevice
 		D3D11_STENCIL_OP FPStencilOPToD3DStencilOP(FPStencilOP& StencilOP);
 		D3D11_COMPARISON_FUNC FPCompraisionFuncToD3DComparisonFunc(FPCompraisonFunc& CompraisonFunc);
 		D3D11_DEPTH_WRITE_MASK FPDepthWriteMaskToD3DDepthWriteMask(FPDepthWriteMask& DepthWriteMask);
+
+		D3D11_BLEND FPBlendToD3DBlend(FPBlend& Blend);
+		D3D11_BLEND_OP FPBlendOpToD3DBlendOp(FPBlendOp& BlendOp);
+		UINT8 FPColorWriteMaskVectorToD3DColorWriteMask(std::vector<FPColorWriteMask>& WriteMask);
 		
 	public:
 		static RenderingDevice& GetRenderingDevice();
@@ -255,11 +256,11 @@ class RenderingDevice
 		//Sampler 상태 설정
 		HRESULT PSSetSamplers(UINT Slot, UINT NumSamplers, FPSamplerType SamplerType);
 
-		//BlendState 관리 객체 생성
-		HRESULT CreateBlendStateObject();
+		//BlendState 상태 객체 생성
+		HRESULT CreateBlendState(FPBlendStateInfo& BlendStateInfo, void** OutBSState);
 
 		//BlendState 상태 설정
-		HRESULT OMSetBlendState(FPBlendingStateType BlendType);
+		void OMSetBlendState(void* InBlendState);
 
 		//GetDXDevice
 		ID3D11Device* GetDXDevice() { return Device.Get(); };

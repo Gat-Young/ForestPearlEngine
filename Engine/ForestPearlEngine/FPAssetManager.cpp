@@ -180,6 +180,12 @@ void FPAssetManager::AllAssetDataCreate()
 		MakeDepthStencilState(Asset);
 	}
 
+	//BlendState »ý¼º
+	for (auto& [AssetName, Asset] : LoadedBlendStateData)
+	{
+		MakeBlendState(Asset);
+	}
+
 	//Fbx Load
 	for (auto& [AssetName, Asset] : LoadedStaticMeshData)
 	{
@@ -1670,6 +1676,54 @@ void FPAssetManager::MakeDepthStencilState(FPDepthStencilStateInfo& DepthStencil
 	DepthStencilStateData[DepthStencilStateInfo.Name] = DSStateData;
 }
 
+FPBlendStateInfo& FPAssetManager::GetBlendStateInfoData(std::string BlendStateName)
+{
+	return LoadedBlendStateData[BlendStateName];
+}
+
+void FPAssetManager::AddBlendStateInfoData(std::string BlendStateName, FPBlendStateInfo& BlendStateInfoData)
+{
+	this->LoadedBlendStateData[BlendStateName] = BlendStateInfoData;
+}
+
+bool FPAssetManager::HasBlendStateInfoData(std::string BlendStateName)
+{
+	if (LoadedBlendStateData.count(BlendStateName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+FPBlendStateData& FPAssetManager::GetBlendStateData(std::string BlendStateName)
+{
+	return BlendStateData[BlendStateName];
+}
+
+void FPAssetManager::AddBlendStateData(std::string BlendStateName, FPBlendStateData& BlendStateData)
+{
+	this->BlendStateData[BlendStateName] = BlendStateData;
+}
+
+bool FPAssetManager::HasBlendStateData(std::string BlendStateName)
+{
+	if (BlendStateData.count(BlendStateName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void FPAssetManager::MakeBlendState(FPBlendStateInfo& BlendStateInfo)
+{
+	FPBlendStateData BSStateData;
+
+	RenderingDevice::GetRenderingDevice().CreateBlendState(BlendStateInfo, &BSStateData.BlendStateData);
+	BlendStateData[BlendStateInfo.Name] = BSStateData;
+}
+
 FPMaterialData& FPAssetManager::GetMaterialData(std::string MaterialName)
 {
 	return this->LoadedMaterialData[MaterialName];
@@ -1788,6 +1842,8 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 	Material->SetVertexShader(MaterialData.VertexShader);
 	Material->SetPixelShader(MaterialData.PixelShader);
 	Material->SetTwoSided(MaterialData.TwoSided);
+	Material->SetBlendState(MaterialData.BlendState);
+	Material->SetDepthStencilState(MaterialData.DepthStencilState);
 	
 	const FPVertexShaderData& VS = GetVertexShaderData(MaterialData.VertexShader);
 	const FPPixelShaderData& PS = GetPixelShaderData(MaterialData.PixelShader);

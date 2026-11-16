@@ -234,3 +234,80 @@ FPStencilOP StringToFPStencilOP(const std::string& Name)
     //기본값으로 설정된 KEEP
     return FPStencilOP::KEEP;
 }
+
+FPBlend StringToFPBlend(const std::string& Name)
+{
+	static const std::unordered_map<std::string, FPBlend> FPBlendMap =
+	{
+		{ "ZERO",             FPBlend::ZERO },
+		{ "ONE",              FPBlend::ONE },
+		{ "SRC_COLOR",        FPBlend::SRC_COLOR },
+		{ "INV_SRC_COLOR",    FPBlend::INV_SRC_COLOR },
+		{ "SRC_ALPHA",        FPBlend::SRC_ALPHA },
+		{ "INV_SRC_ALPHA",    FPBlend::INV_SRC_ALPHA },
+		{ "DEST_ALPHA",       FPBlend::DEST_ALPHA },
+		{ "INV_DEST_ALPHA",   FPBlend::INV_DEST_ALPHA },
+		{ "DEST_COLOR",       FPBlend::DEST_COLOR },
+		{ "INV_DEST_COLOR",   FPBlend::INV_DEST_COLOR },
+		{ "SRC_ALPHA_SAT",    FPBlend::SRC_ALPHA_SAT },
+		{ "BLEND_FACTOR",     FPBlend::BLEND_FACTOR },
+		{ "INV_BLEND_FACTOR", FPBlend::INV_BLEND_FACTOR },
+		{ "SRC1_COLOR",       FPBlend::SRC1_COLOR },
+		{ "INV_SRC1_COLOR",   FPBlend::INV_SRC1_COLOR },
+		{ "SRC1_ALPHA",       FPBlend::SRC1_ALPHA },
+		{ "INV_SRC1_ALPHA",   FPBlend::INV_SRC1_ALPHA },
+	};
+
+	auto it = FPBlendMap.find(Name);
+
+	if (it != FPBlendMap.end())
+	{
+		return it->second;
+	}
+
+	//기본값으로 설정된 ONE
+	return FPBlend::ONE;
+}
+
+FPBlendOp StringToFPBlendOp(const std::string& Name)
+{
+	static const std::unordered_map<std::string, FPBlendOp> FPBlendOpMap =
+	{
+		{ "ADD",          FPBlendOp::ADD },
+		{ "SUBTRACT",     FPBlendOp::SUBTRACT },
+		{ "REV_SUBTRACT", FPBlendOp::REV_SUBTRACT },
+		{ "MIN",          FPBlendOp::MIN },
+		{ "MAX",          FPBlendOp::MAX },
+	};
+
+	auto it = FPBlendOpMap.find(Name);
+
+	if (it != FPBlendOpMap.end())
+	{
+		return it->second;
+	}
+
+	//기본값으로 설정된 ADD
+	return FPBlendOp::ADD;
+}
+
+FPColorWriteMask StringToFPColorWriteMask(const std::string& Name)
+{
+	static const std::unordered_map<std::string, FPColorWriteMask> FPColorWriteMaskMap =
+	{
+		{ "RED",   FPColorWriteMask::RED },
+		{ "GREEN", FPColorWriteMask::GREEN },
+		{ "BLUE",  FPColorWriteMask::BLUE },
+		{ "ALPHA", FPColorWriteMask::ALPHA },
+	};
+
+	auto it = FPColorWriteMaskMap.find(Name);
+
+	if (it != FPColorWriteMaskMap.end())
+	{
+		return it->second;
+	}
+
+	//기본값으로 설정된 ALPHA
+	return FPColorWriteMask::ALPHA;
+}

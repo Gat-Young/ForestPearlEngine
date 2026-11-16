@@ -189,6 +189,87 @@ D3D11_DEPTH_WRITE_MASK RenderingDevice::FPDepthWriteMaskToD3DDepthWriteMask(FPDe
 	return D3D11_DEPTH_WRITE_MASK_ALL;
 }
 
+D3D11_BLEND RenderingDevice::FPBlendToD3DBlend(FPBlend& Blend)
+{
+	static const std::unordered_map<FPBlend, D3D11_BLEND> FormatMap =
+	{
+		{ FPBlend::ZERO,             D3D11_BLEND_ZERO },
+		{ FPBlend::ONE,              D3D11_BLEND_ONE },
+		{ FPBlend::SRC_COLOR,        D3D11_BLEND_SRC_COLOR },
+		{ FPBlend::INV_SRC_COLOR,    D3D11_BLEND_INV_SRC_COLOR },
+		{ FPBlend::SRC_ALPHA,        D3D11_BLEND_SRC_ALPHA },
+		{ FPBlend::INV_SRC_ALPHA,    D3D11_BLEND_INV_SRC_ALPHA },
+		{ FPBlend::DEST_ALPHA,       D3D11_BLEND_DEST_ALPHA },
+		{ FPBlend::INV_DEST_ALPHA,   D3D11_BLEND_INV_DEST_ALPHA },
+		{ FPBlend::DEST_COLOR,       D3D11_BLEND_DEST_COLOR },
+		{ FPBlend::INV_DEST_COLOR,   D3D11_BLEND_INV_DEST_COLOR },
+		{ FPBlend::SRC_ALPHA_SAT,    D3D11_BLEND_SRC_ALPHA_SAT },
+		{ FPBlend::BLEND_FACTOR,     D3D11_BLEND_BLEND_FACTOR },
+		{ FPBlend::INV_BLEND_FACTOR, D3D11_BLEND_INV_BLEND_FACTOR },
+		{ FPBlend::SRC1_COLOR,       D3D11_BLEND_SRC1_COLOR },
+		{ FPBlend::INV_SRC1_COLOR,   D3D11_BLEND_INV_SRC1_COLOR },
+		{ FPBlend::SRC1_ALPHA,       D3D11_BLEND_SRC1_ALPHA },
+		{ FPBlend::INV_SRC1_ALPHA,   D3D11_BLEND_INV_SRC1_ALPHA },
+	};
+
+	auto it = FormatMap.find(Blend);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	//Default : ONE
+	return D3D11_BLEND_ONE;
+}
+
+D3D11_BLEND_OP RenderingDevice::FPBlendOpToD3DBlendOp(FPBlendOp& BlendOp)
+{
+	static const std::unordered_map<FPBlendOp, D3D11_BLEND_OP> FormatMap =
+	{
+		{ FPBlendOp::ADD,          D3D11_BLEND_OP_ADD },
+		{ FPBlendOp::SUBTRACT,     D3D11_BLEND_OP_SUBTRACT },
+		{ FPBlendOp::REV_SUBTRACT, D3D11_BLEND_OP_REV_SUBTRACT },
+		{ FPBlendOp::MIN,          D3D11_BLEND_OP_MIN },
+		{ FPBlendOp::MAX,          D3D11_BLEND_OP_MAX },
+	};
+
+	auto it = FormatMap.find(BlendOp);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	//Default : ADD
+	return D3D11_BLEND_OP_ADD;
+}
+
+UINT8 RenderingDevice::FPColorWriteMaskVectorToD3DColorWriteMask(std::vector<FPColorWriteMask>& WriteMask)
+{
+	static const std::unordered_map<FPColorWriteMask, UINT8> FormatMap =
+	{
+		{ FPColorWriteMask::RED,   D3D11_COLOR_WRITE_ENABLE_RED },
+		{ FPColorWriteMask::GREEN, D3D11_COLOR_WRITE_ENABLE_GREEN },
+		{ FPColorWriteMask::BLUE,  D3D11_COLOR_WRITE_ENABLE_BLUE },
+		{ FPColorWriteMask::ALPHA, D3D11_COLOR_WRITE_ENABLE_ALPHA },
+	};
+
+	UINT8 Mask = 0;
+
+	for (FPColorWriteMask& Write : WriteMask)
+	{
+		auto it = FormatMap.find(Write);
+
+		if (it != FormatMap.end())
+		{
+			Mask |= it->second;
+		}
+	}
+
+	return Mask;
+}
+
 //싱글톤 렌더링 디바이스 객체 가져오기
 RenderingDevice& RenderingDevice::GetRenderingDevice()
 {
@@ -1610,61 +1691,57 @@ HRESULT RenderingDevice::PSSetSamplers(UINT Slot, UINT NumSamplers, FPSamplerTyp
 
 ///////////////////////////////////
 //
-// 블랜드 상태 객체 생성 우선 RT0 백버퍼만 사용
+// 블렌드 상태 객체 생성
 //
-HRESULT RenderingDevice::CreateBlendStateObject()
+HRESULT RenderingDevice::CreateBlendState(FPBlendStateInfo& BlendStateInfo, void** OutBSState)
 {
-	//블랜딩 상태 객체 구성 옵션
-	D3D11_BLEND_DESC bd = {};
-	
-	D3D11_RENDER_TARGET_BLEND_DESC rtb = {};
+	HRESULT hr = S_OK;
+	D3D11_BLEND_DESC Desc = {};
 
-	//NULL 초기화용
-	BlendStateObject[BS_NULL_] = NULL;
+	Desc.AlphaToCoverageEnable = BlendStateInfo.AlphaToCoverageEnable ? TRUE : FALSE;
+	Desc.IndependentBlendEnable = BlendStateInfo.IndependentBlendEnable ? TRUE : FALSE;
 
-	//색상 혼합 개체 #0  기본
-	rtb.BlendEnable = FALSE;	//블렌딩 동작 결정. 기본값은 FALSE (OFF)
+	UINT RenderTargetCount = static_cast<UINT>(BlendStateInfo.RenderTargets.size());
+	if (RenderTargetCount > D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT)
+	{
+		RenderTargetCount = D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT;
+	}
 
-	//색상 성분 혼합 : Color Blending. (기본값)
-	rtb.BlendOp = D3D11_BLEND_OP_ADD;
-	rtb.SrcBlend = D3D11_BLEND_ONE;
-	rtb.DestBlend = D3D11_BLEND_ZERO;
+	for (UINT i = 0; i < RenderTargetCount; ++i)
+	{
+		FPRenderTargetBlendDesc& RTBlend = BlendStateInfo.RenderTargets[i];
 
-	//알파 성분 혼합 : Alpha Blending. (기본값)
-	rtb.BlendOpAlpha = D3D11_BLEND_OP_ADD;
-	rtb.SrcBlendAlpha = D3D11_BLEND_ONE;
-	rtb.DestBlendAlpha = D3D11_BLEND_ZERO;
-	rtb.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+		D3D11_RENDER_TARGET_BLEND_DESC& RTDesc = Desc.RenderTarget[i];
+		RTDesc.BlendEnable = RTBlend.BlendEnable ? TRUE : FALSE;
+		RTDesc.SrcBlend = FPBlendToD3DBlend(RTBlend.SrcBlend);
+		RTDesc.DestBlend = FPBlendToD3DBlend(RTBlend.DestBlend);
+		RTDesc.BlendOp = FPBlendOpToD3DBlendOp(RTBlend.BlendOp);
 
-	//렌더타겟 0번 혼합 상태 결정
-	bd.RenderTarget[0] = rtb;
-	bd.AlphaToCoverageEnable = FALSE;
-	bd.IndependentBlendEnable = FALSE;
+		RTDesc.SrcBlendAlpha = FPBlendToD3DBlend(RTBlend.SrcBlendAlpha);
+		RTDesc.DestBlendAlpha = FPBlendToD3DBlend(RTBlend.DestBlendAlpha);
+		RTDesc.BlendOpAlpha = FPBlendOpToD3DBlendOp(RTBlend.BlendOpAlpha);
 
-	Device->CreateBlendState(&bd, &BlendStateObject[BS_DEFAULT]);
-	
-	//색상 혼합 개체 #1 "AB"
-	rtb.BlendEnable = TRUE;
-	rtb.BlendOp = D3D11_BLEND_OP_ADD;
+		RTDesc.RenderTargetWriteMask = FPColorWriteMaskVectorToD3DColorWriteMask(RTBlend.RenderTargetWriteMask);
 
-	//색상 혼합 : 알파 기준 혼합
-	//최종색 = Src.Color * Src.a + Dest.Color * (1 - Src.a)
-	rtb.SrcBlend = D3D11_BLEND_SRC_ALPHA;
-	rtb.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+		//IndependentBlendEnable이 false면 RenderTarget[0] 설정이 전체 슬롯에 적용됨
+		if (!BlendStateInfo.IndependentBlendEnable)
+		{
+			break;
+		}
+	}
 
-	bd.RenderTarget[0] = rtb;
-	bd.AlphaToCoverageEnable  = TRUE;
-	//bd.IndependentBlendEnable = FALSE;
+	ID3D11BlendState* State;
+	hr = Device->CreateBlendState(&Desc, &State);
+	if (FAILED(hr)) { std::cout << "BlendState Create Fail!" << "\n"; return hr; }
 
-	Device->CreateBlendState(&bd, &BlendStateObject[BS_ADD]);
-
-	return S_OK;
+	*OutBSState = State;
+	return hr;
 }
- 
-HRESULT RenderingDevice::OMSetBlendState(FPBlendingStateType BlendType)
+
+void RenderingDevice::OMSetBlendState(void* InBlendState)
 {
-	DeviceContext->OMSetBlendState(BlendStateObject[BlendType], NULL, 0xFFFFFFFF);
-	return S_OK;
+	ID3D11BlendState* BlendState = static_cast<ID3D11BlendState*>(InBlendState);
+	DeviceContext->OMSetBlendState(BlendState, NULL, 0xFFFFFFFF);
 }
 
 

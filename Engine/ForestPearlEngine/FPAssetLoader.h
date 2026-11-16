@@ -54,4 +54,7 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 
 		//DepthStencil State Laod
 		void LoadDepthStencilState(std::string DepthStencilStatePath, AssetOwner EngineAsset);
+
+		//BlendState Load
+		void LoadBlendState(std::string BlendStatePath, AssetOwner EngineAsset);
 };

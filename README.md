@@ -47,10 +47,10 @@
 | 🎨 | **DX11 렌더러** | `Renderer`(프레임 흐름) + `RenderingDevice`(D3D11 래퍼) 2계층, **Render List → Render Pass(Mesh / Gizmo / Normal / UI)** 구조, 슬롯 규약이 있는 **상수 버퍼 바인딩**, `GameSetting.json` 기반 MSAA(스왑체인·깊이버퍼 SampleDesc), Priority 정렬, **Built-In RenderTarget에 그린 뒤 `Quad2DRenderPass`로 백버퍼에 합성(Letterbox)** |
 | 💡 | **통합 Light (Directional · Point, Per-Pixel)** | `FPLightComponentBase` 계열이 Light Render List에 등록 → 메시마다 **최대 64개**를 하나의 `LIGHT` 상수 버퍼(`b2`, 9232 byte)로 묶어 **픽셀 셰이더** `PixelLight.hlsli`에 전달. VS는 노멀 · 위치를 View 공간으로 변환해 보간만 하고, Directional · Point 모두 PS에서 Lambert Diffuse + **Blinn-Phong Specular**(`SpecularBlinPhong.hlsli`) + Ambient를 픽셀 단위로 계산(거리 감쇠, Range Fade). `CalculateLight`가 `Diffuse` · `Specular` · `Emissive`를 **각각 `out` 매개변수로 반환**해 PS마다 직접 합성(`col = col × Diffuse × tex + Specular + Emissive`) — Specular를 **텍스처(Specular Map)로 변조**하는 `DwarfPixelShader`(`TexSpec`, `t1`)도 추가됨. 과거 정점 단위 계산 코드는 `VertexLight.hlsli`로 남아 있지만 비활성 상태. 라이트 색(`LightColor`) 지원. 토치 예제 `ATorchLight` |
 | 🧵 | **Bump Mapping (Normal Map) · Tangent 생성** | FBX 로딩 시 `FPAssetManager::GenerateTangents`가 코너별 UV 면 탄젠트를 구해 **인접 삼각형끼리 각도 가중 평균 + Gram-Schmidt 직교화**로 부드럽게 섞은 뒤 5번째 정점 스트림(`TANGENT_VERTEX`, Input Slot 4)으로 추가. VS가 View 공간 Tangent/Normal(`T`/`N`)을 만들어 넘기면 `BumpMapping.hlsli::CalculateBumpNormal`이 TBN 행렬로 노멀 맵(`TexBumpMap`)을 View 공간 노멀로 바꿔 `CalculateLight`에 그대로 사용. `DwarfPixelShader` · 신규 `ToonLinkPixelShader`가 적용 |
-| 🌐 | **Environment Mapping (Sky Light)** | `FPSkyLightComponent`(이제 실제로 동작, 더 이상 골격이 아님)가 지정한 텍스처 하나를 **모든 메시의 PS에 전역으로**(`EnvTex` t127 · `EnvSampler` s15, Material JSON과 무관) 바인딩. `PixelLight.hlsli::EnvLight()`가 View 공간 Normal의 xy를 그대로 UV로 매핑해 샘플(반사 벡터가 아닌 **MatCap 방식**)하고 `CalculateLight`의 4번째 `out`(`OutAmbient`)으로 돌려줌. 데모: `AUtaTeapot` + `ASkyLight`(Tri_World, 그리고 독립된 `Test_SphereMap` 프로젝트) |
+| 🌐 | **Environment Mapping (Sky Light · Cube Map)** | `FPSkyLightComponent`가 지정한 **큐브맵 텍스처** 하나를 **모든 메시의 PS에 전역으로**(`EnvTex` **`TextureCube`** t127 · `EnvSampler` s15, Material JSON과 무관) 바인딩. `PixelLight.hlsli::EnvLight(posv, mInverseView, nrm, OutAmbient)`가 View 공간 **반사 벡터**(`reflect(normalize(posv), N)`)를 `mInverseView`로 월드 방향으로 되돌려 큐브맵을 샘플하고 `CalculateLight`의 4번째 `out`(`OutAmbient`)으로 돌려줌 (이전의 Sphere Map/MatCap 방식은 주석으로만 남음). 큐브맵은 Texture JSON의 `"CubeMap": true`로 로드하며(DDS 큐브맵 6종 제공), 데모: `AUtaTeapot` + `ASkyLight`(Tri_World의 `uffizi_cross_dds`) |
 | 🪞 | **SceneCapture · RenderTarget (Mirror)** | `RenderTarget` · `DepthStencil` · `DepthStencilState`가 Material처럼 **JSON 에셋**이 됐습니다(예전엔 하드코딩이던 `DS_DEPTH_ON/OFF/WRITE_OFF`도 이제 JSON 3개). `FPSceneCaptureComponent2D`가 매 프레임 **Mesh Pass보다 먼저** `SceneCaptureRenderPass`로 전체 씬을 자기 RenderTarget에 그린 뒤 `ResolveSubresource`로 샘플 가능한 텍스처로 만들어 두면, 같은 프레임의 `MeshRenderPass`가 `TextureType: "RenderTargetTexture2D"`로 그 텍스처를 **보통 `Texture2D`처럼** Material에서 그대로 샘플링. 거울 데모 `AMirror` |
 | 🖥️ | **RenderTarget 합성 (Quad2D) · Built-In 에셋** | `MeshRenderPass` · `GizmoRenderPass`가 백버퍼 대신 **Built-In RenderTarget**(`MeshRenderPass-RT-BuiltIn`, 크기 = GameSetting 해상도 × Scale)에 Letterbox 뷰포트로 그리고 MSAA Resolve 후, `Quad2DRenderPass`가 `Quad2D_Mesh` + `DefaultQuad2D` 셰이더로 전체 화면에 출력. 이를 위해 `Assets/BuiltIn/`(StaticMesh · Shader · RenderTarget · DepthStencil)과 `LoadBuiltIn*` 로더가 추가되고, **`FPViewPortClient`(뷰포트 · 3분할)와 카메라의 RenderTarget 지정 기능은 제거** |
-| 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 샘플러 36종(AF 단계는 `GameSetting.json`). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환. 슬롯마다 `FPTextureType`(`Texture2D` / `Texture2DArray` / `RenderTargetTexture2D` / `DepthStencilTexture2D`)을 함께 지정 |
+| 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 샘플러 36종(AF 단계는 `GameSetting.json`). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환. 슬롯마다 `FPTextureType`(`Texture2D` / `Texture2DArray` / `RenderTargetTexture2D` / `DepthStencilTexture2D` / `CubeMap`)을 함께 지정. 큐브맵은 Texture JSON에 `"CubeMap": true`(DDS)를 적어 로드 |
 | 🗂️ | **Texture2DArray** *(실험적)* | `LoadTexture2DArray`가 JSON(`Width/Height/ArraySize/SourceTextures[]`)을 읽어 이미 로드된 Texture2D들을 **`RenderingDevice::CheckTextureArrayData`로 포맷·해상도 검증 후 `CreateTextureArray2D`로 한 장의 `Texture2DArray` SRV로 합침**. `MeshRenderPass`는 Material 텍스처 슬롯의 `FPTextureType`에 따라 `GetTextureData`(Texture2D) 또는 `GetTextureArrayData`(Texture2DArray)에서 바인딩할 SRV를 고름. 아직 어떤 게임의 `LoadAssets()`에서도 호출되지 않는 템플릿 단계 |
 | ⚙️ | **GameSetting** | `Assets/GameSetting/GameSetting.json` → `FPAssetLoader::LoadGameSetting`이 읽어 `FPGameSettingData`로 저장 → `FPGameProjectSetting::ProjectSetting()`이 창 크기 · MSAA · AF · 전체화면 값을 반영, `RenderingDevice::SetMSAA/SetAF`로 렌더러에 전달 |
 | 🎭 | **데이터 기반 Material (Shader Reflection)** | Material JSON(`LoadMaterial`)이 셰이더의 **cbuffer 변수 · 텍스처 · 샘플러를 이름으로** 지정. `MakeMaterial`이 컴파일된 셰이더를 `D3DReflect`로 읽어 오프셋 · 슬롯(`b#` / `t#` / `s#`)을 자동 계산하고, 런타임에는 `SetParameter` / `SetNamedTexture` / `SetNamedSampler`로 이름을 통해 값을 바꿈. 재질 1개당 **기본 Material** + 메시마다 **Material Instance** 두 단계로 저장 (없으면 `DefaultMaterial` 사용). 계절 전환 예제(`Terrain`/`Tree`/`Windmill`/`ABox`, [F8](#계절-전환-season)) |
@@ -162,7 +162,7 @@ Engine/ForestPearlEngine/
 ├── FPLocalLightComponent.h / .cpp    # 위치가 있는 라이트의 베이스
 ├── FPPointLightComponent.h / .cpp    # Point Light (Range / Attenuation)
 ├── FP{Spot,Rect}LightComponent.h     # 선언만 있는 골격
-├── FPSkyLightComponent.h / .cpp      # 환경맵 라이트 — 실제로 동작(CubeMap · LightColor · LightIntensity). FPLightComponentBase를 직접 상속([Environment Mapping](#environment-mapping-sky-light--sphere-map) 참고)
+├── FPSkyLightComponent.h / .cpp      # 환경맵 라이트 — 실제로 동작(CubeMap · LightColor · LightIntensity). FPLightComponentBase를 직접 상속([Environment Mapping](#environment-mapping-sky-light--cube-map) 참고)
 ├── FPTextComponent.h / .cpp          # 2D 텍스트
 ├── FPMovementComponent.h / .cpp      # 이동 컴포넌트 (골격만 존재)
 ├── FPMovementCompoent.cpp            #   └ 빈 파일
@@ -276,8 +276,8 @@ Games/Release_Game/Tri_World/
     ├── Model/           Box/ · Terrain/ · ToonLink/ · Tree/ · Windmill/ · UtaTeapot/   (*.fbx — Windmill은 Windmill.fbx 하나로 통합)
     ├── StaticMesh/      Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/ · UtaTeapot/   (*_StaticMesh.json, 52개)
     ├── Material/        Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/ · Mirror/ · UtaTeapot/   (Mirror_Material.json — RenderTarget을 텍스처로 샘플링)
-    ├── Texture/         Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/ · SphereMap/ · UtaTeapot/   (*.json, 33개)
-    ├── TextureResource/ Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/ · SphereMap/ · UtaTeapot/   (79개: png 48 · dds 16 · jpg 10 · bmp 2 · tga 3)
+    ├── Texture/         Box/ · Dwaf/ · Terrain/ · Tree/ · Windmill/ · ToonLink/ · SphereMap/ · CubeMap/ · UtaTeapot/   (*.json, 57개)
+    ├── TextureResource/ Box/ · Dwaf/ · Terrain/ · Tree/ · Windmill/ · ToonLink/ · SphereMap/ · CubeMap/ · UtaTeapot/   (117개: png 50 · dds 36 · jpg 16 · bmp 12 · tga 3 — `CubeMap/`에 DDS 큐브맵 6종 · jpg 1)
     ├── RenderTarget/    Mirror_RenderTarget.json (512×512 RGBA8)
     ├── DepthStencil/    Mirror_DepthStencil.json (512×512 D24_S8_UINT)
     ├── Shader/          TerrainVertexShader.json 등 8개            (셰이더 등록 JSON, `BoxPixelShader.json` · `DwarfPixelShader.json` · `ToonLinkPixelShader.json` · `MirrorPixelShader.json` 추가)
@@ -376,7 +376,7 @@ FPAssetLoader* AssetLoader =
 | `FPTextRenderList` | `GetTextRenderList()` | 텍스트 `UIContextItem` 등록/해제 |
 | `FPCameraList` | `GetCameraList()` | `CameraItem` 등록/해제 |
 | `FPSceneCaptureList` | `GetSceneCaptureList()` | `SceneCaptureItem` 등록/해제. `FPSceneCaptureComponent2D` 등이 `RegistRenderList()`로 등록하며, `Renderer::CreateSceneCaptureList()`가 매 프레임 이 목록을 복사해 [SceneCapture 렌더 패스](#scenecapture--rendertarget-mirror-데모)를 돈다 |
-| `FPSkyLightRenderList` | `GetSkyLightRenderList()` | `FPSkyLightRenderItem` 등록/해제. `FPSkyLightComponent`가 등록하며, `Renderer::CreateSkyLightRenderList()`가 매 프레임 복사해 [Environment Mapping](#environment-mapping-sky-light--sphere-map)에 쓴다. 여러 개가 등록돼도 매 프레임 첫 번째 항목만 실제로 적용됨 |
+| `FPSkyLightRenderList` | `GetSkyLightRenderList()` | `FPSkyLightRenderItem` 등록/해제. `FPSkyLightComponent`가 등록하며, `Renderer::CreateSkyLightRenderList()`가 매 프레임 복사해 [Environment Mapping](#environment-mapping-sky-light--cube-map)에 쓴다. 여러 개가 등록돼도 매 프레임 첫 번째 항목만 실제로 적용됨 |
 | `FPGameProjectSetting` | `GetGameProjectSetting()` | 윈도우 클래스/타이틀, 창 크기(기본 960×600), 클라이언트 영역 크기, Aspect, **MSAA / AF / FullScreen**(`GameSetting.json`에서 `ProjectSetting()`이 읽어 채움) |
 
 ### 엔진 구성 요소 전체 목록
@@ -1040,7 +1040,7 @@ Light는 **컴포넌트 → `FPLightRenderList` → `CreateLightRenderList`(값 
 | `FPLightComponent` → `FPDirectionalLightComponent` | `LightType_Direction`. 생성자에서 기본값을 채우고 렌더 목록에 등록 |
 | `FPLightComponent` → `FPLocalLightComponent` → `FPPointLightComponent` | `LightType_Point`. 위치(컴포넌트의 월드 위치)와 `Range` · `Attenuation`을 사용 |
 | `FPSpotLightComponent` · `FPRectLightComponent` | 헤더만 있는 골격. `FPLightType`에는 `LightType_Spot` · `LightType_Rect`가 정의되어 있지만 셰이더는 아직 계산하지 않음(결과 0) |
-| `FPSkyLightComponent` (`FPLightComponentBase` 직접 상속, `FPLightComponent`는 거치지 않음) | **더 이상 골격이 아니라 실제로 동작합니다.** `FPLightRenderList`가 아니라 별도의 `FPSkyLightRenderList`에 등록됩니다 — 아래 [Environment Mapping](#environment-mapping-sky-light--sphere-map) 참고 |
+| `FPSkyLightComponent` (`FPLightComponentBase` 직접 상속, `FPLightComponent`는 거치지 않음) | **더 이상 골격이 아니라 실제로 동작합니다.** `FPLightRenderList`가 아니라 별도의 `FPSkyLightRenderList`에 등록됩니다 — 아래 [Environment Mapping](#environment-mapping-sky-light--cube-map) 참고 |
 
 | 기본값 | Directional | Point |
 |---|---|---|
@@ -1072,12 +1072,12 @@ struct alignas(16) LightItem { unsigned int LightCnt; unsigned int Padding[3]; L
 // Assets/ShaderResource/PixelLight.hlsli — 기본 Mesh PS가 포함 (Per-Pixel, 현재 활성 경로)
 cbuffer LightConstBuffer    : register(b2) { uint LightCnt; float3 Padding; LIGHT Light[Light_MAX]; };  // 9232 byte
 cbuffer MaterialConstBuffer : register(b3) { MATERIAL Material; };   // BaseColor · Diffuse · Ambient · Specular · Roughness · Emissive(96 byte) — Material JSON의 Parameters로 채워짐
-void CalculateLight(float4 posv, float4 nrm, matrix mView, out float4 OutDiffuse, out float4 OutSpecular, out float4 OutEmissive, out float4 OutAmbient);
+void CalculateLight(float4 posv, float4 nrm, matrix mView, matrix mInverseView, out float4 OutDiffuse, out float4 OutSpecular, out float4 OutEmissive, out float4 OutAmbient);   // mInverseView(b0)가 추가됨 — 환경맵 반사용
 // VertexLight.hlsli 쪽은 여전히 float4 CalculateLight(posv, nrm, mWV, mView, mInverseTranseposeWV) 하나만 돌려줌(비활성 경로, 시그니처가 다름)
 ```
 
 > [!NOTE]
-> `PixelLight.hlsli`에는 **3개 `out` 매개변수짜리 `CalculateLight` 전방 선언도 그대로 남아 있습니다**(실제 정의는 4개짜리). HLSL은 매개변수 개수가 다르면 오버로드로 취급해 컴파일은 되지만, 그 3개짜리 선언에 대응하는 정의가 없으므로 — 아무도 그 오버로드를 호출하지 않는 한 문제가 되지 않는 죽은 선언입니다. [Environment Mapping](#environment-mapping-sky-light--sphere-map) 추가 당시 전방 선언을 같이 고치지 않은 흔적으로 보입니다.
+> `PixelLight.hlsli`에는 **3개 `out` 매개변수짜리 `CalculateLight` 전방 선언도 그대로 남아 있습니다**(실제 정의는 4개짜리). HLSL은 매개변수 개수가 다르면 오버로드로 취급해 컴파일은 되지만, 그 3개짜리 선언에 대응하는 정의가 없으므로 — 아무도 그 오버로드를 호출하지 않는 한 문제가 되지 않는 죽은 선언입니다. [Environment Mapping](#environment-mapping-sky-light--cube-map) 추가 당시 전방 선언을 같이 고치지 않은 흔적으로 보입니다.
 
 > [!IMPORTANT]
 > 이전에는 라이트마다 슬롯을 하나씩 차지해 Material 슬롯이 라이트 수에 따라 밀렸지만, 지금은 **`b2` = Light 블록(항상 1개), `b3` = Material로 고정**입니다. 라이트가 0개여도(`LightCnt = 0`) 위치는 바뀌지 않습니다.
@@ -1095,7 +1095,7 @@ void CalculateLight(float4 posv, float4 nrm, matrix mView, out float4 OutDiffuse
 | Diffuse | Half-Lambert에서 **일반 Lambert로 변경**: `LambertLight()`가 `max(dot(N, L), 0) × LightDiffuse × MaterialDiffuse`를 반환(`saturate` 제거, `Ambient` 인자는 여전히 받지 않음). 결과에 `Material.BaseColor`를 곱한 뒤 `Ambient`와 합쳐 `(Diff + Amb) × LightColor`로 `OutDiffuse`에 누적 |
 | Specular | `SpecularBlinPhongLight()`(`SpecularBlinPhong.hlsli`) — Half Vector `H = normalize(L + V)`, `Shininess = lerp(128, 2, saturate(Material.Roughness.r))`, `pow(saturate(dot(N, H)), Shininess) × LightSpecular × MaterialSpecular`. 반환값의 `saturate`는 **제거됨**. `dot(N, L) ≤ 0`이거나 `L + V`가 0에 가까우면 0. `Spec × LightColor`를 `OutSpecular`에 누적 |
 | Ambient | `LightData.Ambient × Material.Ambient × Material.BaseColor`로 분리 계산해 `Diffuse` 쪽에 합산(별도 출력은 없음) |
-| Ambient(Env) *(신규)* | 라이트 반복문이 끝난 뒤 **조건 없이 매번** `EnvLight(nrm, OutAmbient)`를 호출해 `OutAmbient`(4번째 `out`)를 채웁니다. 이름은 비슷하지만 바로 위 "Ambient"(라이트별 `LightData.Ambient`)와는 **무관한 별도 값**입니다 — [Environment Mapping](#environment-mapping-sky-light--sphere-map) 참고 |
+| Ambient(Env) *(신규)* | 라이트 반복문이 끝난 뒤 **조건 없이 매번** `EnvLight(posv, mInverseView, nrm, OutAmbient)`를 호출해 `OutAmbient`(4번째 `out`)를 채웁니다. 이름은 비슷하지만 바로 위 "Ambient"(라이트별 `LightData.Ambient`)와는 **무관한 별도 값**입니다 — [Environment Mapping](#environment-mapping-sky-light--cube-map) 참고 |
 | 클램프 | **파이프라인 전체에서 `saturate`가 사라졌습니다**(`LambertLight` · `SpecularBlinPhongLight` 내부, 그리고 예전의 `saturate(Diff+Spec+Amb)` 모두). 값이 1을 넘어도 그대로 누적되므로 라이트가 겹치면 과다 노출처럼 보일 수 있습니다 |
 | 버그 수정 | `switch`는 **Directional · Point 모두 `DirLight`/`PointLight`를 호출해 `OutDiffuse`/`OutSpecular`에 누적** — `VertexLight.hlsli`(비활성 경로)에만 남아 있던 "Directional이 덮어써 Point 결과를 지우는" 버그는 여전히 고쳐진 상태 |
 | Spot · Rect | 타입 정의만 있고 실제 계산 호출은 주석 처리되어 있어 여전히 **기여하지 않음**(`OutDiffuse`/`OutSpecular`에 0을 더함) |
@@ -1146,7 +1146,7 @@ Dwarf 캐릭터용 `Assets/ShaderResource/DwarfPixelShader.psh`(Tri_World)는 `T
 > [!NOTE]
 > 셰이더 등록 JSON은 `Shader/ToonLinkPixelShader.json`(`"Path": "ToonLinkPixelShader.pso"`), HLSL 소스는 `ShaderResource/ToonLinkPixelShader.psh`이며 `GameProjectLoader::LoadAssets()`에 `LoadPixelShader("ToonLinkPixelShader.json", ...)` 호출이 추가됐습니다. `Tri_World.vcxproj`에도 FxCompile 항목이 추가됐고, 엔진의 `BumpMapping.hlsli`/`PixelLight.hlsli`를 참조하므로 추가 포함 디렉터리 설정도 함께 들어 있습니다.
 
-#### Environment Mapping (Sky Light · Sphere Map)
+#### Environment Mapping (Sky Light · Cube Map)
 
 `FPSkyLightComponent`가 실제로 동작하게 되면서(위 클래스 표 참고), **모든 메시가 공용 환경맵을 받아 비추는** 기능이 추가됐습니다. `Material.Specular`처럼 메시마다 다른 텍스처를 지정하는 Bump/Specular Map과 달리, 이건 **씬에 등록된 SkyLight 하나를 모든 Mesh Pass 그리기 호출에 전역으로 바인딩**하는 방식입니다 — 그래서 Material JSON에는 손댈 게 전혀 없고(아래 참고), 대신 **렌더러·`PixelLight.hlsli` 쪽 바인딩 코드가 바뀌었습니다.**
 
@@ -1156,22 +1156,22 @@ flowchart TD
     B --> C["Renderer::CreateSkyLightRenderList<br/>Active인 것만 복사, FPSkyLightList[0]만 사용"]
     C --> D["CreateMeshRenderList<br/>메시마다 PS b1에 LightColor·LightIntensity 추가"]
     C --> E["MeshRenderPass / SceneCaptureRenderPass<br/>메시마다 EnvTex(t127)·EnvSampler(s15) 고정 바인딩"]
-    D --> F["PixelLight.hlsli::EnvLight()<br/>View 공간 Normal의 xy를 그대로 UV로 매핑해 샘플(MatCap 방식)"]
+    D --> F["PixelLight.hlsli::EnvLight()<br/>View 공간 반사 벡터 → mInverseView로 월드 방향 → TextureCube 샘플"]
     E --> F
 ```
 
 | 단계 | 내용 |
 |---|---|
-| 컴포넌트 | `FPSkyLightComponent` — `CubeMap`(`std::string`, 텍스처 **에셋 이름**. 필드 주석: *"현재는 Sphere Map으로 우선 테스트"* — 이름은 Cube Map이지만 실제로 쓰는 건 평범한 2D 텍스처), `LightColor`(기본 흰색), `LightIntensity`(기본 `1.0`), `RealTimeCapture`(bool, **저장만 하고 어디서도 읽지 않는 죽은 필드**). `SetActive` · `SetRealTimeCapture` · `SetLightIntnesity`(오타, 실제 이름) · `SetLightColor` · `SetCubeMap` |
+| 컴포넌트 | `FPSkyLightComponent` — `CubeMap`(`std::string`, 텍스처 **에셋 이름**. `"CubeMap": true`로 로드한 **큐브맵 텍스처**의 이름. Tri_World는 `"uffizi_cross_dds"`. 이전에는 Sphere Map용 2D 텍스처를 넣었음), `LightColor`(기본 흰색), `LightIntensity`(기본 `1.0`), `RealTimeCapture`(bool, **저장만 하고 어디서도 읽지 않는 죽은 필드**). `SetActive` · `SetRealTimeCapture` · `SetLightIntnesity`(오타, 실제 이름) · `SetLightColor` · `SetCubeMap` |
 | 등록 | `RegistSkyLightRenderList()`가 새 15번째 `GameInstanceSubSystem`인 `FPSkyLightRenderList`(`GetSkyLightRenderList()`)에 `FPSkyLightRenderItem*`(필드 포인터 4개: `Active`·`LightIntensity`·`LightColor`·`CubeMap`)를 등록 — Light/Camera와 같은 "포인터 등록, 매 프레임 역참조" 패턴 |
 | 프레임당 수집 | `ForestPearlEngine::GameLoop()`가 `CreateLightRenderList()`와 `CreateMeshRenderList()` 사이에 `Render->CreateSkyLightRenderList()`를 새로 호출. `Active`인 항목만 `Renderer::FPSkyLightList`(멤버)로 스냅샷 |
 | **여러 개를 등록해도 1개만 적용** | 매 프레임 `FPSkyLightList[0]`**만** 읽습니다. 두 번째 이상의 `FPSkyLightComponent`는 등록은 되지만 렌더링에는 전혀 반영되지 않습니다 |
 | PS 상수 버퍼 주입 | `CreateMeshRenderList()`가 Light 블록(`AddConstantBuffer(..., 2, LightBuffer)`)을 추가한 직후, **메시마다 조건 없이** `AddConstantBuffer(MeshRenderData.PixelConstBuffer, 1, SkyLightDataItem)`을 추가합니다(`SkyLightDataItem = {LightColor, LightIntensity}`, SkyLight가 하나도 없으면 전부 0으로 채운 기본값) |
-| 텍스처 바인딩 | `MeshRenderPass`·`SceneCaptureRenderPass` 둘 다, 메시 하나를 그릴 **때마다** `Device.PSSetShaderResources(127, 1, EnvTex)` / `Device.PSSetSamplers(15, 1, Filter_Tri_Linear_Sampler_CLAMP)`로 `FPSkyLightList[0].CubeMap`의 SRV를 **t127 · s15에 고정** 바인딩합니다. `AssetManager->GetTextureData(...)`를 그대로 쓰는 **평범한 `Texture2D` 에셋**이라 Material JSON에 `"TextureType"`을 추가하거나 `Textures[]`에 등록할 필요가 없습니다(RenderTarget/DepthStencil 텍스처와는 다른 방식) |
+| 텍스처 바인딩 | `MeshRenderPass`·`SceneCaptureRenderPass` 둘 다, 메시 하나를 그릴 **때마다** `Device.PSSetShaderResources(127, 1, EnvTex)` / `Device.PSSetSamplers(15, 1, Filter_Tri_Linear_Sampler_CLAMP)`로 `FPSkyLightList[0].CubeMap`의 SRV를 **t127 · s15에 고정** 바인딩합니다. `AssetManager->GetTextureData(...).ShaderResourceView`를 그대로 쓰므로 Material JSON에 `"TextureType"`을 추가하거나 `Textures[]`에 등록할 필요가 없습니다. 다만 에셋은 **큐브맵 SRV**(`"CubeMap": true`)여야 하며, PS의 `EnvTex`도 `TextureCube`로 선언돼 있습니다 |
 
 ```hlsl
 // Assets/ShaderResource/PixelLight.hlsli
-Texture2D EnvTex : register(t127);
+TextureCube EnvTex : register(t127);
 SamplerState EnvSampler : register(s15);
 
 cbuffer SkyLightConstantBuffer : register(b1)
@@ -1180,23 +1180,26 @@ cbuffer SkyLightConstantBuffer : register(b1)
     float LightIntensity;
 };
 
-static const float4x4 MatrixEnv = {
-    0.5f, 0.0f, 0.0f, 0.5f,
-    0.0f, -0.5f, 0.0f, 0.5f,
-    0.0f, 0.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 1.0f
-};
-
-void EnvLight(float4 nrm, inout float4 OutAmbient)
+void EnvLight(float4 posv, matrix mInverseView, float4 nrm, inout float4 OutAmbient)
 {
-    float4 N = normalize(float4(nrm.xyz, 0.0f));
-    float2 EnvUV = mul(MatrixEnv, float4(N.xyz, 1.0f)).xy;
-    OutAmbient = EnvTex.Sample(EnvSampler, EnvUV) * LightColor * LightIntensity * Material.BaseColor;
+    float3 N = normalize(nrm.xyz);              // View 공간 노멀
+    float3 L = normalize(posv.xyz);             // 눈 → 표면 방향 (View 공간)
+    float3 R = reflect(L, N);                   // View 공간 반사 벡터
+
+    R = mul(mInverseView, float4(R, 0)).xyz;    // 월드 방향으로 되돌림 (큐브맵은 월드 방향으로 샘플)
+
+    float3 UVW = normalize(R);
+    OutAmbient = EnvTex.Sample(EnvSampler, UVW) * LightColor * LightIntensity * Material.BaseColor;
 }
+
+// 이전 Sphere Map(MatCap) 버전은 PixelLight.hlsli 하단에 주석 블록으로만 남아 있고 사용되지 않음
 ```
 
 > [!IMPORTANT]
-> 이름(`CubeMap`)과 공식 때문에 반사 벡터 기반 "Sphere Map"(`R = reflect(-V, N)` 뒤 `m = 2√(Rx²+Ry²+(Rz+1)²)`로 UV 계산)을 떠올리기 쉽지만, **실제 공식은 그게 아닙니다.** `EnvLight()`는 View 벡터를 전혀 쓰지 않고 **View 공간 Normal의 x·y를 `0.5·N + 0.5`(y는 뒤집어서)로 바로 `[0,1]` UV에 매핑**합니다 — 흔히 "MatCap(Material Capture)" 방식이라 부르는 노멀 기반 룩업입니다. 물체가 움직여도 카메라에 대한 노멀 방향이 그대로면 같은 색이 나오고, 거리나 카메라 위치 변화에는 반응하지 않습니다. `Material.Roughness`와도 섞이지 않는 **단순 가산 텀**입니다.
+> **이제 실제 반사 기반 환경맵입니다.** 이전에는 이름(`CubeMap`)과 달리 View 공간 Normal의 xy를 `0.5·N + 0.5`로 `[0,1]` UV에 매핑하는 MatCap 방식이었지만(View 벡터를 쓰지 않고 카메라에 대한 노멀 방향만 반영), 지금은 `reflect(normalize(posv), N)`로 **시선 반사 벡터**를 구해 월드 방향으로 되돌린 뒤 `TextureCube`를 샘플합니다. 카메라 위치 · 방향이 바뀌면 반사 내용도 달라지고, 여전히 `Material.Roughness`와 섞이지 않는 **단순 가산 텀**(`LightColor × LightIntensity × BaseColor`)입니다.
+
+> [!WARNING]
+> **`CalculateLight` 시그니처가 바뀌었습니다.** 4번째 인자로 `matrix mInverseView`가 추가되어 (`CalculateLight(posv, N, mView, mInverseView, DiffuseLit, SpecularLit, EmissiveLit, AmbientLit)`) `PixelLight.hlsli`를 포함하는 **모든 커스텀 PS를 함께 고쳐야 합니다** (엔진 `DefaultPixelShader`와 Tri_World의 Box · Dwarf · Terrain · ToonLink · Tree · WindmillWingBody PS는 이미 수정됨). PS에는 `b0`의 `ObejctConstBuffer`가 `mInverseView`를 포함해 선언되어 있어야 하며, 그렇지 않으면 컴파일되지 않습니다.
 
 > [!IMPORTANT]
 > `SkyLightConstantBuffer`가 **PS `b1`**을 차지하게 되면서, 그 전까지 `b1`을 쓰던 Tri_World의 `SeasonConstBuffer`(`AutumnColor`/`WinterColor`/`SeasonCnt`, `Box`·`Terrain`·`Tree`·`WindmillWingBody`의 PS)가 전부 **`b1` → `b4`로 옮겨졌습니다.** (`FPConstantBufferRenderDataUtil::AddConstantBuffer`는 슬롯이 겹쳐도 그냥 뒤에 추가만 하므로, 슬롯이 그대로 `b1`이었다면 SkyLight 블록이 뒤에 덮어써 계절 텍스처 블렌딩이 깨졌을 것입니다.)
@@ -1213,7 +1216,13 @@ void EnvLight(float4 nrm, inout float4 OutAmbient)
 > `BumpMapping.hlsli::CalculateBumpNormal`의 바이탄젠트 계산이 `cross(NormalVS, T.xyz)`(직교화하지 않은 원본 Tangent)에서 `cross(NormalVS, Tangent)`(Gram-Schmidt로 이미 직교화한 지역 변수)로 바뀌었습니다. 환경맵과는 무관한, TBN 기저를 실제로 직교로 만드는 버그 수정입니다.
 
 > [!NOTE]
-> `ASkyLight`(Tri_World · Test_SphereMap 둘 다 거의 동일): 생성자에서 `SkyLightComponent = new FPSkyLightComponent(this); SkyLightComponent->SetCubeMap("Cross_Roads_Probe_bmp");`가 전부입니다. 텍스처 자체는 평범한 `LoadTexture`(WIC, `Cross_Roads_Probe.bmp`)로 로드됩니다.
+> `ASkyLight`(Tri_World): 생성자에서 `SkyLightComponent = new FPSkyLightComponent(this); SkyLightComponent->SetCubeMap("uffizi_cross_dds");`가 전부입니다. 텍스처는 `LoadAssets()`의 `LoadTexture("CubeMap/uffizi_cross_dds.json", AssetOwner::User)`로 **큐브맵으로** 로드됩니다 (`TextureResource/CubeMap/`에는 `uffizi` · `galileo` · `grace` · `rnl` · `stpeters` `_cross.dds`와 `uffizi_cross_Mark.dds`, `lolloooksdeesmallvv9.jpg`가 들어 있음).
+
+> [!NOTE]
+> `Test_SphereMap`의 `ASkyLight`는 여전히 `SetCubeMap("Cross_Roads_Probe_bmp")`(`"CubeMap": false`인 **2D Sphere Map** 텍스처)를 지정합니다. 엔진 `PixelLight.hlsli`는 이제 `TextureCube`를 기대하므로, 2D SRV가 `t127`에 바인딩되면 타입이 맞지 않아 환경맵 항이 제대로 나오지 않을 수 있습니다 (코드를 읽어 확인한 내용이며 실행으로 확인하지는 못했습니다). 이 데모를 쓰려면 큐브맵 에셋으로 바꿔야 합니다.
+
+> [!NOTE]
+> 환경맵 텀을 합성하는 방식도 PS마다 조금씩 바뀌었습니다. `DwarfPixelShader`는 `EnvColor = col * AmbientLit * SpecMap * DiffuseLit * 0.5`를 만들어 `col = BaseCol + SpecularCol + EmissiveLit + EnvColor`로 더하고(환경 반사를 Specular Map으로 변조), `ToonLinkPixelShader`의 환경 항은 `col * AmbientLit * DiffuseLit`(이전에는 `* DiffMap`)입니다.
 
 **Emissive (자체 발광)**
 
@@ -1369,7 +1378,7 @@ flowchart TD
 
 ```cpp
 // Renderers/FPRenderingCommon.h
-enum FPTextureType { Texture2D, Texture2DArray, RenderTargetTexture2D, DepthStencilTexture2D, FPTextureType_MAX_ };
+enum FPTextureType { Texture2D, Texture2DArray, RenderTargetTexture2D, DepthStencilTexture2D, CubeMap, FPTextureType_MAX_ };
 ```
 
 Material JSON의 `Textures[].TextureType`에 `"RenderTargetTexture2D"` / `"DepthStencilTexture2D"`를 쓸 수 있습니다(`Mirror_Material.json`이 실제 예). 문제는 HLSL `Texture2D` 변수는 셰이더 리플렉션에도 **항상 `Texture2D`로만 보인다는 점**인데, `FPMaterial::SetNamedTexture`가 이를 호환 처리합니다.
@@ -1399,7 +1408,7 @@ Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData);
 
 #### SceneCaptureComponent 계열
 
-`FPSceneCaptureComponent`(추상, `FPSceneComponent` 상속) → `FPSceneCaptureComponent2D`(구현) / `FPSceneCaptureComponentCube`(빈 스텁, `{}`). `FPPlanarReflectionComponent`도 `class FPPlanarReflectionComponent : public FPSceneCaptureComponent {};`뿐인 **빈 스텁**이라, 기존 `FPSpotLightComponent`/`FPRectLightComponent`처럼 아직 인스턴스화할 수 없습니다(부모의 순수 가상 함수를 하나도 구현하지 않음). `FPSkyLightComponent`는 한때 같은 처지였지만 [Environment Mapping](#environment-mapping-sky-light--sphere-map) 추가로 실제 구현체가 됐습니다.
+`FPSceneCaptureComponent`(추상, `FPSceneComponent` 상속) → `FPSceneCaptureComponent2D`(구현) / `FPSceneCaptureComponentCube`(빈 스텁, `{}`). `FPPlanarReflectionComponent`도 `class FPPlanarReflectionComponent : public FPSceneCaptureComponent {};`뿐인 **빈 스텁**이라, 기존 `FPSpotLightComponent`/`FPRectLightComponent`처럼 아직 인스턴스화할 수 없습니다(부모의 순수 가상 함수를 하나도 구현하지 않음). `FPSkyLightComponent`는 한때 같은 처지였지만 [Environment Mapping](#environment-mapping-sky-light--cube-map) 추가로 실제 구현체가 됐습니다.
 
 | 항목 | 내용 |
 |---|---|
@@ -1684,8 +1693,8 @@ float4 PS_Main(float4 pos : SV_POSITION, float4 col : COLOR0, float4 posv : TEXC
 {
     if (!IsFrontFace) N = -N;                  // 뒷면이면 노멀을 뒤집어 라이팅
 
-    float4 DiffuseLit, SpecularLit, EmissiveLit;
-    CalculateLight(posv, N, mView, DiffuseLit, SpecularLit, EmissiveLit);   // 세 값을 out 매개변수로 받음
+    float4 DiffuseLit, SpecularLit, EmissiveLit, AmbientLit;
+    CalculateLight(posv, N, mView, mInverseView, DiffuseLit, SpecularLit, EmissiveLit, AmbientLit);   // 네 값을 out 매개변수로 받음 (mInverseView는 b0 ObejctConstBuffer 선언 필요)
 
     float4 tex = TexDiff.Sample(Smpler, uv);
     float4 col2 = col * DiffuseLit * tex + SpecularLit + EmissiveLit;
@@ -1716,6 +1725,7 @@ float4 PS_Main(float4 pos : SV_POSITION, float4 col : COLOR0, float4 posv : TEXC
 | `Name` | 등록 이름. Material JSON의 `Texture[].Name`이 이 이름을 참조 |
 | `Path` | `TextureResource/` 기준 이미지 파일 |
 | `Type` | `"WIC"` — bmp · png · jpg 등 WIC가 읽는 형식 / `"DDS"` — DDS 파일 |
+| `CubeMap` | (선택, 기본 `false`) `true`이면 큐브맵 텍스처(`D3D11_RESOURCE_MISC_TEXTURECUBE`)로 로드 — `CreateWICCubeTextureFromFile` / `CreateDDSCubeTextureFromFile`. HLSL에서는 `TextureCube`로 받음 |
 
 - 이미 같은 이름이 등록되어 있으면 로드하지 않고 콘솔에 메시지를 출력합니다.
 - 파일 열기 · 이미지 로드 실패는 콘솔에만 출력되고 계속 진행됩니다. 실패한 텍스처는 `nullptr` 리소스로 남습니다.
@@ -1802,7 +1812,7 @@ flowchart TD
 | `Material.Textures[]` | | 텍스처 바인딩. `{ Type, Parameter, Asset, TextureType, ArrayIndex? }` |
 | `Textures[].Parameter` | ✔ | 셰이더의 **텍스처 변수 이름** (예: `TexDiff`). 슬롯 번호는 리플렉션이 찾음 |
 | `Textures[].Asset` | ✔ | `LoadTexture` / `LoadTexture2DArray`로 등록한 이름 |
-| `Textures[].TextureType` | ✔ | `"Texture2D"` 또는 `"Texture2DArray"` — 셰이더 변수 타입과 같아야 함 |
+| `Textures[].TextureType` | ✔ | `"Texture2D"` · `"Texture2DArray"` · `"CubeMap"`(`TextureCube` 변수) · `"RenderTargetTexture2D"` · `"DepthStencilTexture2D"` — 셰이더 변수 타입과 같아야 함 |
 | `ArrayIndex` | | HLSL 텍스처 **배열**(`Texture2D Tex[4]`)의 요소 번호. 생략하면 `0` |
 | `Material.Samplers[]` | | 샘플러 바인딩. `{ Type, Parameter, SamplerType, ArrayIndex? }`. `Parameter`는 `SamplerState` 변수 이름, `SamplerType`은 `FPSamplerType` 열거형 이름 ([Texture](#texture)) |
 
@@ -1855,7 +1865,7 @@ struct FPReflectionResourceInfo       // 텍스처 변수 1개 (배열이면 요
 {
     std::string  Name;                // "TexDiff" 또는 배열 요소 "Tex[2]"
     std::string  AssetName;           // 연결된 텍스처 에셋 이름 (JSON Textures[].Asset / SetNamedTexture가 채움)
-    FPTextureType TextureType;        // Texture2D / Texture2DArray
+    FPTextureType TextureType;        // Texture2D / Texture2DArray / CubeMap (RenderTarget · DepthStencil 텍스처 포함)
     unsigned int Slot;                // register(t#)
     unsigned int BindCount;           // 배열 길이 (배열이 아니면 1)
 };
@@ -1967,7 +1977,7 @@ cbuffer PulseConstBuffer : register(b4)
 |---|---|
 | 대상 | **PS 단계만** (`D3D_SIT_TEXTURE`, `D3D_SIT_SAMPLER`). VS의 텍스처 · 샘플러는 수집하지 않음 |
 | 슬롯 검사 | `BindCount ≠ 0`이고 `BindPoint + BindCount`가 텍스처는 **128**, 샘플러는 **16**을 넘지 않아야 함 |
-| 텍스처 타입 | `D3D_SRV_DIMENSION_TEXTURE2D` → `Texture2D`, `…TEXTURE2DARRAY` → `Texture2DArray`. 그 밖의 타입(`Texture3D`, `TextureCube`, `Texture2DMS` 등)은 **실패** |
+| 텍스처 타입 | `D3D_SRV_DIMENSION_TEXTURE2D` → `Texture2D`, `…TEXTURE2DARRAY` → `Texture2DArray`, `…TEXTURECUBE` → `CubeMap`. 그 밖의 타입(`Texture3D`, `Texture2DMS` 등)은 **실패** |
 | 배열 | `Texture2D Tex[4]` → `Tex[0]`, `Tex[1]`, `Tex[2]`, `Tex[3]` 네 항목(슬롯 `BindPoint + i`). 샘플러 배열도 같은 방식 |
 | 중복 | 같은 이름 또는 같은 슬롯이 이미 있으면 실패 |
 | 초기 상태 | `AssetName`은 빈 문자열, `SamplerType`은 `Filter_Tri_Linear_Sampler_CLAMP`. 이후 `SetNamedTexture` / `SetNamedSampler`가 채움 |
@@ -2010,7 +2020,7 @@ flowchart LR
 | `MaterialConstBuffer가 포함하는 Parameter가 없음` | JSON에 적은 cbuffer에 변수가 하나도 없음 |
 | `등록된 셰이더에서 찾을 수 없음` | JSON `ConstantBuffer` 이름이 해당 단계 셰이더에 없음 |
 | `중복 Parameter` / `Texture 이름 또는 슬롯 중복` / `Sampler 이름 또는 슬롯 중복` | 같은 이름 · 슬롯이 둘 이상 |
-| `지원하지 않는 텍스처 타입` | `Texture2D` / `Texture2DArray` 외의 SRV |
+| `지원하지 않는 텍스처 타입` | `Texture2D` / `Texture2DArray` / `TextureCube` 외의 SRV |
 | `Material parameter missing/type mismatch: CB.Name` | JSON 변수 이름이 셰이더에 없거나 값 개수가 `Components × ArrayCount`와 다름 |
 | `Material texture asset not loaded: 이름` | `Textures[].Asset`이 아직 로드되지 않음 (로드 순서 확인) |
 | `Material texture failed` / `Material sampler failed` | HLSL 변수 이름이 없거나, 타입 불일치 또는 슬롯 범위 초과 |
@@ -2506,6 +2516,7 @@ void LoadAssets()
 | `Name` | ✔ | 등록 이름 (Material JSON `Textures[].Asset`, Texture2DArray `SourceTextures[]`가 참조) |
 | `Path` | ✔ | `TextureResource/` 기준 이미지 경로 (하위 폴더 포함 가능) |
 | `Type` | ✔ | `"WIC"` — Windows Imaging Component가 읽는 형식(`png` · `jpg` · `bmp` · `tiff` · `gif` 등), 밉맵 자동 생성<br/>`"DDS"` — DDS 파일 (밉맵이 들어 있으면 그대로 사용) |
+| `CubeMap` | | `true` / `false`. 생략하면 `false`. `true`이면 큐브맵으로 로드되어 Material JSON에서는 `"TextureType": "CubeMap"`, SkyLight는 `SetCubeMap(이름)`으로 사용 |
 
 ```json
 // WIC (png / jpg / bmp / tga …)
@@ -2515,8 +2526,12 @@ void LoadAssets()
 // DDS
 { "Name": "Field_micro02_dds", "Path": "Terrain/Field_micro02.dds", "Type": "DDS" }
 ```
+```json
+// 큐브맵 (DDS) — Assets/Texture/CubeMap/uffizi_cross_dds.json
+{ "Name": "uffizi_cross_dds", "Path": "CubeMap/uffizi_cross.dds", "Type": "DDS", "CubeMap": true }
+```
 
-`Type`이 `"WIC"` · `"DDS"`가 아니면 텍스처가 만들어지지 않고(경고 없음) 빈 SRV가 등록됩니다.
+`Type`이 `"WIC"` · `"DDS"`가 아니면 텍스처가 만들어지지 않고(경고 없음) 빈 SRV가 등록됩니다. `"CubeMap": true`는 6면이 들어 있는 **DDS 큐브맵**과 함께 쓰는 것이 안전합니다 (WIC 이미지는 단일 2D 이미지라 6면 큐브맵을 담을 수 없어 `"WIC"` + `"CubeMap": true`는 로드에 실패할 수 있습니다 — 코드를 읽어 추정한 내용). 이전 JSON에는 `CubeMap` 키가 없어도 동작하며, 엔진 · Tri_World · Test_SphereMap의 기존 Texture JSON에는 `"CubeMap": false`가 일괄로 추가되었습니다.
 
 ---
 
@@ -2620,7 +2635,7 @@ float4 c = TerrainLayers.Sample(Smpler, float3(uv, 2));   // 2번 슬라이스 (
 |---|---|
 | `Parameters[].Type` · `Textures[].Type` · `Samplers[].Type` | `"VS"` · `"PS"` (텍스처 · 샘플러는 **`"PS"`만** 유효) |
 | `Parameters[].Values.<변수>` | 숫자 1개(`float`) 또는 숫자 배열(`float2`=2개, `float3`=3개, `float4`=4개, 배열 변수는 요소 값을 이어서 `Components × ArrayCount`개) |
-| `Textures[].TextureType` | `"Texture2D"` · `"Texture2DArray"` (그 밖의 값이면 메시지 출력 후 `Texture2D`) |
+| `Textures[].TextureType` | `"Texture2D"` · `"Texture2DArray"` · `"CubeMap"` · `"RenderTargetTexture2D"` · `"DepthStencilTexture2D"` (그 밖의 값이면 메시지 출력 후 `Texture2D`). `"CubeMap"`은 `HasTextureData`로 에셋 존재를 확인하고 `GetTextureData().ShaderResourceView`로 바인딩 |
 | `Textures[].ArrayIndex` / `Samplers[].ArrayIndex` | 0 이상의 정수 (HLSL **배열** 변수의 요소 번호, 생략 시 0) |
 | `Samplers[].SamplerType` | 아래 36개 중 하나 (그 밖의 값은 `Filter_Tri_Linear_Sampler_CLAMP`) |
 | `TwoSided` | `true` · `false` (생략 시 `false`) |
@@ -2897,7 +2912,7 @@ FBXToStaticMeshJsonTranslator.exe [FBX입력폴더] [Json출력폴더]
 | FBX 스캔 | 입력 폴더의 모든 `.fbx`를 읽어, **메시를 가진 노드마다** StaticMesh JSON 하나를 생성 (`Name` = 파일명 그대로, `NodeName` = FBX 노드 이름) |
 | 소켓 | 메시가 없는 자식 노드(로케이터/더미)는 `Sockets[]`로 변환 |
 | Material | 메시에 연결된 첫 머티리얼마다 **기본 Material**(`<재질명>_Material.json`, 재질당 1번만 저장, `Parameters`만)과 **Material Instance**(`<재질명>_<StaticMesh이름>_MaterialInstance.json`, 메시마다 저장, 같은 `Parameters` + `Textures[]` · `Samplers[]`)를 함께 기록. `VertexShader` / `PixelShader`는 FBX에 정보가 없으므로 `DefaultVertexShader` / `DefaultPixelShader`로 채우고, `Parameters`는 엔진이 항상 읽는 `MaterialConstBuffer`(PS: `Material.BaseColor` / `Diffuse` / `Ambient` / `Emissive`)만 고정으로 생성 |
-| Texture | 머티리얼에 연결된 텍스처를 **실제 이미지 파일 기준으로 중복 없이** Texture JSON으로 저장 (DDS면 `"DDS"`, 그 외엔 `"WIC"`). Material Instance의 `Textures[]`에는 FBX 텍스처 속성 이름(`material_prop`)을 `Parameter`로, 같은 속성에 텍스처가 여러 장이면 `ArrayIndex`를 붙여 기록. `Samplers[]`에는 FBX의 Wrap 설정을 `"Filter_Tri_Linear_" + Sampler_Wrap/CLAMP`로 기록 (필터 정보는 FBX에 없어 항상 Tri-Linear). 같은 `Parameter`에서 `SamplerType`이 겹치는 샘플러는 하나로 합침 |
+| Texture | 머티리얼에 연결된 텍스처를 **실제 이미지 파일 기준으로 중복 없이** Texture JSON으로 저장 (DDS면 `"DDS"`, 그 외엔 `"WIC"`). Material Instance의 `Textures[]`에는 FBX 텍스처 속성 이름(`material_prop`)을 `Parameter`로, 같은 속성에 텍스처가 여러 장이면 `ArrayIndex`를 붙여 기록. `Samplers[]`에는 FBX의 Wrap 설정을 `"Filter_Tri_Linear_" + Sampler_Wrap/CLAMP`로 기록 (필터 정보는 FBX에 없어 항상 Tri-Linear). 같은 `Parameter`에서 `SamplerType`이 겹치는 샘플러는 하나로 합침 Texture JSON에는 FBX에서 큐브맵을 구분할 수 없어 항상 `"CubeMap": false`를 기록 |
 
 - `Material.Emissive`는 FBX 값과 무관하게 항상 `[0, 0, 0, 0]`으로 기록합니다 (필요하면 JSON에서 직접 수정). 색은 `[r, g, b, a]` 배열로 기록됩니다.
 - 툴은 셰이더를 모르므로 **`Parameter` 이름이 HLSL 변수 이름과 다를 수 있습니다.** 엔진은 이름이 셰이더와 일치해야 하므로, 사용할 셰이더(예: 기본 PS의 `TexDiff` · `Smpler`)에 맞게 생성된 JSON의 `Parameter`를 직접 수정해야 합니다.
@@ -3639,7 +3654,7 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 | `ADwaf` | 1 | `FPPawn` | StaticMesh × 6 (Head·Body·Beard·Armor·Pack·Sword1) | Dwarf 캐릭터. [Specular Map](#per-pixel-light--normal-line) · [Bump Mapping](#per-pixel-light--normal-line)(`DwarfPixelShader`, `TexSpec`+`TexBumpMap`) 데모 |
 | `AMirror` | 1 | `FPPawn` | StaticMesh(Plane) + SpringArm + `FPSceneCaptureComponent2D` | 거울. 자신의 RenderTarget(`Mirror_RenderTarget`, 512×512)에 씬을 매 프레임 캡처해 `Mirror_Material`(`MirrorPixelShader`)로 그대로 샘플링 ([SceneCapture · RenderTarget](#scenecapture--rendertarget-mirror-데모) 참고) |
 | `AUtaTeapot` | 1 | `FPActor` | StaticMesh × 2 (`UtaTeapot_Up`·`UtaTeapot_Bottom`) | 장식용 티포트. 입력·카메라 없음(Test_SphereMap 쪽 버전과 달리 Possess 불가) |
-| `ASkyLight` | 1 | `FPActor` | `FPSkyLightComponent` | `SetCubeMap("Cross_Roads_Probe_bmp")`만 호출 — 씬 전체 메시에 환경맵을 입힘 ([Environment Mapping](#environment-mapping-sky-light--sphere-map) 참고) |
+| `ASkyLight` | 1 | `FPActor` | `FPSkyLightComponent` | `SetCubeMap("uffizi_cross_dds")`만 호출 — 씬 전체 메시에 큐브맵 환경맵을 입힘 ([Environment Mapping](#environment-mapping-sky-light--cube-map) 참고) |
 
 ### Tri_World의 텍스처 · Material
 

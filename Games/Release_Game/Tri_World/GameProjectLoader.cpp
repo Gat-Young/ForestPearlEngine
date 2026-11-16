@@ -149,6 +149,9 @@ void LoadAssets()
 	//SphereMap Texture
 	AssetLoader->LoadTexture("SphereMap/Cross_Roads_Probe_bmp.json", AssetOwner::User);
 
+	//CubeMap Texture
+	AssetLoader->LoadTexture("CubeMap/uffizi_cross_dds.json", AssetOwner::User);
+
 
 	//Material Load
 

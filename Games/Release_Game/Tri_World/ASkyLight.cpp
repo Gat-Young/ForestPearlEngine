@@ -4,7 +4,8 @@
 ASkyLight::ASkyLight()
 {
 	SkyLightComponent = new FPSkyLightComponent(this);
-	SkyLightComponent->SetCubeMap("Cross_Roads_Probe_bmp");
+	SkyLightComponent->SetCubeMap("uffizi_cross_dds");
+	SkyLightComponent->SetLightIntnesity(0.5f);
 }
 
 ASkyLight::~ASkyLight()

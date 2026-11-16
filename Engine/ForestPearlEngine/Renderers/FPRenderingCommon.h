@@ -184,14 +184,55 @@ enum FPSamplerType
 
 FPSamplerType StringToSamplerType(const std::string& Name);
 
-enum FPBlendingStateType
+enum class FPBlend
 {
-	BS_DEFAULT,	// 기본 혼합 객체
-	BS_ADD,		// 덧셈
+	ZERO,
+	ONE,
+	SRC_COLOR,
+	INV_SRC_COLOR,
+	SRC_ALPHA,
+	INV_SRC_ALPHA,
+	DEST_ALPHA,
+	INV_DEST_ALPHA,
+	DEST_COLOR,
+	INV_DEST_COLOR,
+	SRC_ALPHA_SAT,
+	BLEND_FACTOR,
+	INV_BLEND_FACTOR,
+	SRC1_COLOR,
+	INV_SRC1_COLOR,
+	SRC1_ALPHA,
+	INV_SRC1_ALPHA,
 
-	BS_NULL_,	//초기화
-	BS_MAX_
+	FPBlend_MAX_
 };
+
+FPBlend StringToFPBlend(const std::string& Name);
+
+enum class FPBlendOp
+{
+	ADD,
+	SUBTRACT,
+	REV_SUBTRACT,
+	MIN,
+	MAX,
+
+	FPBlendOp_MAX_
+};
+
+FPBlendOp StringToFPBlendOp(const std::string& Name);
+
+enum class FPColorWriteMask
+{
+	RED,
+	GREEN,
+	BLUE,
+	ALPHA,
+
+	FPColorWriteMask_MAX_
+};
+
+FPColorWriteMask StringToFPColorWriteMask(const std::string& Name);
 
 //Textue 데이터 구조체
 struct FPTextureData
@@ -211,6 +252,7 @@ struct FPTextureInfo
 	std::string Name;
 	std::string Path;
 	std::string Type;
+	bool CubeMap = false;			//CubeMap Texture 생성 여부
 	AssetOwner Owner;
 };
 
@@ -369,6 +411,40 @@ struct FPDepthStencilStateData
 };
 
 
+//BlendState
+struct FPRenderTargetBlendDesc
+{
+	bool BlendEnable;
+	FPBlend SrcBlend;
+	FPBlend DestBlend;
+	FPBlendOp BlendOp;
+
+	FPBlend SrcBlendAlpha;
+	FPBlend DestBlendAlpha;
+	FPBlendOp BlendOpAlpha;
+
+	std::vector<FPColorWriteMask> RenderTargetWriteMask;
+};
+
+struct FPBlendStateInfo
+{
+	std::string Name;
+
+	bool AlphaToCoverageEnable;
+	bool IndependentBlendEnable;
+
+	//IndependentBlendEnable이 false면 RenderTargets[0]만 사용
+	std::vector<FPRenderTargetBlendDesc> RenderTargets;
+
+	AssetOwner Owner;
+};
+
+struct FPBlendStateData
+{
+	void* BlendStateData;
+};
+
+
 //Texture Array Info
 struct FPTextureArrayInfo
 {
@@ -388,6 +464,8 @@ enum FPTextureType
 
 	RenderTargetTexture2D,
 	DepthStencilTexture2D,
+
+	CubeMap,
 
 	FPTextureType_MAX_
 };
@@ -480,6 +558,9 @@ struct FPMaterialData
 
 	bool TwoSided;
 
+	std::string BlendState;
+	std::string DepthStencilState;
+
 	std::vector<FPFloatParameterData> Parameters;
 	std::vector<FPTextureParameterData> NamedTextures;
 	std::vector<FPSamplerParameterData> NamedSamplers;
@@ -544,6 +625,9 @@ struct RenderItem
 	
 	//핵심 데이터
 	bool* TwoSided = nullptr;
+
+	std::string* BlendState = nullptr;
+	std::string* DepthStencilState = nullptr;
 
 	FPMatrix* Location = nullptr;
 	FPMatrix* Rotation = nullptr;
@@ -870,6 +954,9 @@ namespace RenderingData
 
 		//주요 정보
 		bool TwoSided;
+
+		std::string BlendState;
+		std::string DepthStencilState;
 
 		FPMatrix Location;
 		FPMatrix Rotation;

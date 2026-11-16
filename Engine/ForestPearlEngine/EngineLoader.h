@@ -45,4 +45,8 @@ void LoadEngineAssets()
 	AssetLoader->LoadDepthStencilState("DS_DEPTH_ON.json", AssetOwner::Engine);
 	AssetLoader->LoadDepthStencilState("DS_DEPTH_OFF.json", AssetOwner::Engine);
 	AssetLoader->LoadDepthStencilState("DS_DEPTH_WRITE_OFF.json", AssetOwner::Engine);
+
+	//BlendState Load
+	AssetLoader->LoadBlendState("BS_DEFAULT.json", AssetOwner::Engine);
+	AssetLoader->LoadBlendState("BS_ADD.json", AssetOwner::Engine);
 };

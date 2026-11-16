@@ -1,5 +1,6 @@
 {
     "Name": "Windmill_dds",
     "Path": "Windmill/Windmill.dds",
-    "Type": "DDS"
+    "Type": "DDS",
+    "CubeMap": false
 }

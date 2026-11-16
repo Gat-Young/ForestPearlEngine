@@ -4,6 +4,8 @@
         "VertexShader": "DefaultVertexShader",
         "PixelShader": "WindmillWingBody_PixelShader",
         "TwoSided": true,
+        "BlendState": "BS_ADD",
+        "DepthStencilState": "DS_DEPTH_ON",
         "Parameters": [
             {
                 "Type": "PS",

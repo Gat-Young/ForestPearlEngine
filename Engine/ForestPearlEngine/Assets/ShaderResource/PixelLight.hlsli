@@ -20,8 +20,9 @@
 //광원 최대 개수
 #define     Light_MAX           64
 
+//CubeMap 환경광
 //텍스처 객체 변수 : 엔진에서 공급됨, 레지스터 직접 지정. (기본값은 t0)
-Texture2D EnvTex : register(t127);
+TextureCube EnvTex : register(t127);
 
 //텍스처 셈플러 (직접지정)  기본값은 s0
 SamplerState EnvSampler : register(s15);
@@ -83,16 +84,16 @@ cbuffer MaterialConstBuffer : register(b3)
 };
 
 //조명 처리 함수.
-void CalculateLight(float4 posv, float4 nrm, matrix mView, out float4 OutDiffuse, out float4 OutSpecular, out float4 OutEmissive);
+void CalculateLight(float4 posv, float4 nrm, matrix mView, matrix mInverseView, out float4 OutDiffuse, out float4 OutSpecular, out float4 OutEmissive);
 
 //조명 계산 함수
 void DirLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout float4 OutDiffuse, inout float4 OutSpecular);
 void PointLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout float4 OutDiffuse, inout float4 OutSpecular);
 void SpotLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout float4 OutDiffuse, inout float4 OutSpecular);
 void RectLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout float4 OutDiffuse, inout float4 OutSpecular);
-void EnvLight(float4 nrm, inout float4 OutAmbient);
+void EnvLight(float4 posv, matrix mInverseView, float4 nrm, inout float4 OutAmbient);
 
-void CalculateLight(float4 posv, float4 nrm, matrix mView, out float4 OutDiffuse, out float4 OutSpecular, out float4 OutEmissive, out float4 OutAmbient)
+void CalculateLight(float4 posv, float4 nrm, matrix mView, matrix mInverseView , out float4 OutDiffuse, out float4 OutSpecular, out float4 OutEmissive, out float4 OutAmbient)
 {
     OutDiffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
     OutSpecular = float4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -121,7 +122,7 @@ void CalculateLight(float4 posv, float4 nrm, matrix mView, out float4 OutDiffuse
         }
     }
     
-    EnvLight(nrm, OutAmbient);
+    EnvLight(posv, mInverseView, nrm, OutAmbient);
 
 }
 
@@ -214,6 +215,19 @@ void RectLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout flo
     OutSpecular = OutSpecular + Col;
 }
 
+void EnvLight(float4 posv, matrix mInverseView, float4 nrm, inout float4 OutAmbient)
+{
+    float3 N = normalize(nrm.xyz);
+    float3 L = normalize(posv.xyz);
+    float3 R = reflect(L, N);
+
+    R = mul(mInverseView, float4(R, 0)).xyz;
+    
+    float3 UVW = normalize(R);
+    OutAmbient = EnvTex.Sample(EnvSampler, UVW) * LightColor * LightIntensity * Material.BaseColor;
+}
+
+/* SphereMap 환경광 <- 더 이상 사용 X
 void EnvLight(float4 nrm, inout float4 OutAmbient)
 {
     float4 Normal = float4(nrm.xyz, 0.0f);
@@ -227,4 +241,6 @@ void EnvLight(float4 nrm, inout float4 OutAmbient)
     
     OutAmbient = EnvTex.Sample(EnvSampler, EnvUV) * LightColor * LightIntensity * Material.BaseColor;
 }
+*/
+
 #endif

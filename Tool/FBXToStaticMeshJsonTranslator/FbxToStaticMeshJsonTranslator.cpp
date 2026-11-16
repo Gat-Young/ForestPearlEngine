@@ -286,6 +286,8 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 		BaseMaterialBody["VertexShader"] = "DefaultVertexShader";
 		BaseMaterialBody["PixelShader"] = "DefaultPixelShader";
 		BaseMaterialBody["TwoSided"] = bTwoSided;
+		BaseMaterialBody["BlendState"] = "BS_ADD";
+		BaseMaterialBody["DepthStencilState"] = "DS_DEPTH_ON";
 		BaseMaterialBody["Parameters"] = ParametersArray;
 
 		json BaseMaterialFileJson;
@@ -309,6 +311,8 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 	MaterialInstanceBody["VertexShader"] = "DefaultVertexShader";
 	MaterialInstanceBody["PixelShader"] = "DefaultPixelShader";
 	MaterialInstanceBody["TwoSided"] = bTwoSided;
+	MaterialInstanceBody["BlendState"] = "BS_ADD";
+	MaterialInstanceBody["DepthStencilState"] = "DS_DEPTH_ON";
 	MaterialInstanceBody["Parameters"] = ParametersArray;
 	MaterialInstanceBody["Textures"] = TexturesArray;
 	MaterialInstanceBody["Samplers"] = SamplersArray;
@@ -410,6 +414,8 @@ void FbxToStaticMeshJsonTranslator::ExportMaterialTextures(const ufbx_material& 
 			TextureFileJson["Name"] = TextureName;
 			TextureFileJson["Path"] = ModelName.empty() ? TextureFileName : (ModelName + "/" + TextureFileName);
 			TextureFileJson["Type"] = DetermineTextureType(ExtensionNoDot);
+			// FBX 머티리얼 텍스처는 큐브맵을 구분할 수 없어 항상 false로 내보낸다.
+			TextureFileJson["CubeMap"] = false;
 
 			const std::filesystem::path OutputPath = JsonOutputDirectory / "Texture" / (TextureName + ".json");
 			SaveJsonToFile(TextureFileJson, OutputPath);

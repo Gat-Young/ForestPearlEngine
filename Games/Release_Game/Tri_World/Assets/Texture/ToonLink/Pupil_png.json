@@ -1,5 +1,6 @@
 {
     "Name": "Pupil_png",
     "Path": "ToonLink/pupil.png",
-    "Type": "WIC"
+    "Type": "WIC",
+    "CubeMap": false
 }

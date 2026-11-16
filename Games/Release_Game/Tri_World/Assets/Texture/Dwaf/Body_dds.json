@@ -1,5 +1,6 @@
 {
     "Name": "Body_dds",
     "Path": "Dwaf/Body.dds",
-    "Type": "DDS"
+    "Type": "DDS",
+    "CubeMap": false
 }

@@ -1,5 +1,6 @@
 {
     "Name": "Pack_bumpmap_dds",
     "Path": "Dwaf/Pack_bumpmap.dds",
-    "Type": "DDS"
+    "Type": "DDS",
+    "CubeMap": false
 }

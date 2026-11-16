@@ -1,0 +1,14 @@
+{
+    "Name": "Object_10_StaticMesh",
+    "NodeName": "Object_10",
+    "MeshData": [
+        {
+            "Path": "Ship/Ship.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "M_Ship01B_CannonRope_Holder_Object_10_StaticMesh_MaterialInstance"
+    }
+}

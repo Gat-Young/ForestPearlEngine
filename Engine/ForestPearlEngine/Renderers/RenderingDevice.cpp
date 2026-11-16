@@ -999,6 +999,7 @@ HRESULT RenderingDevice::ReflectionShader(void* VScode, void* PScode, const std:
 					FPTextureType TextureType = Texture2D;
 					if (Binding.Dimension == D3D_SRV_DIMENSION_TEXTURE2D) { TextureType = Texture2D; }
 					else if (Binding.Dimension == D3D_SRV_DIMENSION_TEXTURE2DARRAY) { TextureType = Texture2DArray; }
+					else if (Binding.Dimension == D3D_SRV_DIMENSION_TEXTURECUBE) { TextureType = CubeMap; }
 					else { std::cout <<  "지원하지 않는 텍스처 차원: " + Name << "\n"; return E_FAIL; }
 
 					FPReflectionResourceInfo Entry;

@@ -86,7 +86,7 @@ float4 PS_Main(
     float4 EmissiveLit;
     float4 AmbientLit;
     
-    CalculateLight(posv, N, mView, DiffuseLit, SpecularLit, EmissiveLit, AmbientLit);
+    CalculateLight(posv, N, mView, mInverseView, DiffuseLit, SpecularLit, EmissiveLit, AmbientLit);
     
     float4 tex = TexDiff.Sample(Smpler, uv);
     float4 texSnowMask = TexSnowMask.Sample(Smpler, uv);

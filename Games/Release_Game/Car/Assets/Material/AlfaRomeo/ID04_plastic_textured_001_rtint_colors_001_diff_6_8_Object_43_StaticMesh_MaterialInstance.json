@@ -1,0 +1,69 @@
+{
+    "Material": {
+        "Name": "ID04_plastic_textured_001_rtint_colors_001_diff_6_8_Object_43_StaticMesh_MaterialInstance",
+        "VertexShader": "DefaultVertexShader",
+        "PixelShader": "DefaultPixelShader",
+        "TwoSided": true,
+        "BlendState": "BS_ADD",
+        "DepthStencilState": "DS_DEPTH_ON",
+        "Parameters": [
+            {
+                "Type": "PS",
+                "ConstantBuffer": "MaterialConstBuffer",
+                "Values": {
+                    "Material.BaseColor": [
+                        0.800000011920929,
+                        0.800000011920929,
+                        0.800000011920929,
+                        1.0
+                    ],
+                    "Material.Diffuse": [
+                        0.800000011920929,
+                        0.800000011920929,
+                        0.800000011920929,
+                        1.0
+                    ],
+                    "Material.Ambient": [
+                        0.05087608844041824,
+                        0.05087608844041824,
+                        0.05087608844041824,
+                        1.0
+                    ],
+                    "Material.Specular": [
+                        0.800000011920929,
+                        0.800000011920929,
+                        0.800000011920929,
+                        1.0
+                    ],
+                    "Material.Roughness": [
+                        0.35809633135795593,
+                        0.35809633135795593,
+                        0.35809633135795593,
+                        1.0
+                    ],
+                    "Material.Emissive": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            }
+        ],
+        "Textures": [
+            {
+                "Type": "PS",
+                "Parameter": "TexDiff",
+                "Asset": "ID04_plastic_textured_001_rtint_colors_001_diff_6_8_baseColor_png",
+                "TextureType": "Texture2D"
+            }
+        ],
+        "Samplers": [
+            {
+                "Type": "PS",
+                "Parameter": "Smpler",
+                "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
+            }
+        ]
+    }
+}

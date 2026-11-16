@@ -1,0 +1,13 @@
+{
+    "Material": {
+        "Name": "DefaultSkyBoxMaterial",
+        "VertexShader": "DefaultSkyBoxQuadVertexShader",
+        "PixelShader": "DefaultSkyBoxQuadPixelShader",
+        "TwoSided": false,
+        "BlendState": "BS_DEFAULT",
+        "DepthStencilState": "DS_DEPTH_OFF",
+        "Parameters": [ ],
+        "Textures": [ ],
+        "Samplers": [ ]
+    }
+}

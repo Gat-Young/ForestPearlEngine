@@ -1,0 +1,14 @@
+{
+    "Name": "Object_96_StaticMesh",
+    "NodeName": "Object_96",
+    "MeshData": [
+        {
+            "Path": "AlfaRomeo/AlfaRomeo.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "ID04_plastic_textured_001_rtint_colors_001_diff_6_23_Object_96_StaticMesh_MaterialInstance"
+    }
+}

@@ -8,10 +8,13 @@ void LoadEngineAssets()
 
 	//BuiltIn Mesh Load
 	AssetLoader->LoadBuiltInStaticMesh("Quad2D_Mesh.json");
+	AssetLoader->LoadBuiltInStaticMesh("SkyBoxQuad.json");
 
 	//BuiltIn Vertex/Pixel Shader Load
 	AssetLoader->LoadBuiltInVertexShader("DefaultQuad2DVertexShader.json");
 	AssetLoader->LoadBuiltInPixelShader("DefaultQuad2DPixelShader.json");
+	AssetLoader->LoadBuiltInVertexShader("DefaultSkyBoxQuadVertexShader.json");
+	AssetLoader->LoadBuiltInPixelShader("DefaultSkyBoxQuadPixelShader.json");
 
 	//BackBuffer DepthStencil BuiltIn Load
 	AssetLoader->LoadBuiltInDepthStencil("BackBufferDepthStencil.json");
@@ -40,6 +43,9 @@ void LoadEngineAssets()
 
 	//Material Load
 	AssetLoader->LoadMaterial("DefaultMaterial.json", AssetOwner::Engine);
+
+	//BuiltIn Material Load
+	AssetLoader->LoadBuiltInMaterial("DefaultSkyBoxMaterial.json");
 
 	//DepthStencilState Load
 	AssetLoader->LoadDepthStencilState("DS_DEPTH_ON.json", AssetOwner::Engine);

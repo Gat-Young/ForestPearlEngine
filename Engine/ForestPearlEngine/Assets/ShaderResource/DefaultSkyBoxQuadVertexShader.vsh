@@ -62,7 +62,7 @@ VSOutput VS_Main(
                 float4 col : COLOR0, //[입력] 정점색
                 float2 uv : TEXCOORD0, //[입력] UV
                 float4 T : TANGENT //[입력] 탄젠트 노멀 Tangent Normal
-                )
+                ) 
 {
     float4 VSpos = pos;
     float4 VScol = col;
@@ -72,12 +72,13 @@ VSOutput VS_Main(
     float4 VSN = nrm;
     float3 WSuvw = 0;
 
-    float4 ViewPos = mul(mInverseProj, pos);
+
+    float4 ViewPos = mul(mInverseProj, VSpos);
     ViewPos.xyz /= ViewPos.w;
     
     float3 WorldDir = mul(mInverseView, float4(ViewPos.xyz, 0.0f)).xyz;
     
-    WSuvw = normalize(WorldDir);
+    WSuvw = WorldDir;
     
     //입력된 정보 그대로 출력..
     VSOutput o = (VSOutput) 0;

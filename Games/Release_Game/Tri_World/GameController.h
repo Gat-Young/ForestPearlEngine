@@ -42,4 +42,6 @@ class GameController : public FPAController
 		void OnTorch(FInputValue Value);
 
 		void ChangeSeason(FInputValue Value);
+
+		void SetEnvironmentMap(FInputValue Value);
 };

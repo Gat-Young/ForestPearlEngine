@@ -224,7 +224,11 @@ void EnvLight(float4 posv, matrix mInverseView, float4 nrm, inout float4 OutAmbi
     R = mul(mInverseView, float4(R, 0)).xyz;
     
     float3 UVW = normalize(R);
-    OutAmbient = EnvTex.Sample(EnvSampler, UVW) * LightColor * LightIntensity * Material.BaseColor;
+    float Roughness = saturate(Material.Roughness.r);
+
+    float ReflectionLOD = lerp(0.0f, 14.0f, Roughness);
+    
+    OutAmbient = EnvTex.Sample(EnvSampler, UVW, ReflectionLOD) * LightColor * LightIntensity * Material.BaseColor;
 }
 
 /* SphereMap 환경광 <- 더 이상 사용 X

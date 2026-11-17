@@ -624,11 +624,11 @@
     <FxCompile Include="Assets\BuiltIn\ShaderResource\DefaultQuad2DPixelShader.psh">
       <Filter>Assets\ShaderResource\BuilIn\PS</Filter>
     </FxCompile>
-    <FxCompile Include="Assets\BuiltIn\ShaderResource\DefaultSkyBoxQuadPixelShader.psh">
-      <Filter>Assets\ShaderResource\BuilIn\PS</Filter>
+    <FxCompile Include="Assets\ShaderResource\DefaultSkyBoxQuadPixelShader.psh">
+      <Filter>Assets\ShaderResource\PS</Filter>
     </FxCompile>
-    <FxCompile Include="Assets\BuiltIn\ShaderResource\DefaultSkyBoxQuadVertexShader.vsh">
-      <Filter>Assets\ShaderResource\BuilIn\VS</Filter>
+    <FxCompile Include="Assets\ShaderResource\DefaultSkyBoxQuadVertexShader.vsh">
+      <Filter>Assets\ShaderResource\VS</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

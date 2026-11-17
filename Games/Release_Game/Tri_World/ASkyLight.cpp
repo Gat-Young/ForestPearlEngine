@@ -4,7 +4,7 @@
 ASkyLight::ASkyLight()
 {
 	SkyLightComponent = new FPSkyLightComponent(this);
-	SkyLightComponent->SetCubeMap("uffizi_cross_dds");
+	SkyLightComponent->SetCubeMap("rustig_koppie_puresky_2k");
 	SkyLightComponent->SetLightIntnesity(0.5f);
 }
 
@@ -23,4 +23,14 @@ void ASkyLight::BeginPlay()
 void ASkyLight::Tick()
 {
 	__super::Tick();
+}
+
+std::string ASkyLight::ToggleEnvironmentMap()
+{
+	bUseAlternateEnvironmentMap = !bUseAlternateEnvironmentMap;
+
+	std::string EnvironmentMap = bUseAlternateEnvironmentMap ? "uffizi_cross_Mark_dds" : "rustig_koppie_puresky_2k";
+	SkyLightComponent->SetCubeMap(EnvironmentMap);
+
+	return EnvironmentMap;
 }

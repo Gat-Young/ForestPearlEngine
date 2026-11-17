@@ -47,7 +47,8 @@
 | 🎨 | **DX11 렌더러** | `Renderer`(프레임 흐름) + `RenderingDevice`(D3D11 래퍼) 2계층, **Render List → Render Pass(Mesh / Gizmo / Normal / UI)** 구조, 슬롯 규약이 있는 **상수 버퍼 바인딩**, `GameSetting.json` 기반 MSAA(스왑체인·깊이버퍼 SampleDesc), Priority 정렬, **Built-In RenderTarget에 그린 뒤 `Quad2DRenderPass`로 백버퍼에 합성(Letterbox)** |
 | 💡 | **통합 Light (Directional · Point, Per-Pixel)** | `FPLightComponentBase` 계열이 Light Render List에 등록 → 메시마다 **최대 64개**를 하나의 `LIGHT` 상수 버퍼(`b2`, 9232 byte)로 묶어 **픽셀 셰이더** `PixelLight.hlsli`에 전달. VS는 노멀 · 위치를 View 공간으로 변환해 보간만 하고, Directional · Point 모두 PS에서 Lambert Diffuse + **Blinn-Phong Specular**(`SpecularBlinPhong.hlsli`) + Ambient를 픽셀 단위로 계산(거리 감쇠, Range Fade). `CalculateLight`가 `Diffuse` · `Specular` · `Emissive`를 **각각 `out` 매개변수로 반환**해 PS마다 직접 합성(`col = col × Diffuse × tex + Specular + Emissive`) — Specular를 **텍스처(Specular Map)로 변조**하는 `DwarfPixelShader`(`TexSpec`, `t1`)도 추가됨. 과거 정점 단위 계산 코드는 `VertexLight.hlsli`로 남아 있지만 비활성 상태. 라이트 색(`LightColor`) 지원. 토치 예제 `ATorchLight` |
 | 🧵 | **Bump Mapping (Normal Map) · Tangent 생성** | FBX 로딩 시 `FPAssetManager::GenerateTangents`가 코너별 UV 면 탄젠트를 구해 **인접 삼각형끼리 각도 가중 평균 + Gram-Schmidt 직교화**로 부드럽게 섞은 뒤 5번째 정점 스트림(`TANGENT_VERTEX`, Input Slot 4)으로 추가. VS가 View 공간 Tangent/Normal(`T`/`N`)을 만들어 넘기면 `BumpMapping.hlsli::CalculateBumpNormal`이 TBN 행렬로 노멀 맵(`TexBumpMap`)을 View 공간 노멀로 바꿔 `CalculateLight`에 그대로 사용. `DwarfPixelShader` · 신규 `ToonLinkPixelShader`가 적용 |
-| 🌐 | **Environment Mapping (Sky Light · Cube Map)** | `FPSkyLightComponent`가 지정한 **큐브맵 텍스처** 하나를 **모든 메시의 PS에 전역으로**(`EnvTex` **`TextureCube`** t127 · `EnvSampler` s15, Material JSON과 무관) 바인딩. `PixelLight.hlsli::EnvLight(posv, mInverseView, nrm, OutAmbient)`가 View 공간 **반사 벡터**(`reflect(normalize(posv), N)`)를 `mInverseView`로 월드 방향으로 되돌려 큐브맵을 샘플하고 `CalculateLight`의 4번째 `out`(`OutAmbient`)으로 돌려줌 (이전의 Sphere Map/MatCap 방식은 주석으로만 남음). 큐브맵은 Texture JSON의 `"CubeMap": true`로 로드하며(DDS 큐브맵 6종 제공), 데모: `AUtaTeapot` + `ASkyLight`(Tri_World의 `uffizi_cross_dds`) |
+| 🌐 | **Environment Mapping (Sky Light · Cube Map)** | `FPSkyLightComponent`가 지정한 **큐브맵 텍스처** 하나를 **모든 메시의 PS에 전역으로**(`EnvTex` **`TextureCube`** t127 · `EnvSampler` s15, Material JSON과 무관) 바인딩. `PixelLight.hlsli::EnvLight(posv, mInverseView, nrm, OutAmbient)`가 View 공간 **반사 벡터**(`reflect(normalize(posv), N)`)를 `mInverseView`로 월드 방향으로 되돌려 큐브맵을 샘플하고 `CalculateLight`의 4번째 `out`(`OutAmbient`)으로 돌려줌 (이전의 Sphere Map/MatCap 방식은 주석으로만 남음). 큐브맵은 Texture JSON의 `"CubeMap": true`로 로드하며(DDS 큐브맵 6종 제공), 거칠기(`Material.Roughness.r`)가 클수록 **더 낮은 Mip**을 읽어 반사가 흐려짐. 데모: `AUtaTeapot` + `ASkyLight`(`rustig_koppie_puresky_2k`, <kbd>F9</kbd>로 `uffizi_cross_Mark_dds`와 토글) |
+| 🌌 | **[SkyBox](#skybox)** | 배경에 **큐브맵을 화면 전체로** 그리는 엔진 기본 에셋(`SkyBoxQuad_StaticMesh` · `DefaultSkyBoxMaterial` · `DefaultSkyBoxQuadVertex/PixelShader` · `rustig_koppie_puresky_2k`, `LoadEngineAssets()`가 `AssetOwner::Engine`으로 로드). 새 렌더 패스 없이 **일반 StaticMesh**로 `MeshRenderPass`에서 그려지며, VS가 클립 공간 Quad를 변환 없이 출력하면서 `mInverseProj` · `mInverseView`로 **픽셀별 월드 방향**을 만들고 PS가 `TextureCube`를 샘플. Material은 `DS_DEPTH_OFF` · `BS_DEFAULT`, 액터는 `SetPriority(-999)`로 가장 먼저 그림. 환경맵은 `SetNamedTexture(PS, "EnvTex", 이름, CubeMap)`으로 교체. 데모: `ASkyBox`(Tri_World · Test_SphereMap) |
 | 🪞 | **SceneCapture · RenderTarget (Mirror)** | `RenderTarget` · `DepthStencil` · `DepthStencilState`가 Material처럼 **JSON 에셋**이 됐습니다(예전엔 하드코딩이던 `DS_DEPTH_ON/OFF/WRITE_OFF`도 이제 JSON 3개이며, Mesh · SceneCapture Pass는 **Material이 이름으로 지정**한 State를 씁니다). `FPSceneCaptureComponent2D`가 매 프레임 **Mesh Pass보다 먼저** `SceneCaptureRenderPass`로 전체 씬을 자기 RenderTarget에 그린 뒤 `ResolveSubresource`로 샘플 가능한 텍스처로 만들어 두면, 같은 프레임의 `MeshRenderPass`가 `TextureType: "RenderTargetTexture2D"`로 그 텍스처를 **보통 `Texture2D`처럼** Material에서 그대로 샘플링. 거울 데모 `AMirror` |
 | 🖥️ | **RenderTarget 합성 (Quad2D) · Built-In 에셋** | `MeshRenderPass` · `GizmoRenderPass`가 백버퍼 대신 **Built-In RenderTarget**(`MeshRenderPass-RT-BuiltIn`, 크기 = GameSetting 해상도 × Scale)에 Letterbox 뷰포트로 그리고 MSAA Resolve 후, `Quad2DRenderPass`가 `Quad2D_Mesh` + `DefaultQuad2D` 셰이더로 전체 화면에 출력. 이를 위해 `Assets/BuiltIn/`(StaticMesh · Shader · RenderTarget · DepthStencil)과 `LoadBuiltIn*` 로더가 추가되고, **`FPViewPortClient`(뷰포트 · 3분할)와 카메라의 RenderTarget 지정 기능은 제거** |
 | 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 샘플러 36종(AF 단계는 `GameSetting.json`). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환. 슬롯마다 `FPTextureType`(`Texture2D` / `Texture2DArray` / `RenderTargetTexture2D` / `DepthStencilTexture2D` / `CubeMap`)을 함께 지정. 큐브맵은 Texture JSON에 `"CubeMap": true`(DDS)를 적어 로드 |
@@ -85,7 +86,9 @@ ForestPearlEngine/
 ├── Games/
 │   └── Release_Game/              # 엔진 현재 버전과 연결되는 게임 프로젝트
 │       ├── Tri_World/             #   ★ Demo 프로젝트 (솔루션에 포함, 엔진이 현재 참조 중 — 실제로 빌드/실행되는 게임)
-│       ├── Test_SphereMap/        #   Environment Mapping 데모(UtaTeapot + SkyLight). 솔루션에 포함됐지만 엔진 참조는 아직 Tri_World([실행할 게임 바꾸기](#실행할-게임-바꾸기) 참고)
+│       ├── Test_SphereMap/        #   Environment Mapping · SkyBox 데모(UtaTeapot + SkyLight + SkyBox, <kbd>F9</kbd> 환경맵 토글). 소스는 남아 있지만 `ForestPearlEngine.sln`에서는 **제외**됨([실행할 게임 바꾸기](#실행할-게임-바꾸기) 참고)
+│       ├── Car/                   #   FBX 자동차 모델 뷰어 샘플(`ACar`의 StaticMesh 부품들 + `ADirectionalLight`, SpringArm 카메라: IJKL 회전 · 마우스 휠 줌). StaticLibrary, 솔루션 미포함
+│       ├── Ship/                  #   FBX 범선 모델 뷰어 샘플(`AShip`의 StaticMesh 41개 부품 + `ADirectionalLight`, SpringArm 카메라: IJKL 회전). StaticLibrary, 솔루션 미포함
 │       ├── Lambert_Light/         #   Lambert Light / Normal Line / Texture 개발용 프로젝트 (Cube · Plane + DirectionalLight, 현재 솔루션에서는 제외됨)
 │       └── ShaderCode_Triangle/   #   커스텀 Material / 상수 버퍼 샘플 (이전 API 기준)
 ├── Tool/
@@ -200,12 +203,12 @@ Engine/ForestPearlEngine/
 │   ├── FPPathManager.h / .cpp        # 에셋 경로 해석 (Debug / Release)
 │   └── FPGameplayStatics.h / .cpp    # 액터 검색 유틸
 ├── Assets/
-│   ├── Model/Primitive_Model/        # Cube / Sphere / Plane .fbx
-│   ├── StaticMesh/                   # Cube / Sphere / Plane _StaticMesh.json
-│   ├── Material/                     # DefaultMaterial.json (Material JSON 미지정 시 fallback)
-│   ├── Texture/                      # 텍스처 JSON (Default_Texture512 · Checker_bmp · Checker_dds)
+│   ├── Model/Primitive_Model/        # Cube / Sphere / Plane / SkyBoxQuad .fbx
+│   ├── StaticMesh/                   # Cube / Sphere / Plane / SkyBoxQuad _StaticMesh.json
+│   ├── Material/                     # DefaultMaterial.json (Material JSON 미지정 시 fallback) · DefaultSkyBoxMaterial.json ([SkyBox](#skybox) 전용)
+│   ├── Texture/                      # 텍스처 JSON (Default_Texture512 · Checker_bmp · Checker_dds · rustig_koppie_puresky_2k(CubeMap))
 │   ├── Texture2DArray/               # Texture2DArray JSON (Texture2DArrayTemplate.json — 샘플 템플릿)
-│   ├── TextureResource/              # 이미지 원본 (*.dds · checker.bmp)
+│   ├── TextureResource/              # 이미지 원본 (*.dds · checker.bmp · rustig_koppie_puresky_2k.dds — 큐브맵, 헤더상 Mip 10단계)
 │   ├── RenderTarget/                 # RenderTarget JSON (EX)RenderTargetTexture2D.json 등 — Texture2D만 구현, Canvas2D·Cube·Texture2DArray·Volume은 "추후 지원" 템플릿)
 │   ├── DepthStencil/                 # DepthStencil JSON (EX)DepthStencil.json)
 │   ├── DepthStencilState/            # DepthStencilState JSON — DS_DEPTH_ON / DS_DEPTH_OFF / DS_DEPTH_WRITE_OFF (엔진 기본, `LoadEngineAssets()`가 로드) + EX)DepthStencilState.json
@@ -216,7 +219,7 @@ Engine/ForestPearlEngine/
 │   │   ├── RenderTarget/             #   MeshRenderPass-RT-BuiltIn · GizmoRenderPass-RT-BuiltIn (+ EX 예시)
 │   │   ├── DepthStencil/             #   BackBufferDepthStencil (+ EX 예시)
 │   │   ├── DepthStencilState/ · BlendState/ · Material/  #   EX 예시 · DefaultQuad2DMaterial.json (현재 로드하지 않음)
-│   ├── Shader/                       # 셰이더 등록 JSON (Name · Path · InputLayout) — Default* · DefaultGizmo* · NormalDebug*
+│   ├── Shader/                       # 셰이더 등록 JSON (Name · Path · InputLayout) — Default* · DefaultGizmo* · NormalDebug* · DefaultSkyBoxQuad*
 │   └── ShaderResource/               # HLSL 소스와 컴파일 결과(bin/)
 │       ├── DefaultVertexShader.vsh   # 기본 Mesh VS (WVP 변환, 노멀 · posv를 View 공간으로 변환해 PS로 전달)
 │       ├── DefaultPixelShader.psh    # 기본 Mesh PS (PixelLight.hlsli의 CalculateLight, 정점 색 × 라이트 × 텍스처 t0/s0, SV_IsFrontFace로 뒷면 노멀 반전)
@@ -227,6 +230,7 @@ Engine/ForestPearlEngine/
 │       ├── BumpMapping.hlsli         # CalculateBumpNormal() — Tangent Space 노멀 맵을 View 공간 노멀로 변환
 │       ├── DefaultGizmoVertexShader.vsh / DefaultGizmoPixelShader.psh  # Grid / Axis 기즈모용 (라이트 없음)
 │       ├── NormalDebugVertexShader.vsh / NormalDebugPixelShader.psh    # Normal Line용
+│       ├── DefaultSkyBoxQuadVertexShader.vsh / DefaultSkyBoxQuadPixelShader.psh  # SkyBox용 (클립 공간 Quad → 월드 방향 uvw → TextureCube 샘플, [SkyBox](#skybox))
 │       ├── NormalCalculate.hlsli     # TransformWorldNormal()
 │       ├── DefaultShader.fx          # 참고용 (빌드 제외)
 │       └── bin/                      # 빌드 시 생성: *.vso / *.pso (git 미추적)
@@ -270,14 +274,15 @@ Games/Release_Game/Tri_World/
 ├── AMirror.h / .cpp               # Pawn (거울 — Plane + SpringArm + SceneCaptureComponent2D, RenderTarget을 샘플링)
 ├── AUtaTeapot.h / .cpp            # Actor (장식용 티포트, Environment Mapping 데모)
 ├── ASkyLight.h / .cpp             # Actor (FPSkyLightComponent만 가짐, 환경맵 텍스처 지정)
+├── ASkyBox.h / .cpp               # Actor (SkyBoxQuad_StaticMesh 하나, Priority -999, `SetEnvironmentMap`으로 배경 큐브맵 교체 — [SkyBox](#skybox))
 ├── UI.h / .cpp                    # Actor (텍스트 UI)
 └── Assets/
     ├── Font/            Consolas10.sfont, 굴림9k.sfont
-    ├── Level/           TriWorld.json(`"class": "AMirror"` · `"AUtaTeapot"` · `"ASkyLight"` 포함), ToonLink.json (현재 시작 레벨)
+    ├── Level/           TriWorld.json(`"class": "AMirror"` · `"AUtaTeapot"` · `"ASkyLight"` · `"ASkyBox"` 포함), ToonLink.json (현재 시작 레벨)
     ├── Model/           Box/ · Terrain/ · ToonLink/ · Tree/ · Windmill/ · UtaTeapot/   (*.fbx — Windmill은 Windmill.fbx 하나로 통합)
     ├── StaticMesh/      Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/ · UtaTeapot/   (*_StaticMesh.json, 52개)
     ├── Material/        Box/ · Terrain/ · Tree/ · Windmill/ · ToonLink/ · Mirror/ · UtaTeapot/   (Mirror_Material.json — RenderTarget을 텍스처로 샘플링)
-    ├── Texture/         Box/ · Dwaf/ · Terrain/ · Tree/ · Windmill/ · ToonLink/ · SphereMap/ · CubeMap/ · UtaTeapot/   (*.json, 57개)
+    ├── Texture/         Box/ · Dwaf/ · Terrain/ · Tree/ · Windmill/ · ToonLink/ · SphereMap/ · CubeMap/ · UtaTeapot/   (*.json, 58개 — `CubeMap/`에 `uffizi_cross_dds.json` · `uffizi_cross_Mark_dds.json`)
     ├── TextureResource/ Box/ · Dwaf/ · Terrain/ · Tree/ · Windmill/ · ToonLink/ · SphereMap/ · CubeMap/ · UtaTeapot/   (117개: png 50 · dds 36 · jpg 16 · bmp 12 · tga 3 — `CubeMap/`에 DDS 큐브맵 6종 · jpg 1)
     ├── RenderTarget/    Mirror_RenderTarget.json (512×512 RGBA8)
     ├── DepthStencil/    Mirror_DepthStencil.json (512×512 D24_S8_UINT)
@@ -455,7 +460,7 @@ sequenceDiagram
     Note over Eng: CreateFPEWindow()<br/>Raw Input 등록
     Eng->>Ren: InitializeRenderer(hwnd)
     Note over Eng: RenderingDevice::CreateSamplers()
-    Note over Eng: LoadEngineAssets() - Default Shader / Texture / Material / DepthStencilState / BlendState / Built-In(Quad2D · RenderTarget · BackBufferDepthStencil)
+    Note over Eng: LoadEngineAssets() - Default Shader / Texture / Material(SkyBox 포함) / DepthStencilState / BlendState / Built-In(Quad2D · RenderTarget · BackBufferDepthStencil)
     Eng->>Game: LoadLevel()
     Eng->>Game: LoadClassRegist()
     Eng->>Game: LoadAssets()
@@ -1215,7 +1220,7 @@ flowchart TD
 
 | 단계 | 내용 |
 |---|---|
-| 컴포넌트 | `FPSkyLightComponent` — `CubeMap`(`std::string`, 텍스처 **에셋 이름**. `"CubeMap": true`로 로드한 **큐브맵 텍스처**의 이름. Tri_World는 `"uffizi_cross_dds"`. 이전에는 Sphere Map용 2D 텍스처를 넣었음), `LightColor`(기본 흰색), `LightIntensity`(기본 `1.0`), `RealTimeCapture`(bool, **저장만 하고 어디서도 읽지 않는 죽은 필드**). `SetActive` · `SetRealTimeCapture` · `SetLightIntnesity`(오타, 실제 이름) · `SetLightColor` · `SetCubeMap` |
+| 컴포넌트 | `FPSkyLightComponent` — `CubeMap`(`std::string`, 텍스처 **에셋 이름**. `"CubeMap": true`로 로드한 **큐브맵 텍스처**의 이름. Tri_World · Test_SphereMap은 `"rustig_koppie_puresky_2k"`(엔진 에셋). 이전에는 Sphere Map용 2D 텍스처를 넣었음), `LightColor`(기본 흰색), `LightIntensity`(기본 `1.0`), `RealTimeCapture`(bool, **저장만 하고 어디서도 읽지 않는 죽은 필드**). `SetActive` · `SetRealTimeCapture` · `SetLightIntnesity`(오타, 실제 이름) · `SetLightColor` · `SetCubeMap` |
 | 등록 | `RegistSkyLightRenderList()`가 새 15번째 `GameInstanceSubSystem`인 `FPSkyLightRenderList`(`GetSkyLightRenderList()`)에 `FPSkyLightRenderItem*`(필드 포인터 4개: `Active`·`LightIntensity`·`LightColor`·`CubeMap`)를 등록 — Light/Camera와 같은 "포인터 등록, 매 프레임 역참조" 패턴 |
 | 프레임당 수집 | `ForestPearlEngine::GameLoop()`가 `CreateLightRenderList()`와 `CreateMeshRenderList()` 사이에 `Render->CreateSkyLightRenderList()`를 새로 호출. `Active`인 항목만 `Renderer::FPSkyLightList`(멤버)로 스냅샷 |
 | **여러 개를 등록해도 1개만 적용** | 매 프레임 `FPSkyLightList[0]`**만** 읽습니다. 두 번째 이상의 `FPSkyLightComponent`는 등록은 되지만 렌더링에는 전혀 반영되지 않습니다 |
@@ -1242,14 +1247,22 @@ void EnvLight(float4 posv, matrix mInverseView, float4 nrm, inout float4 OutAmbi
     R = mul(mInverseView, float4(R, 0)).xyz;    // 월드 방향으로 되돌림 (큐브맵은 월드 방향으로 샘플)
 
     float3 UVW = normalize(R);
-    OutAmbient = EnvTex.Sample(EnvSampler, UVW) * LightColor * LightIntensity * Material.BaseColor;
+    float Roughness = saturate(Material.Roughness.r);          // float4의 x(r)만 사용
+    float ReflectionLOD = lerp(0.0f, 14.0f, Roughness);        // 거칠수록 낮은 Mip
+
+    OutAmbient = EnvTex.Sample(EnvSampler, UVW, ReflectionLOD) * LightColor * LightIntensity * Material.BaseColor;
 }
 
 // 이전 Sphere Map(MatCap) 버전은 PixelLight.hlsli 하단에 주석 블록으로만 남아 있고 사용되지 않음
 ```
 
 > [!IMPORTANT]
-> **이제 실제 반사 기반 환경맵입니다.** 이전에는 이름(`CubeMap`)과 달리 View 공간 Normal의 xy를 `0.5·N + 0.5`로 `[0,1]` UV에 매핑하는 MatCap 방식이었지만(View 벡터를 쓰지 않고 카메라에 대한 노멀 방향만 반영), 지금은 `reflect(normalize(posv), N)`로 **시선 반사 벡터**를 구해 월드 방향으로 되돌린 뒤 `TextureCube`를 샘플합니다. 카메라 위치 · 방향이 바뀌면 반사 내용도 달라지고, 여전히 `Material.Roughness`와 섞이지 않는 **단순 가산 텀**(`LightColor × LightIntensity × BaseColor`)입니다.
+> **이제 실제 반사 기반 환경맵입니다.** 이전에는 이름(`CubeMap`)과 달리 View 공간 Normal의 xy를 `0.5·N + 0.5`로 `[0,1]` UV에 매핑하는 MatCap 방식이었지만(View 벡터를 쓰지 않고 카메라에 대한 노멀 방향만 반영), 지금은 `reflect(normalize(posv), N)`로 **시선 반사 벡터**를 구해 월드 방향으로 되돌린 뒤 `TextureCube`를 샘플합니다. 카메라 위치 · 방향이 바뀌면 반사 내용도 달라지고, `Material.Roughness`는 반사의 **흐림(Mip LOD)에만** 쓰이고 세기와는 섞이지 않는 **가산 텀**(`LightColor × LightIntensity × BaseColor`)입니다.
+
+> [!NOTE]
+> **Roughness로 환경맵 흐리게 하기 (Mip LOD).** `EnvLight`는 `saturate(Material.Roughness.r)`(**`float4`의 첫 값만** 사용)을 `lerp(0, 14, Roughness)`로 바꿔 `EnvTex.Sample(EnvSampler, UVW, ReflectionLOD)`의 **세 번째 인자**로 넘깁니다. HLSL `TextureCube.Sample(s, loc, Clamp)`의 세 번째 인자는 **최소 LOD 하한**이라 `SampleLevel`처럼 LOD를 직접 지정하는 것은 아니며, 거칠수록 해상도가 낮은 Mip을 읽어 반사가 흐려집니다. `14`는 고정 상수라 큐브맵의 Mip 단계 수보다 크면 마지막 Mip에서 멈춥니다(샘플러가 `Filter_Tri_Linear_Sampler_CLAMP`).
+> - **큐브맵에 Mip이 있어야 보이는 효과입니다.** `rustig_koppie_puresky_2k.dds`는 헤더상 Mip이 10단계 들어 있습니다. 반면 `uffizi_cross.dds` · `uffizi_cross_Mark.dds`는 헤더에 Mip 개수가 없습니다. 다만 `CreateDDSCubeTextureFromFile`이 `DeviceContext`를 넘겨 DirectXTK가 Mip을 자동 생성할 수 있어, 이 두 파일에서 흐림이 실제로 나오는지는 **확인하지 못했습니다**.
+> - 데모는 `default_UtaTeapot_Bottom_StaticMesh_MaterialInstance.json`의 `Material.Roughness` 첫 값을 Tri_World에서 `0.0`(선명한 반사), Test_SphereMap에서 `0.5`로 두었습니다. (코드와 에셋을 읽어 확인한 내용이며 렌더링 결과를 본 것은 아닙니다.)
 
 > [!WARNING]
 > **`CalculateLight` 시그니처가 바뀌었습니다.** 4번째 인자로 `matrix mInverseView`가 추가되어 (`CalculateLight(posv, N, mView, mInverseView, DiffuseLit, SpecularLit, EmissiveLit, AmbientLit)`) `PixelLight.hlsli`를 포함하는 **모든 커스텀 PS를 함께 고쳐야 합니다** (엔진 `DefaultPixelShader`와 Tri_World의 Box · Dwarf · Terrain · ToonLink · Tree · WindmillWingBody PS는 이미 수정됨). PS에는 `b0`의 `ObejctConstBuffer`가 `mInverseView`를 포함해 선언되어 있어야 하며, 그렇지 않으면 컴파일되지 않습니다.
@@ -1269,13 +1282,101 @@ void EnvLight(float4 posv, matrix mInverseView, float4 nrm, inout float4 OutAmbi
 > `BumpMapping.hlsli::CalculateBumpNormal`의 바이탄젠트 계산이 `cross(NormalVS, T.xyz)`(직교화하지 않은 원본 Tangent)에서 `cross(NormalVS, Tangent)`(Gram-Schmidt로 이미 직교화한 지역 변수)로 바뀌었습니다. 환경맵과는 무관한, TBN 기저를 실제로 직교로 만드는 버그 수정입니다.
 
 > [!NOTE]
-> `ASkyLight`(Tri_World): 생성자에서 `SkyLightComponent = new FPSkyLightComponent(this); SkyLightComponent->SetCubeMap("uffizi_cross_dds"); SkyLightComponent->SetLightIntnesity(0.5f);`가 전부입니다(환경맵 세기 `0.5`). 텍스처는 `LoadAssets()`의 `LoadTexture("CubeMap/uffizi_cross_dds.json", AssetOwner::User)`로 **큐브맵으로** 로드됩니다 (`TextureResource/CubeMap/`에는 `uffizi` · `galileo` · `grace` · `rnl` · `stpeters` `_cross.dds`와 `uffizi_cross_Mark.dds`, `lolloooksdeesmallvv9.jpg`가 들어 있음).
+> `ASkyLight`(Tri_World · Test_SphereMap 공통 구조): 생성자에서 `SkyLightComponent = new FPSkyLightComponent(this); SkyLightComponent->SetCubeMap("rustig_koppie_puresky_2k"); SkyLightComponent->SetLightIntnesity(0.5f);`로 엔진 에셋 큐브맵을 지정합니다(이전에는 Tri_World가 `"uffizi_cross_dds"`). 게임 코드의 `ToggleEnvironmentMap()`은 `bUseAlternateEnvironmentMap`을 뒤집어 `rustig_koppie_puresky_2k` ↔ `uffizi_cross_Mark_dds`로 `SetCubeMap`을 다시 호출하고 새 이름을 돌려줍니다. `uffizi_cross_Mark_dds`는 `LoadAssets()`의 `LoadTexture("CubeMap/uffizi_cross_Mark_dds.json", AssetOwner::User)`로 로드합니다 (`TextureResource/CubeMap/`에는 `uffizi` · `galileo` · `grace` · `rnl` · `stpeters` `_cross.dds`와 `uffizi_cross_Mark.dds`, `lolloooksdeesmallvv9.jpg`가 들어 있음). <kbd>F9</kbd> 토글의 전체 흐름은 [SkyBox](#skybox)를 참고하세요.
 
 > [!NOTE]
-> `Test_SphereMap`의 `ASkyLight`는 여전히 `SetCubeMap("Cross_Roads_Probe_bmp")`(`"CubeMap": false`인 **2D Sphere Map** 텍스처)를 지정합니다. 엔진 `PixelLight.hlsli`는 이제 `TextureCube`를 기대하므로, 2D SRV가 `t127`에 바인딩되면 타입이 맞지 않아 환경맵 항이 제대로 나오지 않을 수 있습니다 (코드를 읽어 확인한 내용이며 실행으로 확인하지는 못했습니다). 이 데모를 쓰려면 큐브맵 에셋으로 바꿔야 합니다.
+> `Test_SphereMap`의 `ASkyLight`는 이제 Tri_World와 같은 큐브맵(`rustig_koppie_puresky_2k`, 세기 `0.5`)을 씁니다. 그래서 이전에 적어 두었던 "2D Sphere Map(`Cross_Roads_Probe_bmp`) SRV가 `TextureCube`인 `t127`에 바인딩되어 타입이 맞지 않는다"는 문제는 이 데모에서 **더 이상 해당되지 않습니다**(코드를 읽어 확인한 내용이며 실행으로 확인하지는 못했습니다). `LoadAssets()`는 `SphereMap/Cross_Roads_Probe_bmp.json`을 여전히 로드하지만 어디에서도 쓰이지 않습니다.
 
 > [!NOTE]
 > 환경맵 텀을 합성하는 방식도 PS마다 조금씩 바뀌었습니다. `DwarfPixelShader`는 `EnvColor = col * AmbientLit * SpecMap * DiffuseLit * 0.5`를 만들어 `col = BaseCol + SpecularCol + EmissiveLit + EnvColor`로 더하고(환경 반사를 Specular Map으로 변조), `ToonLinkPixelShader`의 환경 항은 `col * AmbientLit * DiffuseLit`(이전에는 `* DiffMap`)입니다.
+
+#### SkyBox
+
+`SkyBox`는 조명용 환경맵(`FPSkyLightComponent`)과 **별개로**, 배경에 큐브맵을 보여 주는 기능입니다. 새 렌더 패스나 전용 컴포넌트는 없고, **화면을 덮는 Quad 하나짜리 StaticMesh + 전용 셰이더 + Material**이 `MeshRenderPass`에서 평범한 메시처럼 그려집니다.
+
+```mermaid
+flowchart TD
+    A["ASkyBox::Initialize<br/>FPStaticMeshComponent(this, SkyBoxQuad_StaticMesh)<br/>SetPriority(-999)"] --> B["MeshRenderList에 일반 메시로 등록<br/>Priority 오름차순 → 가장 먼저 그려짐"]
+    B --> C["Material DefaultSkyBoxMaterial<br/>DS_DEPTH_OFF · BS_DEFAULT · TwoSided false"]
+    C --> D["VS: 정점을 변환 없이 SV_POSITION으로 출력<br/>mInverseProj → mInverseView로 픽셀별 월드 방향 uvw 계산"]
+    D --> E["PS: EnvTex.Sample(EnvSampler, uvw)<br/>큐브맵 색을 그대로 출력"]
+```
+
+| 에셋 | 위치 (엔진 `Assets/`) | 내용 |
+|---|---|---|
+| StaticMesh `SkyBoxQuad_StaticMesh` | `StaticMesh/SkyBoxQuad_StaticMesh.json` · `Model/Primitive_Model/SkyBoxQuad.fbx` | Quad 1장. Material은 `DefaultSkyBoxMaterial` |
+| Vertex / Pixel Shader | `Shader/DefaultSkyBoxQuad{Vertex,Pixel}Shader.json` · `ShaderResource/*.vsh · *.psh` | VS InputLayout은 `Default`. 엔진 `vcxproj`에 FxCompile 항목 추가 |
+| Material `DefaultSkyBoxMaterial` | `Material/DefaultSkyBoxMaterial.json` | 아래 JSON |
+| Texture `rustig_koppie_puresky_2k` | `Texture/rustig_koppie_puresky_2k.json` · `TextureResource/rustig_koppie_puresky_2k.dds` | `"Type": "DDS"`, `"CubeMap": true`. SkyLight의 기본 환경맵과 같은 에셋 |
+
+로드는 `LoadEngineAssets()`가 `AssetOwner::Engine`으로 처리합니다(VS · PS → `SkyBoxQuad_StaticMesh.json` → `rustig_koppie_puresky_2k.json` → `DefaultSkyBoxMaterial.json`).
+
+```jsonc
+// Assets/Material/DefaultSkyBoxMaterial.json
+{
+    "Material": {
+        "Name": "DefaultSkyBoxMaterial",
+        "VertexShader": "DefaultSkyBoxQuadVertexShader",
+        "PixelShader": "DefaultSkyBoxQuadPixelShader",
+        "TwoSided": false,
+        "BlendState": "BS_DEFAULT",
+        "DepthStencilState": "DS_DEPTH_OFF",
+        "Parameters": [ ],
+        "Textures": [ { "Type": "PS", "Parameter": "EnvTex", "Asset": "rustig_koppie_puresky_2k", "TextureType": "CubeMap" } ],
+        "Samplers": [ { "Type": "PS", "Parameter": "EnvSampler", "SamplerType": "Filter_Tri_Linear_Sampler_CLAMP" } ]
+    }
+}
+```
+
+```hlsl
+// DefaultSkyBoxQuadVertexShader.vsh (핵심)
+float4 ViewPos = mul(mInverseProj, pos);                              // 클립 공간 정점 → View 공간
+ViewPos.xyz /= ViewPos.w;
+float3 WorldDir = mul(mInverseView, float4(ViewPos.xyz, 0.0f)).xyz;   // View → 월드 "방향" (w = 0)
+o.pos = pos;                                                          // 변환 없이 그대로 SV_POSITION
+o.uvw = WorldDir;                                                     // TEXCOORD4로 PS에 전달
+
+// DefaultSkyBoxQuadPixelShader.psh
+TextureCube  EnvTex     : register(t0);
+SamplerState EnvSampler : register(s0);
+...
+col = EnvTex.Sample(EnvSampler, uvw);    // 보간된 월드 방향으로 샘플
+return col;
+```
+
+| 항목 | 내용 |
+|---|---|
+| **Quad의 정점은 클립 공간 좌표** | VS가 `mWVP`를 쓰지 않고 입력 `pos`를 그대로 `SV_POSITION`에 씁니다. 그래서 **액터의 위치 · 회전 · 크기는 SkyBox에 영향을 주지 않습니다**(레벨 JSON의 `transform`은 의미 없음). 카메라가 움직이면 `mInverseView`가 바뀌어 보는 방향만 달라집니다 |
+| **그리는 순서 · 깊이** | `SetPriority(-999)`로 `MeshRenderList`에서 가장 먼저 그려지고, Material이 `DS_DEPTH_OFF`라 깊이를 쓰지 않아 뒤따르는 메시가 위에 덮어씁니다. 다른 메시의 `Priority`는 기본 `0`입니다 |
+| **SkyLight와는 별개 에셋** | PS의 `EnvTex`(`t0`)는 Material이 직접 바인딩하는 **일반 텍스처 슬롯**이고, `PixelLight.hlsli`의 `EnvTex`(`t127`, SkyLight 전역 바인딩)와 **이름만 같을 뿐 다른 변수**입니다. SkyBox PS는 `PixelLight.hlsli`를 포함하지 않으며 라이팅도 하지 않습니다 |
+| **BlendState / TwoSided** | Material에서 `BS_DEFAULT`(블렌드 끔)와 `TwoSided: false`로 지정합니다. Material의 `BlendState` 기본값이 `BS_ADD`이므로, 직접 만든 SkyBox Material에서도 `BS_DEFAULT`를 명시하는 편이 안전합니다([Alpha Blend · BlendState](#alpha-blend--blendstate)) |
+| **BuiltIn → Engine 에셋 이동** | 직전 커밋(`2733d3d`)에서는 같은 에셋이 `Assets/BuiltIn/` 아래에 있고 `LoadBuiltInStaticMesh` · `LoadBuiltInVertexShader` · `LoadBuiltInPixelShader` · `LoadBuiltInMaterial`로 로드됐습니다. 현재 작업 트리(아직 커밋되지 않음)에서는 `BuiltIn/`의 파일을 삭제하고 `Assets/` 일반 폴더로 옮겨 **`Load*`(`AssetOwner::Engine`)** 로 로드합니다. Built-In 에셋은 RenderTarget 크기를 따라가는 에셋이라는 성격이 있어 SkyBox와는 맞지 않기 때문으로 보입니다(추정) |
+
+**사용 — `ASkyBox` (Tri_World · Test_SphereMap 동일)**
+
+```cpp
+// Games/Release_Game/Tri_World/ASkyBox.cpp
+void ASkyBox::Initialize()
+{
+    SkyBoxMesh = new FPStaticMeshComponent(this, "SkyBoxQuad_StaticMesh");
+    SkyBoxMesh->SetupAttachment(RootComponent);
+    SkyBoxMesh->SetPriority(-999);                       // 가장 먼저 그림
+}
+
+void ASkyBox::SetEnvironmentMap(std::string TextureName)
+{
+    SkyBoxMesh->GetMaterial().SetNamedTexture(FPShaderType::PS, "EnvTex", TextureName, FPTextureType::CubeMap, 0);
+}
+```
+
+사용하려면 ① 게임 `LoadClassRegist()`에 `ClassRegistry->Register<ASkyBox>("ASkyBox")`, ② 레벨 JSON에 `{ "class": "ASkyBox", "name": "SkyBox_1", "transform": { ... } }` 액터 1개를 추가하면 됩니다(Tri_World는 액터가 316개 → 317개, Test_SphereMap 레벨은 `AUtaTeapot` · `ADirectionalLight` · `ASkyLight` · `ASkyBox` 4개).
+
+**환경맵 토글 (<kbd>F9</kbd>)** — Tri_World와 Test_SphereMap의 `GameController`가 `IA_SetEnvironmentMap`(<kbd>F9</kbd>, `Down`)을 `SetEnvironmentMap(FInputValue)`에 묶습니다. 이 함수는 `FPGameplayStatics::GetAllActorsOfClass`로 ① 모든 `ASkyLight`에 `ToggleEnvironmentMap()`을 호출해 **조명용 환경맵**을 바꾸고(마지막으로 돌려받은 이름을 보관), ② 모든 `ASkyBox`에 같은 이름으로 `SetEnvironmentMap()`을 호출해 **배경**도 바꿉니다. 그래서 반사와 배경이 항상 같은 큐브맵을 가리킵니다. 두 큐브맵(`rustig_koppie_puresky_2k` ↔ `uffizi_cross_Mark_dds`)은 게임의 `LoadAssets()`가 **먼저 로드**해 둬야 합니다.
+
+> [!WARNING]
+> - `SetNamedTexture`는 에셋이 로드됐는지 확인하지 않으므로, 로드하지 않은 이름으로 `ASkyBox::SetEnvironmentMap`을 부르면 그릴 때 빈 SRV가 바인딩됩니다([Texture 사용](#9-texture-사용)의 유의사항 참고). 큐브맵(`"CubeMap": true`)이 아닌 에셋 이름도 검사하지 않습니다.
+> - `SetEnvironmentMap`은 **그 메시의 Material**에 값을 저장하므로 `ASkyBox`가 여러 개면 각각 따로 바꿔야 합니다. 반대로 `ASkyLight`는 여러 개를 두어도 매 프레임 첫 번째만 적용됩니다([위 표](#environment-mapping-sky-light--cube-map) 참고).
+> - 위 내용은 코드와 에셋을 읽어 정리한 것이며, SkyBox가 화면에 올바르게 그려지는지는 **실행해서 확인하지 못했습니다.**
 
 **Emissive (자체 발광)**
 
@@ -2461,7 +2562,7 @@ void LoadAssets()
 }   // 이 뒤 PreInitialize 끝에서 AssetManager->AllAssetDataCreate()가 GPU 리소스를 한꺼번에 생성
 ```
 
-- `LoadGameSetting`은 `RegistProjectName()`에서, `LoadLevelData`는 `LoadLevel()`에서 호출합니다 (Tri_World 참고). 엔진 기본 셰이더 · StaticMesh(Cube · Sphere · Plane) · Texture · `DefaultMaterial`은 `LoadEngineAssets()`가 `AssetOwner::Engine`으로 미리 로드합니다.
+- `LoadGameSetting`은 `RegistProjectName()`에서, `LoadLevelData`는 `LoadLevel()`에서 호출합니다 (Tri_World 참고). 엔진 기본 셰이더 · StaticMesh(Cube · Sphere · Plane · SkyBoxQuad) · Texture(`rustig_koppie_puresky_2k` 포함) · `DefaultMaterial` · `DefaultSkyBoxMaterial`은 `LoadEngineAssets()`가 `AssetOwner::Engine`으로 미리 로드합니다.
 - Load 함수들은 **설명 데이터만 등록**합니다. 텍스처 · Texture2DArray · FBX · 셰이더의 실제 GPU 리소스는 `AllAssetDataCreate()`가 `Texture → Texture Array → FBX(StaticMesh) → 메시 버퍼 → Vertex Shader → Pixel Shader → … → DepthStencilState → BlendState` 순서로 만들고, Material은 StaticMesh가 컴포넌트에 쓰일 때(`GetStaticMeshData`) 만들어집니다.
 - 같은 이름을 두 번 등록하면 콘솔 메시지만 출력하고 **뒤의 것이 무시**되는 에셋은 Level · Texture2DArray · StaticMesh · BlendState입니다. Texture · Shader · Material은 **덮어씁니다** (Texture의 중복 검사는 이미 GPU 리소스가 만들어진 뒤에만 동작하므로 로드 단계에서는 덮어쓰기).
 
@@ -2561,7 +2662,7 @@ void LoadAssets()
 ```
 
 - 알 수 없는 `InputLayout` 값은 셰이더를 만들지 않고 넘어가므로(`nullptr` 등록) 철자에 주의하세요.
-- 엔진 기본 셰이더 6개(`DefaultVertex/PixelShader`, `DefaultGizmoVertex/PixelShader`, `NormalDebugVertex/PixelShader`)는 `LoadEngineAssets()`가 `AssetOwner::Engine`으로 로드합니다. 게임에서 같은 이름을 쓰지 마세요.
+- 엔진 기본 셰이더 8개(`DefaultVertex/PixelShader`, `DefaultGizmoVertex/PixelShader`, `NormalDebugVertex/PixelShader`, `DefaultSkyBoxQuadVertex/PixelShader`)는 `LoadEngineAssets()`가 `AssetOwner::Engine`으로 로드합니다. 게임에서 같은 이름을 쓰지 마세요.
 
 ---
 
@@ -3292,7 +3393,7 @@ x64/Release/
 > `Runners/Runner/ReleaseGameProject.props`에는 `GameProjectName`, `GameAssetDir` 매크로가 정의되어 있으나, 현재 패키징은 이 파일이 아니라 엔진 프로젝트의 참조를 기준으로 동작합니다.
 
 > [!NOTE]
-> `Games/Release_Game/Test_SphereMap`(Environment Mapping 데모)이 바로 이 절차 1~2번의 실제 예시입니다 — `ForestPearlEngine.sln`에는 `Tri_World`와 나란히 추가돼 있지만(둘 다 `StaticLibrary`), `Engine/ForestPearlEngine/ForestPearlEngine.vcxproj`의 **`ProjectReference`는 여전히 `Tri_World.vcxproj` 하나뿐**입니다. 즉 `Test_SphereMap`을 실제로 실행해 보려면 그 참조를 `Test_SphereMap.vcxproj`로 바꿔야 합니다 — 두 게임을 동시에 실행할 수는 없습니다.
+> `Games/Release_Game/Test_SphereMap`(Environment Mapping · SkyBox 데모)이 바로 이 절차 1~2번의 실제 예시입니다. 소스와 `Test_SphereMap.vcxproj`는 남아 있지만 **`bd72d65` 커밋에서 `ForestPearlEngine.sln`에서 제외**되어, 현재 솔루션에는 게임으로 `Tri_World`만 들어 있습니다(`Car` · `Ship`도 솔루션에 없음). `Engine/ForestPearlEngine/ForestPearlEngine.vcxproj`의 **`ProjectReference`도 `Tri_World.vcxproj` 하나뿐**입니다. 다른 게임을 실행하려면 솔루션에 해당 `.vcxproj`를 **기존 프로젝트로 추가**하고 그 참조를 바꿔야 하며, 두 게임을 동시에 실행할 수는 없습니다.
 
 ---
 
@@ -3803,7 +3904,7 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 > [!NOTE]
 > `GameProjectLoader.cpp`의 `ReturnStartLevel()`은 다시 **`"TriWorld"`**를 반환합니다 (`//return "ToonLink";`은 주석 처리). ToonLink 캐릭터 단독 데모(`Assets/Level/ToonLink.json` — `Terrain` · `Axis` · `Grid` · `UI` · `ADirectionalLight` + `Link`)를 보려면 두 줄의 주석을 바꾸면 됩니다. `Player`는 `BodyAndHat` · `Hair` · `Face` · `Eye` · `EyeBrow` · `Mouth` · `Hand` · `Buckle` · `MasterSword_*`(4개) · `Shield_*`(2개) 등 StaticMeshComponent 15개로 구성되며, 각 서브메시는 [FBX 변환 도구](#fbx-변환-도구-fbxtostaticmeshjsontranslator)가 만든 StaticMesh + Material Instance + Texture JSON을 사용합니다 ([Material JSON](#material-json), [Alpha Blend](#alpha-blend--blendstate) 참고).
 
-### 씬 구성 (`Assets/Level/TriWorld.json`, 액터 316개)
+### 씬 구성 (`Assets/Level/TriWorld.json`, 액터 317개)
 
 | 클래스 | 수 | 베이스 | 구성 | 설명 |
 |---|:-:|---|---|---|
@@ -3822,7 +3923,8 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 | `ADwaf` | 1 | `FPPawn` | StaticMesh × 6 (Head·Body·Beard·Armor·Pack·Sword1) | Dwarf 캐릭터. [Specular Map](#per-pixel-light--normal-line) · [Bump Mapping](#per-pixel-light--normal-line)(`DwarfPixelShader`, `TexSpec`+`TexBumpMap`) 데모 |
 | `AMirror` | 1 | `FPPawn` | StaticMesh(Plane) + SpringArm + `FPSceneCaptureComponent2D` | 거울. 자신의 RenderTarget(`Mirror_RenderTarget`, 512×512)에 씬을 매 프레임 캡처해 `Mirror_Material`(`MirrorPixelShader`)로 그대로 샘플링 ([SceneCapture · RenderTarget](#scenecapture--rendertarget-mirror-데모) 참고) |
 | `AUtaTeapot` | 1 | `FPActor` | StaticMesh × 2 (`UtaTeapot_Up`·`UtaTeapot_Bottom`) | 장식용 티포트. 입력·카메라 없음(Test_SphereMap 쪽 버전과 달리 Possess 불가) |
-| `ASkyLight` | 1 | `FPActor` | `FPSkyLightComponent` | `SetCubeMap("uffizi_cross_dds")` + `SetLightIntnesity(0.5f)` — 씬 전체 메시에 큐브맵 환경맵을 입힘 ([Environment Mapping](#environment-mapping-sky-light--cube-map) 참고) |
+| `ASkyLight` | 1 | `FPActor` | `FPSkyLightComponent` | `SetCubeMap("rustig_koppie_puresky_2k")` + `SetLightIntnesity(0.5f)`(<kbd>F9</kbd>로 `uffizi_cross_Mark_dds`와 토글) — 씬 전체 메시에 큐브맵 환경맵을 입힘 ([Environment Mapping](#environment-mapping-sky-light--cube-map) 참고) |
+| `ASkyBox` | 1 | `FPActor` | StaticMesh(`SkyBoxQuad_StaticMesh`) | 배경 큐브맵을 화면 전체에 그림. `SetPriority(-999)`로 가장 먼저 그려지고 Material은 `DS_DEPTH_OFF` · `BS_DEFAULT`. <kbd>F9</kbd>로 `ASkyLight`와 같은 환경맵으로 교체 ([SkyBox](#skybox)) |
 
 ### Tri_World의 텍스처 · Material
 
@@ -3912,6 +4014,7 @@ flowchart LR
 | <kbd>F6</kbd> | Normal Line 표시 전환 | 전체 |
 | <kbd>F7</kbd> | Directional Light 색 순환 (4색) | `ADirectionalLight`, `UI` |
 | <kbd>F8</kbd> | [계절](#계절-전환-season) 순환 (봄/여름 → 가을 → 겨울) | `Terrain`, `Tree`, `ABox`, `Windmill`, `WindmillWing`, `TripleWingWindmill`, `TripleWindmillWing`, `UI` |
+| <kbd>F9</kbd> | 환경맵 교체 (`rustig_koppie_puresky_2k` ↔ `uffizi_cross_Mark_dds`) — 조명용 환경맵과 배경 모두 ([SkyBox](#skybox)) | `ASkyLight`, `ASkyBox` |
 | <kbd>1</kbd> | 손에 토치(Point Light) 생성 · 켜기 / 끄기 | Player, `UI` |
 | **마우스 휠** | 카메라 줌 (SpringArm 길이 증감) | Player |
 | <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> | `IA_SetMoveWindmill`에 매핑만 되어 있음 (바인딩된 동작 없음) | — |
@@ -3957,6 +4060,7 @@ flowchart LR
 | `IA_SetNormalLine` | F6 | — | Down | `GameController::SetNormalLine` |
 | `IA_SetDirectionLightColor` | F7 | — | Down | `GameController::SetDirectionalLight` (`ADirectionalLight`와 `UI` 갱신) |
 | `IA_SetSeason` | F8 | — | Down | `GameController::ChangeSeason` (`Terrain`/`Tree`/`ABox`/`Windmill`/`WindmillWing`/`TripleWingWindmill`/`TripleWindmillWing`/`UI` 갱신) |
+| `IA_SetEnvironmentMap` | F9 | — | Down | `GameController::SetEnvironmentMap` (`ASkyLight::ToggleEnvironmentMap()` → `ASkyBox::SetEnvironmentMap(이름)`) |
 | `IA_OnTorchLight` | 1 | — | Down | `GameController::OnTorch`, `Player::OnTorch` |
 | `IA_ZoomCamera` | 마우스 휠 | — | Pressed | `Player::CameraZoom` |
 

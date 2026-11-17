@@ -18,6 +18,9 @@
     <ClInclude Include="ASkyLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ASkyBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="AUtaTeapot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -33,6 +36,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ASkyLight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ASkyBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AUtaTeapot.cpp">

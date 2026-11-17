@@ -38,10 +38,10 @@ cbuffer ObejctConstBuffer : register(b0)
 
 //CubeMap 환경광
 //텍스처 객체 변수 : 엔진에서 공급됨, 레지스터 직접 지정. (기본값은 t0)
-TextureCube EnvTex : register(t127);
+TextureCube EnvTex : register(t0);
 
 //텍스처 셈플러 (직접지정)  기본값은 s0
-SamplerState EnvSampler : register(s15);
+SamplerState EnvSampler : register(s0);
 
 ////////////////////////////////////////////////////////////////////////////// 
 //

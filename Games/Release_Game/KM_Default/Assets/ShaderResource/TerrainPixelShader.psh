@@ -41,7 +41,7 @@ cbuffer ObejctConstBuffer : register(b0)
 };
 
 //계절 변화용 상수 버퍼
-cbuffer SeasonConstBuffer : register(b1)
+cbuffer SeasonConstBuffer : register(b4)
 {
     float4 AutumnColor;
     float4 WinterColor;

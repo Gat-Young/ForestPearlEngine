@@ -77,22 +77,22 @@
         "Samplers": [
             {
                 "Type": "PS",
-                "Parameter": "DiffuseColor",
+                "Parameter": "DiffuseColorSampler",
                 "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
             },
             {
                 "Type": "PS",
-                "Parameter": "NormalMap",
+                "Parameter": "NormalMapSampler",
                 "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
             },
             {
                 "Type": "PS",
-                "Parameter": "ReflectionFactor",
+                "Parameter": "ReflectionFactorSampler",
                 "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
             },
             {
                 "Type": "PS",
-                "Parameter": "ShininessExponent",
+                "Parameter": "ShininessExponentSampler",
                 "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
             }
         ]

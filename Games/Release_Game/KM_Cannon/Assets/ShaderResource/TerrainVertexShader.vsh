@@ -32,10 +32,6 @@ cbuffer ObejctConstBuffer : register(b0)
     matrix mInverseTranseposeWVP;
     
 };
-cbuffer ViewPortConstBuffer : register(b1)
-{
-
-};
 
 //VS 출력 구조체
 struct VSOutput

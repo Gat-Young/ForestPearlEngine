@@ -479,8 +479,8 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Games\Release_Game\Tri_World\Tri_World.vcxproj">
-      <Project>{874c49a3-fd56-4137-9cfa-a3bd1b70917e}</Project>
+    <ProjectReference Include="..\..\Games\Release_Game\KM_Cannon\KM_Cannon.vcxproj">
+      <Project>{b32b42ad-999e-48fd-ab2e-beedb1963fdd}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

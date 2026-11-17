@@ -1350,7 +1350,7 @@ return col;
 | **그리는 순서 · 깊이** | `SetPriority(-999)`로 `MeshRenderList`에서 가장 먼저 그려지고, Material이 `DS_DEPTH_OFF`라 깊이를 쓰지 않아 뒤따르는 메시가 위에 덮어씁니다. 다른 메시의 `Priority`는 기본 `0`입니다 |
 | **SkyLight와는 별개 에셋** | PS의 `EnvTex`(`t0`)는 Material이 직접 바인딩하는 **일반 텍스처 슬롯**이고, `PixelLight.hlsli`의 `EnvTex`(`t127`, SkyLight 전역 바인딩)와 **이름만 같을 뿐 다른 변수**입니다. SkyBox PS는 `PixelLight.hlsli`를 포함하지 않으며 라이팅도 하지 않습니다 |
 | **BlendState / TwoSided** | Material에서 `BS_DEFAULT`(블렌드 끔)와 `TwoSided: false`로 지정합니다. Material의 `BlendState` 기본값이 `BS_ADD`이므로, 직접 만든 SkyBox Material에서도 `BS_DEFAULT`를 명시하는 편이 안전합니다([Alpha Blend · BlendState](#alpha-blend--blendstate)) |
-| **BuiltIn → Engine 에셋 이동** | 직전 커밋(`2733d3d`)에서는 같은 에셋이 `Assets/BuiltIn/` 아래에 있고 `LoadBuiltInStaticMesh` · `LoadBuiltInVertexShader` · `LoadBuiltInPixelShader` · `LoadBuiltInMaterial`로 로드됐습니다. 현재 작업 트리(아직 커밋되지 않음)에서는 `BuiltIn/`의 파일을 삭제하고 `Assets/` 일반 폴더로 옮겨 **`Load*`(`AssetOwner::Engine`)** 로 로드합니다. Built-In 에셋은 RenderTarget 크기를 따라가는 에셋이라는 성격이 있어 SkyBox와는 맞지 않기 때문으로 보입니다(추정) |
+| **BuiltIn → Engine 에셋 이동** | 커밋 `2733d3d`에서는 같은 에셋이 `Assets/BuiltIn/` 아래에 있고 `LoadBuiltInStaticMesh` · `LoadBuiltInVertexShader` · `LoadBuiltInPixelShader` · `LoadBuiltInMaterial`로 로드됐습니다. 커밋 `f4c5d92`("SkyBox")에서 `BuiltIn/`의 파일을 삭제하고 `Assets/` 일반 폴더로 옮겨 **`Load*`(`AssetOwner::Engine`)** 로 로드합니다. Built-In 에셋은 RenderTarget 크기를 따라가는 에셋이라는 성격이 있어 SkyBox와는 맞지 않기 때문으로 보입니다(추정) |
 
 **사용 — `ASkyBox` (Tri_World · Test_SphereMap 동일)**
 

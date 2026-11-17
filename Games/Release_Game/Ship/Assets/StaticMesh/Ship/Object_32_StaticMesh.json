@@ -1,0 +1,14 @@
+{
+    "Name": "Object_32_StaticMesh",
+    "NodeName": "Object_32",
+    "MeshData": [
+        {
+            "Path": "Ship/Ship.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "M_Ship01B_Sail.002_Object_32_StaticMesh_MaterialInstance"
+    }
+}

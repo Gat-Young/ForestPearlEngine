@@ -1050,7 +1050,6 @@ void Renderer::GizmoRenderPass()
 
 	//MeshRenderPass RanderTarget Setting
 	Device.OMSetRenderTargets(1, RTData.RenderTargetView, BackBufferDepthStencilData.DepthStencilView);
-	//Device.ClearRenderTargetView(RTData.RenderTargetView, (float*)&RTInfo.ClearColor);
 
 	//상수 버퍼 14개씩 Set
 	for (int i = 0; i < 14; ++i)

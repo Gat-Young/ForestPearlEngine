@@ -1,5 +1,6 @@
 {
   "Name": "Armor_bumpmap_dds",
   "Path": "Dwaf/Armor_bumpmap.dds",
-  "Type": "DDS"
+  "Type": "DDS",
+  "CubeMap": false
 }

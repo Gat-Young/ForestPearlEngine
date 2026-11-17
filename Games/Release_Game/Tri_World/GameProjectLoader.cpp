@@ -18,6 +18,7 @@
 #include "AMirror.h"
 #include "AUtaTeapot.h"
 #include "ASkyLight.h"
+#include "ASkyBox.h"
 
 void RegistProjectName()
 {
@@ -55,6 +56,7 @@ void LoadClassRegist()
 	ClassRegistry->Register<AMirror>("AMirror");
 	ClassRegistry->Register<AUtaTeapot>("AUtaTeapot");
 	ClassRegistry->Register<ASkyLight>("ASkyLight");
+	ClassRegistry->Register<ASkyBox>("ASkyBox");
 }
 
 void LoadAssets()
@@ -148,6 +150,10 @@ void LoadAssets()
 
 	//SphereMap Texture
 	AssetLoader->LoadTexture("SphereMap/Cross_Roads_Probe_bmp.json", AssetOwner::User);
+
+	//CubeMap Texture
+	AssetLoader->LoadTexture("CubeMap/uffizi_cross_dds.json", AssetOwner::User);
+	AssetLoader->LoadTexture("CubeMap/uffizi_cross_Mark_dds.json", AssetOwner::User);
 
 
 	//Material Load

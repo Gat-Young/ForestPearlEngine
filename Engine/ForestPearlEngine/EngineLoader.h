@@ -27,22 +27,31 @@ void LoadEngineAssets()
 	AssetLoader->LoadPixelShader("DefaultGizmoPixelShader.json", AssetOwner::Engine);
 	AssetLoader->LoadVertexShader("NormalDebugVertexShader.json", AssetOwner::Engine);
 	AssetLoader->LoadPixelShader("NormalDebugPixelShader.json", AssetOwner::Engine);
+	AssetLoader->LoadVertexShader("DefaultSkyBoxQuadVertexShader.json", AssetOwner::Engine);
+	AssetLoader->LoadPixelShader("DefaultSkyBoxQuadPixelShader.json", AssetOwner::Engine);
 
 	//StaticMesh Load
 	AssetLoader->LoadStaticMesh("Cube_StaticMesh.json", AssetOwner::Engine);
 	AssetLoader->LoadStaticMesh("Sphere_StaticMesh.json", AssetOwner::Engine);
 	AssetLoader->LoadStaticMesh("Plane_StaticMesh.json", AssetOwner::Engine);
+	AssetLoader->LoadStaticMesh("SkyBoxQuad_StaticMesh.json", AssetOwner::Engine);
 
 	//Texture Load
 	AssetLoader->LoadTexture("Default_Texture512.json", AssetOwner::Engine);
 	AssetLoader->LoadTexture("Checker_bmp.json", AssetOwner::Engine);
 	AssetLoader->LoadTexture("Checker_dds.json", AssetOwner::Engine);
+	AssetLoader->LoadTexture("rustig_koppie_puresky_2k.json", AssetOwner::Engine);
 
 	//Material Load
 	AssetLoader->LoadMaterial("DefaultMaterial.json", AssetOwner::Engine);
+	AssetLoader->LoadMaterial("DefaultSkyBoxMaterial.json", AssetOwner::Engine);
 
 	//DepthStencilState Load
 	AssetLoader->LoadDepthStencilState("DS_DEPTH_ON.json", AssetOwner::Engine);
 	AssetLoader->LoadDepthStencilState("DS_DEPTH_OFF.json", AssetOwner::Engine);
 	AssetLoader->LoadDepthStencilState("DS_DEPTH_WRITE_OFF.json", AssetOwner::Engine);
+
+	//BlendState Load
+	AssetLoader->LoadBlendState("BS_DEFAULT.json", AssetOwner::Engine);
+	AssetLoader->LoadBlendState("BS_ADD.json", AssetOwner::Engine);
 };

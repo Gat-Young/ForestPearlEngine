@@ -4,6 +4,8 @@
     "VertexShader": "DefaultVertexShader",
     "PixelShader": "DwarfPixelShader",
     "TwoSided": false,
+    "BlendState": "BS_ADD",
+    "DepthStencilState": "DS_DEPTH_ON",
     "Parameters": [
       {
         "Type": "PS",

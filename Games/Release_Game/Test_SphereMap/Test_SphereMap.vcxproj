@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="ADirectionalLight.h" />
     <ClInclude Include="ASkyLight.h" />
+    <ClInclude Include="ASkyBox.h" />
     <ClInclude Include="AUtaTeapot.h" />
     <ClInclude Include="GameController.h" />
     <ClInclude Include="GameMode.h" />
@@ -28,6 +29,7 @@
   <ItemGroup>
     <ClCompile Include="ADirectionalLight.cpp" />
     <ClCompile Include="ASkyLight.cpp" />
+    <ClCompile Include="ASkyBox.cpp" />
     <ClCompile Include="AUtaTeapot.cpp" />
     <ClCompile Include="GameController.cpp" />
     <ClCompile Include="GameMode.cpp" />

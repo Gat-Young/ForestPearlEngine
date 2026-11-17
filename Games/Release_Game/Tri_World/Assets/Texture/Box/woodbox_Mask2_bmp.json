@@ -1,5 +1,6 @@
 {
     "Name": "woodbox_Mask2_bmp",
     "Path": "Box/Mask2.bmp",
-    "Type": "WIC"
+    "Type": "WIC",
+    "CubeMap": false
 }

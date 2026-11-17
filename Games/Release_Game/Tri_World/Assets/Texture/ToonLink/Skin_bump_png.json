@@ -1,5 +1,6 @@
 {
   "Name": "Skin_bump_png",
   "Path": "ToonLink/skin_bump.png",
-  "Type": "WIC"
+  "Type": "WIC",
+  "CubeMap": false
 }

@@ -4,6 +4,8 @@
         "VertexShader": "DefaultVertexShader",
         "PixelShader": "DefaultPixelShader",
         "TwoSided": false,
+        "BlendState": "BS_ADD",
+        "DepthStencilState": "DS_DEPTH_ON",
         "Parameters": [
             {
                 "Type": "PS",
@@ -34,7 +36,7 @@
                         1.0
                     ],
                     "Material.Roughness": [
-                        0.8999999761581421,
+                        0.0,
                         0.8999999761581421,
                         0.8999999761581421,
                         1.0

@@ -1,5 +1,6 @@
 {
     "Name": "woodbox_snow_mask2_png",
     "Path": "Box/snow_mask2.png",
-    "Type": "WIC"
+    "Type": "WIC",
+    "CubeMap": false
 }

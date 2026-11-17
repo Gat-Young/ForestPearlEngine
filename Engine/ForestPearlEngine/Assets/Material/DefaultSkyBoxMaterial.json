@@ -1,0 +1,26 @@
+{
+    "Material": {
+        "Name": "DefaultSkyBoxMaterial",
+        "VertexShader": "DefaultSkyBoxQuadVertexShader",
+        "PixelShader": "DefaultSkyBoxQuadPixelShader",
+        "TwoSided": false,
+        "BlendState": "BS_DEFAULT",
+        "DepthStencilState": "DS_DEPTH_OFF",
+        "Parameters": [ ],
+        "Textures": [
+            {
+                "Type": "PS",
+                "Parameter": "EnvTex",
+                "Asset": "rustig_koppie_puresky_2k",
+                "TextureType": "CubeMap"
+            }
+        ],
+        "Samplers": [
+            {
+                "Type": "PS",
+                "Parameter": "EnvSampler",
+                "SamplerType": "Filter_Tri_Linear_Sampler_CLAMP"
+            }
+        ]
+    }
+}

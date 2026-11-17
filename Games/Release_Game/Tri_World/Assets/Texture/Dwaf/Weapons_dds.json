@@ -1,5 +1,6 @@
 {
     "Name": "Weapons_dds",
     "Path": "Dwaf/Weapons.dds",
-    "Type": "DDS"
+    "Type": "DDS",
+    "CubeMap": false
 }

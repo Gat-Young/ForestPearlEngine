@@ -1,5 +1,6 @@
 {
     "Name": "Clothes_png",
     "Path": "ToonLink/clothes.png",
-    "Type": "WIC"
+    "Type": "WIC",
+    "CubeMap": false
 }

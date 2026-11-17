@@ -1,0 +1,14 @@
+{
+    "Name": "Object_120_StaticMesh",
+    "NodeName": "Object_120",
+    "MeshData": [
+        {
+            "Path": "AlfaRomeo/AlfaRomeo.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "boli001_Object_120_StaticMesh_MaterialInstance"
+    }
+}

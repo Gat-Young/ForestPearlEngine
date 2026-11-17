@@ -67,6 +67,10 @@ private:
 	std::unordered_map<std::string, FPDepthStencilStateInfo> LoadedDepthStencilStateData;
 	std::unordered_map<std::string, FPDepthStencilStateData> DepthStencilStateData;
 
+	//BlendState
+	std::unordered_map<std::string, FPBlendStateInfo> LoadedBlendStateData;
+	std::unordered_map<std::string, FPBlendStateData> BlendStateData;
+
 	bool CalculateTriangleTangent(const POSITION_VERTEX& P0, const POSITION_VERTEX& P1, const POSITION_VERTEX& P2,
 									const UV_VERTEX& UV0, const UV_VERTEX& UV1, const UV_VERTEX& UV2,
 										FPVector3& OutTangent, FPVector3& OutBinormal);
@@ -247,6 +251,17 @@ public:
 	void AddDepthStencilStateData(std::string DepthStencilStateName, FPDepthStencilStateData& DepthStencilStateData);
 	bool HasDepthStencilStateData(std::string DepthStencilStateName);
 	void MakeDepthStencilState(FPDepthStencilStateInfo& DepthStencilStateInfo);
+
+	//BlendState Info
+	FPBlendStateInfo& GetBlendStateInfoData(std::string BlendStateName);
+	void AddBlendStateInfoData(std::string BlendStateName, FPBlendStateInfo& BlendStateInfoData);
+	bool HasBlendStateInfoData(std::string BlendStateName);
+
+	//BlendState Data
+	FPBlendStateData& GetBlendStateData(std::string BlendStateName);
+	void AddBlendStateData(std::string BlendStateName, FPBlendStateData& BlendStateData);
+	bool HasBlendStateData(std::string BlendStateName);
+	void MakeBlendState(FPBlendStateInfo& BlendStateInfo);
 
 	//Material Info
 	FPMaterialData& GetMaterialData(std::string MaterialName);

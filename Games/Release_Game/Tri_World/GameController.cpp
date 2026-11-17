@@ -23,6 +23,8 @@
 #include "Terrain.h"
 #include "ABox.h"
 #include "AMirror.h"
+#include "ASkyLight.h"
+#include "ASkyBox.h"
 
 #include <iostream>
 
@@ -92,6 +94,7 @@ void GameController::Initialize()
 
 	GetInputComponent().AddMappingKey("IA_SetDirectionLightColor", VK_F7, ModifyInfoTriger);
 	GetInputComponent().AddMappingKey("IA_SetSeason", VK_F8, ModifyInfoTriger);
+	GetInputComponent().AddMappingKey("IA_SetEnvironmentMap", VK_F9, ModifyInfoTriger);
 
 	GetInputComponent().AddMappingKey("IA_OnTorchLight", '1', ModifyInfoTriger);
 
@@ -126,6 +129,7 @@ void GameController::Initialize()
 
 	//계절 변경 바인딩
 	GetInputComponent().BindMethod("IA_SetSeason", this, EKeyState::Down, &GameController::ChangeSeason);
+	GetInputComponent().BindMethod("IA_SetEnvironmentMap", this, EKeyState::Down, &GameController::SetEnvironmentMap);
 
 	__super::Initialize();
 }
@@ -378,6 +382,28 @@ void GameController::ChangeSeason(FInputValue Value)
 	{
 		UI* GameUI = static_cast<UI*>(Actor);
 		GameUI->ChangeSeason(SeasonCnt);
+	}
+	ActorList.clear();
+}
+
+void GameController::SetEnvironmentMap(FInputValue Value)
+{
+	std::string NewEnvironmentMap;
+
+	std::vector<FPActor*> ActorList;
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "ASkyLight", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		ASkyLight* SkyLight = static_cast<ASkyLight*>(Actor);
+		NewEnvironmentMap = SkyLight->ToggleEnvironmentMap();
+	}
+	ActorList.clear();
+
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "ASkyBox", ActorList);
+	for (FPActor* Actor : ActorList)
+	{
+		ASkyBox* SkyBox = static_cast<ASkyBox*>(Actor);
+		SkyBox->SetEnvironmentMap(NewEnvironmentMap);
 	}
 	ActorList.clear();
 }

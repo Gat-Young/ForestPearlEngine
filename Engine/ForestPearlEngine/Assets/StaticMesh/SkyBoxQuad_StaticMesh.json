@@ -1,0 +1,17 @@
+{
+  "Name": "SkyBoxQuad_StaticMesh",
+  "NodeName": "SkyBoxQuad",
+
+  "MeshData": [
+    {
+      "Path": "Primitive_Model/SkyBoxQuad.fbx",
+      "Topology": "TRIANGLELIST"
+    }
+  ],
+
+  "Sockets": [],
+
+  "Material": {
+    "Name": "DefaultSkyBoxMaterial"
+  }
+}

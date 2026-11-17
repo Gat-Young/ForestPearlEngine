@@ -1,5 +1,6 @@
 {
     "Name": "Windmill_jpg",
     "Path": "Windmill/windmill.jpg",
-    "Type": "WIC"
+    "Type": "WIC",
+    "CubeMap": false
 }

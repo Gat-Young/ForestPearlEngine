@@ -1,0 +1,14 @@
+{
+    "Name": "Object_4_StaticMesh",
+    "NodeName": "Object_4",
+    "MeshData": [
+        {
+            "Path": "Ship/Ship.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "M_Ship01B_BarrelWood_01_Object_4_StaticMesh_MaterialInstance"
+    }
+}

@@ -134,7 +134,7 @@ void Renderer::Quad2DRenderPass(std::string& InRenderTarget)
 	Device.UpdateRSSetState(bFill, false);
 
 	//Blend 설정 우선 OFF
-	Device.OMSetBlendState(BS_DEFAULT);
+	Device.OMSetBlendState(static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetBlendStateData("BS_DEFAULT").BlendStateData);
 
 	//Topology 설정
 	Device.IASetPrimitiveTopology(Topology::TRIANGLESTRIP);
@@ -367,6 +367,8 @@ void Renderer::CreateMeshRenderList()
 		MeshRenderData.VertexShaderPath = *(RenderItemData.VertexShaderPath);
 		MeshRenderData.PixelShaderPath = *(RenderItemData.PixelShaderPath);
 		MeshRenderData.TwoSided = *(RenderItemData.TwoSided);
+		MeshRenderData.BlendState = *(RenderItemData.BlendState);
+		MeshRenderData.DepthStencilState = *(RenderItemData.DepthStencilState);
 		this->MeshRenderList.push_back(MeshRenderData);
 	}
 
@@ -651,12 +653,6 @@ void Renderer::SceneCaptureRenderPass()
 
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
-	//Depth Stencil State Set
-	FPDepthStencilStateData& DepthStencilStateData = AssetManager->GetDepthStencilStateData(ZEnable ? "DS_DEPTH_ON" : "DS_DEPTH_OFF");
-	Device.OMSetDepthStencilState(DepthStencilStateData.DepthStencilData);
-
-	Device.OMSetBlendState(BS_ADD);
-
 	//Primitive Topology Set
 	Device.IASetPrimitiveTopology(Topology::TRIANGLELIST);
 
@@ -696,6 +692,13 @@ void Renderer::SceneCaptureRenderPass()
 
 			//Fill/Cull mode Set
 			Device.UpdateRSSetState(bFill, !(RenderItem.TwoSided));
+
+			//Material이 지정한 DepthStencilState/BlendState 적용 (ZEnable이 꺼져 있으면 디버그용으로 깊이 테스트 끔)
+			FPDepthStencilStateData& DepthStencilStateData = AssetManager->GetDepthStencilStateData(ZEnable ? RenderItem.DepthStencilState : "DS_DEPTH_OFF");
+			Device.OMSetDepthStencilState(DepthStencilStateData.DepthStencilData);
+
+			FPBlendStateData& BlendStateData = AssetManager->GetBlendStateData(RenderItem.BlendState);
+			Device.OMSetBlendState(BlendStateData.BlendStateData);
 
 			std::tuple<void*, void*, void*> VertexShaderData = AssetManager->GetVertexShader(RenderItem.VertexShaderPath);
 			std::pair<void*, void*> PixelShaderData = AssetManager->GetPixelShader(RenderItem.PixelShaderPath);
@@ -740,6 +743,7 @@ void Renderer::SceneCaptureRenderPass()
 				if (TextureItem.TextureType == Texture2DArray) { TextureData = AssetManager->GetTextureArrayData(TextureItem.AssetName).TextureArraySRV; }
 				if (TextureItem.TextureType == RenderTargetTexture2D) { TextureData = AssetManager->GetRenderTargetData(TextureItem.AssetName).ShaderResourceView; }
 				if (TextureItem.TextureType == DepthStencilTexture2D) { TextureData = AssetManager->GetDepthStencilData(TextureItem.AssetName).ShaderResourceView; }
+				if (TextureItem.TextureType == CubeMap) { TextureData = AssetManager->GetTextureData(TextureItem.AssetName).ShaderResourceView; }
 
 				Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData);
 			}
@@ -814,7 +818,7 @@ void Renderer::SceneCaptureRenderPass()
 		Device.ResolveRenderTarget(CaptureRTInfo.RenderTragetFormat, CaptureRTData.Texture, CaptureRTData.ResolveTexture);
 	}
 
-	Device.OMSetBlendState(BS_NULL_);
+	Device.OMSetBlendState(AssetManager->GetBlendStateData("BS_DEFAULT").BlendStateData);
 }
 
 void Renderer::CalculateViewPortSize(float Width, float Height, float& OutTopLeftX, float& OutTopLeftY, float& OutWidth, float& OutHeight)
@@ -861,13 +865,6 @@ void Renderer::MeshRenderPass()
 		Device.PSSetConstantBuffers(i, 1);
 	}
 
-	//Depth Dtencill 상태 설정
-	FPDepthStencilStateData& DepthStencilStateData = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetDepthStencilStateData(ZEnable ? "DS_DEPTH_ON" : "DS_DEPTH_OFF");
-	Device.OMSetDepthStencilState(DepthStencilStateData.DepthStencilData);
-
-	Device.OMSetBlendState(BS_ADD);
-
-
 	//기하 위상 구조 설정
 	Device.IASetPrimitiveTopology(Topology::TRIANGLELIST);
 
@@ -901,6 +898,13 @@ void Renderer::MeshRenderPass()
 
 			//렌더링 모드 전환
 			Device.UpdateRSSetState(true, !(RenderItem.TwoSided));
+
+			//Material이 지정한 DepthStencilState/BlendState 적용 (ZEnable이 꺼져 있으면 디버그용으로 깊이 테스트 끔)
+			FPDepthStencilStateData& DepthStencilStateData = AssetManager->GetDepthStencilStateData(ZEnable ? RenderItem.DepthStencilState : "DS_DEPTH_OFF");
+			Device.OMSetDepthStencilState(DepthStencilStateData.DepthStencilData);
+
+			FPBlendStateData& BlendStateData = AssetManager->GetBlendStateData(RenderItem.BlendState);
+			Device.OMSetBlendState(BlendStateData.BlendStateData);
 
 			std::tuple<void*, void*, void*> VertexShaderData = AssetManager->GetVertexShader(RenderItem.VertexShaderPath);
 			std::pair<void*, void*> PixelShaderData = AssetManager->GetPixelShader(RenderItem.PixelShaderPath);
@@ -945,6 +949,7 @@ void Renderer::MeshRenderPass()
 				if (TextureItem.TextureType == Texture2DArray) { TextureData = AssetManager->GetTextureArrayData(TextureItem.AssetName).TextureArraySRV; }
 				if (TextureItem.TextureType == RenderTargetTexture2D) { TextureData = AssetManager->GetRenderTargetData(TextureItem.AssetName).ShaderResourceView; }
 				if (TextureItem.TextureType == DepthStencilTexture2D) { TextureData = AssetManager->GetDepthStencilData(TextureItem.AssetName).ShaderResourceView; }
+				if (TextureItem.TextureType == CubeMap) { TextureData = AssetManager->GetTextureData(TextureItem.AssetName).ShaderResourceView; }
 
 				Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData);
 			}
@@ -1029,7 +1034,7 @@ void Renderer::MeshRenderPass()
 
 	Quad2DRenderPass(MeshRenderPassRT);
 
-	Device.OMSetBlendState(BS_NULL_);
+	Device.OMSetBlendState(AssetManager->GetBlendStateData("BS_DEFAULT").BlendStateData);
 }
 
 
@@ -1045,7 +1050,6 @@ void Renderer::GizmoRenderPass()
 
 	//MeshRenderPass RanderTarget Setting
 	Device.OMSetRenderTargets(1, RTData.RenderTargetView, BackBufferDepthStencilData.DepthStencilView);
-	//Device.ClearRenderTargetView(RTData.RenderTargetView, (float*)&RTInfo.ClearColor);
 
 	//상수 버퍼 14개씩 Set
 	for (int i = 0; i < 14; ++i)
@@ -1158,7 +1162,7 @@ void Renderer::GizmoRenderPass()
 
 	Quad2DRenderPass(RenderPassRT);
 
-	Device.OMSetBlendState(BS_NULL_);
+	Device.OMSetBlendState(AssetManager->GetBlendStateData("BS_DEFAULT").BlendStateData);
 }
 
 void Renderer::NormalRenderPass()

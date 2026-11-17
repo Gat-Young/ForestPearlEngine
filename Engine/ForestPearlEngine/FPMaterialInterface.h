@@ -41,5 +41,10 @@ class FPMaterialInterface : public FPObject
 		//TwoSide
 		virtual void SetTwoSided(bool isTwoSide) = 0;
 		virtual bool* GetTwoSided() = 0;
+		//BlendState / DepthStencilState
+		virtual void SetBlendState(std::string BlendState) = 0;
+		virtual void SetDepthStencilState(std::string DepthStencilState) = 0;
+		virtual std::string* GetBlendState() = 0;
+		virtual std::string* GetDepthStencilState() = 0;
 		virtual void UpdateMaterial(float DeltaTime) {};
 };

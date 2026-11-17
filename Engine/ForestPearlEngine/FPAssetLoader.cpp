@@ -246,6 +246,9 @@ void FPAssetLoader::LoadBuiltInMaterial(std::string BuiltInMaterialPath)
 	//Two Side
 	MaterialData.TwoSided = Material.value("TwoSided", false);
 
+	MaterialData.BlendState = Material.value("BlendState", std::string("BS_ADD"));
+	MaterialData.DepthStencilState = Material.value("DepthStencilState", std::string("DS_DEPTH_ON"));
+
 
 	//Material Parameter 정보 가져오기
 	const json& Groups = Material.at("Parameters");
@@ -300,7 +303,7 @@ void FPAssetLoader::LoadBuiltInMaterial(std::string BuiltInMaterialPath)
 			Entry.Name = T.at("Asset").get<std::string>();
 
 			const std::string TextureType = T.at("TextureType").get<std::string>();
-			if (TextureType != "Texture2D" && TextureType != "Texture2DArray" && TextureType != "RenderTargetTexture2D" && TextureType != "DepthStencilTexture2D") { std::cout << "Texture2D, Texture2DArray외의 Type이 사용됨"; }
+			if (TextureType != "Texture2D" && TextureType != "Texture2DArray" && TextureType != "RenderTargetTexture2D" && TextureType != "DepthStencilTexture2D" && TextureType != "CubeMap") { std::cout << "Texture2D, Texture2DArray, CubeMap외의 Type이 사용됨"; }
 
 			Entry.TextureType = StringToTextureType(TextureType);
 
@@ -815,6 +818,7 @@ void FPAssetLoader::LoadTexture(std::string TexturePath, AssetOwner EngineAsset)
 	TextureInfo.Name = JsonTextureData["Name"].get<std::string>();
 	TextureInfo.Path = JsonTextureData["Path"].get<std::string>();
 	TextureInfo.Type = JsonTextureData["Type"].get<std::string>();
+	TextureInfo.CubeMap = JsonTextureData.value("CubeMap", false);
 	TextureInfo.Owner = EngineAsset;
 
 	if (AssetManager->HasTextureData(TextureInfo.Name))
@@ -922,6 +926,9 @@ void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsse
 	//Two Side
 	MaterialData.TwoSided = Material.value("TwoSided", false);
 
+	MaterialData.BlendState = Material.value("BlendState", std::string("BS_ADD"));
+	MaterialData.DepthStencilState = Material.value("DepthStencilState", std::string("DS_DEPTH_ON"));
+
 
 	//Material Parameter 정보 가져오기
 	const json& Groups = Material.at("Parameters");
@@ -976,7 +983,7 @@ void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsse
 			Entry.Name = T.at("Asset").get<std::string>();
 
 			const std::string TextureType = T.at("TextureType").get<std::string>();
-			if (TextureType != "Texture2D" && TextureType != "Texture2DArray" && TextureType != "RenderTargetTexture2D" && TextureType != "DepthStencilTexture2D") { std::cout << "Texture2D, Texture2DArray외의 Type이 사용됨"; }
+			if (TextureType != "Texture2D" && TextureType != "Texture2DArray" && TextureType != "RenderTargetTexture2D" && TextureType != "DepthStencilTexture2D" && TextureType != "CubeMap") { std::cout << "Texture2D, Texture2DArray, CubeMap외의 Type이 사용됨"; }
 
 			Entry.TextureType = StringToTextureType(TextureType);
 
@@ -1189,4 +1196,73 @@ void FPAssetLoader::LoadDepthStencilState(std::string DepthStencilStatePath, Ass
 
 	//AssetManager에 Load한 정보 등록
 	AssetManager->AddDepthStencilStateInfoData(DepthStencilStateInfo.Name, DepthStencilStateInfo);
+}
+
+void FPAssetLoader::LoadBlendState(std::string BlendStatePath, AssetOwner EngineAsset)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::ifstream File(FPPathManager::Get().GetAssetPath("BlendState/" + BlendStatePath));
+	if (EngineAsset == AssetOwner::Engine) File = std::ifstream(FPPathManager::Get().GetEngineAssetPath("BlendState/" + BlendStatePath));
+
+	if (!File.is_open())
+	{
+		std::cerr << BlendStatePath << "파일 열기 실패\n";
+		return;
+	}
+
+	json JsonBlendStateData;
+
+	try
+	{
+		File >> JsonBlendStateData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPBlendStateInfo BlendStateInfo;
+
+	BlendStateInfo.Name = JsonBlendStateData["Name"].get<std::string>();
+
+	BlendStateInfo.AlphaToCoverageEnable = JsonBlendStateData["AlphaToCoverageEnable"].get<bool>();
+	BlendStateInfo.IndependentBlendEnable = JsonBlendStateData["IndependentBlendEnable"].get<bool>();
+
+	const json& RenderTargets = JsonBlendStateData.at("RenderTargets");
+	for (const json& RenderTargetData : RenderTargets)
+	{
+		FPRenderTargetBlendDesc RTBlendDesc;
+
+		RTBlendDesc.BlendEnable = RenderTargetData["BlendEnable"].get<bool>();
+		RTBlendDesc.SrcBlend = StringToFPBlend(RenderTargetData["SrcBlend"].get<std::string>());
+		RTBlendDesc.DestBlend = StringToFPBlend(RenderTargetData["DestBlend"].get<std::string>());
+		RTBlendDesc.BlendOp = StringToFPBlendOp(RenderTargetData["BlendOp"].get<std::string>());
+
+		RTBlendDesc.SrcBlendAlpha = StringToFPBlend(RenderTargetData["SrcBlendAlpha"].get<std::string>());
+		RTBlendDesc.DestBlendAlpha = StringToFPBlend(RenderTargetData["DestBlendAlpha"].get<std::string>());
+		RTBlendDesc.BlendOpAlpha = StringToFPBlendOp(RenderTargetData["BlendOpAlpha"].get<std::string>());
+
+		for (const json& WriteMask : RenderTargetData.at("RenderTargetWriteMask"))
+		{
+			RTBlendDesc.RenderTargetWriteMask.push_back(StringToFPColorWriteMask(WriteMask.get<std::string>()));
+		}
+
+		BlendStateInfo.RenderTargets.push_back(RTBlendDesc);
+	}
+
+	BlendStateInfo.Owner = EngineAsset;
+
+	if (AssetManager->HasBlendStateInfoData(BlendStateInfo.Name))
+	{
+		std::cout << "같은 이름의 BlendState가 존재합니다." << "\n";
+		return;
+	}
+
+	//AssetManager에 Load한 정보 등록
+	AssetManager->AddBlendStateInfoData(BlendStateInfo.Name, BlendStateInfo);
 }

@@ -1,5 +1,6 @@
 {
   "Name": "mask2_png",
   "Path": "Terrain/mask2.png",
-  "Type": "WIC"
+  "Type": "WIC",
+  "CubeMap": false
 }

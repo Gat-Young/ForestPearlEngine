@@ -1,0 +1,6 @@
+{
+  "Name": "uffizi_cross_dds",
+  "Path": "CubeMap/uffizi_cross.dds",
+  "Type": "DDS",
+  "CubeMap": true
+}

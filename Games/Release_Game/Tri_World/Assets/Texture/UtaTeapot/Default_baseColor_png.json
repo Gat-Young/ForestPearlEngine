@@ -1,5 +1,6 @@
 {
     "Name": "Default_baseColor_png",
     "Path": "UtaTeapot/default_baseColor.png",
-    "Type": "WIC"
+    "Type": "WIC",
+    "CubeMap": false
 }

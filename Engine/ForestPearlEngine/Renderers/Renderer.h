@@ -4,6 +4,8 @@
 #include "RenderingDevice.h"
 #include "../Shader/ShaderFactory.h"
 
+class FPAssetManager;
+
 namespace RenderingData
 {
 	struct MeshRenderItem;
@@ -54,7 +56,10 @@ class Renderer
 		std::vector<RenderingData::CameraItem> CameraList;
 
 		//Mesh Render Item
-		std::vector<RenderingData::MeshRenderItem> MeshRenderList;
+		std::vector<RenderingData::MeshRenderItem> OpaqueRenderList;
+		std::vector<RenderingData::MeshRenderItem> MaskedRenderList;
+		std::vector<RenderingData::MeshRenderItem> TranslucentRenderList;
+		std::vector<RenderingData::MeshRenderItem> SkyBoxRenderList;
 
 		//Debug Render Item
 		std::vector<RenderingData::GizmoRenderItem> GizmoRenderList;
@@ -81,6 +86,17 @@ class Renderer
 
 		//Aspect-corrected ViewPort size (Letterbox / Pillarbox)
 		void CalculateViewPortSize(float Width, float Height, float& OutTopLeftX, float& OutTopLeftY, float& OutWidth, float& OutHeight);
+
+		//MeshRenderPass sub-pass: single RenderItem draw, shared by Opaque/Masked/Translucent
+		void DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const std::string& DepthStencilState);
+
+		void SkyBoxRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
+		void OpaqueRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
+		void MaskedRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
+		void TranslucentRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
+
+		//SceneCaptureRenderPass sub-pass: single RenderItem draw
+		void DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::SceneCaptureItem& CaptureItem, FPAssetManager* AssetManager, const std::string& DepthStencilState);
 
 	public:
 		Renderer(RenderingDevice& Device);

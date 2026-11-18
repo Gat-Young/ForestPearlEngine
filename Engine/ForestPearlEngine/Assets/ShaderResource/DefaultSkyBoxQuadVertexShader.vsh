@@ -72,7 +72,6 @@ VSOutput VS_Main(
     float4 VSN = nrm;
     float3 WSuvw = 0;
 
-
     float4 ViewPos = mul(mInverseProj, VSpos);
     ViewPos.xyz /= ViewPos.w;
     

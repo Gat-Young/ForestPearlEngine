@@ -5,7 +5,8 @@
         "PixelShader": "DefaultSkyBoxQuadPixelShader",
         "TwoSided": false,
         "BlendState": "BS_DEFAULT",
-        "DepthStencilState": "DS_DEPTH_OFF",
+        "Details": "Translucent",
+        "bIsSky": true,
         "Parameters": [ ],
         "Textures": [
             {

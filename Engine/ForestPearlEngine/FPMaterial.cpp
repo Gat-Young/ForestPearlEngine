@@ -379,9 +379,9 @@ void FPMaterial::SetBlendState(std::string BlendState)
 	this->BlendState = BlendState;
 }
 
-void FPMaterial::SetDepthStencilState(std::string DepthStencilState)
+void FPMaterial::SetDetail(FPMaterialDetail Detail)
 {
-	this->DepthStencilState = DepthStencilState;
+	this->Detail = Detail;
 }
 
 std::string* FPMaterial::GetBlendState()
@@ -389,9 +389,19 @@ std::string* FPMaterial::GetBlendState()
 	return &(this->BlendState);
 }
 
-std::string* FPMaterial::GetDepthStencilState()
+FPMaterialDetail* FPMaterial::GetDetail()
 {
-	return &(this->DepthStencilState);
+	return &(this->Detail);
+}
+
+void FPMaterial::SetIsSky(bool bIsSky)
+{
+	this->bIsSky = bIsSky;
+}
+
+bool* FPMaterial::GetIsSky()
+{
+	return &(this->bIsSky);
 }
 
 void FPMaterial::UpdateMaterial(float DeltaTime)

@@ -5,7 +5,8 @@
         "PixelShader": "DefaultPixelShader",
         "TwoSided": true,
         "BlendState": "BS_ADD",
-        "DepthStencilState": "DS_DEPTH_ON",
+        "Details": "Opaque",
+        "bIsSky": false,
         "Parameters": [
             {
                 "Type": "PS",

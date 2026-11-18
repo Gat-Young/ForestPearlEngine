@@ -482,6 +482,17 @@ enum class FPShaderType
 
 FPShaderType StringToFPShaderType(const std::string& ShaderType);
 
+enum class FPMaterialDetail
+{
+	Opaque,
+	Masked,
+	Translucent,
+
+	FPMaterialDetail_MAX_
+};
+
+FPMaterialDetail StringToFPMaterialDetail(const std::string& Name);
+
 //////Material Data ±¸Á¶Ã¼////////
 
 struct FPReflectionParameterInfo
@@ -559,7 +570,8 @@ struct FPMaterialData
 	bool TwoSided;
 
 	std::string BlendState;
-	std::string DepthStencilState;
+	FPMaterialDetail Detail = FPMaterialDetail::Opaque;
+	bool bIsSky = false;
 
 	std::vector<FPFloatParameterData> Parameters;
 	std::vector<FPTextureParameterData> NamedTextures;
@@ -627,7 +639,8 @@ struct RenderItem
 	bool* TwoSided = nullptr;
 
 	std::string* BlendState = nullptr;
-	std::string* DepthStencilState = nullptr;
+	FPMaterialDetail* Detail = nullptr;
+	bool* bIsSky = nullptr;
 
 	FPMatrix* Location = nullptr;
 	FPMatrix* Rotation = nullptr;
@@ -956,7 +969,8 @@ namespace RenderingData
 		bool TwoSided;
 
 		std::string BlendState;
-		std::string DepthStencilState;
+		FPMaterialDetail Detail;
+		bool bIsSky;
 
 		FPMatrix Location;
 		FPMatrix Rotation;

@@ -1843,7 +1843,8 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 	Material->SetPixelShader(MaterialData.PixelShader);
 	Material->SetTwoSided(MaterialData.TwoSided);
 	Material->SetBlendState(MaterialData.BlendState);
-	Material->SetDepthStencilState(MaterialData.DepthStencilState);
+	Material->SetDetail(MaterialData.Detail);
+	Material->SetIsSky(MaterialData.bIsSky);
 	
 	const FPVertexShaderData& VS = GetVertexShaderData(MaterialData.VertexShader);
 	const FPPixelShaderData& PS = GetPixelShaderData(MaterialData.PixelShader);

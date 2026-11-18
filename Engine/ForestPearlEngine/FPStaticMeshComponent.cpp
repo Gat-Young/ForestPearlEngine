@@ -56,7 +56,8 @@ void FPStaticMeshComponent::SetRenderItemData()
 	RenderItem->TwoSided = SelectedMaterial->GetTwoSided();
 
 	RenderItem->BlendState = SelectedMaterial->GetBlendState();
-	RenderItem->DepthStencilState = SelectedMaterial->GetDepthStencilState();
+	RenderItem->Detail = SelectedMaterial->GetDetail();
+	RenderItem->bIsSky = SelectedMaterial->GetIsSky();
 
 	RenderItem->VertexConstBuffer = SelectedMaterial->GetVertexConstantBufferRenderData();
 	RenderItem->PixelConstBuffer = SelectedMaterial->GetPixelConstantBufferRenderData();

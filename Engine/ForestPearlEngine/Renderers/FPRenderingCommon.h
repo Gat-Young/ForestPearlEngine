@@ -337,6 +337,7 @@ struct FPDepthStencilData
 	void* Texture = nullptr;
 	void* DepthStencilView = nullptr;
 	void* ShaderResourceView = nullptr;
+	void* StencilShaderResourceView = nullptr;
 };
 
 
@@ -466,8 +467,12 @@ enum FPTextureType
 
 	RenderTargetTexture2D,
 	DepthStencilTexture2D,
+	StencilTexture2D,
 
 	CubeMap,
+
+	//MSAA Texture2DMS resource (reflection-only, never set directly via JSON)
+	Texture2DMS,
 
 	FPTextureType_MAX_
 };
@@ -697,6 +702,8 @@ struct NormalRenderItem
 	std::string* PixelShaderPath = nullptr;
 };
 
+class FPMaterialInterface;
+
 struct CameraItem
 {
 	//카메라의 위치
@@ -708,6 +715,9 @@ struct CameraItem
 	FPMatrix* Projection = nullptr;
 
 	bool* Active = nullptr;			//카메라 사용 여부
+
+	//PostProcess Material (nullptr = 없음). PostProcess Material을 가진 Camera는 PostProcessList에 등록됨
+	FPMaterialInterface** PostProcessMaterial = nullptr;
 };
 
 //SceneCapture Component
@@ -850,6 +860,12 @@ namespace RenderingData
 
 		FPMatrix View;
 		FPMatrix Projection;
+	};
+
+	//PostProcess 목록 항목 (PostProcess Material을 가진 Camera)
+	struct PostProcessItem
+	{
+		FPMaterialInterface* Material = nullptr;		//Camera가 가진 PostProcess Material
 	};
 
 	struct UIContextItem

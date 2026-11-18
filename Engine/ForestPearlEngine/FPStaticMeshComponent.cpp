@@ -120,7 +120,7 @@ void FPStaticMeshComponent::SetStaticMesh(std::string StaticMeshName)
 
 void FPStaticMeshComponent::SetStencilRefValue(int InStencilRefValue)
 {
-	//Stencil reference value is written into the CustomDepthStencil (0 ~ 255)
+	//Stencil 참조 값은 CustomDepthStencil에 기록됨 (0 ~ 255)
 	if (InStencilRefValue < 0) InStencilRefValue = 0;
 	if (InStencilRefValue > 255) InStencilRefValue = 255;
 	this->StencilRefValue = InStencilRefValue;

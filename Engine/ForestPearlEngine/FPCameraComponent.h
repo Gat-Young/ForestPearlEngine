@@ -3,6 +3,8 @@
 #include "../ForestPearlEngine/Define/FPMath.h"
 #include "FPCameraList.h"
 
+class FPMaterialInterface;
+
 class FPCameraComponent : public FPSceneComponent
 {
 	public:
@@ -21,6 +23,9 @@ class FPCameraComponent : public FPSceneComponent
 
 		bool Active = true;			//카메라 사용 여부
 
+		//PostProcess Material. nullptr이면 PostProcess를 사용하지 않음 (Camera가 소유)
+		FPMaterialInterface* PostProcessMaterial = nullptr;
+
 		CameraItem* CamItem = nullptr;
 
 	public:
@@ -28,4 +33,11 @@ class FPCameraComponent : public FPSceneComponent
 		~FPCameraComponent();
 		void RegistCamera();
 		void Tick() override;
+
+		//PostProcess (MeshRenderPass 이후 호출되는 PostProcessRenderPass가 이 Material을 사용)
+		//Material 이름으로 PostProcess Material을 생성해 설정 (기존 Material은 해제, 빈 문자열이나 없는 이름이면 해제만 함)
+		void SetPostProcessMaterial(std::string MaterialName);
+
+		//PostProcess Material (런타임에 SetParameter 등으로 값 변경 가능, 없으면 nullptr)
+		FPMaterialInterface* GetPostProcessMaterial() const;
 };

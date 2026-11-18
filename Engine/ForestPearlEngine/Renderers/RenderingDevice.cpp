@@ -120,6 +120,25 @@ DXGI_FORMAT RenderingDevice::DSVFormatToSRVFormat(DXGI_FORMAT& DSVFormat)
 	return DSVFormat;
 }
 
+DXGI_FORMAT RenderingDevice::DSVFormatToStencilSRVFormat(DXGI_FORMAT& DSVFormat)
+{
+	static const std::unordered_map<DXGI_FORMAT, DXGI_FORMAT> FormatMap =
+	{
+		{ DXGI_FORMAT_D24_UNORM_S8_UINT,    DXGI_FORMAT_X24_TYPELESS_G8_UINT },
+		{ DXGI_FORMAT_D32_FLOAT_S8X24_UINT, DXGI_FORMAT_X32_TYPELESS_G8X24_UINT },
+	};
+
+	auto it = FormatMap.find(DSVFormat);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	//No stencil channel for this format (D16, D32F, etc.) : stencil SRV not valid
+	return DXGI_FORMAT_UNKNOWN;
+}
+
 D3D11_STENCIL_OP RenderingDevice::FPStencilOPToD3DStencilOP(FPStencilOP& StencilOP)
 {
 	static const std::unordered_map<FPStencilOP, D3D11_STENCIL_OP> FormatMap =
@@ -632,6 +651,38 @@ HRESULT RenderingDevice::CreateDepthStencilSRView(FPDepthStencilFormat& DepthSte
 	return hr;
 }
 
+HRESULT RenderingDevice::CreateDepthStencilStencilSRView(FPDepthStencilFormat& DepthStencilFormat, bool ShaderResource, UINT MSAA, void* InDSTex, void** OutDSSRView)
+{
+	HRESULT hr = S_OK;
+	if (!ShaderResource) return hr;
+
+	DXGI_FORMAT DSVFormat = FPDepthStencilFormatToDXGI_FORMAT(DepthStencilFormat);
+	DXGI_FORMAT StencilSRVFormat = DSVFormatToStencilSRVFormat(DSVFormat);
+
+	//No stencil channel for this format (D16, D32F, etc.) : skip SRV creation
+	if (StencilSRVFormat == DXGI_FORMAT_UNKNOWN) return hr;
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+	SRVDesc.Format = StencilSRVFormat;
+	SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	SRVDesc.Texture2D.MostDetailedMip = 0;
+	SRVDesc.Texture2D.MipLevels = 1;
+	if (MSAA > 1)
+	{
+		SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
+		SRVDesc.Texture2DMS.UnusedField_NothingToDefine = 0;
+	}
+
+	ID3D11ShaderResourceView* DSSRV;
+	ID3D11Texture2D* DSTex = static_cast<ID3D11Texture2D*>(InDSTex);
+
+	hr = Device->CreateShaderResourceView(DSTex, &SRVDesc, &DSSRV);
+	if (FAILED(hr)) { std::cout << "Stencil DSSRV Create Fail!" << "\n"; return hr; }
+
+	*OutDSSRView = DSSRV;
+	return hr;
+}
+
 HRESULT RenderingDevice::CreateDepthStencilState(FPDepthStencilStateInfo& DepthStencilInfo, void** OutDSState)
 {
 	HRESULT hr = S_OK;
@@ -1081,6 +1132,7 @@ HRESULT RenderingDevice::ReflectionShader(void* VScode, void* PScode, const std:
 					if (Binding.Dimension == D3D_SRV_DIMENSION_TEXTURE2D) { TextureType = Texture2D; }
 					else if (Binding.Dimension == D3D_SRV_DIMENSION_TEXTURE2DARRAY) { TextureType = Texture2DArray; }
 					else if (Binding.Dimension == D3D_SRV_DIMENSION_TEXTURECUBE) { TextureType = CubeMap; }
+					else if (Binding.Dimension == D3D_SRV_DIMENSION_TEXTURE2DMS) { TextureType = Texture2DMS; }
 					else { std::cout <<  "지원하지 않는 텍스처 차원: " + Name << "\n"; return E_FAIL; }
 
 					FPReflectionResourceInfo Entry;

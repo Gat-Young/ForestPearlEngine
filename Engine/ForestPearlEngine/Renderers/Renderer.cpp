@@ -7,6 +7,7 @@
 
 #include "../FPGameInstance.h"
 #include "../FPAssetManager.h"
+#include "../FPMaterialInterface.h"
 #include "../FPGameProjectSetting.h"
 
 #include "FPRenderingCommon.h"
@@ -83,41 +84,7 @@ void Renderer::Quad2DRenderPass(std::string& InRenderTarget)
 	RenderingData::MVPConstBuffer MVPCB;
 	
 	//단위 행렬 사용
-	FPMatrix View = FPMatrix::MatrixIdentity();
-
-	//Ortho-Off Projection 행렬
-	FPMatrix Proj = FPMatrix::MatrixOrthographicOffCenterLH(0, (float)DisplayWidth,(float)DisplayHeight, 0.0f, 1.0f, 100.0f);
-
-	//화면 해상도 대응 : 렌더타겟과 동일, 화면 중앙 이동
-	FPMatrix Scale = FPMatrix::MatrixScaling((float)DisplayWidth, (float)DisplayHeight, 1);
-	FPMatrix Rotation = FPMatrix::MatrixIdentity();
-	FPMatrix Location = FPMatrix::MatrixTranslation(DisplayWidth/2, DisplayHeight/2, 2.0f);
-
-	////World/View/Proj matrix Set (HLSL is row-major, so operand order is the reverse of HLSL)
-	MVPCB.WorldMatrix = (Scale * Rotation * Location).Matrix;
-	MVPCB.InverseWorldMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WorldMatrix);
-	MVPCB.TranseposeWorldMatrix = DirectX::XMMatrixTranspose(MVPCB.WorldMatrix);
-	MVPCB.InverseTranseposeWorldMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWorldMatrix);
-
-	MVPCB.ViewMatrix = View.Matrix;
-	MVPCB.InverseViewMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.ViewMatrix);
-	MVPCB.TranseposeViewMatrix = DirectX::XMMatrixTranspose(MVPCB.ViewMatrix);
-	MVPCB.InverseTranseposeViewMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseViewMatrix);
-
-	MVPCB.ProjMatrix = Proj.Matrix;
-	MVPCB.InverseProjMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.ProjMatrix);
-	MVPCB.TranseposeProjMatrix = DirectX::XMMatrixTranspose(MVPCB.ProjMatrix);
-	MVPCB.InverseTranseposeProjMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseProjMatrix);
-
-	MVPCB.WVMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix;
-	MVPCB.InverseWVMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WVMatrix);
-	MVPCB.TranseposeWVMatrix = DirectX::XMMatrixTranspose(MVPCB.WVMatrix);
-	MVPCB.InverseTranseposeWVMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWVMatrix);
-
-	MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
-	MVPCB.InverseWVPMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WVPMatrix);
-	MVPCB.TranseposeWVPMatrix = DirectX::XMMatrixTranspose(MVPCB.WVPMatrix);
-	MVPCB.InverseTranseposeWVPMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWVPMatrix);
+	MakeQuad2DMVP(MVPCB, DisplayWidth, DisplayHeight);
 	//
 	//
 	//
@@ -728,6 +695,7 @@ void Renderer::DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& Ren
 		if (TextureItem.TextureType == Texture2DArray) { TextureData = AssetManager->GetTextureArrayData(TextureItem.AssetName).TextureArraySRV; }
 		if (TextureItem.TextureType == RenderTargetTexture2D) { TextureData = AssetManager->GetRenderTargetData(TextureItem.AssetName).ShaderResourceView; }
 		if (TextureItem.TextureType == DepthStencilTexture2D) { TextureData = AssetManager->GetDepthStencilData(TextureItem.AssetName).ShaderResourceView; }
+		if (TextureItem.TextureType == StencilTexture2D) { TextureData = AssetManager->GetDepthStencilData(TextureItem.AssetName).StencilShaderResourceView; }
 		if (TextureItem.TextureType == CubeMap) { TextureData = AssetManager->GetTextureData(TextureItem.AssetName).ShaderResourceView; }
 
 		Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData);
@@ -963,6 +931,7 @@ void Renderer::DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderIte
 		if (TextureItem.TextureType == Texture2DArray) { TextureData = AssetManager->GetTextureArrayData(TextureItem.AssetName).TextureArraySRV; }
 		if (TextureItem.TextureType == RenderTargetTexture2D) { TextureData = AssetManager->GetRenderTargetData(TextureItem.AssetName).ShaderResourceView; }
 		if (TextureItem.TextureType == DepthStencilTexture2D) { TextureData = AssetManager->GetDepthStencilData(TextureItem.AssetName).ShaderResourceView; }
+		if (TextureItem.TextureType == StencilTexture2D) { TextureData = AssetManager->GetDepthStencilData(TextureItem.AssetName).StencilShaderResourceView; }
 		if (TextureItem.TextureType == CubeMap) { TextureData = AssetManager->GetTextureData(TextureItem.AssetName).ShaderResourceView; }
 
 		Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData);
@@ -1047,13 +1016,13 @@ void Renderer::PreDepthStencilRenderPass()
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
-	//Same ViewPort (Letterbox) as MeshRenderPass, so that the pre-pass depth matches the color pass
+	//MeshRenderPass와 같은 Letterbox ViewPort를 사용해 Pre-Pass 깊이가 색상 Pass와 일치하도록 함
 	FPRenderTargetTexture2DInfo& RTInfo = AssetManager->GetBuiltInRenderTargetTexture2DInfoData("MeshRenderPass-RT-BuiltIn");
 	float ViewPortTopLeftX, ViewPortTopLeftY, ViewPortWidth, ViewPortHeight;
 	CalculateViewPortSize((float)RTInfo.SizeX, (float)RTInfo.SizeY, ViewPortTopLeftX, ViewPortTopLeftY, ViewPortWidth, ViewPortHeight);
 	Device.SetViewPort(ViewPortTopLeftX, ViewPortTopLeftY, ViewPortWidth, ViewPortHeight, 0.0f, 1.0f);
 
-	//Topology / constant buffer slots are not guaranteed to be set by the previous pass of the last frame
+	//Topology / 상수 버퍼 슬롯은 이전 프레임의 마지막 Pass가 설정한 값을 보장할 수 없으므로 직접 설정
 	Device.IASetPrimitiveTopology(Topology::TRIANGLELIST);
 	for (int i = 0; i < 14; ++i)
 	{
@@ -1094,7 +1063,7 @@ void Renderer::CustomDepthStencilPass(const RenderingData::CameraItem& CamItem, 
 
 	for (const RenderingData::MeshRenderItem& RenderItem : OpaqueRenderList)
 	{
-		if (!RenderItem.bCustomDepthStencil) continue;
+		if (!RenderItem.bCustomDepthStencil || RenderItem.StencilRefValue == 1) continue;
 		DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON_STENCIL_ON", (UINT)RenderItem.StencilRefValue, true);
 	}
 
@@ -1119,7 +1088,14 @@ void Renderer::OpaqueRenderPass(const RenderingData::CameraItem& CamItem, FPAsse
 {
 	for (const RenderingData::MeshRenderItem& RenderItem : OpaqueRenderList)
 	{
-		DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON");
+		if (RenderItem.bCustomDepthStencil)
+		{
+			DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON_STENCIL_ON", (UINT)RenderItem.StencilRefValue);
+		}
+		else
+		{
+			DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON");
+		}
 	}
 }
 
@@ -1143,6 +1119,7 @@ void Renderer::MeshRenderPass()
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 	std::string MeshRenderPassRT = "MeshRenderPass-RT-BuiltIn";
+	SceneRenderTarget = MeshRenderPassRT;		//이번 프레임의 장면 색상 RT (PostProcessRenderPass가 바꿀 수 있음)
 
 	//BackBuffer RenderTarget / DepthStencil Default Set
 	FPRenderTargetTexture2DInfo& RTInfo = AssetManager->GetBuiltInRenderTargetTexture2DInfoData(MeshRenderPassRT);
@@ -1194,7 +1171,7 @@ void Renderer::MeshRenderPass()
 void Renderer::GizmoRenderPass()
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-	std::string RenderPassRT = "MeshRenderPass-RT-BuiltIn";
+	std::string RenderPassRT = SceneRenderTarget;		//Mesh RT, PostProcess가 적용됐다면 PostProcess RT
 
 	//BackBuffer RenderTarget / DepthStencil Default Set
 	FPRenderTargetTexture2DInfo& RTInfo = AssetManager->GetBuiltInRenderTargetTexture2DInfoData(RenderPassRT);
@@ -1544,4 +1521,200 @@ void Renderer::ResizeRenderTarget()
 
 	FPDepthStencilData& BackBufferDepthStencilData = AssetManager->GetDepthStencilData("BackBufferDepthStencil");
 	Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
+}
+
+
+//Quad2D MVP (Quad2DRenderPass와 PostProcessRenderPass가 공유)
+void Renderer::MakeQuad2DMVP(RenderingData::MVPConstBuffer& MVPCB, float DisplayWidth, float DisplayHeight)
+{
+	//View는 단위 행렬 사용
+	FPMatrix View = FPMatrix::MatrixIdentity();
+
+	//Ortho-Off Projection 행렬
+	FPMatrix Proj = FPMatrix::MatrixOrthographicOffCenterLH(0, (float)DisplayWidth,(float)DisplayHeight, 0.0f, 1.0f, 100.0f);
+
+	//화면 해상도 대응 : 렌더타겟과 동일, 화면 중앙 이동
+	FPMatrix Scale = FPMatrix::MatrixScaling((float)DisplayWidth, (float)DisplayHeight, 1);
+	FPMatrix Rotation = FPMatrix::MatrixIdentity();
+	FPMatrix Location = FPMatrix::MatrixTranslation(DisplayWidth/2, DisplayHeight/2, 2.0f);
+
+	////World/View/Proj 행렬 설정 (HLSL과 곱셈 순서가 반대)
+	MVPCB.WorldMatrix = (Scale * Rotation * Location).Matrix;
+	MVPCB.InverseWorldMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WorldMatrix);
+	MVPCB.TranseposeWorldMatrix = DirectX::XMMatrixTranspose(MVPCB.WorldMatrix);
+	MVPCB.InverseTranseposeWorldMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWorldMatrix);
+
+	MVPCB.ViewMatrix = View.Matrix;
+	MVPCB.InverseViewMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.ViewMatrix);
+	MVPCB.TranseposeViewMatrix = DirectX::XMMatrixTranspose(MVPCB.ViewMatrix);
+	MVPCB.InverseTranseposeViewMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseViewMatrix);
+
+	MVPCB.ProjMatrix = Proj.Matrix;
+	MVPCB.InverseProjMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.ProjMatrix);
+	MVPCB.TranseposeProjMatrix = DirectX::XMMatrixTranspose(MVPCB.ProjMatrix);
+	MVPCB.InverseTranseposeProjMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseProjMatrix);
+
+	MVPCB.WVMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix;
+	MVPCB.InverseWVMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WVMatrix);
+	MVPCB.TranseposeWVMatrix = DirectX::XMMatrixTranspose(MVPCB.WVMatrix);
+	MVPCB.InverseTranseposeWVMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWVMatrix);
+
+	MVPCB.WVPMatrix = MVPCB.WorldMatrix * MVPCB.ViewMatrix * MVPCB.ProjMatrix;
+	MVPCB.InverseWVPMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WVPMatrix);
+	MVPCB.TranseposeWVPMatrix = DirectX::XMMatrixTranspose(MVPCB.WVPMatrix);
+	MVPCB.InverseTranseposeWVPMatrix = DirectX::XMMatrixTranspose(MVPCB.InverseWVPMatrix);
+
+	//MakeQuad2DMVP 끝
+}
+
+//PostProcess 목록 (활성 상태이고 PostProcess Material을 가진 Camera)
+void Renderer::CreatePostProcessList()
+{
+	PostProcessList.clear();
+
+	FPCameraList* CameraRenderList = static_cast<FPCameraList*>(FPGameInstance::Get().GetCameraList());
+	std::vector<CameraItem> CamList = CameraRenderList->GetRenderList();
+
+	for (CameraItem& CamItem : CamList)
+	{
+		if (!(*(CamItem.Active))) continue;
+		if (CamItem.PostProcessMaterial == nullptr) continue;
+		if (*(CamItem.PostProcessMaterial) == nullptr) continue;
+
+		RenderingData::PostProcessItem PostProcessItem;
+		PostProcessItem.Material = *(CamItem.PostProcessMaterial);
+
+		PostProcessList.push_back(PostProcessItem);
+	}
+}
+
+//PostProcess : Mesh RT -> (PostProcess Material의 PS, DefaultQuad2DVertexShader) -> PostProcess RT -> Quad2DRenderPass -> BackBuffer
+void Renderer::PostProcessRenderPass()
+{
+	if (PostProcessList.empty()) return;
+
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	const std::string PostProcessRT = "PostProcessRenderPass-RT-BuiltIn";
+
+	if (!AssetManager->HasRenderTargetData(PostProcessRT))
+	{
+		std::cout << "PostProcess RenderTarget not loaded: " << PostProcessRT << "\n";
+		return;
+	}
+
+	FPRenderTargetTexture2DInfo& RTInfo = AssetManager->GetBuiltInRenderTargetTexture2DInfoData(PostProcessRT);
+	FPRenderTargetData& RTData = AssetManager->GetRenderTargetData(PostProcessRT);
+
+	FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
+	float DisplayWidth = GameProjectSetting->GetDisplayWidth();
+	float DisplayHeight = GameProjectSetting->GetDeisplayHeight();
+
+	bool bDrawn = false;
+
+	for (const RenderingData::PostProcessItem& PostProcessItem : PostProcessList)
+	{
+		//Camera가 가진 PostProcess Material
+		FPMaterialInterface* Material = PostProcessItem.Material;
+		if (Material == nullptr) continue;
+
+		//출력 : PostProcess RT만 사용 (깊이 버퍼 없음)
+		Device.OMSetRenderTargets(1, RTData.RenderTargetView, nullptr);
+
+		//상수 버퍼 14개 슬롯 바인딩
+		for (int i = 0; i < 14; ++i)
+		{
+			Device.VSSetConstantBuffers(i, 1);
+			Device.PSSetConstantBuffers(i, 1);
+		}
+
+		//렌더 상태 : 컬링 없음, Solid, 블렌드 없음, 깊이 없음
+		Device.UpdateRSSetState(true, false);
+		Device.OMSetBlendState(AssetManager->GetBlendStateData("BS_DEFAULT").BlendStateData);
+		Device.OMSetDepthStencilState(AssetManager->GetDepthStencilStateData("DS_DEPTH_OFF").DepthStencilData);
+
+		Device.IASetPrimitiveTopology(Topology::TRIANGLESTRIP);
+		Device.SetViewPort(0.0f, 0.0f, (float)RTInfo.SizeX, (float)RTInfo.SizeY, 0.0f, 1.0f);
+
+		//셰이더 : Vertex Shader는 고정, Pixel Shader는 Material에서 가져옴
+		std::tuple<void*, void*, void*> VertexShaderData = AssetManager->GetVertexShader("DefaultQuad2DVertexShader");
+		std::pair<void*, void*> PixelShaderData = AssetManager->GetPixelShader(*(Material->GetPixelShader()));
+
+		Device.IASetInputLayout(std::get<2>(VertexShaderData));
+		Device.VSSetShader(std::get<0>(VertexShaderData));
+		Device.PSSetShader(std::get<0>(PixelShaderData));
+
+		//Object 상수 버퍼 (슬롯 0), Quad2DRenderPass와 동일
+		RenderingData::MVPConstBuffer MVPCB;
+		MakeQuad2DMVP(MVPCB, DisplayWidth, DisplayHeight);
+		Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
+		Device.UpdatePixelShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
+
+		//Material 상수 버퍼
+		FPConstantBufferRenderData* VertexConstBuffer = Material->GetVertexConstantBufferRenderData();
+		for (FPConstantBufferInfo ConstantBufferInfo : VertexConstBuffer->ConstantBuffers)
+		{
+			Device.UpdateVertexShaderSubresource(ConstantBufferInfo.Slot, VertexConstBuffer->Buffer.data(), ConstantBufferInfo.Offset, ConstantBufferInfo.Size);
+		}
+
+		FPConstantBufferRenderData* PixelConstBuffer = Material->GetPixelConstantBufferRenderData();
+		for (FPConstantBufferInfo ConstantBufferInfo : PixelConstBuffer->ConstantBuffers)
+		{
+			Device.UpdatePixelShaderSubresource(ConstantBufferInfo.Slot, PixelConstBuffer->Buffer.data(), ConstantBufferInfo.Offset, ConstantBufferInfo.Size);
+		}
+
+		//Material JSON에 지정된 텍스처 / 샘플러
+		const std::vector<FPReflectionResourceInfo>& Resources = Material->GetReflectionData()->Resources;
+		for (const FPReflectionResourceInfo& TextureItem : Resources)
+		{
+			void* TextureData = nullptr;
+			if (TextureItem.TextureType == Texture2D) { TextureData = AssetManager->GetTextureData(TextureItem.AssetName).ShaderResourceView; }
+			if (TextureItem.TextureType == Texture2DArray) { TextureData = AssetManager->GetTextureArrayData(TextureItem.AssetName).TextureArraySRV; }
+			if (TextureItem.TextureType == RenderTargetTexture2D) { TextureData = AssetManager->GetRenderTargetData(TextureItem.AssetName).ShaderResourceView; }
+			if (TextureItem.TextureType == DepthStencilTexture2D) { TextureData = AssetManager->GetDepthStencilData(TextureItem.AssetName).ShaderResourceView; }
+			if (TextureItem.TextureType == StencilTexture2D) { TextureData = AssetManager->GetDepthStencilData(TextureItem.AssetName).StencilShaderResourceView; }
+			if (TextureItem.TextureType == CubeMap) { TextureData = AssetManager->GetTextureData(TextureItem.AssetName).ShaderResourceView; }
+
+			Device.PSSetShaderResources(TextureItem.Slot, 1, TextureData);
+		}
+
+		const std::vector<FPReflectionSamplerInfo>& Samplers = Material->GetReflectionData()->Samplers;
+		for (const FPReflectionSamplerInfo& SamplerItem : Samplers)
+		{
+			Device.PSSetSamplers(SamplerItem.Slot, 1, SamplerItem.SamplerType);
+		}
+
+		//Quad Mesh 설정
+		FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer("Quad2D_Mesh");
+		FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer("Quad2D_Mesh");
+		FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer("Quad2D_Mesh");
+		FPVertexBufferData UVVB = AssetManager->GetUVVertexBuffer("Quad2D_Mesh");
+		FPIndexBufferData IndexB = AssetManager->GetIndexBuffer("Quad2D_Mesh");
+		FPVertexBufferData TangentVB = AssetManager->GetTangentVertexBuffer("Quad2D_Mesh");
+
+		Device.IASetVertexBuffers(0, 1, PositionVB.VertexBuffer, &(PositionVB.Stride), &(PositionVB.Offset));
+		Device.IASetVertexBuffers(1, 1, NormalVB.VertexBuffer, &(NormalVB.Stride), &(NormalVB.Offset));
+		Device.IASetVertexBuffers(2, 1, ColorVB.VertexBuffer, &(ColorVB.Stride), &(ColorVB.Offset));
+		Device.IASetVertexBuffers(3, 1, UVVB.VertexBuffer, &(UVVB.Stride), &(UVVB.Offset));
+		Device.IASetVertexBuffers(4, 1, TangentVB.VertexBuffer, &(TangentVB.Stride), &(TangentVB.Offset));
+		Device.IASetIndexBuffers(IndexB.IndexBuffer, IndexB.Offset);
+
+		Device.DrawIndexed(IndexB.Index_Cnt, 0, 0);
+
+		//MSAA RT -> Resolve Texture (Quad2DRenderPass / Material은 Resolve Texture를 읽음)
+		Device.ResolveRenderTarget(RTInfo.RenderTragetFormat, RTData.Texture, RTData.ResolveTexture);
+
+		//텍스처 바인딩을 해제해 다시 렌더 타겟으로 쓸 수 있게 함
+		for (const FPReflectionResourceInfo& TextureItem : Resources)
+		{
+			Device.PSSetShaderResources(TextureItem.Slot, 1, nullptr);
+		}
+
+		bDrawn = true;
+	}
+
+	if (!bDrawn) return;
+
+	//이후부터 PostProcess RT가 장면 색상 (GizmoRenderPass가 여기에 그리고 출력함)
+	SceneRenderTarget = PostProcessRT;
+	Quad2DRenderPass(SceneRenderTarget);
 }

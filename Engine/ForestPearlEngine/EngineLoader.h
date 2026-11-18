@@ -22,6 +22,7 @@ void LoadEngineAssets()
 	//BuiltIn RenderTarget Load
 	AssetLoader->LoadBuiltInRenderTargetTexture2D("MeshRenderPass_RenderTargetTexture2D-BuiltIn.json");
 	AssetLoader->LoadBuiltInRenderTargetTexture2D("GizmoRenderPass_RenderTargetTexture2D-BuiltIn.json");
+	AssetLoader->LoadBuiltInRenderTargetTexture2D("PostProcessRenderPass_RenderTargetTexture2D-BuiltIn.json");
 
 	//Default Vertex/Pixel Shader
 	AssetLoader->LoadVertexShader("DefaultVertexShader.json", AssetOwner::Engine);

@@ -14,6 +14,7 @@
 #include "ADirectionalLight.h"
 #include "ATorchLight.h"
 #include "ABox.h"
+#include "AWall.h"
 #include "ADwaf.h"
 #include "AMirror.h"
 #include "AUtaTeapot.h"
@@ -52,6 +53,7 @@ void LoadClassRegist()
 	ClassRegistry->Register<ADirectionalLight>("ADirectionalLight");
 	ClassRegistry->Register<ATorchLight>("ATorchLight");
 	ClassRegistry->Register<ABox>("ABox");
+	ClassRegistry->Register<AWall>("AWall");
 	ClassRegistry->Register<ADwaf>("ADwaf");
 	ClassRegistry->Register<AMirror>("AMirror");
 	ClassRegistry->Register<AUtaTeapot>("AUtaTeapot");
@@ -72,6 +74,7 @@ void LoadAssets()
 	AssetLoader->LoadPixelShader("DwarfPixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("ToonLinkPixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("MirrorPixelShader.json", AssetOwner::User);
+	AssetLoader->LoadPixelShader("PostProcessPixelShader.json", AssetOwner::User);
 
 	//Mirror RenderTarget / DepthStencil Load
 	AssetLoader->LoadRenderTargetTexture2D("Mirror_RenderTarget.json", AssetOwner::User);
@@ -200,6 +203,9 @@ void LoadAssets()
 
 	//Mirror Material
 	AssetLoader->LoadMaterial("Mirror/Mirror_Material.json", AssetOwner::User);
+
+	//PostProcess Material
+	AssetLoader->LoadMaterial("PostProcess/PostProcessMaterial.json", AssetOwner::User);
 
 	//UtaTeapot Material
 	AssetLoader->LoadMaterial("UtaTeapot/Default_UtaTeapot_Up_StaticMesh_MaterialInstance.json", AssetOwner::User);

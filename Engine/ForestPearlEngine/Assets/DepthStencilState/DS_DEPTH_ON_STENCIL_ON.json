@@ -3,7 +3,7 @@
 
   "DepthEnable": true,
   "DepthWriteMask": "ALL",
-  "DepthFunc": "LESS",
+  "DepthFunc": "LESS_EQUAL",
 
   "StencilEnable": true,
   "StencilReadMask": 255,

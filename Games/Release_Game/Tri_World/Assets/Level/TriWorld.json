@@ -293,6 +293,30 @@
     },
 
     {
+      "class": "AWall",
+      "name": "Wall_1",
+      "transform": {
+        "location": {
+          "x": -20.0,
+          "y": 5.0,
+          "z": 10.0
+        },
+
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+
+        "scale": {
+          "x": 10.0,
+          "y": 10.0,
+          "z": 10.0
+        }
+      }
+    },
+
+    {
       "class": "AUtaTeapot",
       "name": "UtaTeapot_1",
       "transform": {

@@ -1584,6 +1584,7 @@ void FPAssetManager::MakeDepthStencil(FPDepthStencilInfo& DepthStecilInfo)
 	{
 		FPDepthStencilData& OldDepthStencilResource = DepthStencilData[DepthStecilInfo.Name];
 		if (OldDepthStencilResource.ShaderResourceView) static_cast<ID3D11ShaderResourceView*>(OldDepthStencilResource.ShaderResourceView)->Release();
+		if (OldDepthStencilResource.StencilShaderResourceView) static_cast<ID3D11ShaderResourceView*>(OldDepthStencilResource.StencilShaderResourceView)->Release();
 		if (OldDepthStencilResource.DepthStencilView) static_cast<ID3D11DepthStencilView*>(OldDepthStencilResource.DepthStencilView)->Release();
 		if (OldDepthStencilResource.Texture) static_cast<ID3D11Texture2D*>(OldDepthStencilResource.Texture)->Release();
 	}
@@ -1592,6 +1593,7 @@ void FPAssetManager::MakeDepthStencil(FPDepthStencilInfo& DepthStecilInfo)
 	RenderingDevice::GetRenderingDevice().CreateDepthStencilTexture(DepthStecilInfo.SizeX, DepthStecilInfo.SizeY, DepthStecilInfo.MSAA, DepthStecilInfo.ShaderResource, DepthStecilInfo.DepthStencilFormat, &DepthStencilResource.Texture);
 	RenderingDevice::GetRenderingDevice().CreateDepthStencilView(DepthStecilInfo.DepthStencilFormat, DepthStecilInfo.MSAA, DepthStencilResource.Texture, &DepthStencilResource.DepthStencilView);
 	RenderingDevice::GetRenderingDevice().CreateDepthStencilSRView(DepthStecilInfo.DepthStencilFormat, DepthStecilInfo.ShaderResource, DepthStecilInfo.MSAA, DepthStencilResource.Texture, &DepthStencilResource.ShaderResourceView);
+	RenderingDevice::GetRenderingDevice().CreateDepthStencilStencilSRView(DepthStecilInfo.DepthStencilFormat, DepthStecilInfo.ShaderResource, DepthStecilInfo.MSAA, DepthStencilResource.Texture, &DepthStencilResource.StencilShaderResourceView);
 	DepthStencilData[DepthStecilInfo.Name] = DepthStencilResource;
 }
 
@@ -1835,13 +1837,14 @@ std::string FPAssetManager::GetGameModeData(std::string LevelName)
 //
 // Material
 //
-FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
+FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName, bool bPostProcess)
 {
 	std::string ResolvedMaterialName = HasMaterialData(MaterialName) ? MaterialName : "DefaultMaterial";
 	FPMaterialData& MaterialData = GetMaterialData(ResolvedMaterialName);
 
 	FPMaterial* Material = new FPMaterial();
-	Material->SetVertexShader(MaterialData.VertexShader);
+	const std::string MaterialVertexShaderName = bPostProcess ? std::string("DefaultQuad2DVertexShader") : MaterialData.VertexShader;
+	Material->SetVertexShader(MaterialVertexShaderName);
 	Material->SetPixelShader(MaterialData.PixelShader);
 	Material->SetTwoSided(MaterialData.TwoSided);
 	Material->SetBlendState(MaterialData.BlendState);
@@ -1854,7 +1857,7 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 	//Relflection 분석을 위한 구조체
 
 	//input
-	void* VScode = std::get<1>(GetVertexShader(VS.Name));
+	void* VScode = std::get<1>(GetVertexShader(bPostProcess ? MaterialVertexShaderName : VS.Name));
 	void* PScode = std::get<1>(GetPixelShader(PS.Name));
 	std::set<std::pair<FPShaderType, std::string> > ManagedCBs;			//실수형 파라미터의 정보를 담은 자료구조
 	for (const FPFloatParameterData& P : MaterialData.Parameters) ManagedCBs.insert({ P.Type, P.ConstantBufferName });
@@ -1888,6 +1891,7 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 		if (T.TextureType == Texture2DArray) AssetFound = HasTextureArrayData(T.Name);
 		if (T.TextureType == RenderTargetTexture2D) AssetFound = HasRenderTargetData(T.Name);
 		if (T.TextureType == DepthStencilTexture2D) AssetFound = HastDepthStencilData(T.Name);
+		if (T.TextureType == StencilTexture2D) AssetFound = HastDepthStencilData(T.Name);
 		if (T.TextureType == CubeMap) AssetFound = HasTextureData(T.Name);
 		if (!AssetFound)
 		{

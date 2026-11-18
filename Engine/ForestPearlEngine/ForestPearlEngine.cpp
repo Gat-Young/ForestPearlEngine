@@ -109,6 +109,7 @@ void ForestPearlEngine::GameLoop()
         // Make Render Queue
         // Game 로직이 모두 종료된 후 Render 요소들을 각 Queue에 넣어 Render에 보내줌
         Render->CreateCamList();
+        Render->CreatePostProcessList();
         Render->CreateLightRenderList();
         Render->CreateSkyLightRenderList();
         Render->CreateMeshRenderList();
@@ -126,6 +127,7 @@ void ForestPearlEngine::GameLoop()
         Render->PreDepthStencilRenderPass();
         Render->SceneCaptureRenderPass();                   //Object를 그리기 전 반드시 먼저 수행
         Render->MeshRenderPass();
+        Render->PostProcessRenderPass();                    //MeshRenderPass 결과 -> PostProcess Material -> BackBuffer (Quad2D)
         Render->GizmoRenderPass();
         Render->NormalRenderPass();
         Render->UIRenderPass();

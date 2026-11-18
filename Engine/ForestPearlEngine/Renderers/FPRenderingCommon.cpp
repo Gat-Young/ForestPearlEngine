@@ -88,6 +88,7 @@ FPTextureType StringToTextureType(const std::string& Name)
 		{ "Texture2DArray", Texture2DArray },
 		{ "RenderTargetTexture2D",  RenderTargetTexture2D },
 		{ "DepthStencilTexture2D",  DepthStencilTexture2D },
+		{ "StencilTexture2D",       StencilTexture2D },
 		{ "CubeMap",        CubeMap },
 	};
 

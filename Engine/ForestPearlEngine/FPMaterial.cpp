@@ -199,8 +199,8 @@ bool FPMaterial::SetNamedTexture(FPShaderType ShaderType, const std::string& HLS
         }
 
         // RenderTarget/DepthStencil 텍스처는 HLSL상 일반 Texture2D SRV로 리플렉션되므로, 플레인 Texture2D와는 호환으로 간주함
-        const bool IsRenderOrDepthAsset = (TextureType == RenderTargetTexture2D || TextureType == DepthStencilTexture2D);
-        const bool TypeCompatible = (Resource.TextureType == TextureType) || (IsRenderOrDepthAsset && Resource.TextureType == Texture2D);
+        const bool IsRenderOrDepthAsset = (TextureType == RenderTargetTexture2D || TextureType == DepthStencilTexture2D || TextureType == StencilTexture2D);
+        const bool TypeCompatible = (Resource.TextureType == TextureType) || (IsRenderOrDepthAsset && (Resource.TextureType == Texture2D || Resource.TextureType == Texture2DMS));
         if (!TypeCompatible || Resource.Slot >= 128)
         {
             std::cout << "Texture 타입 또는 바인딩 슬롯이 일치하지 않음: " + HLSLTexture << "\n";

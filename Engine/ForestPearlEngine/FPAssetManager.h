@@ -269,7 +269,8 @@ public:
 	bool HasMaterialData(std::string MaterialName);
 
 	//Material
-	FPMaterialInterface* MakeMaterial(std::string MaterialName);
+	//bPostProcess = true : Vertex Shader를 Built-In "DefaultQuad2DVertexShader"로 고정 (Material JSON의 VertexShader는 무시)
+	FPMaterialInterface* MakeMaterial(std::string MaterialName, bool bPostProcess = false);
 
 	//GameSetting
 	bool HasGameSettingData();

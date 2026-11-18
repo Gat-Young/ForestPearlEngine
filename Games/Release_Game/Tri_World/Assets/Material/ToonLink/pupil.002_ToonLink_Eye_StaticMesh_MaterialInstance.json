@@ -5,7 +5,7 @@
         "PixelShader": "DefaultPixelShader",
         "TwoSided": false,
         "BlendState": "BS_ADD",
-        "Details": "Opaque",
+        "Details": "Masked",
         "bIsSky": false,
         "Parameters": [
             {

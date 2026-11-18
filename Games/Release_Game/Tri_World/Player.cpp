@@ -22,53 +22,85 @@ void Player::Initialize()
 	
 	BodyAndHat = new FPStaticMeshComponent(this, "ToonLink_BodyAndHat_StaticMesh");
 	BodyAndHat->SetupAttachment(RootComponent);
+	BodyAndHat->SetStencilRefValue(8);
+	BodyAndHat->SetCustomDepthStencil(true);
 	
 	
 	Buckle = new FPStaticMeshComponent(this, "ToonLink_Buckle_StaticMesh");
 	Buckle->SetupAttachment(RootComponent);
+	Buckle->SetStencilRefValue(8);
+	Buckle->SetCustomDepthStencil(true);
 
 	
 	Eye = new FPStaticMeshComponent(this, "ToonLink_Eye_StaticMesh");
 	Eye->SetupAttachment(RootComponent);
+	Eye->SetStencilRefValue(8);
+	Eye->SetCustomDepthStencil(true);
 
 	EyeBrow = new FPStaticMeshComponent(this, "ToonLink_EyeBrow1_StaticMesh");
 	EyeBrow->SetupAttachment(RootComponent);
+	EyeBrow->SetStencilRefValue(8);
+	EyeBrow->SetCustomDepthStencil(true);
 
 	Face = new FPStaticMeshComponent(this, "ToonLink_Face_StaticMesh");
 	Face->SetupAttachment(RootComponent);
+	Face->SetStencilRefValue(8);
+	Face->SetCustomDepthStencil(true);
 
 	Hair = new FPStaticMeshComponent(this, "ToonLink_Hair_StaticMesh");
 	Hair->SetupAttachment(RootComponent);
+	Hair->SetStencilRefValue(8);
+	Hair->SetCustomDepthStencil(true);
 
 	Hand = new FPStaticMeshComponent(this, "ToonLink_Hand_StaticMesh");
 	Hand->SetupAttachment(RootComponent);
+	Hand->SetStencilRefValue(8);
+	Hand->SetCustomDepthStencil(true);
 
 	LeftEyeBg = new FPStaticMeshComponent(this, "ToonLink_LeftEyeBackground_StaticMesh");
 	LeftEyeBg->SetupAttachment(RootComponent);
+	LeftEyeBg->SetStencilRefValue(8);
+	LeftEyeBg->SetCustomDepthStencil(true);
 
 	RightEyebg = new FPStaticMeshComponent(this, "ToonLink_RightEyeBackground_StaticMesh");
 	RightEyebg->SetupAttachment(RootComponent);
+	RightEyebg->SetStencilRefValue(8);
+	RightEyebg->SetCustomDepthStencil(true);
 
 	MasterSword_Scabbard = new FPStaticMeshComponent(this, "ToonLink_MasterSword_Scabbard_StaticMesh");
 	MasterSword_Scabbard->SetupAttachment(RootComponent);
+	MasterSword_Scabbard->SetStencilRefValue(8);
+	MasterSword_Scabbard->SetCustomDepthStencil(true);
 
 	MasterSword_Handle = new FPStaticMeshComponent(this, "ToonLink_MasterSword_Handle_StaticMesh");
 	MasterSword_Handle->SetupAttachment(RootComponent);
+	MasterSword_Handle->SetStencilRefValue(8);
+	MasterSword_Handle->SetCustomDepthStencil(true);
 
 	MasterSword_Blade = new FPStaticMeshComponent(this, "ToonLink_MasterSword_Blade_StaticMesh");
 	MasterSword_Blade->SetupAttachment(RootComponent);
+	MasterSword_Blade->SetStencilRefValue(8);
+	MasterSword_Blade->SetCustomDepthStencil(true);
 
 	MasterSword_BackHandle = new FPStaticMeshComponent(this, "ToonLink_MasterSword_BackHandle_StaticMesh");
 	MasterSword_BackHandle->SetupAttachment(RootComponent);
+	MasterSword_BackHandle->SetStencilRefValue(8);
+	MasterSword_BackHandle->SetCustomDepthStencil(true);
 
 	Mouth = new FPStaticMeshComponent(this, "ToonLink_Mouse1_StaticMesh");
 	Mouth->SetupAttachment(RootComponent);
+	Mouth->SetStencilRefValue(8);
+	Mouth->SetCustomDepthStencil(true);
 
 	Shield_Back = new FPStaticMeshComponent(this, "ToonLink_Shield_Back_StaticMesh");
 	Shield_Back->SetupAttachment(RootComponent);
+	Shield_Back->SetStencilRefValue(8);
+	Shield_Back->SetCustomDepthStencil(true);
 
 	Shidld_Hand = new FPStaticMeshComponent(this, "ToonLink_Shield_Handle_StaticMesh");
 	Shidld_Hand->SetupAttachment(RootComponent);
+	Shidld_Hand->SetStencilRefValue(8);
+	Shidld_Hand->SetCustomDepthStencil(true);
 	
 
 	ShieldPivot = new FPSceneComponent(this);
@@ -86,6 +118,7 @@ void Player::Initialize()
 
 	PlayerCamera = new FPCameraComponent(this);
 	PlayerCamera->SetupAttachment(SpringArm);
+	PlayerCamera->SetPostProcessMaterial("PostProcessMaterial");
 
 
 	FPAController* Controller = GetWorld()->GetController(0);

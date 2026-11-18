@@ -1,0 +1,81 @@
+//
+// PostProcess PixelShader
+//
+// Shows Stencil==8 objects (the Player, see Player.cpp) through occluders, but ONLY when the
+// nearest visible opaque surface at that pixel is specifically the AWall feature wall.
+// The Wall writes StencilRefValue=1 into the BackBuffer's own stencil channel during the
+// normal OpaqueRenderPass (see Renderer::OpaqueRenderPass), so no separate RenderPass/buffer
+// is needed just for the wall - its presence is read directly off the main depth/stencil mask.
+
+cbuffer ObejctConstBuffer : register(b0)
+{
+    matrix mWorld;
+    matrix mInverseWorld;
+    matrix mTranseposeWorld;
+    matrix mInverseTranseposeWorld;
+
+    matrix mView;
+    matrix mInverseView;
+    matrix mTranseposeView;
+    matrix mInverseTranseposeView;
+
+    matrix mProj;
+    matrix mInverseProj;
+    matrix mTranseposeProj;
+    matrix mInverseTranseposeProj;
+
+    matrix mWV;
+    matrix mInverseWV;
+    matrix mTranseposeWV;
+    matrix mInverseTranseposeWV;
+
+    matrix mWVP;
+    matrix mInverseWVP;
+    matrix mTranseposeWVP;
+    matrix mInverseTranseposeWVP;
+};
+
+//MeshRenderPass의 결과 (PostProcess 전 Scene Color)
+Texture2D SceneColorTex : register(t0);
+SamplerState Smpler : register(s0);
+
+//BackBufferDepthStencil Stencil 채널 : OpaqueRenderPass에서 bCustomDepthStencil 오브젝트(Wall=1)가 기록
+//BackBufferDepthStencil/CustomDepthStencil은 프로젝트 MSAA 설정을 그대로 받으므로 MS 텍스처로 선언
+Texture2DMS<uint2> WallStencilTex : register(t1);
+
+//CustomDepthStencil Stencil 채널 : bCustomDepthStencil 오브젝트의 StencilRefValue(ToonLink=8)가 기록됨
+Texture2DMS<uint2> CustomStencilTex : register(t2);
+
+float4 PS_Main(
+                float4 pos : SV_POSITION,
+                float4 col : COLOR0,
+                float4 posv : TEXCOORD1,
+                float2 uv : TEXCOORD0,
+                float4 T : TEXCOORD2,
+                float4 N : TEXCOORD3,
+                bool IsFrontFace : SV_IsFrontFace
+                ) : SV_TARGET
+{
+    float4 SceneColor = SceneColorTex.Sample(Smpler, uv);
+
+    int2 TexelPos = int2((int)pos.x, (int)pos.y);
+
+    //MSAA 서브샘플 0번만 사용 (바이너리 마스크 판정이라 서브샘플간 차이는 무시해도 됨)
+    uint CustomStencil = CustomStencilTex.Load(TexelPos, 0).g;
+
+    //이 픽셀에 Stencil 8(ToonLink)로 기록된 CustomDepthStencil 오브젝트가 없으면 원래 색 그대로
+    if (CustomStencil != 8)
+    {
+        return SceneColor;
+    }
+
+    uint WallStencil = WallStencilTex.Load(TexelPos, 0).g;
+
+    //이 픽셀에서 실제로 보이는(깊이 테스트를 통과한) 표면이 Wall(Stencil 1)이면 가려진 것
+    if (WallStencil == 1)
+    {
+        return float4(1.0f, 0.5f, 0.0f, 1.0f);
+    }
+
+    return SceneColor;
+}

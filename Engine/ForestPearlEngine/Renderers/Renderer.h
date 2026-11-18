@@ -55,6 +55,13 @@ class Renderer
 		//Camera Item
 		std::vector<RenderingData::CameraItem> CameraList;
 
+		//PostProcess 항목 (PostProcess Material을 가진 Camera)
+		std::vector<RenderingData::PostProcessItem> PostProcessList;
+
+		//현재 장면 색상을 담고 있는 RenderTarget. GizmoRenderPass가 여기에 그리고 출력함.
+		//MeshRenderPass가 Mesh RT로 초기화하고, PostProcessRenderPass가 PostProcess RT로 바꿈.
+		std::string SceneRenderTarget = "MeshRenderPass-RT-BuiltIn";
+
 		//Mesh Render Item
 		std::vector<RenderingData::MeshRenderItem> OpaqueRenderList;
 		std::vector<RenderingData::MeshRenderItem> MaskedRenderList;
@@ -97,6 +104,9 @@ class Renderer
 		void MaskedRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 		void TranslucentRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 
+		//Quad2D 모델/뷰/투영 행렬 (Quad2DRenderPass와 PostProcessRenderPass가 공유)
+		void MakeQuad2DMVP(RenderingData::MVPConstBuffer& MVPCB, float DisplayWidth, float DisplayHeight);
+
 		//SceneCaptureRenderPass sub-pass: single RenderItem draw
 		void DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::SceneCaptureItem& CaptureItem, FPAssetManager* AssetManager, const std::string& DepthStencilState);
 
@@ -112,6 +122,7 @@ class Renderer
 		void CreateSkyLightRenderList();
 		void CreateNormalRenderList();
 		void CreateSceneCaptureList();
+		void CreatePostProcessList();
 
 		//RenderPass 함수
 		void ClearDepthStencil();
@@ -125,6 +136,8 @@ class Renderer
 		void SceneCaptureRenderPass();
 
 		void MeshRenderPass();
+
+		void PostProcessRenderPass();
 
 		void GizmoRenderPass();
 

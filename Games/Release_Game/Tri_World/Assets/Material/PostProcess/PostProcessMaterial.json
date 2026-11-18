@@ -1,0 +1,39 @@
+{
+  "Material": {
+    "Name": "PostProcessMaterial",
+    "VertexShader": "DefaultQuad2DVertexShader",
+    "PixelShader": "PostProcessPixelShader",
+    "TwoSided": true,
+    "BlendState": "BS_ADD",
+    "Details": "Opaque",
+    "bIsSky": false,
+    "Parameters": [],
+    "Textures": [
+      {
+        "Type": "PS",
+        "Parameter": "SceneColorTex",
+        "Asset": "MeshRenderPass-RT-BuiltIn",
+        "TextureType": "RenderTargetTexture2D"
+      },
+      {
+        "Type": "PS",
+        "Parameter": "WallStencilTex",
+        "Asset": "BackBufferDepthStencil",
+        "TextureType": "StencilTexture2D"
+      },
+      {
+        "Type": "PS",
+        "Parameter": "CustomStencilTex",
+        "Asset": "CustomDepthStencil",
+        "TextureType": "StencilTexture2D"
+      }
+    ],
+    "Samplers": [
+      {
+        "Type": "PS",
+        "Parameter": "Smpler",
+        "SamplerType": "Filter_Tri_Linear_Sampler_CLAMP"
+      }
+    ]
+  }
+}

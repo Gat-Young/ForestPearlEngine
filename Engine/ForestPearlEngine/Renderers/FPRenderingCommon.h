@@ -129,6 +129,8 @@ struct FPStaticMeshData
 	Topology MeshTopology;
 	std::vector<SOCKET_TRANSFORM> Sockets;
 	std::string MaterialName;
+	int StencilRefValue = 0;
+	bool bCustomDepthStencil = false;
 	AssetOwner Owner;
 };
 
@@ -641,6 +643,8 @@ struct RenderItem
 	std::string* BlendState = nullptr;
 	FPMaterialDetail* Detail = nullptr;
 	bool* bIsSky = nullptr;
+	int* StencilRefValue = nullptr;
+	bool* bCustomDepthStencil = nullptr;
 
 	FPMatrix* Location = nullptr;
 	FPMatrix* Rotation = nullptr;
@@ -971,6 +975,8 @@ namespace RenderingData
 		std::string BlendState;
 		FPMaterialDetail Detail;
 		bool bIsSky;
+		int StencilRefValue;
+		bool bCustomDepthStencil;
 
 		FPMatrix Location;
 		FPMatrix Rotation;

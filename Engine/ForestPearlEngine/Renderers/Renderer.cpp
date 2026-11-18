@@ -373,6 +373,8 @@ void Renderer::CreateMeshRenderList()
 		MeshRenderData.BlendState = *(RenderItemData.BlendState);
 		MeshRenderData.Detail = *(RenderItemData.Detail);
 		MeshRenderData.bIsSky = *(RenderItemData.bIsSky);
+		MeshRenderData.StencilRefValue = *(RenderItemData.StencilRefValue);
+		MeshRenderData.bCustomDepthStencil = *(RenderItemData.bCustomDepthStencil);
 
 		//Material Detail에 따라 각각의 RenderPass에 넣음
 		if (MeshRenderData.bIsSky)
@@ -890,7 +892,7 @@ void Renderer::CalculateViewPortSize(float Width, float Height, float& OutTopLef
 	OutTopLeftY = (Height - OutHeight) * 0.5f;
 }
 
-void Renderer::DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const std::string& DepthStencilState)
+void Renderer::DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, UINT StencilRef, bool bDisablePixelShader)
 {
 	RenderingData::MVPConstBuffer MVPCB;
 
@@ -906,20 +908,27 @@ void Renderer::DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderIte
 
 	//Material이 지정한 DepthStencilState/BlendState 적용 (ZEnable이 꺼져 있으면 디버그용으로 깊이 테스트 끔)
 	FPDepthStencilStateData& DepthStencilStateData = AssetManager->GetDepthStencilStateData(ZEnable ? DepthStencilState : "DS_DEPTH_OFF");
-	Device.OMSetDepthStencilState(DepthStencilStateData.DepthStencilData);
+	Device.OMSetDepthStencilState(DepthStencilStateData.DepthStencilData, StencilRef);
 
 	FPBlendStateData& BlendStateData = AssetManager->GetBlendStateData(RenderItem.BlendState);
 	Device.OMSetBlendState(BlendStateData.BlendStateData);
 
 	std::tuple<void*, void*, void*> VertexShaderData = AssetManager->GetVertexShader(RenderItem.VertexShaderPath);
-	std::pair<void*, void*> PixelShaderData = AssetManager->GetPixelShader(RenderItem.PixelShaderPath);
 
 	//입력 레이아웃 설정
 	Device.IASetInputLayout(std::get<2>(VertexShaderData));
 
 	//Shader 설정
 	Device.VSSetShader(std::get<0>(VertexShaderData));
-	Device.PSSetShader(std::get<0>(PixelShaderData));
+	if (bDisablePixelShader)
+	{
+		Device.PSSetShader(nullptr);
+	}
+	else
+	{
+		std::pair<void*, void*> PixelShaderData = AssetManager->GetPixelShader(RenderItem.PixelShaderPath);
+		Device.PSSetShader(std::get<0>(PixelShaderData));
+	}
 
 	//Shader ConstBuffer 갱신
 	
@@ -1032,6 +1041,56 @@ void Renderer::DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderIte
 	Device.IASetIndexBuffers(IndexB.IndexBuffer, IndexB.Offset);
 
 	Device.DrawIndexed(IndexB.Index_Cnt, 0, 0);																//Draw Call
+}
+
+void Renderer::PreDepthStencilRenderPass()
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	for (RenderingData::CameraItem& CamItem : CameraList)
+	{
+		PreDepthStencilPass(CamItem, AssetManager);
+		CustomDepthStencilPass(CamItem, AssetManager);
+	}
+}
+
+void Renderer::PreDepthStencilPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager)
+{
+	FPDepthStencilData& CustomDepthStencilData = AssetManager->GetDepthStencilData("BackBufferDepthStencil");
+	Device.OMSetRenderTargets(0, nullptr, CustomDepthStencilData.DepthStencilView);
+
+	for (const RenderingData::MeshRenderItem& RenderItem : OpaqueRenderList)
+	{
+		DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON", 0, true);
+	}
+
+	/* Masked에 대한 처리는 나중에
+	for (const RenderingData::MeshRenderItem& RenderItem : MaskedRenderList)
+	{
+		if (!RenderItem.bCustomDepthStencil) continue;
+		DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON_STENCIL_ON", (UINT)RenderItem.StencilRefValue, true);
+	}
+	*/
+}
+
+void Renderer::CustomDepthStencilPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager)
+{
+	FPDepthStencilData& CustomDepthStencilData = AssetManager->GetDepthStencilData("CustomDepthStencil");
+	Device.OMSetRenderTargets(0, nullptr, CustomDepthStencilData.DepthStencilView);
+
+	for (const RenderingData::MeshRenderItem& RenderItem : OpaqueRenderList)
+	{
+		if (!RenderItem.bCustomDepthStencil) continue;
+		DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON_STENCIL_ON", (UINT)RenderItem.StencilRefValue, true);
+	}
+
+	/* Masked / Translucent에 대한 처리는 나중에
+	for (const RenderingData::MeshRenderItem& RenderItem : MaskedRenderList)
+	{
+		if (!RenderItem.bCustomDepthStencil) continue;
+		DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON_STENCIL_ON", (UINT)RenderItem.StencilRefValue, true);
+	}
+	*/
 }
 
 void Renderer::SkyBoxRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager)
@@ -1417,15 +1476,13 @@ void Renderer::ClearDepthStencil()
 	FPDepthStencilData& BackBufferDepthStencilData = AssetManager->GetDepthStencilData("BackBufferDepthStencil");
 	FPDepthStencilInfo& BackBufferDepthStencilInfo = AssetManager->GetBuiltInDepthStencilInfoData("BackBufferDepthStencil");
 
-	//BackBuffer RenderTarget(Color) + BackBuffer DepthStencil Clear
 	Device.ClearBackBuffer(BackBufferDepthStencilData.DepthStencilView, BackBufferDepthStencilInfo.ClearDepth, (UINT8)BackBufferDepthStencilInfo.ClearStencil);
 
-	//Clear every other registered DepthStencil, using each asset's own ClearDepth/ClearStencil
 	for (auto& [DepthStencilName, DepthStencilData] : AssetManager->GetDepthStencilDataMap())
 	{
 		if (DepthStencilName == "BackBufferDepthStencil") continue;
 
-		FPDepthStencilInfo& DepthStencilInfo = AssetManager->GetDepthStencilInfoData(DepthStencilName);
+		FPDepthStencilInfo& DepthStencilInfo = AssetManager->HasDepthStencilInfoData(DepthStencilName) ? AssetManager->GetDepthStencilInfoData(DepthStencilName) : AssetManager->GetBuiltInDepthStencilInfoData(DepthStencilName);
 		Device.ClearDepthStencilView(DepthStencilData.DepthStencilView, DepthStencilInfo.ClearDepth, (UINT8)DepthStencilInfo.ClearStencil);
 	}
 }

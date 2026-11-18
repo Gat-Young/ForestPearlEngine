@@ -9,6 +9,8 @@ class FPStaticMeshComponent : public FPMeshComponent
 	private:
 		FPStaticMesh* StaticMesh;
 		FPGizmoNormalLineComponent* GizmoNormalLine;
+		int StencilRefValue = 0;
+		bool bCustomDepthStencil = false;
 
 	public:
 		FPStaticMeshComponent(FPActor* Owner, std::string StaticMeshName);

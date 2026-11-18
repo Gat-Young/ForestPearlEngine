@@ -1239,10 +1239,10 @@ HRESULT RenderingDevice::CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD N
 	return hr;
 }
 
-void RenderingDevice::OMSetDepthStencilState(void* InDepthStencilState)
+void RenderingDevice::OMSetDepthStencilState(void* InDepthStencilState, UINT StencilRef)
 {
 	ID3D11DepthStencilState* DepthStencilState = static_cast<ID3D11DepthStencilState*>(InDepthStencilState);
-	DeviceContext->OMSetDepthStencilState(DepthStencilState, 0);
+	DeviceContext->OMSetDepthStencilState(DepthStencilState, StencilRef);
 }
 
 HRESULT RenderingDevice::CreateSamplers()

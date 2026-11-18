@@ -1219,6 +1219,8 @@ FPStaticMesh* FPAssetManager::GetStaticMeshData(std::string StaticMeshName)
 
 	FPMaterialInterface* Material = MakeMaterial(StaticMeshData.MaterialName);
 	StaticMesh->SetMaterial(Material);
+	StaticMesh->SetStencilRefValue(StaticMeshData.StencilRefValue);
+	StaticMesh->SetCustomDepthStencil(StaticMeshData.bCustomDepthStencil);
 
 	return StaticMesh;
 }

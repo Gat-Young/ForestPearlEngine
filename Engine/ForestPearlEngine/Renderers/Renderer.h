@@ -88,8 +88,10 @@ class Renderer
 		void CalculateViewPortSize(float Width, float Height, float& OutTopLeftX, float& OutTopLeftY, float& OutWidth, float& OutHeight);
 
 		//MeshRenderPass sub-pass: single RenderItem draw, shared by Opaque/Masked/Translucent
-		void DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const std::string& DepthStencilState);
+		void DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, UINT StencilRef = 0, bool bDisablePixelShader = false);
 
+		void PreDepthStencilPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
+		void CustomDepthStencilPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 		void SkyBoxRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 		void OpaqueRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 		void MaskedRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
@@ -117,6 +119,8 @@ class Renderer
 		void RenderTargetPresent();
 
 		HRESULT InitializeRenderer(HWND hwnd);
+
+		void PreDepthStencilRenderPass();
 
 		void SceneCaptureRenderPass();
 

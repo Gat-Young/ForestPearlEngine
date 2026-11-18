@@ -248,7 +248,7 @@ class RenderingDevice
 		HRESULT CreateInputLayout(D3D11_INPUT_ELEMENT_DESC* Ed, DWORD Num, ID3DBlob* InVSCode, ID3D11InputLayout** ReturnLayout);
 
 		//깊이 스텐실 버퍼 상태 설정
-		void OMSetDepthStencilState(void* InDepthStencilState);
+		void OMSetDepthStencilState(void* InDepthStencilState, UINT StencilRef = 0);
 
 		//Sampler 상태객체 생성
 		HRESULT CreateSamplers();

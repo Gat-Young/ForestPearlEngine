@@ -11,6 +11,8 @@ FPStaticMeshComponent::FPStaticMeshComponent(FPActor* Owner, std::string StaticM
 	//AssetManager로 부터 MeshPath의 StaticMesh_Json 파일을 읽고 Static_Mesh 객체를 반환 받아 저장.
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 	StaticMesh = AssetManager->GetStaticMeshData(StaticMeshName);
+	StencilRefValue = StaticMesh->GetStencilRefValue();
+	bCustomDepthStencil = StaticMesh->GetCustomDepthStencil();
 
 	GizmoNormalLine = new FPGizmoNormalLineComponent(this->GetOwner(), *(StaticMesh->GetMeshPath()));
 
@@ -58,6 +60,8 @@ void FPStaticMeshComponent::SetRenderItemData()
 	RenderItem->BlendState = SelectedMaterial->GetBlendState();
 	RenderItem->Detail = SelectedMaterial->GetDetail();
 	RenderItem->bIsSky = SelectedMaterial->GetIsSky();
+	RenderItem->StencilRefValue = &(this->StencilRefValue);
+	RenderItem->bCustomDepthStencil = &(this->bCustomDepthStencil);
 
 	RenderItem->VertexConstBuffer = SelectedMaterial->GetVertexConstantBufferRenderData();
 	RenderItem->PixelConstBuffer = SelectedMaterial->GetPixelConstantBufferRenderData();
@@ -108,6 +112,8 @@ void FPStaticMeshComponent::SetStaticMesh(std::string StaticMeshName)
 	//AssetManager로 부터 MeshPath의 StaticMesh_Json 파일을 읽고 Static_Mesh 객체를 반환 받아 저장.
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 	StaticMesh = AssetManager->GetStaticMeshData(StaticMeshName);
+	StencilRefValue = StaticMesh->GetStencilRefValue();
+	bCustomDepthStencil = StaticMesh->GetCustomDepthStencil();
 	GizmoNormalLine->SetMeshPath(*(StaticMesh->GetMeshPath()));
 	RegistMeshRenderList();
 }

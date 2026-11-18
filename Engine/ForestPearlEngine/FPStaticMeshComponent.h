@@ -22,6 +22,12 @@ class FPStaticMeshComponent : public FPMeshComponent
 		//StaticMesh 등록 함수
 		void SetStaticMesh(std::string StaticMeshName);
 
+		//Custom DepthStencil (CustomDepthStencilPass) setting
+		void SetStencilRefValue(int InStencilRefValue);
+		int GetStencilRefValue() const;
+		void SetCustomDepthStencil(bool bInCustomDepthStencil);
+		bool GetCustomDepthStencil() const;
+
 		//RenderItem 등록 함수 Override
 		void SetRenderItemData() override;
 

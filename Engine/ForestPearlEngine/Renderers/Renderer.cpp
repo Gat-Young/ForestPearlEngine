@@ -1047,6 +1047,20 @@ void Renderer::PreDepthStencilRenderPass()
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
+	//Same ViewPort (Letterbox) as MeshRenderPass, so that the pre-pass depth matches the color pass
+	FPRenderTargetTexture2DInfo& RTInfo = AssetManager->GetBuiltInRenderTargetTexture2DInfoData("MeshRenderPass-RT-BuiltIn");
+	float ViewPortTopLeftX, ViewPortTopLeftY, ViewPortWidth, ViewPortHeight;
+	CalculateViewPortSize((float)RTInfo.SizeX, (float)RTInfo.SizeY, ViewPortTopLeftX, ViewPortTopLeftY, ViewPortWidth, ViewPortHeight);
+	Device.SetViewPort(ViewPortTopLeftX, ViewPortTopLeftY, ViewPortWidth, ViewPortHeight, 0.0f, 1.0f);
+
+	//Topology / constant buffer slots are not guaranteed to be set by the previous pass of the last frame
+	Device.IASetPrimitiveTopology(Topology::TRIANGLELIST);
+	for (int i = 0; i < 14; ++i)
+	{
+		Device.VSSetConstantBuffers(i, 1);
+		Device.PSSetConstantBuffers(i, 1);
+	}
+
 	for (RenderingData::CameraItem& CamItem : CameraList)
 	{
 		PreDepthStencilPass(CamItem, AssetManager);

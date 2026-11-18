@@ -8,6 +8,12 @@ FPSceneCaptureComponent2D::FPSceneCaptureComponent2D(FPActor* Owner) : FPSceneCa
 	RegistSceneCaptureComponent();
 }
 
+FPSceneCaptureComponent2D::~FPSceneCaptureComponent2D()
+{
+	FPSceneCaptureList* SceneCaptureList = static_cast<FPSceneCaptureList*>(FPGameInstance::Get().GetSceneCaptureList());
+	SceneCaptureList->UnregistRenderList(SceneCaptureItem);
+}
+
 //SceneCaptureComponent¸¦ µî·Ï
 void FPSceneCaptureComponent2D::RegistSceneCaptureComponent()
 {

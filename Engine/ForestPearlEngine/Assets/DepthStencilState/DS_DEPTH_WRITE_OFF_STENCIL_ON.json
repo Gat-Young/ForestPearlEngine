@@ -1,0 +1,25 @@
+{
+  "Name": "DS_DEPTH_WRITE_OFF_STENCIL_ON",
+
+  "DepthEnable": true,
+  "DepthWriteMask": "ZERO",
+  "DepthFunc": "LESS",
+
+  "StencilEnable": true,
+  "StencilReadMask": 255,
+  "StencilWriteMask": 255,
+
+  "FrontFace": {
+    "StencilFailOp": "KEEP",
+    "StencilDepthFailOp": "KEEP",
+    "StencilPassOp": "REPLACE",
+    "StencilFunc": "ALWAYS"
+  },
+
+  "BackFace": {
+    "StencilFailOp": "KEEP",
+    "StencilDepthFailOp": "KEEP",
+    "StencilPassOp": "REPLACE",
+    "StencilFunc": "ALWAYS"
+  }
+}

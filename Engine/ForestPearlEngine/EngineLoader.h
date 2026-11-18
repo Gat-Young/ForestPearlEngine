@@ -16,6 +16,9 @@ void LoadEngineAssets()
 	//BackBuffer DepthStencil BuiltIn Load
 	AssetLoader->LoadBuiltInDepthStencil("BackBufferDepthStencil.json");
 
+	//Custom DepthStencil BuiltIn Load
+	AssetLoader->LoadBuiltInDepthStencil("CustomDepthStencil.json");
+
 	//BuiltIn RenderTarget Load
 	AssetLoader->LoadBuiltInRenderTargetTexture2D("MeshRenderPass_RenderTargetTexture2D-BuiltIn.json");
 	AssetLoader->LoadBuiltInRenderTargetTexture2D("GizmoRenderPass_RenderTargetTexture2D-BuiltIn.json");
@@ -50,6 +53,12 @@ void LoadEngineAssets()
 	AssetLoader->LoadDepthStencilState("DS_DEPTH_ON.json", AssetOwner::Engine);
 	AssetLoader->LoadDepthStencilState("DS_DEPTH_OFF.json", AssetOwner::Engine);
 	AssetLoader->LoadDepthStencilState("DS_DEPTH_WRITE_OFF.json", AssetOwner::Engine);
+	AssetLoader->LoadDepthStencilState("DS_DEPTH_ON_STENCIL_ON.json", AssetOwner::Engine);
+	AssetLoader->LoadDepthStencilState("DS_DEPTH_OFF_STENCIL_ON.json", AssetOwner::Engine);
+	AssetLoader->LoadDepthStencilState("DS_DEPTH_WRITE_OFF_STENCIL_ON.json", AssetOwner::Engine);
+	AssetLoader->LoadDepthStencilState("DS_DEPTH_ON_STENCIL_EQUAL_KEEP.json", AssetOwner::Engine);
+	AssetLoader->LoadDepthStencilState("DS_DEPTH_ON_STENCIL_EQUAL_INCR.json", AssetOwner::Engine);
+	AssetLoader->LoadDepthStencilState("DS_DEPTH_ON_STENCIL_NOTEQUAL_KEEP.json", AssetOwner::Engine);
 
 	//BlendState Load
 	AssetLoader->LoadBlendState("BS_DEFAULT.json", AssetOwner::Engine);

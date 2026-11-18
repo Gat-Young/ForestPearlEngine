@@ -2,7 +2,7 @@
   "Name": "DS_DEPTH_ON",
   "DepthEnable": true,
   "DepthWriteMask": "ALL",
-  "DepthFunc": "LESS",
+  "DepthFunc": "LESS_EQUAL",
   "StencilEnable": false,
   "StencilReadMask": 255,
   "StencilWriteMask": 255,

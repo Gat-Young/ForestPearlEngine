@@ -311,3 +311,22 @@ FPColorWriteMask StringToFPColorWriteMask(const std::string& Name)
 	//기본값으로 설정된 ALPHA
 	return FPColorWriteMask::ALPHA;
 }
+
+FPMaterialDetail StringToFPMaterialDetail(const std::string& Name)
+{
+	static const std::unordered_map<std::string, FPMaterialDetail> FPMaterialDetailMap =
+	{
+		{ "Opaque",      FPMaterialDetail::Opaque },
+		{ "Masked",      FPMaterialDetail::Masked },
+		{ "Translucent", FPMaterialDetail::Translucent },
+	};
+
+	auto it = FPMaterialDetailMap.find(Name);
+
+	if (it != FPMaterialDetailMap.end())
+	{
+		return it->second;
+	}
+
+	return FPMaterialDetail::Opaque;
+}

@@ -1219,6 +1219,8 @@ FPStaticMesh* FPAssetManager::GetStaticMeshData(std::string StaticMeshName)
 
 	FPMaterialInterface* Material = MakeMaterial(StaticMeshData.MaterialName);
 	StaticMesh->SetMaterial(Material);
+	StaticMesh->SetStencilRefValue(StaticMeshData.StencilRefValue);
+	StaticMesh->SetCustomDepthStencil(StaticMeshData.bCustomDepthStencil);
 
 	return StaticMesh;
 }
@@ -1843,7 +1845,8 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName)
 	Material->SetPixelShader(MaterialData.PixelShader);
 	Material->SetTwoSided(MaterialData.TwoSided);
 	Material->SetBlendState(MaterialData.BlendState);
-	Material->SetDepthStencilState(MaterialData.DepthStencilState);
+	Material->SetDetail(MaterialData.Detail);
+	Material->SetIsSky(MaterialData.bIsSky);
 	
 	const FPVertexShaderData& VS = GetVertexShaderData(MaterialData.VertexShader);
 	const FPPixelShaderData& PS = GetPixelShaderData(MaterialData.PixelShader);

@@ -247,7 +247,8 @@ void FPAssetLoader::LoadBuiltInMaterial(std::string BuiltInMaterialPath)
 	MaterialData.TwoSided = Material.value("TwoSided", false);
 
 	MaterialData.BlendState = Material.value("BlendState", std::string("BS_ADD"));
-	MaterialData.DepthStencilState = Material.value("DepthStencilState", std::string("DS_DEPTH_ON"));
+	MaterialData.Detail = StringToFPMaterialDetail(Material.value("Details", std::string("Opaque")));
+	MaterialData.bIsSky = Material.value("bIsSky", false);
 
 
 	//Material Parameter 정보 가져오기
@@ -927,7 +928,8 @@ void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsse
 	MaterialData.TwoSided = Material.value("TwoSided", false);
 
 	MaterialData.BlendState = Material.value("BlendState", std::string("BS_ADD"));
-	MaterialData.DepthStencilState = Material.value("DepthStencilState", std::string("DS_DEPTH_ON"));
+	MaterialData.Detail = StringToFPMaterialDetail(Material.value("Details", std::string("Opaque")));
+	MaterialData.bIsSky = Material.value("bIsSky", false);
 
 
 	//Material Parameter 정보 가져오기

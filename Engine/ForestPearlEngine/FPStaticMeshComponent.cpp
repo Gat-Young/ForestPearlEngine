@@ -11,6 +11,8 @@ FPStaticMeshComponent::FPStaticMeshComponent(FPActor* Owner, std::string StaticM
 	//AssetManager로 부터 MeshPath의 StaticMesh_Json 파일을 읽고 Static_Mesh 객체를 반환 받아 저장.
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 	StaticMesh = AssetManager->GetStaticMeshData(StaticMeshName);
+	StencilRefValue = StaticMesh->GetStencilRefValue();
+	bCustomDepthStencil = StaticMesh->GetCustomDepthStencil();
 
 	GizmoNormalLine = new FPGizmoNormalLineComponent(this->GetOwner(), *(StaticMesh->GetMeshPath()));
 
@@ -56,7 +58,10 @@ void FPStaticMeshComponent::SetRenderItemData()
 	RenderItem->TwoSided = SelectedMaterial->GetTwoSided();
 
 	RenderItem->BlendState = SelectedMaterial->GetBlendState();
-	RenderItem->DepthStencilState = SelectedMaterial->GetDepthStencilState();
+	RenderItem->Detail = SelectedMaterial->GetDetail();
+	RenderItem->bIsSky = SelectedMaterial->GetIsSky();
+	RenderItem->StencilRefValue = &(this->StencilRefValue);
+	RenderItem->bCustomDepthStencil = &(this->bCustomDepthStencil);
 
 	RenderItem->VertexConstBuffer = SelectedMaterial->GetVertexConstantBufferRenderData();
 	RenderItem->PixelConstBuffer = SelectedMaterial->GetPixelConstantBufferRenderData();
@@ -107,6 +112,31 @@ void FPStaticMeshComponent::SetStaticMesh(std::string StaticMeshName)
 	//AssetManager로 부터 MeshPath의 StaticMesh_Json 파일을 읽고 Static_Mesh 객체를 반환 받아 저장.
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 	StaticMesh = AssetManager->GetStaticMeshData(StaticMeshName);
+	StencilRefValue = StaticMesh->GetStencilRefValue();
+	bCustomDepthStencil = StaticMesh->GetCustomDepthStencil();
 	GizmoNormalLine->SetMeshPath(*(StaticMesh->GetMeshPath()));
 	RegistMeshRenderList();
+}
+
+void FPStaticMeshComponent::SetStencilRefValue(int InStencilRefValue)
+{
+	//Stencil reference value is written into the CustomDepthStencil (0 ~ 255)
+	if (InStencilRefValue < 0) InStencilRefValue = 0;
+	if (InStencilRefValue > 255) InStencilRefValue = 255;
+	this->StencilRefValue = InStencilRefValue;
+}
+
+int FPStaticMeshComponent::GetStencilRefValue() const
+{
+	return this->StencilRefValue;
+}
+
+void FPStaticMeshComponent::SetCustomDepthStencil(bool bInCustomDepthStencil)
+{
+	this->bCustomDepthStencil = bInCustomDepthStencil;
+}
+
+bool FPStaticMeshComponent::GetCustomDepthStencil() const
+{
+	return this->bCustomDepthStencil;
 }

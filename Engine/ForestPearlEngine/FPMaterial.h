@@ -15,7 +15,8 @@ class FPMaterial : public FPMaterialInterface
 		bool TwoSided = false;
 
 		std::string BlendState = "BS_ADD";
-		std::string DepthStencilState = "DS_DEPTH_ON";
+		FPMaterialDetail Detail = FPMaterialDetail::Opaque;
+		bool bIsSky = false;
 
 		// 셰이더 분석 결과는 FPMaterial이 보관하며 GPU 작업은 하지 않음
 		FPShaderReflectionData ReflectionData;
@@ -58,9 +59,11 @@ class FPMaterial : public FPMaterialInterface
 		bool* GetTwoSided()override;
 
 		void SetBlendState(std::string BlendState) override;
-		void SetDepthStencilState(std::string DepthStencilState) override;
+		void SetDetail(FPMaterialDetail Detail) override;
 		std::string* GetBlendState() override;
-		std::string* GetDepthStencilState() override;
+		FPMaterialDetail* GetDetail() override;
+		void SetIsSky(bool bIsSky) override;
+		bool* GetIsSky() override;
 
 		//상속 받은 구현체에서 반드시 Super를 호출 할 것
 		virtual void UpdateMaterial(float DeltaTime) override;

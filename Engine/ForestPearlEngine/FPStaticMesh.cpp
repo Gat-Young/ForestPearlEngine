@@ -49,3 +49,23 @@ void FPStaticMesh::SetMaterial(FPMaterialInterface* Material)
 {
 	this->Material = Material;
 }
+
+void FPStaticMesh::SetStencilRefValue(int StencilRefValue)
+{
+	this->StencilRefValue = StencilRefValue;
+}
+
+int FPStaticMesh::GetStencilRefValue()
+{
+	return this->StencilRefValue;
+}
+
+void FPStaticMesh::SetCustomDepthStencil(bool bCustomDepthStencil)
+{
+	this->bCustomDepthStencil = bCustomDepthStencil;
+}
+
+bool FPStaticMesh::GetCustomDepthStencil()
+{
+	return this->bCustomDepthStencil;
+}

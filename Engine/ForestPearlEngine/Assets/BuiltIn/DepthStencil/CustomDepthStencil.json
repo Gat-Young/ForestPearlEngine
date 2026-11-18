@@ -1,0 +1,9 @@
+{
+  "Name": "CustomDepthStencil",
+  "ScaleX": 1.0,
+  "ScaleY": 1.0,
+  "DepthStencilFormat": "D24_S8_UINT",
+  "ClearDepth": 1.0,
+  "ClearStencil": 0,
+  "ShaderResource": false
+}

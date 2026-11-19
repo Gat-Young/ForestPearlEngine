@@ -11,7 +11,7 @@
 //보면서 조절할 값들
 namespace
 {
-	const float SPEED = 10.0f;		//포구 속도 (m/s)
+	const float SPEED = 20.0f;		//포구 속도 (m/s)
 	const float GRAVITY = 9.8f;		//중력 (m/s²)
 	const float RADIUS = 0.15f;		//포탄 반지름 (m) : Sphere_StaticMesh 크기 1 기준으로 스케일
 	const float GROUND_Y = -0.5f;		//땅 높이 (레벨의 Terrain y) : 이 아래로 내려가면 착탄

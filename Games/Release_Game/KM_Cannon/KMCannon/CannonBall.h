@@ -28,7 +28,7 @@ class CannonBall : public FPActor
 			bool  bLive = false;
 		};
 
-		static constexpr int BALL_MAX = 8;
+		static constexpr int BALL_MAX = 48;	//배 포구 34개 일제 사격 + 여유
 
 		FPSceneComponent* Root = nullptr;		//월드 원점
 		Ball Balls[BALL_MAX];

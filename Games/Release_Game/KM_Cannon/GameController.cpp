@@ -16,7 +16,7 @@
 
 //계절 처리
 #include "Terrain.h"
-#include "KMCannon/API_KMCannon.h"
+#include "KMCannon/Input_KMCannon.h"
 
 
 #include <iostream>
@@ -88,12 +88,11 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_SetDirectionLightColor", VK_F7, ModifyInfoTriger);
 	GetInputComponent().AddMappingKey("IA_SetSeason", VK_F8, ModifyInfoTriger);
 
-	GetInputComponent().AddMappingKey("IA_OnTorchLight", '1', ModifyInfoTriger);
 
 	GetInputComponent().AddMappingKey("IA_AttachHead", 'Z', ModifyInfoTriger);
 	GetInputComponent().AddMappingKey("IA_AttachShield", 'X', ModifyInfoTriger);
 
-	GetInputComponent().AddMappingKey("IA_FireCannon", VK_RETURN, ModifyInfoTriger);
+	Input_KMCannon::AddMappings(GetInputComponent());	//KMCannon : Enter, 1, 2, 3
 
 	//D-PAD LEFT/RIGHT Posses 전환
 	GetInputComponent().AddMappingKey("IA_NextActor", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_DPAD_RIGHT), ModifyInfoTriger); //RIGHT
@@ -119,7 +118,7 @@ void GameController::Initialize()
 	GetInputComponent().BindMethod("IA_SetDirectionLightColor", this, EKeyState::Down, &GameController::SetDirectionalLight);
 
 	//Cannon Fire (Enter)
-	GetInputComponent().BindMethod("IA_FireCannon", this, EKeyState::Down, &GameController::FireCannon);
+	GetInputComponent().BindMethod(Input_KMCannon::IA_NAME, this, EKeyState::Down, &GameController::KMCannonInput);
 
 	__super::Initialize();
 }
@@ -281,7 +280,7 @@ void GameController::SetDirectionalLight(FInputValue Value)
 	ActorList.clear();
 }
 
-void GameController::FireCannon(FInputValue Value)
+void GameController::KMCannonInput(FInputValue Value)
 {
-	API_KMCannon::FireAll(GetWorld());
+	Input_KMCannon::OnKeyDown(GetWorld());
 }

@@ -1,5 +1,6 @@
 ﻿#include "API_KMCannon.h"
 #include "Cannon.h"
+#include "Frigate.h"
 #include "ForestPearlEngine/Utility/FPGameplayStatics.h"
 
 #include <vector>
@@ -13,4 +14,16 @@ int API_KMCannon::FireAll(FPWorld* World)
 		static_cast<Cannon*>(Actor)->Fire();
 	}
 	return static_cast<int>(Cannons.size());
+}
+
+int API_KMCannon::FireBroadside(FPWorld* World, ESide Side)
+{
+	int Count = 0;
+	std::vector<FPActor*> Ships;
+	FPGameplayStatics::GetAllActorsOfClass(World, "Frigate", Ships);
+	for (FPActor* Actor : Ships)
+	{
+		Count += static_cast<Frigate*>(Actor)->Fire(Side);
+	}
+	return Count;
 }

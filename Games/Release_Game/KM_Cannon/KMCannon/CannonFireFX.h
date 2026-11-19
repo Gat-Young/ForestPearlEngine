@@ -14,10 +14,11 @@ class FPPointLightComponent;
 //  - 대포가 Fire(총구 위치, 방향) 을 부름
 //  - 판 1장 = FPStaticMeshComponent 1개 (Plane 메쉬 + 빌보드 셰이더), 판마다 머티리얼 따로 (색 · 크기가 다르므로)
 //
-//  1. 풀   : SMOKE_MAX 칸을 돌려씀 (수명 끝 → SetActive(false) → 다음 발사에 재사용)
+//  1. 풀   : 연기 SMOKE_MAX 칸 · 섬광 FLASH_MAX 칸을 돌려씀 (수명 끝 → SetActive(false) → 다음 발사에 재사용)
+//           일제 사격(배 포구 34개) 때도 포구마다 자기 자리 · 방향에 섬광 + 연기
 //  2. 연기 : 알파 섞기 · 깊이 쓰기 끔, 주황 → 회색, 퍼지며 사라짐
 //  3. 섬광 : 더하기 섞기, 0.1초 동안 정면 별(보통 빌보드) + 옆 불꽃(늘인 빌보드) → 어느 각도에서 봐도 한쪽은 보임
-//  4. 빛   : 점광원 0.3초, 세기 5 → 0 (주변 배 · 대포가 순간 밝아짐)
+//  4. 빛   : 점광원 하나 0.3초, 세기 5 → 0, 마지막에 쏜 포구 자리 (엔진 조명 개수 한도 때문에 포구마다 두지 않음)
 //
 class CannonFireFX : public FPActor
 {
@@ -31,19 +32,24 @@ class CannonFireFX : public FPActor
 			bool  bLive = false;
 		};
 
-		static constexpr int SMOKE_MAX = 32;
+		struct Flash
+		{
+			FPStaticMeshComponent* Front = nullptr;	//정면 별
+			FPStaticMeshComponent* Side = nullptr;	//옆 불꽃
+			FPVector3 Pos, Dir;
+			float T = 0;			//남은 시간 : > 0 이면 그림
+			float Rot = 0;			//정면 별 각도 : 쏠 때마다 다르게
+		};
+
+		static constexpr int SMOKE_MAX = 448;	//포구 34 × 연기 12 + 여유
+		static constexpr int FLASH_MAX = 40;	//포구 34 + 여유
 
 		FPSceneComponent* Root = nullptr;			//월드 원점 : 자식들의 상대 위치 = 월드 위치
 		Puff Smoke[SMOKE_MAX];
 
-		FPStaticMeshComponent* FlashFront = nullptr;	//정면 별
-		FPStaticMeshComponent* FlashSide = nullptr;		//옆 불꽃
+		Flash Flashes[FLASH_MAX];
 		FPPointLightComponent* FlashLight = nullptr;
-
-		float MuzzleT = 0;		//섬광 남은 시간 : > 0 이면 그림
 		float LightT = 0;		//빛 남은 시간
-		float MuzzleRot = 0;	//정면 별 각도 : 쏠 때마다 다르게
-		FPVector3 MuzzlePos, MuzzleDir;
 
 		FPStaticMeshComponent* MakeQuad(const char* MaterialName, int Priority);
 		Puff* EmitSmoke(const FPVector3& Pos);

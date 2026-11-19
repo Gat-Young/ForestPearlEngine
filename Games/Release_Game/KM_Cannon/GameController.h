@@ -40,5 +40,5 @@ class GameController : public FPAController
 
 		void SetDirectionalLight(FInputValue Value);
 
-		void FireCannon(FInputValue Value);	//Enter : all cannons fire
+		void KMCannonInput(FInputValue Value);	//KMCannon keys -> Input_KMCannon (Enter / Enter+1,2,3)
 };

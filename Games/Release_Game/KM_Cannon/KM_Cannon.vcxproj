@@ -29,6 +29,7 @@
     <ClInclude Include="KMCannon\CannonBall.h" />
     <ClInclude Include="KMCannon\CannonFireFX.h" />
     <ClInclude Include="KMCannon\Frigate.h" />
+    <ClInclude Include="KMCannon\Input_KMCannon.h" />
     <ClInclude Include="KMCannon\API_KMCannon.h" />
     <ClInclude Include="KMCannon\Loader_KMCannon.h" />
     <ClInclude Include="Terrain.h" />
@@ -46,6 +47,7 @@
     <ClCompile Include="KMCannon\CannonBall.cpp" />
     <ClCompile Include="KMCannon\CannonFireFX.cpp" />
     <ClCompile Include="KMCannon\Frigate.cpp" />
+    <ClCompile Include="KMCannon\Input_KMCannon.cpp" />
     <ClCompile Include="KMCannon\API_KMCannon.cpp" />
     <ClCompile Include="KMCannon\Loader_KMCannon.cpp" />
     <ClCompile Include="Terrain.cpp" />

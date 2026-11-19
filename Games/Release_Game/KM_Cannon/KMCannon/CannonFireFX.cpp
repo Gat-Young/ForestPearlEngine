@@ -54,8 +54,11 @@ void CannonFireFX::Initialize()
 	SetRootComponent(Root);
 
 	for (Puff& p : Smoke) p.Mesh = MakeQuad("FX_Smoke_Material", PRIO_SMOKE);
-	FlashFront = MakeQuad("FX_MuzzleFront_Material", PRIO_FLASH);
-	FlashSide  = MakeQuad("FX_MuzzleSide_Material", PRIO_FLASH);
+	for (Flash& f : Flashes)
+	{
+		f.Front = MakeQuad("FX_MuzzleFront_Material", PRIO_FLASH);
+		f.Side  = MakeQuad("FX_MuzzleSide_Material", PRIO_FLASH);
+	}
 
 	//섬광 빛 : 평소 꺼짐 (횃불과 같은 감쇠 1 / (0.1d + 0.1d²))
 	FlashLight = new FPPointLightComponent(this);
@@ -76,12 +79,16 @@ void CannonFireFX::BeginPlay()
 
 void CannonFireFX::Fire(const FPVector3& Pos, const FPVector3& Dir)
 {
-	//섬광 : 자리 · 방향 기억
-	MuzzleT = MUZZLE_TIME;
+	//섬광 : 빈 칸 (없으면 가장 오래된 칸) 에 자리 · 방향 기억
+	Flash* f = &Flashes[0];
+	for (Flash& c : Flashes)
+		if (c.T < f->T) f = &c;
+	f->T = MUZZLE_TIME;
+	f->Pos = Pos;
+	f->Dir = Dir;
+	f->Rot = Rand(0, 2 * PI);
+
 	LightT = FLASH_TIME;
-	MuzzlePos = Pos;
-	MuzzleDir = Dir;
-	MuzzleRot = Rand(0, 2 * PI);
 	FlashLight->SetRelativeLocation(Pos);
 	FlashLight->SetActive(true);
 
@@ -159,30 +166,33 @@ void CannonFireFX::UpdateMuzzle(float dTime)
 		if (LightT <= 0) FlashLight->SetActive(false);
 	}
 
-	MuzzleT = (std::max)(MuzzleT - dTime, 0.0f);
-	bool bOn = MuzzleT > 0;
-	FlashFront->SetActive(bOn);
-	FlashSide->SetActive(bOn);
-	if (!bOn) return;
+	for (Flash& f : Flashes)
+	{
+		f.T = (std::max)(f.T - dTime, 0.0f);
+		bool bOn = f.T > 0;
+		f.Front->SetActive(bOn);
+		f.Side->SetActive(bOn);
+		if (!bOn) continue;
 
-	float k = MuzzleT / MUZZLE_TIME;			//1 → 0 : 확 켜졌다 꺼짐 (더하기라 색 = 세기)
-	FPVector4 Color = { k, k, k, 1.0f };
+		float k = f.T / MUZZLE_TIME;			//1 → 0 : 확 켜졌다 꺼짐 (더하기라 색 = 세기)
+		FPVector4 Color = { k, k, k, 1.0f };
 
-	//정면 별 : 보통 빌보드, 빛나며 조금 커짐
-	float front = FRONT_SIZE * (1.5f - 0.5f * k);
-	FPVector4 FrontSize = { front, front, MuzzleRot, 0.0f };
-	FlashFront->SetRelativeLocation(MuzzlePos);
-	FlashFront->GetMaterial().SetParameter(FPShaderType::VS, "FXVertexCB", "Size", FrontSize);
-	FlashFront->GetMaterial().SetParameter(FPShaderType::PS, "FXPixelCB", "Color", Color);
+		//정면 별 : 보통 빌보드, 빛나며 조금 커짐
+		float front = FRONT_SIZE * (1.5f - 0.5f * k);
+		FPVector4 FrontSize = { front, front, f.Rot, 0.0f };
+		f.Front->SetRelativeLocation(f.Pos);
+		f.Front->GetMaterial().SetParameter(FPShaderType::VS, "FXVertexCB", "Size", FrontSize);
+		f.Front->GetMaterial().SetParameter(FPShaderType::PS, "FXPixelCB", "Color", Color);
 
-	//옆 불꽃 : 늘인 빌보드, u 축 = 진행 방향. 판 가운데 = (총구 − 조금 뒤) + 반 길이
-	FPVector3 Center = MuzzlePos + MuzzleDir * (SIDE_LEN * 0.5f - SIDE_BACK);
-	FPVector4 Axis = { MuzzleDir.x, MuzzleDir.y, MuzzleDir.z, 1.0f };
-	FPVector4 SideSize = { SIDE_LEN, SIDE_WIDTH, 0.0f, 0.0f };
-	FlashSide->SetRelativeLocation(Center);
-	FlashSide->GetMaterial().SetParameter(FPShaderType::VS, "FXVertexCB", "Axis", Axis);
-	FlashSide->GetMaterial().SetParameter(FPShaderType::VS, "FXVertexCB", "Size", SideSize);
-	FlashSide->GetMaterial().SetParameter(FPShaderType::PS, "FXPixelCB", "Color", Color);
+		//옆 불꽃 : 늘인 빌보드, u 축 = 진행 방향. 판 가운데 = (총구 − 조금 뒤) + 반 길이
+		FPVector3 Center = f.Pos + f.Dir * (SIDE_LEN * 0.5f - SIDE_BACK);
+		FPVector4 Axis = { f.Dir.x, f.Dir.y, f.Dir.z, 1.0f };
+		FPVector4 SideSize = { SIDE_LEN, SIDE_WIDTH, 0.0f, 0.0f };
+		f.Side->SetRelativeLocation(Center);
+		f.Side->GetMaterial().SetParameter(FPShaderType::VS, "FXVertexCB", "Axis", Axis);
+		f.Side->GetMaterial().SetParameter(FPShaderType::VS, "FXVertexCB", "Size", SideSize);
+		f.Side->GetMaterial().SetParameter(FPShaderType::PS, "FXPixelCB", "Color", Color);
+	}
 }
 
 void CannonFireFX::Tick()

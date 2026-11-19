@@ -51,6 +51,9 @@
     <ClInclude Include="KMCannon\CannonBall.h">
       <Filter>KMCannon</Filter>
     </ClInclude>
+    <ClInclude Include="KMCannon\Input_KMCannon.h">
+      <Filter>KMCannon</Filter>
+    </ClInclude>
     <ClInclude Include="KMCannon\Frigate.h">
       <Filter>KMCannon</Filter>
     </ClInclude>
@@ -117,6 +120,9 @@
       <Filter>KMCannon</Filter>
     </ClCompile>
     <ClCompile Include="KMCannon\CannonBall.cpp">
+      <Filter>KMCannon</Filter>
+    </ClCompile>
+    <ClCompile Include="KMCannon\Input_KMCannon.cpp">
       <Filter>KMCannon</Filter>
     </ClCompile>
     <ClCompile Include="KMCannon\Frigate.cpp">

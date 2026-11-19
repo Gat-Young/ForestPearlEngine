@@ -373,9 +373,9 @@ void Ship::Initialize()
 	//카메라 설정
 	SpringArm = new FPSpringArmComponent(this);
 	SpringArm->SetupAttachment(RootComponent);
-	SpringArm->TargetArmLength = 18.0f;
-	SpringArm->SetRelativeLocation({ 0.0f, 0.0f, 0.0f });
-	SpringArm->SetRelativeRotation({ 11.0f, 0.0f, 0.0f });
+	SpringArm->TargetArmLength = 42.0f;
+	SpringArm->SetRelativeLocation({ 0.0f, 4.0f, 0.0f });
+	SpringArm->SetRelativeRotation({ 12.0f, 0.0f, 0.0f });
 	//SpringArm->AddRelativeRotation({ 0.0f, -19.0f, 0.0f });
 	SpringArm->bUsePawnControlRotation = true;
 

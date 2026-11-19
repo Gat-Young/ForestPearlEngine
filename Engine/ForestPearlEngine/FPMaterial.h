@@ -17,6 +17,7 @@ class FPMaterial : public FPMaterialInterface
 		std::string BlendState = "BS_ADD";
 		FPMaterialDetail Detail = FPMaterialDetail::Opaque;
 		bool bIsSky = false;
+		bool bUsePlanarForwardReflections = false;
 
 		// 셰이더 분석 결과는 FPMaterial이 보관하며 GPU 작업은 하지 않음
 		FPShaderReflectionData ReflectionData;
@@ -64,6 +65,8 @@ class FPMaterial : public FPMaterialInterface
 		FPMaterialDetail* GetDetail() override;
 		void SetIsSky(bool bIsSky) override;
 		bool* GetIsSky() override;
+		void SetUsePlanarForwardReflections(bool bUse) override;
+		bool* GetUsePlanarForwardReflections() override;
 
 		//상속 받은 구현체에서 반드시 Super를 호출 할 것
 		virtual void UpdateMaterial(float DeltaTime) override;

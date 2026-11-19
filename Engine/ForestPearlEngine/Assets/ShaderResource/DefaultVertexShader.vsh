@@ -32,7 +32,15 @@ cbuffer ObejctConstBuffer : register(b0)
     matrix mInverseWVP;
     matrix mTranseposeWVP;
     matrix mInverseTranseposeWVP;
-    
+
+};
+
+//Planar Reflection Clip Plane 상수 버퍼 (고정 슬롯 b13)
+cbuffer ClipPlanarReflectionConstantBuffer : register(b13)
+{
+    float4 GlobalClipPlane;
+    uint ClipPlaneEnabled;
+    float3 Padding;
 };
 
 //VS 출력 구조체
@@ -44,6 +52,7 @@ struct VSOutput
     float2 uv   : TEXCOORD0;
     float4 T    : TEXCOORD2;
     float4 N    : TEXCOORD3;
+    float ClipDistance : SV_ClipDistance0;
 };
 
 ////////////////////////////////////////////////////////////////////////////// 
@@ -111,6 +120,16 @@ VSOutput VS_Main(
     o.T = VST;
 
     o.N = VSN;
-    
+
+    //기본값: 클리핑하지 않음
+    o.ClipDistance = 1.0f;
+
+    //Clip Plane이 활성화된 경우
+    if (ClipPlaneEnabled != 0)
+    {
+        float4 WorldPos = mul(mWorld, pos);
+        o.ClipDistance = dot(WorldPos, GlobalClipPlane);
+    }
+
     return o;
 }

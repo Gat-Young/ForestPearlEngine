@@ -232,16 +232,7 @@ struct FPMatrix
 		return FPMatrix(rhs * Matrix);
 	}
 
-	//开 青纺
-	FPMatrix MatrixInverse()
-	{
-		return FPMatrix(DirectX::XMMatrixInverse(nullptr, Matrix));
-	}
 
-	FPMatrix Transpose()
-	{
-		return FPMatrix(DirectX::XMMatrixTranspose(Matrix));
-	}
 };
 
 
@@ -264,6 +255,11 @@ FPMatrix MatrixScaling(float x, float y, float z);
 FPMatrix MatrixTranslation(float x, float y, float z);
 
 FPMatrix MatrixReflect(const FPVector4& Plane);
+
+//开 青纺
+FPMatrix MatrixInverse(FPMatrix& Matrix);
+
+FPMatrix Transpose(FPMatrix& Matrix);
 
 FPQuaternion Conjugate(const FPQuaternion& quat);
 

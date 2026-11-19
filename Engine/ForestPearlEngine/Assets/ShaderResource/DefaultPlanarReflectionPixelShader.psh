@@ -1,0 +1,28 @@
+//Default Planar Reflection Pixel Shader 소스
+//DefaultPlanarReflectionVertexShader가 계산한 ReflectionUV로 반사 RenderTarget을 샘플링해서 출력
+
+//////////////////////////////////////////////////////////////////////////////
+//
+//! Pixel Shader Main : 픽셀 셰이더 메인 함수.
+//
+//////////////////////////////////////////////////////////////////////////////
+
+//반사 RenderTarget (직접지정) 기본값은 t0
+Texture2D ReflectionTex : register(t0);
+
+//텍스처 셈플러 (직접지정) 기본값은 s0
+SamplerState Smpler : register(s0);
+
+float4 PS_Main(
+                float4 pos  : SV_POSITION,  //[입력] 정점좌표. Vertex Position(Model Space, 3D)
+                float4 col  : COLOR0,       //[입력] 정점색
+                float4 posv : TEXCOORD1,    //[입력] WordlView 변환된 pos
+                float2 uv   : TEXCOORD0,    //[입력] uv
+                float4 T    : TEXCOORD2,    //[입력] WV변환된 Tangent
+                float4 N    : TEXCOORD3,    //[입력] 역전치WV 변환된 normal
+                float2 ReflectionUV : TEXCOORD4,  //[입력] VS에서 계산된 반사 샘플링 UV
+                bool IsFrontFace : SV_IsFrontFace   //CULLMODE None일때 앞 뒷면 판단
+                ) : SV_TARGET
+{
+    return ReflectionTex.Sample(Smpler, ReflectionUV);
+}

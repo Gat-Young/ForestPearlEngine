@@ -29,12 +29,6 @@ class FPSceneCaptureComponent : public FPSceneComponent
 		virtual void SetCaptureEveryFrame(bool Active) = 0;
 		virtual void CaptureScene() = 0;
 
-		//투영 변환 속성 제어 함수
-		virtual void SetFov(float Fov) = 0;
-		virtual void SetAspect(float Aspect) = 0;
-		virtual void SetZn(float Zn) = 0;
-		virtual void SetZf(float Zf) = 0;
-		
 		//HiddenActors 운용 함수
 		virtual void AddHiddenActor(FPActor* Acotr) = 0;
 		virtual void RemoveHiddenAcotr(FPActor* Actor) = 0;

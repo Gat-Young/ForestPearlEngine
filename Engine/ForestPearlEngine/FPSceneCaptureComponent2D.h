@@ -33,10 +33,10 @@ class FPSceneCaptureComponent2D : public FPSceneCaptureComponent
 		void Tick() override;
 
 		//투영 변환 속성 제어 함수
-		void SetFov(float Fov) override;
-		void SetAspect(float Aspect) override;
-		void SetZn(float Zn) override;
-		void SetZf(float Zf) override;
+		virtual void SetFov(float Fov);
+		virtual void SetAspect(float Aspect);
+		virtual void SetZn(float Zn);
+		virtual void SetZf(float Zf);
 
 		//HiddenActors 운용 함수
 		void AddHiddenActor(FPActor* Acotr) override;

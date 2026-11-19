@@ -1,0 +1,28 @@
+{
+    "Material": {
+        "Name": "Lake_Material",
+        "VertexShader": "DefaultPlanarReflectionVertexShader",
+        "PixelShader": "DefaultPlanarReflectionPixelShader",
+        "TwoSided": false,
+        "BlendState": "BS_ADD",
+        "Details": "Opaque",
+        "bIsSky": false,
+        "bUsePlanarForwardReflections": true,
+        "Parameters": [],
+        "Textures": [
+            {
+                "Type": "PS",
+                "Parameter": "ReflectionTex",
+                "Asset": "Lake_RenderTarget",
+                "TextureType": "RenderTargetTexture2D"
+            }
+        ],
+        "Samplers": [
+            {
+                "Type": "PS",
+                "Parameter": "Smpler",
+                "SamplerType": "Filter_Bi_Linear_Sampler_CLAMP"
+            }
+        ]
+    }
+}

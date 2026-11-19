@@ -36,6 +36,13 @@ cbuffer ObejctConstBuffer : register(b0)
     
 };
 
+cbuffer ClipPlanarReflectionConstantBuffer : register(b13)
+{
+    float4 GlobalClipPlane;
+    uint ClipPlaneEnabled;
+    float3 Padding;
+};
+
 
 //VS 출력 구조체
 struct VSOutput
@@ -47,6 +54,7 @@ struct VSOutput
     float4 T : TEXCOORD2;
     float4 N : TEXCOORD3;
     float3 uvw : TEXCOORD4;
+    float ClipDistance : SV_ClipDistance0;
 };
 
 ////////////////////////////////////////////////////////////////////////////// 
@@ -94,6 +102,8 @@ VSOutput VS_Main(
     o.N = VSN;
     
     o.uvw = WSuvw;
+
+    o.ClipDistance = 1.0f;
     
     return o;
 }

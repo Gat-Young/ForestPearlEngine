@@ -19,6 +19,7 @@
 #include "../FPSkyLightRenderList.h"
 #include "../FPMeshNormalRenderList.h"
 #include "../FPSceneCaptureList.h"
+#include "../FPPlanarReflectionList.h"
 
 //맘에 안들기는 하는 데 우선..
 #include "../Object/Actor.h"
@@ -59,6 +60,16 @@ template<typename T> void _SafeDelArray(T*& ptr)
 // 
 
 
+void Renderer::SetRasterizerState(FPAssetManager* AssetManager, bool bFillSolid, bool bCullBack, bool bFlipCull)
+{
+	std::string Name;
+	if (bFillSolid) Name = bCullBack ? (bFlipCull ? "RS_CULLFRONT" : "RS_CULLBACK") : "RS_SOLID";
+	else Name = bCullBack ? (bFlipCull ? "RS_WIRECULLFRONT" : "RS_WIRECULLBACK") : "RS_WIREFRM";
+
+	FPRasterizerStateData& RasterizerStateData = AssetManager->GetRasterizerStateData(Name);
+	Device.RSSetState(RasterizerStateData.RasterizerStateData);
+}
+
 void Renderer::Quad2DRenderPass(std::string& InRenderTarget)
 {
 	//상수 버퍼 14개씩 Set
@@ -98,7 +109,7 @@ void Renderer::Quad2DRenderPass(std::string& InRenderTarget)
 	Device.OMSetBackBufferRenderTargets(1, BackBufferDepthStencilData.DepthStencilView);
 
 	//컬링 OFF
-	Device.UpdateRSSetState(bFill, false);
+	SetRasterizerState(AssetManager, bFill, false);
 
 	//Blend 설정 우선 OFF
 	Device.OMSetBlendState(static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager())->GetBlendStateData("BS_DEFAULT").BlendStateData);
@@ -128,6 +139,8 @@ void Renderer::Quad2DRenderPass(std::string& InRenderTarget)
 
 	//Object 상수 버퍼 갱신
 	Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
+	RenderingData::ClipPlanarReflectionConstBuffer ClipCB;
+	Device.UpdateVertexShaderSubresource(13, reinterpret_cast<const uint8_t*>(&ClipCB), 0, sizeof(RenderingData::ClipPlanarReflectionConstBuffer));
 	Device.UpdatePixelShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
 
 	//Texture 세팅
@@ -200,6 +213,9 @@ void Renderer::CreateMeshRenderList()
 	MaskedRenderList.clear();
 	TranslucentRenderList.clear();
 	SkyBoxRenderList.clear();
+	PlanarReflectionOpaqueRenderList.clear();
+	PlanarReflectionMaskedRenderList.clear();
+	PlanarReflectionmTranslucentRenderList.clear();
 
 	//Mesh Render List
 	FPMeshRenderList* MeshRenderList = static_cast<FPMeshRenderList*>(FPGameInstance::Get().GetMeshRenderList());
@@ -340,6 +356,7 @@ void Renderer::CreateMeshRenderList()
 		MeshRenderData.BlendState = *(RenderItemData.BlendState);
 		MeshRenderData.Detail = *(RenderItemData.Detail);
 		MeshRenderData.bIsSky = *(RenderItemData.bIsSky);
+		MeshRenderData.bUsePlanarForwardReflections = *(RenderItemData.bUsePlanarForwardReflections);
 		MeshRenderData.StencilRefValue = *(RenderItemData.StencilRefValue);
 		MeshRenderData.bCustomDepthStencil = *(RenderItemData.bCustomDepthStencil);
 
@@ -347,6 +364,21 @@ void Renderer::CreateMeshRenderList()
 		if (MeshRenderData.bIsSky)
 		{
 			this->SkyBoxRenderList.push_back(MeshRenderData);
+		}
+		else if (MeshRenderData.bUsePlanarForwardReflections)
+		{
+			switch (MeshRenderData.Detail)
+			{
+				case FPMaterialDetail::Masked:
+					this->PlanarReflectionMaskedRenderList.push_back(MeshRenderData);
+					break;
+				case FPMaterialDetail::Translucent:
+					this->PlanarReflectionmTranslucentRenderList.push_back(MeshRenderData);
+					break;
+				default:
+					this->PlanarReflectionOpaqueRenderList.push_back(MeshRenderData);
+					break;
+			}
 		}
 		else
 		{
@@ -369,6 +401,9 @@ void Renderer::CreateMeshRenderList()
 	std::sort(this->MaskedRenderList.begin(), this->MaskedRenderList.end(), RenderingData::MeshRenderItemCompare{});
 	std::sort(this->TranslucentRenderList.begin(), this->TranslucentRenderList.end(), RenderingData::MeshRenderItemCompare{});
 	std::sort(this->SkyBoxRenderList.begin(), this->SkyBoxRenderList.end(), RenderingData::MeshRenderItemCompare{});
+	std::sort(this->PlanarReflectionOpaqueRenderList.begin(), this->PlanarReflectionOpaqueRenderList.end(), RenderingData::MeshRenderItemCompare{});
+	std::sort(this->PlanarReflectionMaskedRenderList.begin(), this->PlanarReflectionMaskedRenderList.end(), RenderingData::MeshRenderItemCompare{});
+	std::sort(this->PlanarReflectionmTranslucentRenderList.begin(), this->PlanarReflectionmTranslucentRenderList.end(), RenderingData::MeshRenderItemCompare{});
 
 }
 
@@ -596,6 +631,136 @@ void Renderer::CreateSceneCaptureList()
 	}
 }
 
+void Renderer::CreatePlanarReflectionList()
+{
+	PlanarReflectionList.clear();
+
+	FPPlanarReflectionList* PlanarReflectionRenderList = static_cast<FPPlanarReflectionList*>(FPGameInstance::Get().GetPlanarReflectionList());
+	std::vector<PlanarReflectionItem> PlanarReflectionItemList = PlanarReflectionRenderList->GetRenderList();
+
+	for (PlanarReflectionItem& PlanarReflectionItem : PlanarReflectionItemList)
+	{
+		if (!(*(PlanarReflectionItem.Active))) continue;
+
+		bool CaptureEveryFrame = *(PlanarReflectionItem.CaptureEveryFrame);
+		bool CaptureThisFrame = *(PlanarReflectionItem.CaptureThisFrame);
+
+		if (CaptureThisFrame)
+		{
+			RenderingData::PlanarReflectionItem RenderPlanarReflectionItem;
+
+			RenderPlanarReflectionItem.Location = *(PlanarReflectionItem.Location);
+			RenderPlanarReflectionItem.Rotation = *(PlanarReflectionItem.Rotation);
+			RenderPlanarReflectionItem.Scale = *(PlanarReflectionItem.Scale);
+
+			RenderPlanarReflectionItem.RenderTarget = *(PlanarReflectionItem.RenderTarget);
+			RenderPlanarReflectionItem.DepthStencil = *(PlanarReflectionItem.DepthStencil);
+
+			RenderPlanarReflectionItem.HiddenActors = *(PlanarReflectionItem.HiddenActors);
+
+			RenderPlanarReflectionItem.Plane = *(PlanarReflectionItem.Plane);
+			RenderPlanarReflectionItem.ReflectionMatrix = *(PlanarReflectionItem.ReflectionMatrix);
+
+			this->PlanarReflectionList.push_back(RenderPlanarReflectionItem);
+		}
+
+		*(PlanarReflectionItem.CaptureThisFrame) = CaptureEveryFrame;
+	}
+}
+
+void Renderer::PlanarReflectionRenderPass()
+{
+	if (PlanarReflectionList.empty()) return;
+	if (CameraList.empty()) return;
+
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	const RenderingData::CameraItem& MainCamera = CameraList[0];
+
+	bool bAnyDrawn = false;
+
+	for (const RenderingData::PlanarReflectionItem& PlanarReflectionItem : PlanarReflectionList)
+	{
+		if (!AssetManager->HasRenderTargetData(PlanarReflectionItem.RenderTarget)) continue;
+		if (!AssetManager->HastDepthStencilData(PlanarReflectionItem.DepthStencil)) continue;
+
+		FPRenderTargetTexture2DInfo& RTInfo = AssetManager->GetRenderTargetTexture2DInfoData(PlanarReflectionItem.RenderTarget);
+		FPRenderTargetData& RTData = AssetManager->GetRenderTargetData(PlanarReflectionItem.RenderTarget);
+		FPDepthStencilData& DSData = AssetManager->GetDepthStencilData(PlanarReflectionItem.DepthStencil);
+
+		//카메라가 아닌 장면(Scene)을 반사: ReflectedView = ReflectionMatrix * MainCamera.View
+		RenderingData::CameraItem ReflectedCamera;
+		ReflectedCamera.Location = MainCamera.Location;
+		ReflectedCamera.Rotation = MainCamera.Rotation;
+		ReflectedCamera.Scale = MainCamera.Scale;
+		ReflectedCamera.View = PlanarReflectionItem.ReflectionMatrix * MainCamera.View;
+
+		//Proj 재계산
+		DirectX::XMFLOAT4X4 ProjFloat;
+		DirectX::XMStoreFloat4x4(&ProjFloat, MainCamera.Projection.Matrix);
+		float RTAspect = (float)RTInfo.SizeX / (float)RTInfo.SizeY;
+		ProjFloat._11 = ProjFloat._22 / RTAspect;
+		ReflectedCamera.Projection = FPMatrix(DirectX::XMLoadFloat4x4(&ProjFloat));
+
+		//이 RenderTarget의 ReflectionMatrix/Plane을 캐싱 (샘플링하는 forward-reflection Material이 이름으로 조회)
+		PlanarReflectionCache[PlanarReflectionItem.RenderTarget] = { PlanarReflectionItem.ReflectionMatrix, PlanarReflectionItem.Plane };
+
+		Device.OMSetRenderTargets(1, RTData.RenderTargetView, DSData.DepthStencilView);
+		Device.ClearRenderTargetView(RTData.RenderTargetView, (float*)&RTInfo.ClearColor);
+
+		for (int i = 0; i < 14; ++i)
+		{
+			Device.VSSetConstantBuffers(i, 1);
+			Device.PSSetConstantBuffers(i, 1);
+		}
+
+		Device.IASetPrimitiveTopology(Topology::TRIANGLELIST);
+		Device.SetViewPort(0.0f, 0.0f, (float)RTInfo.SizeX, (float)RTInfo.SizeY, 0.0f, 1.0f);
+
+		//이 Pass의 모든 Draw에서 거울 평면 반대쪽은 클리핑
+		RenderingData::ClipPlanarReflectionConstBuffer ClipCB;
+		ClipCB.GlobalClipPlane = PlanarReflectionItem.Plane;
+		ClipCB.ClipPlaneEnabled = 1;
+		Device.UpdateVertexShaderSubresource(13, reinterpret_cast<const uint8_t*>(&ClipCB), 0, sizeof(RenderingData::ClipPlanarReflectionConstBuffer));
+
+		for (const RenderingData::MeshRenderItem& RenderItem : SkyBoxRenderList)
+		{
+			if (std::find(PlanarReflectionItem.HiddenActors.begin(), PlanarReflectionItem.HiddenActors.end(), RenderItem.ActorName) != PlanarReflectionItem.HiddenActors.end()) continue;
+			DrawMeshRenderItem(RenderItem, ReflectedCamera, AssetManager, "DS_DEPTH_WRITE_OFF", 0, false, false, true, PlanarReflectionItem.Plane);
+		}
+
+		for (const RenderingData::MeshRenderItem& RenderItem : OpaqueRenderList)
+		{
+			if (std::find(PlanarReflectionItem.HiddenActors.begin(), PlanarReflectionItem.HiddenActors.end(), RenderItem.ActorName) != PlanarReflectionItem.HiddenActors.end()) continue;
+			DrawMeshRenderItem(RenderItem, ReflectedCamera, AssetManager, "DS_DEPTH_ON", 0, false, true, true, PlanarReflectionItem.Plane);
+		}
+
+		for (const RenderingData::MeshRenderItem& RenderItem : MaskedRenderList)
+		{
+			if (std::find(PlanarReflectionItem.HiddenActors.begin(), PlanarReflectionItem.HiddenActors.end(), RenderItem.ActorName) != PlanarReflectionItem.HiddenActors.end()) continue;
+			DrawMeshRenderItem(RenderItem, ReflectedCamera, AssetManager, "DS_DEPTH_ON", 0, false, true, true, PlanarReflectionItem.Plane);
+		}
+
+		for (const RenderingData::MeshRenderItem& RenderItem : TranslucentRenderList)
+		{
+			if (std::find(PlanarReflectionItem.HiddenActors.begin(), PlanarReflectionItem.HiddenActors.end(), RenderItem.ActorName) != PlanarReflectionItem.HiddenActors.end()) continue;
+			DrawMeshRenderItem(RenderItem, ReflectedCamera, AssetManager, "DS_DEPTH_WRITE_OFF", 0, false, true, true, PlanarReflectionItem.Plane);
+		}
+
+		Device.ResolveRenderTarget(RTInfo.RenderTragetFormat, RTData.Texture, RTData.ResolveTexture);
+
+		bAnyDrawn = true;
+	}
+
+	if (!bAnyDrawn) return;
+
+	//이후 Pass에 영향이 없도록 Clip Plane을 다시 비활성화
+	RenderingData::ClipPlanarReflectionConstBuffer DisabledClipCB;
+	Device.UpdateVertexShaderSubresource(13, reinterpret_cast<const uint8_t*>(&DisabledClipCB), 0, sizeof(RenderingData::ClipPlanarReflectionConstBuffer));
+
+	Device.OMSetBlendState(AssetManager->GetBlendStateData("BS_DEFAULT").BlendStateData);
+}
+
 HRESULT Renderer::InitializeRenderer(HWND hwnd)
 {
 	HRESULT hr = S_OK;
@@ -623,7 +788,6 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 
 	shaderFactory = &ShaderFactory::GetShaderFactory();
 
-	Device.RasterStateCreate();
 
 	//9232B의 ConstBuffer 생성
 	Device.CreateVertexShaderConstBuffer(9232);
@@ -643,7 +807,7 @@ void Renderer::DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& Ren
 	}
 
 	//Fill/Cull mode Set
-	Device.UpdateRSSetState(bFill, !(RenderItem.TwoSided));
+	SetRasterizerState(AssetManager, bFill, !(RenderItem.TwoSided));
 
 	//Material이 지정한 DepthStencilState/BlendState 적용 (ZEnable이 꺼져 있으면 디버그용으로 깊이 테스트 끔)
 	FPDepthStencilStateData& DepthStencilStateData = AssetManager->GetDepthStencilStateData(ZEnable ? DepthStencilState : "DS_DEPTH_OFF");
@@ -727,7 +891,7 @@ void Renderer::DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& Ren
 	FPIndexBufferData IndexB = AssetManager->GetIndexBuffer(RenderItem.MeshPath);
 	FPVertexBufferData TangentVB = AssetManager->GetTangentVertexBuffer(RenderItem.MeshPath);
 
-	//World/View/Proj matrix Set (HLSL is row-major, so operand order is the reverse of HLSL)
+	//World/View/Proj 행렬 계산 (HLSL은 행 기준이므로 연산 순서는 HLSL과 반대로)
 	MVPCB.WorldMatrix = ((RenderItem.Scale) * (RenderItem.Rotation) * (RenderItem.Location)).Matrix;
 	MVPCB.InverseWorldMatrix = DirectX::XMMatrixInverse(nullptr, MVPCB.WorldMatrix);
 	MVPCB.TranseposeWorldMatrix = DirectX::XMMatrixTranspose(MVPCB.WorldMatrix);
@@ -755,6 +919,8 @@ void Renderer::DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& Ren
 
 	//Object ConstBuffer Update
 	Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
+	RenderingData::ClipPlanarReflectionConstBuffer ClipCB;
+	Device.UpdateVertexShaderSubresource(13, reinterpret_cast<const uint8_t*>(&ClipCB), 0, sizeof(RenderingData::ClipPlanarReflectionConstBuffer));
 	Device.UpdatePixelShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
 
 	Device.IASetVertexBuffers(0, 1, PositionVB.VertexBuffer, &(PositionVB.Stride), &(PositionVB.Offset));
@@ -860,7 +1026,7 @@ void Renderer::CalculateViewPortSize(float Width, float Height, float& OutTopLef
 	OutTopLeftY = (Height - OutHeight) * 0.5f;
 }
 
-void Renderer::DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, UINT StencilRef, bool bDisablePixelShader)
+void Renderer::DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, UINT StencilRef, bool bDisablePixelShader, bool bFlipCull, bool bClipPlaneEnabled, const FPVector4& ClipPlane, const FPMatrix& ReflectionViewProj)
 {
 	RenderingData::MVPConstBuffer MVPCB;
 
@@ -872,7 +1038,7 @@ void Renderer::DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderIte
 	*/
 
 	//렌더링 모드 전환
-	Device.UpdateRSSetState(true, !(RenderItem.TwoSided));
+	SetRasterizerState(AssetManager, true, !(RenderItem.TwoSided), bFlipCull);
 
 	//Material이 지정한 DepthStencilState/BlendState 적용 (ZEnable이 꺼져 있으면 디버그용으로 깊이 테스트 끔)
 	FPDepthStencilStateData& DepthStencilStateData = AssetManager->GetDepthStencilStateData(ZEnable ? DepthStencilState : "DS_DEPTH_OFF");
@@ -1000,6 +1166,11 @@ void Renderer::DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderIte
 
 	//Object 상수 버퍼 갱신
 	Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
+	RenderingData::ClipPlanarReflectionConstBuffer ClipCB;
+	ClipCB.GlobalClipPlane = ClipPlane;
+	ClipCB.ClipPlaneEnabled = bClipPlaneEnabled ? 1 : 0;
+	ClipCB.ReflectionViewProj = ReflectionViewProj;
+	Device.UpdateVertexShaderSubresource(13, reinterpret_cast<const uint8_t*>(&ClipCB), 0, sizeof(RenderingData::ClipPlanarReflectionConstBuffer));
 	Device.UpdatePixelShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
 
 	Device.IASetVertexBuffers(0, 1, PositionVB.VertexBuffer, &(PositionVB.Stride), &(PositionVB.Offset));
@@ -1115,6 +1286,67 @@ void Renderer::TranslucentRenderPass(const RenderingData::CameraItem& CamItem, F
 	}
 }
 
+FPMatrix Renderer::ComputePlanarReflectionViewProj(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager)
+{
+	//해당 이름으로 캐싱된 ReflectionMatrix/Plane이 있는, RenderTarget 타입의 바인딩된 PS 텍스처를 탐색
+	for (const FPReflectionResourceInfo& TextureItem : RenderItem.Resources)
+	{
+		if (TextureItem.TextureType != RenderTargetTexture2D) continue;
+
+		auto CacheIt = PlanarReflectionCache.find(TextureItem.AssetName);
+		if (CacheIt == PlanarReflectionCache.end()) continue;
+		if (!AssetManager->HasRenderTargetData(TextureItem.AssetName)) continue;
+
+		FPRenderTargetTexture2DInfo& RTInfo = AssetManager->GetRenderTargetTexture2DInfoData(TextureItem.AssetName);
+
+		//이 RenderTarget을 캡처할 때 쓴 화면비 보정 Projection과 동일하게 맞춰, 텍스처 내용과 UV가 일치하도록 함
+		DirectX::XMFLOAT4X4 ProjFloat;
+		DirectX::XMStoreFloat4x4(&ProjFloat, CamItem.Projection.Matrix);
+		float RTAspect = (float)RTInfo.SizeX / (float)RTInfo.SizeY;
+		ProjFloat._11 = ProjFloat._22 / RTAspect;
+		FPMatrix AspectCorrectedProj = FPMatrix(DirectX::XMLoadFloat4x4(&ProjFloat));
+
+		return CacheIt->second.ReflectionMatrix * CamItem.View * AspectCorrectedProj;
+	}
+
+	return FPMatrix();
+}
+
+void Renderer::PlanarReflectionOpaqueRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager)
+{
+	for (const RenderingData::MeshRenderItem& RenderItem : PlanarReflectionOpaqueRenderList)
+	{
+		FPMatrix ReflectionViewProj = ComputePlanarReflectionViewProj(RenderItem, CamItem, AssetManager);
+
+		if (RenderItem.bCustomDepthStencil)
+		{
+			DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON_STENCIL_ON", (UINT)RenderItem.StencilRefValue, false, false, false, FPVector4(), ReflectionViewProj);
+		}
+		else
+		{
+			DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON", 0, false, false, false, FPVector4(), ReflectionViewProj);
+		}
+	}
+}
+
+void Renderer::PlanarReflectionMaskedRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager)
+{
+	for (const RenderingData::MeshRenderItem& RenderItem : PlanarReflectionMaskedRenderList)
+	{
+		FPMatrix ReflectionViewProj = ComputePlanarReflectionViewProj(RenderItem, CamItem, AssetManager);
+		DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON", 0, false, false, false, FPVector4(), ReflectionViewProj);
+	}
+}
+
+void Renderer::PlanarReflectionmTranslucentRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager)
+{
+	for (const RenderingData::MeshRenderItem& RenderItem : PlanarReflectionmTranslucentRenderList)
+	{
+		FPMatrix ReflectionViewProj = ComputePlanarReflectionViewProj(RenderItem, CamItem, AssetManager);
+		DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_WRITE_OFF", 0, false, false, false, FPVector4(), ReflectionViewProj);
+	}
+}
+
 void Renderer::MeshRenderPass()
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
@@ -1155,8 +1387,14 @@ void Renderer::MeshRenderPass()
 	for (RenderingData::CameraItem& CamItem : CameraList)
 	{
 		SkyBoxRenderPass(CamItem, AssetManager);
+
+		PlanarReflectionOpaqueRenderPass(CamItem, AssetManager);
 		OpaqueRenderPass(CamItem, AssetManager);
+
+		PlanarReflectionMaskedRenderPass(CamItem, AssetManager);
 		MaskedRenderPass(CamItem, AssetManager);
+
+		PlanarReflectionmTranslucentRenderPass(CamItem, AssetManager);
 		TranslucentRenderPass(CamItem, AssetManager);
 
 		Device.ResolveRenderTarget(RTInfo.RenderTragetFormat, RTData.Texture, RTData.ResolveTexture);
@@ -1193,7 +1431,7 @@ void Renderer::GizmoRenderPass()
 	Device.OMSetDepthStencilState(DepthStencilStateData.DepthStencilData);
 
 	//렌더링 모드 전환
-	Device.UpdateRSSetState(bFill, bCull);
+	SetRasterizerState(AssetManager, bFill, bCull);
 
 	//기하 위상 구조 설정
 	Device.IASetPrimitiveTopology(Topology::LINELIST);
@@ -1280,6 +1518,8 @@ void Renderer::GizmoRenderPass()
 
 			//Object 상수 버퍼 갱신
 			Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
+			RenderingData::ClipPlanarReflectionConstBuffer ClipCB;
+			Device.UpdateVertexShaderSubresource(13, reinterpret_cast<const uint8_t*>(&ClipCB), 0, sizeof(RenderingData::ClipPlanarReflectionConstBuffer));
 
 			Device.IASetVertexBuffers(0, 1, PositionVB.VertexBuffer, &(PositionVB.Stride), &(PositionVB.Offset));
 			Device.IASetVertexBuffers(2, 1, ColorVB.VertexBuffer, &(ColorVB.Stride), &(ColorVB.Offset));
@@ -1315,7 +1555,7 @@ void Renderer::NormalRenderPass()
 	Device.OMSetDepthStencilState(DepthStencilStateData.DepthStencilData);
 
 	//렌더링 모드 전환
-	Device.UpdateRSSetState(bFill, bCull);
+	SetRasterizerState(static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager()), bFill, bCull);
 
 	//기하 위상 구조 설정
 	Device.IASetPrimitiveTopology(Topology::LINELIST);
@@ -1405,6 +1645,8 @@ void Renderer::NormalRenderPass()
 
 			//Object 상수 버퍼 갱신
 			Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
+			RenderingData::ClipPlanarReflectionConstBuffer ClipCB;
+			Device.UpdateVertexShaderSubresource(13, reinterpret_cast<const uint8_t*>(&ClipCB), 0, sizeof(RenderingData::ClipPlanarReflectionConstBuffer));
 
 			Device.IASetVertexBuffers(0, 1, PositionVB.VertexBuffer, &(PositionVB.Stride), &(PositionVB.Offset));
 			Device.IASetVertexBuffers(1, 1, NormalVB.VertexBuffer, &(NormalVB.Stride), &(NormalVB.Offset));
@@ -1448,7 +1690,6 @@ void Renderer::UIRenderPass()
 
 HRESULT Renderer::Finalize()
 {
-	Device.RasterStateRelease();
 	FontRelease();
 	HRESULT hr = Device.DeviceFinalize();
 
@@ -1628,7 +1869,7 @@ void Renderer::PostProcessRenderPass()
 		}
 
 		//렌더 상태 : 컬링 없음, Solid, 블렌드 없음, 깊이 없음
-		Device.UpdateRSSetState(true, false);
+		SetRasterizerState(AssetManager, true, false);
 		Device.OMSetBlendState(AssetManager->GetBlendStateData("BS_DEFAULT").BlendStateData);
 		Device.OMSetDepthStencilState(AssetManager->GetDepthStencilStateData("DS_DEPTH_OFF").DepthStencilData);
 
@@ -1647,6 +1888,8 @@ void Renderer::PostProcessRenderPass()
 		RenderingData::MVPConstBuffer MVPCB;
 		MakeQuad2DMVP(MVPCB, DisplayWidth, DisplayHeight);
 		Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
+		RenderingData::ClipPlanarReflectionConstBuffer ClipCB;
+		Device.UpdateVertexShaderSubresource(13, reinterpret_cast<const uint8_t*>(&ClipCB), 0, sizeof(RenderingData::ClipPlanarReflectionConstBuffer));
 		Device.UpdatePixelShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
 
 		//Material 상수 버퍼

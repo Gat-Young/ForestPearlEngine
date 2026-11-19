@@ -236,6 +236,45 @@ FPStencilOP StringToFPStencilOP(const std::string& Name)
     return FPStencilOP::KEEP;
 }
 
+FPFillMode StringToFPFillMode(const std::string& Name)
+{
+	static const std::unordered_map<std::string, FPFillMode> FPFillModeMap =
+	{
+		{ "SOLID",     FPFillMode::SOLID },
+		{ "WIREFRAME", FPFillMode::WIREFRAME },
+	};
+
+	auto it = FPFillModeMap.find(Name);
+
+	if (it != FPFillModeMap.end())
+	{
+		return it->second;
+	}
+
+	//Default : SOLID
+	return FPFillMode::SOLID;
+}
+
+FPCullMode StringToFPCullMode(const std::string& Name)
+{
+	static const std::unordered_map<std::string, FPCullMode> FPCullModeMap =
+	{
+		{ "NONE",  FPCullMode::NONE },
+		{ "FRONT", FPCullMode::FRONT },
+		{ "BACK",  FPCullMode::BACK },
+	};
+
+	auto it = FPCullModeMap.find(Name);
+
+	if (it != FPCullModeMap.end())
+	{
+		return it->second;
+	}
+
+	//Default : NONE
+	return FPCullMode::NONE;
+}
+
 FPBlend StringToFPBlend(const std::string& Name)
 {
 	static const std::unordered_map<std::string, FPBlend> FPBlendMap =

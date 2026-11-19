@@ -86,7 +86,7 @@ void FPSceneCaptureComponent2D::Tick()
 {
 	__super::Tick();
 
-	ViewMatrix = MatrtixTranslation(-WorldTransform.Location) * WorldTransform.RotationMatrix.Transpose();
+	ViewMatrix = MatrtixTranslation(-WorldTransform.Location) * Transpose(WorldTransform.RotationMatrix);
 	ProjectionMatrix = MatrixPerspectiveFovLH(Fov, Aspect, Zn, Zf);
 }
 

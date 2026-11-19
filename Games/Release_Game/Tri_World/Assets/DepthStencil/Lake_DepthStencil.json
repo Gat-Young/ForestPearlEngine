@@ -1,0 +1,10 @@
+{
+  "Name": "Lake_DepthStencil",
+  "SizeX": 1024,
+  "SizeY": 1024,
+  "DepthStencilFormat": "D24_S8_UINT",
+  "ClearDepth": 1.0,
+  "ClearStencil": 0,
+  "MSAA": 1,
+  "ShaderResource": true
+}

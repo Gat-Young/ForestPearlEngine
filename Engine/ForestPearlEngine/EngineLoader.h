@@ -19,10 +19,14 @@ void LoadEngineAssets()
 	//Custom DepthStencil BuiltIn Load
 	AssetLoader->LoadBuiltInDepthStencil("CustomDepthStencil.json");
 
+	//PlanarReflection DepthStencil BuiltIn Load
+	AssetLoader->LoadBuiltInDepthStencil("DefaultPlanarReflectionDepthStencil.json");
+
 	//BuiltIn RenderTarget Load
 	AssetLoader->LoadBuiltInRenderTargetTexture2D("MeshRenderPass_RenderTargetTexture2D-BuiltIn.json");
 	AssetLoader->LoadBuiltInRenderTargetTexture2D("GizmoRenderPass_RenderTargetTexture2D-BuiltIn.json");
 	AssetLoader->LoadBuiltInRenderTargetTexture2D("PostProcessRenderPass_RenderTargetTexture2D-BuiltIn.json");
+	AssetLoader->LoadBuiltInRenderTargetTexture2D("DefaultPlanarReflectionRenderTarget.json");
 
 	//Default Vertex/Pixel Shader
 	AssetLoader->LoadVertexShader("DefaultVertexShader.json", AssetOwner::Engine);
@@ -33,6 +37,8 @@ void LoadEngineAssets()
 	AssetLoader->LoadPixelShader("NormalDebugPixelShader.json", AssetOwner::Engine);
 	AssetLoader->LoadVertexShader("DefaultSkyBoxQuadVertexShader.json", AssetOwner::Engine);
 	AssetLoader->LoadPixelShader("DefaultSkyBoxQuadPixelShader.json", AssetOwner::Engine);
+	AssetLoader->LoadVertexShader("DefaultPlanarReflectionVertexShader.json", AssetOwner::Engine);
+	AssetLoader->LoadPixelShader("DefaultPlanarReflectionPixelShader.json", AssetOwner::Engine);
 
 	//StaticMesh Load
 	AssetLoader->LoadStaticMesh("Cube_StaticMesh.json", AssetOwner::Engine);
@@ -64,4 +70,12 @@ void LoadEngineAssets()
 	//BlendState Load
 	AssetLoader->LoadBlendState("BS_DEFAULT.json", AssetOwner::Engine);
 	AssetLoader->LoadBlendState("BS_ADD.json", AssetOwner::Engine);
+
+	//RasterizerState Load
+	AssetLoader->LoadRasterizerState("RS_SOLID.json", AssetOwner::Engine);
+	AssetLoader->LoadRasterizerState("RS_WIREFRM.json", AssetOwner::Engine);
+	AssetLoader->LoadRasterizerState("RS_CULLBACK.json", AssetOwner::Engine);
+	AssetLoader->LoadRasterizerState("RS_CULLFRONT.json", AssetOwner::Engine);
+	AssetLoader->LoadRasterizerState("RS_WIRECULLBACK.json", AssetOwner::Engine);
+	AssetLoader->LoadRasterizerState("RS_WIRECULLFRONT.json", AssetOwner::Engine);
 };

@@ -414,6 +414,54 @@ struct FPDepthStencilStateData
 };
 
 
+//RasterizerState
+enum class FPFillMode
+{
+	SOLID,
+	WIREFRAME,
+
+	FPFillMode_MAX_
+};
+
+FPFillMode StringToFPFillMode(const std::string& Name);
+
+enum class FPCullMode
+{
+	NONE,
+	FRONT,
+	BACK,
+
+	FPCullMode_MAX_
+};
+
+FPCullMode StringToFPCullMode(const std::string& Name);
+
+struct FPRasterizerStateInfo
+{
+	std::string Name;
+
+	FPFillMode FillMode;
+	FPCullMode CullMode;
+	bool FrontCounterClockwise;
+
+	int DepthBias;
+	float DepthBiasClamp;
+	float SlopeScaledDepthBias;
+
+	bool DepthClipEnable;
+	bool ScissorEnable;
+	bool MultisampleEnable;
+	bool AntialiasedLineEnable;
+
+	AssetOwner Owner;
+};
+
+struct FPRasterizerStateData
+{
+	void* RasterizerStateData;
+};
+
+
 //BlendState
 struct FPRenderTargetBlendDesc
 {
@@ -579,6 +627,7 @@ struct FPMaterialData
 	std::string BlendState;
 	FPMaterialDetail Detail = FPMaterialDetail::Opaque;
 	bool bIsSky = false;
+	bool bUsePlanarForwardReflections = false;
 
 	std::vector<FPFloatParameterData> Parameters;
 	std::vector<FPTextureParameterData> NamedTextures;
@@ -648,6 +697,7 @@ struct RenderItem
 	std::string* BlendState = nullptr;
 	FPMaterialDetail* Detail = nullptr;
 	bool* bIsSky = nullptr;
+	bool* bUsePlanarForwardReflections = nullptr;
 	int* StencilRefValue = nullptr;
 	bool* bCustomDepthStencil = nullptr;
 
@@ -740,6 +790,29 @@ struct SceneCaptureItem
 	bool* CaptureThisFrame = nullptr;
 
 	std::vector<std::string>* HiddenActors = nullptr;
+};
+
+//Planar Reflection Component
+struct PlanarReflectionItem
+{
+	//Capture Camera
+	FPMatrix* Location = nullptr;
+	FPMatrix* Rotation = nullptr;
+	FPMatrix* Scale = nullptr;
+
+	bool* Active = nullptr;
+
+	std::string* RenderTarget = nullptr;
+	std::string* DepthStencil = nullptr;
+
+	bool* CaptureEveryFrame = nullptr;
+	bool* CaptureThisFrame = nullptr;
+
+	std::vector<std::string>* HiddenActors = nullptr;
+
+	//Reflection Plane / Matrix
+	FPVector4* Plane = nullptr;
+	FPMatrix* ReflectionMatrix = nullptr;
 };
 
 struct UIContextItem
@@ -944,6 +1017,22 @@ namespace RenderingData
 		DirectX::XMMATRIX InverseTranseposeWVPMatrix;
 	};
 
+	//Planar Reflection Clip Plane 상수 버퍼 (고정 슬롯 b13)
+	struct alignas(16) ClipPlanarReflectionConstBuffer
+	{
+		FPVector4 GlobalClipPlane = FPVector4(0.0f, 0.0f, 0.0f, 0.0f);
+		unsigned int ClipPlaneEnabled = 0;
+		float Padding[3] = {};
+		FPMatrix ReflectionViewProj;
+	};
+
+	//RenderTarget 이름별로 캐싱된 ReflectionMatrix/Plane (Renderer::PlanarReflectionCache 참고)
+	struct PlanarReflectionCacheData
+	{
+		FPMatrix ReflectionMatrix;
+		FPVector4 Plane;
+	};
+
 	struct LightRenderItem
 	{
 		FPVector3 Direction;
@@ -991,6 +1080,7 @@ namespace RenderingData
 		std::string BlendState;
 		FPMaterialDetail Detail;
 		bool bIsSky;
+		bool bUsePlanarForwardReflections;
 		int StencilRefValue;
 		bool bCustomDepthStencil;
 
@@ -1023,6 +1113,21 @@ namespace RenderingData
 		std::string DepthStencil;
 
 		std::vector<std::string> HiddenActors;
+	};
+
+	struct PlanarReflectionItem
+	{
+		FPMatrix Location;
+		FPMatrix Rotation;
+		FPMatrix Scale;
+
+		std::string RenderTarget;
+		std::string DepthStencil;
+
+		std::vector<std::string> HiddenActors;
+
+		FPVector4 Plane;
+		FPMatrix ReflectionMatrix;
 	};
 
 	struct MeshRenderItemCompare

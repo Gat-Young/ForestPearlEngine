@@ -351,6 +351,9 @@
     <ClInclude Include="FPPlanarReflectionComponent.h">
       <Filter>Component\SceneCapture</Filter>
     </ClInclude>
+    <ClInclude Include="FPPlanarReflectionList.h">
+      <Filter>Component\SceneCapture</Filter>
+    </ClInclude>
     <ClInclude Include="FPCameraList.h">
       <Filter>FPGameInstance\RenderList\Header</Filter>
     </ClInclude>
@@ -536,6 +539,9 @@
     <ClCompile Include="FPPlanarReflectionComponent.cpp">
       <Filter>Component\SceneCapture</Filter>
     </ClCompile>
+    <ClCompile Include="FPPlanarReflectionList.cpp">
+      <Filter>Component\SceneCapture</Filter>
+    </ClCompile>
     <ClCompile Include="FPSkyLightComponent.cpp">
       <Filter>Component\Light</Filter>
     </ClCompile>
@@ -603,6 +609,9 @@
     <FxCompile Include="Assets\ShaderResource\DefaultPixelShader.psh">
       <Filter>Assets\ShaderResource\PS</Filter>
     </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\DefaultPlanarReflectionPixelShader.psh">
+      <Filter>Assets\ShaderResource\PS</Filter>
+    </FxCompile>
     <FxCompile Include="Assets\ShaderResource\NormalDebugPixelShader.psh">
       <Filter>Assets\ShaderResource\PS</Filter>
     </FxCompile>
@@ -610,6 +619,9 @@
       <Filter>Assets\ShaderResource\VS</Filter>
     </FxCompile>
     <FxCompile Include="Assets\ShaderResource\DefaultVertexShader.vsh">
+      <Filter>Assets\ShaderResource\VS</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\DefaultPlanarReflectionVertexShader.vsh">
       <Filter>Assets\ShaderResource\VS</Filter>
     </FxCompile>
     <FxCompile Include="Assets\ShaderResource\NormalDebugVertexShader.vsh">

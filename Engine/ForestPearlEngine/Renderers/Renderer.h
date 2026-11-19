@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <queue>
+#include <unordered_map>
 #include "RenderingDevice.h"
 #include "../Shader/ShaderFactory.h"
 
@@ -68,6 +69,11 @@ class Renderer
 		std::vector<RenderingData::MeshRenderItem> TranslucentRenderList;
 		std::vector<RenderingData::MeshRenderItem> SkyBoxRenderList;
 
+		//Material의 bUsePlanarForwardReflections가 true인 Mesh 항목 (위 목록들과는 상호 배타적으로 분류됨)
+		std::vector<RenderingData::MeshRenderItem> PlanarReflectionOpaqueRenderList;
+		std::vector<RenderingData::MeshRenderItem> PlanarReflectionMaskedRenderList;
+		std::vector<RenderingData::MeshRenderItem> PlanarReflectionmTranslucentRenderList;
+
 		//Debug Render Item
 		std::vector<RenderingData::GizmoRenderItem> GizmoRenderList;
 
@@ -86,16 +92,28 @@ class Renderer
 		//SceneCapture Item
 		std::vector<RenderingData::SceneCaptureItem> SceneCaptureList;
 
+		//Planar Reflection Item
+		std::vector<RenderingData::PlanarReflectionItem> PlanarReflectionList;
+
+		//Material이 샘플링하는 RenderTarget 텍스처 이름으로 조회하는, RenderTarget별 캐싱된 ReflectionMatrix/Plane
+		std::unordered_map<std::string, RenderingData::PlanarReflectionCacheData> PlanarReflectionCache;
+
 
 		//Quad2D Render
 		//Quad Mesh에 지정된 InRenderTarget을 BackBuffer로 Draw 
 		void Quad2DRenderPass(std::string& InRenderTarget);
 
+		//RasterizerState name resolution (bFillSolid, bCullBack) -> RS_SOLID/RS_WIREFRM/RS_CULLBACK/RS_WIRECULLBACK
+		void SetRasterizerState(FPAssetManager* AssetManager, bool bFillSolid, bool bCullBack, bool bFlipCull = false);
+
 		//Aspect-corrected ViewPort size (Letterbox / Pillarbox)
 		void CalculateViewPortSize(float Width, float Height, float& OutTopLeftX, float& OutTopLeftY, float& OutWidth, float& OutHeight);
 
-		//MeshRenderPass sub-pass: single RenderItem draw, shared by Opaque/Masked/Translucent
-		void DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, UINT StencilRef = 0, bool bDisablePixelShader = false);
+		//MeshRenderPass 서브 패스: Opaque/Masked/Translucent가 공유하는 단일 RenderItem Draw 함수
+		void DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, UINT StencilRef = 0, bool bDisablePixelShader = false, bool bFlipCull = false, bool bClipPlaneEnabled = false, const FPVector4& ClipPlane = FPVector4(), const FPMatrix& ReflectionViewProj = FPMatrix());
+
+		//RenderItem이 샘플링하는 RenderTarget을 찾아 ReflectionMatrix * CamItem.View * (RT 화면비 보정) Projection을 반환. 없으면 Identity 반환
+		FPMatrix ComputePlanarReflectionViewProj(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 
 		void PreDepthStencilPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 		void CustomDepthStencilPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
@@ -103,6 +121,10 @@ class Renderer
 		void OpaqueRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 		void MaskedRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 		void TranslucentRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
+
+		void PlanarReflectionOpaqueRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
+		void PlanarReflectionMaskedRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
+		void PlanarReflectionmTranslucentRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 
 		//Quad2D 모델/뷰/투영 행렬 (Quad2DRenderPass와 PostProcessRenderPass가 공유)
 		void MakeQuad2DMVP(RenderingData::MVPConstBuffer& MVPCB, float DisplayWidth, float DisplayHeight);
@@ -122,6 +144,7 @@ class Renderer
 		void CreateSkyLightRenderList();
 		void CreateNormalRenderList();
 		void CreateSceneCaptureList();
+		void CreatePlanarReflectionList();
 		void CreatePostProcessList();
 
 		//RenderPass 함수
@@ -134,6 +157,8 @@ class Renderer
 		void PreDepthStencilRenderPass();
 
 		void SceneCaptureRenderPass();
+
+		void PlanarReflectionRenderPass();
 
 		void MeshRenderPass();
 

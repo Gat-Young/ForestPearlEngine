@@ -48,5 +48,7 @@ class FPMaterialInterface : public FPObject
 		virtual FPMaterialDetail* GetDetail() = 0;
 		virtual void SetIsSky(bool bIsSky) = 0;
 		virtual bool* GetIsSky() = 0;
+		virtual void SetUsePlanarForwardReflections(bool bUse) = 0;
+		virtual bool* GetUsePlanarForwardReflections() = 0;
 		virtual void UpdateMaterial(float DeltaTime) {};
 };

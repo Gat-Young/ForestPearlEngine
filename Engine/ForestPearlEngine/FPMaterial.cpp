@@ -404,6 +404,16 @@ bool* FPMaterial::GetIsSky()
 	return &(this->bIsSky);
 }
 
+void FPMaterial::SetUsePlanarForwardReflections(bool bUse)
+{
+	this->bUsePlanarForwardReflections = bUse;
+}
+
+bool* FPMaterial::GetUsePlanarForwardReflections()
+{
+	return &(this->bUsePlanarForwardReflections);
+}
+
 void FPMaterial::UpdateMaterial(float DeltaTime)
 {
 	//FPConstantBufferRenderDataUtil::UpdateConstantBuffer(VertexConstantBuffer, 0, MaterialVertexConstantBuffer);

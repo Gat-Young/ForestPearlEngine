@@ -71,6 +71,10 @@ private:
 	std::unordered_map<std::string, FPBlendStateInfo> LoadedBlendStateData;
 	std::unordered_map<std::string, FPBlendStateData> BlendStateData;
 
+	//RasterizerState
+	std::unordered_map<std::string, FPRasterizerStateInfo> LoadedRasterizerStateData;
+	std::unordered_map<std::string, FPRasterizerStateData> RasterizerStateData;
+
 	bool CalculateTriangleTangent(const POSITION_VERTEX& P0, const POSITION_VERTEX& P1, const POSITION_VERTEX& P2,
 									const UV_VERTEX& UV0, const UV_VERTEX& UV1, const UV_VERTEX& UV2,
 										FPVector3& OutTangent, FPVector3& OutBinormal);
@@ -262,6 +266,17 @@ public:
 	void AddBlendStateData(std::string BlendStateName, FPBlendStateData& BlendStateData);
 	bool HasBlendStateData(std::string BlendStateName);
 	void MakeBlendState(FPBlendStateInfo& BlendStateInfo);
+
+	//RasterizerState Info
+	FPRasterizerStateInfo& GetRasterizerStateInfoData(std::string RasterizerStateName);
+	void AddRasterizerStateInfoData(std::string RasterizerStateName, FPRasterizerStateInfo& RasterizerStateInfoData);
+	bool HasRasterizerStateInfoData(std::string RasterizerStateName);
+
+	//RasterizerState Data
+	FPRasterizerStateData& GetRasterizerStateData(std::string RasterizerStateName);
+	void AddRasterizerStateData(std::string RasterizerStateName, FPRasterizerStateData& RasterizerStateData);
+	bool HasRasterizerStateData(std::string RasterizerStateName);
+	void MakeRasterizerState(FPRasterizerStateInfo& RasterizerStateInfo);
 
 	//Material Info
 	FPMaterialData& GetMaterialData(std::string MaterialName);

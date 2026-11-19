@@ -160,6 +160,16 @@ FPMatrix MatrixTranslation(float x, float y, float z)
 	return FPMatrix(DirectX::XMMatrixTranslation(x, y, z));
 }
 
+FPMatrix MatrixInverse(FPMatrix& Matrix)
+{
+	return FPMatrix(DirectX::XMMatrixInverse(nullptr, Matrix.Matrix));
+}
+
+FPMatrix Transpose(FPMatrix& Matrix)
+{
+	return FPMatrix(DirectX::XMMatrixTranspose(Matrix.Matrix));
+}
+
 FPQuaternion Conjugate(const FPQuaternion& quat)
 {
 	return FPQuaternion{ -quat.x, -quat.y, -quat.z, quat.w };

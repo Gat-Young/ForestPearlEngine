@@ -25,8 +25,10 @@
     <ClInclude Include="GameMode.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Ship.h" />
-    <ClInclude Include="Cannon.h" />
-    <ClInclude Include="CannonFireFX.h" />
+    <ClInclude Include="KMCannon\Cannon.h" />
+    <ClInclude Include="KMCannon\CannonFireFX.h" />
+    <ClInclude Include="KMCannon\API_KMCannon.h" />
+    <ClInclude Include="KMCannon\Loader_KMCannon.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="UI.h" />
   </ItemGroup>
@@ -38,8 +40,10 @@
     <ClCompile Include="GameProjectLoader.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Ship.cpp" />
-    <ClCompile Include="Cannon.cpp" />
-    <ClCompile Include="CannonFireFX.cpp" />
+    <ClCompile Include="KMCannon\Cannon.cpp" />
+    <ClCompile Include="KMCannon\CannonFireFX.cpp" />
+    <ClCompile Include="KMCannon\API_KMCannon.cpp" />
+    <ClCompile Include="KMCannon\Loader_KMCannon.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="UI.cpp" />
   </ItemGroup>
@@ -48,19 +52,19 @@
     <None Include="Assets\Level\KM_Cannon.json" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Assets\ShaderResource\FXParticleVertexShader.vsh">
+    <FxCompile Include="Assets\ShaderResource\KM\FXParticleVertexShader.vsh">
       <ShaderType>Vertex</ShaderType>
       <ShaderModel>5.0</ShaderModel>
       <EntryPointName>VS_Main</EntryPointName>
       <ObjectFileOutput>$(ProjectDir)Assets\ShaderResource\bin\%(Filename).vso</ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="Assets\ShaderResource\FXParticlePixelShader.psh">
+    <FxCompile Include="Assets\ShaderResource\KM\FXParticlePixelShader.psh">
       <ShaderType>Pixel</ShaderType>
       <ShaderModel>5.0</ShaderModel>
       <EntryPointName>PS_Main</EntryPointName>
       <ObjectFileOutput>$(ProjectDir)Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="Assets\ShaderResource\BlenderCannonPixelShader.psh">
+    <FxCompile Include="Assets\ShaderResource\KM\BlenderCannonPixelShader.psh">
       <ShaderType>Pixel</ShaderType>
       <ShaderModel>5.0</ShaderModel>
       <EntryPointName>PS_Main</EntryPointName>

@@ -33,18 +33,16 @@ void Cannon::BeginPlay()
 
 	FPActor* ShipActor = FPGameplayStatics::GetActorOfClass(GetWorld(), "Ship");
 
-	if (ShipActor == nullptr)
+	//배가 있으면 배에 붙임 (배 없는 프로젝트에서도 대포 · 총구 · 발사는 동작)
+	if (ShipActor != nullptr)
 	{
-		return;
+		AttachToActor(ShipActor);
+
+		// 배를 기준으로 한 상대 위치·회전·크기
+		Mesh->SetRelativeLocation({ 2.8f, 3.45f, -8.0f });
+		Mesh->SetRelativeRotation({ 0.0f, 0.0f, 0.0f });
+		Mesh->SetRelativeScale3D({ 0.33f, 0.33f, 0.33f });
 	}
-
-	// 대포의 루트를 배의 루트 아래에 부착
-	AttachToActor(ShipActor);
-
-	// 배를 기준으로 한 상대 위치·회전·크기
-	Mesh->SetRelativeLocation({ 2.8f, 3.45f, -8.0f });
-	Mesh->SetRelativeRotation({ 0.0f, 0.0f, 0.0f });
-	Mesh->SetRelativeScale3D({ 0.33f, 0.33f, 0.33f });
 
 	//대포 자리가 정해진 뒤에 총구 소켓을 붙임 (레벨에 적은 월드 좌표 = 이 순간의 대포 기준)
 	std::vector<FPActor*> Sockets;

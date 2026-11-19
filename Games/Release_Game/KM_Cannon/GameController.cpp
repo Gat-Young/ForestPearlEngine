@@ -16,7 +16,7 @@
 
 //계절 처리
 #include "Terrain.h"
-#include "Cannon.h"
+#include "KMCannon/API_KMCannon.h"
 
 
 #include <iostream>
@@ -283,10 +283,5 @@ void GameController::SetDirectionalLight(FInputValue Value)
 
 void GameController::FireCannon(FInputValue Value)
 {
-	std::vector<FPActor*> ActorList;
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Cannon", ActorList);
-	for (FPActor* Actor : ActorList)
-	{
-		static_cast<Cannon*>(Actor)->Fire();
-	}
+	API_KMCannon::FireAll(GetWorld());
 }

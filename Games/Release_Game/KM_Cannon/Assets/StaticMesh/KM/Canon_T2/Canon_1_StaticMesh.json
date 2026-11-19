@@ -3,7 +3,7 @@
     "NodeName": "Canon_1",
     "MeshData": [
         {
-            "Path": "Canon_T2/Canon_T2.fbx",
+            "Path": "KM/Canon_T2/Canon_T2.fbx",
             "Topology": "TRIANGLELIST"
         }
     ],

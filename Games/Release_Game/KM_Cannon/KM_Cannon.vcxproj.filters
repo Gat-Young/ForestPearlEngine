@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="KMCannon">
+      <UniqueIdentifier>{6B1C2E4A-3D7F-4E21-9A5B-8C0D1E2F3A4B}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
@@ -42,11 +45,17 @@
     <ClInclude Include="UI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Cannon.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="KMCannon\Cannon.h">
+      <Filter>KMCannon</Filter>
     </ClInclude>
-    <ClInclude Include="CannonFireFX.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="KMCannon\CannonFireFX.h">
+      <Filter>KMCannon</Filter>
+    </ClInclude>
+    <ClInclude Include="KMCannon\API_KMCannon.h">
+      <Filter>KMCannon</Filter>
+    </ClInclude>
+    <ClInclude Include="KMCannon\Loader_KMCannon.h">
+      <Filter>KMCannon</Filter>
     </ClInclude>
     <ClInclude Include="GameMode.h">
       <Filter>Header Files</Filter>
@@ -98,11 +107,17 @@
     <ClCompile Include="Ship.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Cannon.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="KMCannon\Cannon.cpp">
+      <Filter>KMCannon</Filter>
     </ClCompile>
-    <ClCompile Include="CannonFireFX.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="KMCannon\CannonFireFX.cpp">
+      <Filter>KMCannon</Filter>
+    </ClCompile>
+    <ClCompile Include="KMCannon\API_KMCannon.cpp">
+      <Filter>KMCannon</Filter>
+    </ClCompile>
+    <ClCompile Include="KMCannon\Loader_KMCannon.cpp">
+      <Filter>KMCannon</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -114,13 +129,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Assets\ShaderResource\BlenderCannonPixelShader.psh">
+    <FxCompile Include="Assets\ShaderResource\KM\BlenderCannonPixelShader.psh">
       <Filter>Assets\ShaderResource</Filter>
     </FxCompile>
-    <FxCompile Include="Assets\ShaderResource\FXParticleVertexShader.vsh">
+    <FxCompile Include="Assets\ShaderResource\KM\FXParticleVertexShader.vsh">
       <Filter>Assets\ShaderResource</Filter>
     </FxCompile>
-    <FxCompile Include="Assets\ShaderResource\FXParticlePixelShader.psh">
+    <FxCompile Include="Assets\ShaderResource\KM\FXParticlePixelShader.psh">
       <Filter>Assets\ShaderResource</Filter>
     </FxCompile>
     <FxCompile Include="Assets\ShaderResource\ShipPixelShader.psh">

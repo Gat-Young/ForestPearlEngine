@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KMCannon 호출 구조</title>
+<style>
+:root{
+  --bg:#f7f6f2; --panel:#ffffff; --ink:#1d1d1b; --sub:#5e5d58; --line:#d9d6cc;
+  --engine:#5b6b8c; --engine-bg:#e8ecf4;
+  --host:#8a6a2f;   --host-bg:#f5ecd9;
+  --mod:#2f7a5b;    --mod-bg:#dcefe6;
+  --data:#8c4a5b;   --data-bg:#f3e2e6;
+  --code-bg:#f0eee7;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#171716; --panel:#201f1d; --ink:#ecebe6; --sub:#a6a49c; --line:#3a3935;
+    --engine:#9fb1d6; --engine-bg:#2a3142;
+    --host:#d9b56f;   --host-bg:#3a3121;
+    --mod:#77c9a4;    --mod-bg:#1f3a2f;
+    --data:#e09aac;   --data-bg:#3d2730;
+    --code-bg:#2a2926;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#171716; --panel:#201f1d; --ink:#ecebe6; --sub:#a6a49c; --line:#3a3935;
+  --engine:#9fb1d6; --engine-bg:#2a3142;
+  --host:#d9b56f;   --host-bg:#3a3121;
+  --mod:#77c9a4;    --mod-bg:#1f3a2f;
+  --data:#e09aac;   --data-bg:#3d2730;
+  --code-bg:#2a2926;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 "Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif}
+main{max-width:980px;margin:0 auto;padding:32px 16px 80px}
+h1{font-size:28px;margin:0 0 6px}
+h2{font-size:21px;margin:48px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:16px;margin:24px 0 8px}
+p,li{color:var(--ink)}
+.lead{color:var(--sub);margin:0 0 20px}
+code,pre{font-family:Consolas,"D2Coding",monospace;font-size:13px}
+code{background:var(--code-bg);padding:1px 5px;border-radius:4px}
+pre{background:var(--code-bg);padding:14px 16px;border-radius:8px;overflow-x:auto;line-height:1.5;margin:10px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:12px 0}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 16px;font-size:13px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.e{background:var(--engine)} .h{background:var(--host)} .m{background:var(--mod)} .d{background:var(--data)}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
+th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+th{color:var(--sub);font-weight:600}
+.tag{display:inline-block;font-size:12px;padding:0 7px;border-radius:10px;font-weight:600;white-space:nowrap}
+.tag.e{background:var(--engine-bg);color:var(--engine)}
+.tag.h{background:var(--host-bg);color:var(--host)}
+.tag.m{background:var(--mod-bg);color:var(--mod)}
+.tag.d{background:var(--data-bg);color:var(--data)}
+svg{width:100%;height:auto;display:block}
+svg text{font-family:"Malgun Gothic",system-ui,sans-serif;fill:var(--ink)}
+.diagram{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin:12px 0}
+
+/* call stack */
+.phase{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin:14px 0;overflow:hidden}
+.phase>header{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line)}
+.phase>header b{font-size:15px}
+.phase>header small{color:var(--sub)}
+.stack{list-style:none;margin:0;padding:10px 14px 14px}
+.stack li{position:relative;margin:3px 0;padding:4px 8px 4px 10px;border-left:3px solid var(--line);border-radius:0 6px 6px 0}
+.stack li.e{border-left-color:var(--engine);background:var(--engine-bg)}
+.stack li.h{border-left-color:var(--host);background:var(--host-bg)}
+.stack li.m{border-left-color:var(--mod);background:var(--mod-bg)}
+.stack li.d{border-left-color:var(--data);background:var(--data-bg)}
+.stack li code{background:transparent;padding:0;font-weight:600}
+.stack li .note{color:var(--sub);font-size:13px}
+.l1{margin-left:0}.l2{margin-left:22px!important}.l3{margin-left:44px!important}.l4{margin-left:66px!important}.l5{margin-left:88px!important}
+@media (max-width:600px){.l2{margin-left:10px!important}.l3{margin-left:20px!important}.l4{margin-left:30px!important}.l5{margin-left:40px!important}}
+.check li{margin:4px 0}
+
+
+
+/* UML */
+.uml .ub{stroke-width:1.4}
+.uml .ub.e{fill:var(--engine-bg);stroke:var(--engine)}
+.uml .ub.h{fill:var(--host-bg);stroke:var(--host)}
+.uml .ub.m{fill:var(--mod-bg);stroke:var(--mod)}
+.uml .ul{stroke-width:1}
+.uml .ul.e{stroke:var(--engine)} .uml .ul.h{stroke:var(--host)} .uml .ul.m{stroke:var(--mod)}
+.uml .ut{font-size:13px;font-weight:700}
+.uml .us{font-size:10.5px;fill:var(--sub)}
+.uml .um{font-size:11.5px;font-family:Consolas,"D2Coding",monospace}
+.uml .ulb{font-size:11px;fill:var(--sub)}
+.uml .ue{fill:none;stroke:var(--ink);stroke-width:1.3}
+.uml .ud{fill:none;stroke:var(--ink);stroke-width:1.2;stroke-dasharray:5 4}
+.uml .ulife{stroke:var(--sub);stroke-width:1;stroke-dasharray:4 4}
+.uml .uact{fill:var(--panel);stroke:var(--ink);stroke-width:1}
+.uml .uframe{fill:none;stroke:var(--sub);stroke-width:1}
+.uml .uframetag{fill:var(--panel);stroke:var(--sub);stroke-width:1}
+.uml .mk-hollow{fill:var(--panel);stroke:var(--ink);stroke-width:1.2}
+.uml .mk-fill{fill:var(--ink)}
+.uml .mk-open{fill:none;stroke:var(--ink);stroke-width:1.4}
+.notation{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px 16px;font-size:13px;margin:8px 0 4px}
+.notation svg{width:56px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px}
+</style>
+</head>
+<body>
+<main>
+
+<h1>KMCannon 모듈 호출 구조</h1>
+<p class="lead">대포 · 발사 FX를 <code>KMCannon/</code> 폴더 하나로 묶었습니다. 다른 프로젝트는 <b>창구 두 개</b>(Loader, API)만 연결하면 되고, 모듈 안을 고치거나 늘려도 연결해 둔 줄은 다시 손댈 필요가 없습니다.</p>
+
+<div class="legend">
+  <span><i class="sw e"></i>엔진 (ForestPearlEngine)</span>
+  <span><i class="sw h"></i>호스트 프로젝트 (KM_Cannon의 GameProjectLoader · GameController)</span>
+  <span><i class="sw m"></i>내 모듈 (KMCannon/)</span>
+  <span><i class="sw d"></i>데이터 (레벨 JSON · 에셋)</span>
+</div>
+
+<h2>1. 구조 한눈에</h2>
+<div class="diagram">
+<svg viewBox="0 0 920 430" role="img" aria-label="호스트는 Loader_KMCannon와 API_KMCannon 두 창구만 부르고, 내부 클래스는 모듈 안에 숨어 있음">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" style="fill:var(--sub)"/>
+    </marker>
+  </defs>
+  <!-- engine -->
+  <rect x="20" y="20" width="880" height="56" rx="10" style="fill:var(--engine-bg);stroke:var(--engine)"/>
+  <text x="40" y="45" font-size="15" font-weight="700" style="fill:var(--engine)">엔진</text>
+  <text x="40" y="65" font-size="13">PreInitialize → LoadClassRegist() · LoadAssets() 호출  /  OpenLevel → Initialize → BeginPlay → 매 프레임 Tick</text>
+
+  <!-- host -->
+  <rect x="20" y="100" width="300" height="300" rx="10" style="fill:var(--host-bg);stroke:var(--host)"/>
+  <text x="40" y="126" font-size="15" font-weight="700" style="fill:var(--host)">호스트 프로젝트</text>
+  <rect x="40" y="142" width="260" height="110" rx="8" style="fill:var(--panel);stroke:var(--line)"/>
+  <text x="54" y="164" font-size="13" font-weight="700">GameProjectLoader.cpp</text>
+  <text x="54" y="188" font-size="12">#include "KMCannon/Loader_KMCannon.h"</text>
+  <text x="54" y="210" font-size="12">Loader_KMCannon::RegisterClasses();</text>
+  <text x="54" y="232" font-size="12">Loader_KMCannon::LoadAssets();</text>
+  <rect x="40" y="268" width="260" height="110" rx="8" style="fill:var(--panel);stroke:var(--line)"/>
+  <text x="54" y="290" font-size="13" font-weight="700">GameController.cpp (또는 누구든)</text>
+  <text x="54" y="314" font-size="12">#include "KMCannon/API_KMCannon.h"</text>
+  <text x="54" y="336" font-size="12">API_KMCannon::FireAll(GetWorld());</text>
+  <text x="54" y="360" font-size="12" style="fill:var(--sub)">← Enter 키에 연결</text>
+
+  <!-- module -->
+  <rect x="380" y="100" width="520" height="300" rx="10" style="fill:var(--mod-bg);stroke:var(--mod)"/>
+  <text x="400" y="126" font-size="15" font-weight="700" style="fill:var(--mod)">KMCannon/  (폴더째 복사)</text>
+  <rect x="400" y="142" width="200" height="110" rx="8" style="fill:var(--panel);stroke:var(--mod);stroke-width:2"/>
+  <text x="414" y="164" font-size="13" font-weight="700">창구 ① Loader_KMCannon</text>
+  <text x="414" y="188" font-size="12">RegisterClasses()</text>
+  <text x="414" y="210" font-size="12">LoadAssets()</text>
+  <text x="414" y="236" font-size="11" style="fill:var(--sub)">"무엇을 등록 · 로드할지"</text>
+  <rect x="400" y="268" width="200" height="110" rx="8" style="fill:var(--panel);stroke:var(--mod);stroke-width:2"/>
+  <text x="414" y="290" font-size="13" font-weight="700">창구 ② API_KMCannon</text>
+  <text x="414" y="314" font-size="12">FireAll(World)</text>
+  <text x="414" y="336" font-size="12" style="fill:var(--sub)">+ 앞으로 추가할 함수</text>
+  <text x="414" y="362" font-size="11" style="fill:var(--sub)">"밖에서 부를 수 있는 것"</text>
+
+  <rect x="640" y="142" width="240" height="236" rx="8" style="fill:var(--panel);stroke:var(--line);stroke-dasharray:5 4"/>
+  <text x="654" y="164" font-size="13" font-weight="700">내부 (밖에서는 몰라도 됨)</text>
+  <text x="654" y="192" font-size="12">Cannon  : 메쉬 · 배 부착 · Fire()</text>
+  <text x="654" y="216" font-size="12">CannonSocket : 총구 빈 액터</text>
+  <text x="654" y="240" font-size="12">CannonFireFX : 연기 · 섬광 · 빛</text>
+  <text x="654" y="276" font-size="11" style="fill:var(--sub)">여기를 고쳐도</text>
+  <text x="654" y="294" font-size="11" style="fill:var(--sub)">창구 함수 이름이 같으면</text>
+  <text x="654" y="312" font-size="11" style="fill:var(--sub)">호스트 코드는 그대로</text>
+
+  <!-- arrows -->
+  <line x1="300" y1="210" x2="396" y2="200" style="stroke:var(--sub);stroke-width:1.6" marker-end="url(#ar)"/>
+  <line x1="300" y1="336" x2="396" y2="320" style="stroke:var(--sub);stroke-width:1.6" marker-end="url(#ar)"/>
+  <line x1="600" y1="196" x2="636" y2="196" style="stroke:var(--sub);stroke-width:1.6" marker-end="url(#ar)"/>
+  <line x1="600" y1="322" x2="636" y2="200" style="stroke:var(--sub);stroke-width:1.6" marker-end="url(#ar)"/>
+  <line x1="170" y1="76" x2="170" y2="138" style="stroke:var(--engine);stroke-width:1.6" marker-end="url(#ar)"/>
+</svg>
+</div>
+
+<table>
+<tr><th>파일</th><th>역할</th><th>누가 include</th></tr>
+<tr><td><code>KMCannon/Loader_KMCannon.h/.cpp</code></td><td>클래스 등록 + 에셋 로드 목록. 새 클래스 · 에셋은 여기만 추가</td><td><span class="tag h">GameProjectLoader.cpp</span></td></tr>
+<tr><td><code>KMCannon/API_KMCannon.h/.cpp</code></td><td>밖에서 부를 기능 모음 (지금은 <code>FireAll</code>)</td><td><span class="tag h">GameController.cpp</span> 등 아무나</td></tr>
+<tr><td><code>KMCannon/Cannon.h/.cpp</code></td><td>대포 · <code>CannonSocket</code> · 총구 부착 · <code>Fire()</code></td><td>모듈 안에서만</td></tr>
+<tr><td><code>KMCannon/CannonFireFX.h/.cpp</code></td><td>연기 풀 · 섬광 판 · 점광원</td><td>모듈 안에서만</td></tr>
+</table>
+
+<h2>2. UML 다이어그램</h2>
+<p>색은 위 범례와 같습니다 (파랑 = 엔진, 노랑 = 호스트, 초록 = 내 모듈).</p>
+<div class="notation">
+<span><svg viewBox="0 0 56 14" class="uml"><defs>
+<marker id="uInh" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1,1 L11,6 L1,11 z" class="mk-hollow"/></marker>
+<marker id="uComp" viewBox="0 0 16 10" refX="1" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 z" class="mk-fill"/></marker>
+<marker id="uArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" class="mk-open"/></marker>
+<marker id="uSolid" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-fill"/></marker>
+</defs><path d="M4,7 H50" class="ue" marker-end="url(#uInh)"/></svg>상속 (is-a)</span>
+<span><svg viewBox="0 0 56 14" class="uml"><defs>
+<marker id="uInh" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1,1 L11,6 L1,11 z" class="mk-hollow"/></marker>
+<marker id="uComp" viewBox="0 0 16 10" refX="1" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 z" class="mk-fill"/></marker>
+<marker id="uArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" class="mk-open"/></marker>
+<marker id="uSolid" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-fill"/></marker>
+</defs><path d="M4,7 H50" class="ue" marker-start="url(#uComp)"/></svg>소유 · 컴포지션 (내가 만들고 같이 사라짐)</span>
+<span><svg viewBox="0 0 56 14" class="uml"><defs>
+<marker id="uInh" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1,1 L11,6 L1,11 z" class="mk-hollow"/></marker>
+<marker id="uComp" viewBox="0 0 16 10" refX="1" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 z" class="mk-fill"/></marker>
+<marker id="uArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" class="mk-open"/></marker>
+<marker id="uSolid" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-fill"/></marker>
+</defs><path d="M4,7 H50" class="ue" marker-end="url(#uArr)"/></svg>참조 (포인터로 가리킴)</span>
+<span><svg viewBox="0 0 56 14" class="uml"><defs>
+<marker id="uInh" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1,1 L11,6 L1,11 z" class="mk-hollow"/></marker>
+<marker id="uComp" viewBox="0 0 16 10" refX="1" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 z" class="mk-fill"/></marker>
+<marker id="uArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" class="mk-open"/></marker>
+<marker id="uSolid" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-fill"/></marker>
+</defs><path d="M4,7 H50" class="ud" marker-end="url(#uArr)"/></svg>의존 · 호출 «call»</span>
+</div>
+
+<h3>2-1. 클래스 다이어그램 — 누가 누구를 상속 · 소유 · 호출하나</h3>
+<div class="diagram">
+<svg viewBox="0 0 960 590" class="uml" role="img" aria-label="KMCannon 클래스 다이어그램">
+<defs>
+<marker id="uInh" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1,1 L11,6 L1,11 z" class="mk-hollow"/></marker>
+<marker id="uComp" viewBox="0 0 16 10" refX="1" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 z" class="mk-fill"/></marker>
+<marker id="uArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" class="mk-open"/></marker>
+<marker id="uSolid" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-fill"/></marker>
+</defs>
+<rect x="20" y="20" width="200" height="82" rx="4" class="ub e"/>
+<text x="120.0" y="36" class="us" text-anchor="middle">«engine»</text>
+<text x="120.0" y="52" class="ut" text-anchor="middle">FPAController</text>
+<line x1="20" y1="60" x2="220" y2="60" class="ul e"/>
+<text x="28" y="76" class="um">+ Initialize()</text>
+<text x="28" y="93" class="um">+ BeginPlay()</text>
+<rect x="20" y="120" width="200" height="68" rx="4" class="ub h"/>
+<text x="120.0" y="138" class="ut" text-anchor="middle">GameController</text>
+<line x1="20" y1="146" x2="220" y2="146" class="ul h"/>
+<text x="28" y="162" class="um">+ Initialize()  // Enter 바인딩</text>
+<text x="28" y="179" class="um">+ FireCannon(Value)</text>
+<rect x="20" y="230" width="200" height="65" rx="4" class="ub m"/>
+<text x="120.0" y="246" class="us" text-anchor="middle">«namespace»</text>
+<text x="120.0" y="262" class="ut" text-anchor="middle">API_KMCannon</text>
+<line x1="20" y1="270" x2="220" y2="270" class="ul m"/>
+<text x="28" y="286" class="um">+ FireAll(World) : int</text>
+<rect x="20" y="340" width="200" height="82" rx="4" class="ub h"/>
+<text x="120.0" y="356" class="us" text-anchor="middle">«file»</text>
+<text x="120.0" y="372" class="ut" text-anchor="middle">GameProjectLoader.cpp</text>
+<line x1="20" y1="380" x2="220" y2="380" class="ul h"/>
+<text x="28" y="396" class="um">LoadClassRegist()</text>
+<text x="28" y="413" class="um">LoadAssets()</text>
+<rect x="20" y="450" width="200" height="82" rx="4" class="ub m"/>
+<text x="120.0" y="466" class="us" text-anchor="middle">«namespace»</text>
+<text x="120.0" y="482" class="ut" text-anchor="middle">Loader_KMCannon</text>
+<line x1="20" y1="490" x2="220" y2="490" class="ul m"/>
+<text x="28" y="506" class="um">+ RegisterClasses()</text>
+<text x="28" y="523" class="um">+ LoadAssets()</text>
+<rect x="520" y="20" width="200" height="116" rx="4" class="ub e"/>
+<text x="620.0" y="36" class="us" text-anchor="middle">«engine · abstract»</text>
+<text x="620.0" y="52" class="ut" text-anchor="middle">FPActor</text>
+<line x1="520" y1="60" x2="720" y2="60" class="ul e"/>
+<text x="528" y="76" class="um">+ Initialize() = 0</text>
+<text x="528" y="93" class="um">+ BeginPlay() = 0</text>
+<text x="528" y="110" class="um">+ Tick()</text>
+<text x="528" y="127" class="um">+ GetActorTransform()</text>
+<rect x="270" y="190" width="230" height="144" rx="4" class="ub m"/>
+<text x="385.0" y="208" class="ut" text-anchor="middle">Cannon</text>
+<line x1="270" y1="216" x2="500" y2="216" class="ul m"/>
+<text x="278" y="232" class="um">- Mesh : FPStaticMeshComponent*</text>
+<text x="278" y="249" class="um">- Muzzle : FPActor*</text>
+<text x="278" y="266" class="um">- FireFX : CannonFireFX*</text>
+<line x1="270" y1="275" x2="500" y2="275" class="ul m"/>
+<text x="278" y="291" class="um">+ Initialize()</text>
+<text x="278" y="308" class="um">+ BeginPlay()  // 배·소켓 부착</text>
+<text x="278" y="325" class="um">+ Fire()</text>
+<rect x="520" y="190" width="170" height="68" rx="4" class="ub m"/>
+<text x="605.0" y="208" class="ut" text-anchor="middle">CannonSocket</text>
+<line x1="520" y1="216" x2="690" y2="216" class="ul m"/>
+<text x="528" y="232" class="um">+ Initialize() {}</text>
+<text x="528" y="249" class="um">+ BeginPlay() {}</text>
+<rect x="710" y="190" width="230" height="178" rx="4" class="ub m"/>
+<text x="825.0" y="208" class="ut" text-anchor="middle">CannonFireFX</text>
+<line x1="710" y1="216" x2="940" y2="216" class="ul m"/>
+<text x="718" y="232" class="um">- Root : FPSceneComponent*</text>
+<text x="718" y="249" class="um">- Smoke : Puff[32]</text>
+<text x="718" y="266" class="um">- FlashFront/Side : StaticMesh*</text>
+<text x="718" y="283" class="um">- FlashLight : FPPointLightComp*</text>
+<line x1="710" y1="292" x2="940" y2="292" class="ul m"/>
+<text x="718" y="308" class="um">+ Initialize()</text>
+<text x="718" y="325" class="um">+ BeginPlay()</text>
+<text x="718" y="342" class="um">+ Tick()</text>
+<text x="718" y="359" class="um">+ Fire(Pos, Dir)</text>
+<rect x="740" y="470" width="200" height="99" rx="4" class="ub m"/>
+<text x="840.0" y="486" class="us" text-anchor="middle">«struct»</text>
+<text x="840.0" y="502" class="ut" text-anchor="middle">Puff</text>
+<line x1="740" y1="510" x2="940" y2="510" class="ul m"/>
+<text x="748" y="526" class="um">Mesh, Pos, Vel</text>
+<text x="748" y="543" class="um">Age, Life, Size, Rot</text>
+<text x="748" y="560" class="um">bLive</text>
+<rect x="270" y="470" width="230" height="40" rx="4" class="ub e"/>
+<text x="385.0" y="486" class="us" text-anchor="middle">«engine»</text>
+<text x="385.0" y="502" class="ut" text-anchor="middle">FPStaticMeshComponent</text>
+<rect x="520" y="470" width="190" height="40" rx="4" class="ub e"/>
+<text x="615.0" y="486" class="us" text-anchor="middle">«engine»</text>
+<text x="615.0" y="502" class="ut" text-anchor="middle">FPPointLightComponent</text>
+<path d="M385,190 V165 H825 V190 M605,190 V165" class="ue"/>
+<path d="M620,165 V136" class="ue" marker-end="url(#uInh)"/>
+<text x="630" y="160" class="ulb" text-anchor="start">상속</text>
+<path d="M120,120 V102" class="ue" marker-end="url(#uInh)"/>
+<path d="M385,334 V470" class="ue" marker-start="url(#uComp)"/>
+<text x="392" y="374" class="ulb" text-anchor="start">Mesh  1</text>
+<path d="M500,215 H518" class="ue" marker-end="url(#uArr)"/>
+<text x="510" y="184" class="ulb" text-anchor="middle">Muzzle</text>
+<path d="M460,334 V390 H760 V370" class="ue" marker-end="url(#uArr)"/>
+<text x="470" y="404" class="ulb" text-anchor="start">FireFX (BeginPlay에서 찾아 참조)</text>
+<path d="M840,368 V470" class="ue" marker-start="url(#uComp)"/>
+<text x="848" y="408" class="ulb" text-anchor="start">32</text>
+<path d="M720,368 V418 H640 V470" class="ue" marker-start="url(#uComp)"/>
+<text x="648" y="432" class="ulb" text-anchor="start">FlashLight 1</text>
+<path d="M120,188 V228" class="ud" marker-end="url(#uArr)"/>
+<text x="128" y="218" class="ulb" text-anchor="start">«call» FireAll</text>
+<path d="M120,422 V448" class="ud" marker-end="url(#uArr)"/>
+<text x="128" y="440" class="ulb" text-anchor="start">«call»</text>
+<path d="M220,275 H245 V240 H268" class="ud" marker-end="url(#uArr)"/>
+<text x="224" y="232" class="ulb" text-anchor="start">«call»</text>
+<path d="M220,500 H256 V312 H268" class="ud" marker-end="url(#uArr)"/>
+<text x="226" y="520" class="ulb" text-anchor="start">«register» Cannon · Socket · FireFX</text>
+</svg>
+</div>
+<ul>
+<li>대포 · 소켓 · FX 세 클래스는 모두 엔진 <code>FPActor</code>를 상속합니다. 그래서 레벨 JSON의 <code>"class"</code> 이름만으로 엔진이 만들어 줍니다.</li>
+<li><code>Cannon</code>은 메쉬를 <b>소유</b>(◆, Initialize에서 new)하고, 소켓 · FX는 <b>참조</b>(→, BeginPlay에서 이름 · 클래스로 찾음)만 합니다. 소켓 · FX는 레벨에 따로 있는 액터라서입니다.</li>
+<li>호스트는 점선(«call»)으로 창구 두 개에만 의존합니다. 내부 클래스(<code>Cannon</code> 등)를 직접 include하는 호스트 코드는 없습니다.</li>
+<li><code>CannonFireFX</code>는 섬광 판 2장(FlashFront/Side)도 소유하지만, 그림이 복잡해져서 선은 생략했습니다.</li>
+</ul>
+
+<h3>2-2. 시퀀스 다이어그램 — Enter를 눌렀을 때</h3>
+<div class="diagram">
+<svg viewBox="0 0 960 480" class="uml" role="img" aria-label="Enter 발사 시퀀스 다이어그램">
+<defs>
+<marker id="sInh" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1,1 L11,6 L1,11 z" class="mk-hollow"/></marker>
+<marker id="sComp" viewBox="0 0 16 10" refX="1" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 z" class="mk-fill"/></marker>
+<marker id="sArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" class="mk-open"/></marker>
+<marker id="sSolid" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-fill"/></marker>
+</defs>
+<rect x="22" y="20" width="136" height="34" rx="4" class="ub e"/>
+<text x="90" y="42" class="ut" text-anchor="middle">InputSystem</text>
+<line x1="90" y1="54" x2="90" y2="470" class="ulife"/>
+<rect x="177" y="20" width="136" height="34" rx="4" class="ub h"/>
+<text x="245" y="42" class="ut" text-anchor="middle">GameController</text>
+<line x1="245" y1="54" x2="245" y2="470" class="ulife"/>
+<rect x="332" y="20" width="136" height="34" rx="4" class="ub m"/>
+<text x="400" y="42" class="ut" text-anchor="middle">API_KMCannon</text>
+<line x1="400" y1="54" x2="400" y2="470" class="ulife"/>
+<rect x="487" y="20" width="136" height="34" rx="4" class="ub m"/>
+<text x="555" y="42" class="ut" text-anchor="middle">Cannon</text>
+<line x1="555" y1="54" x2="555" y2="470" class="ulife"/>
+<rect x="642" y="20" width="136" height="34" rx="4" class="ub m"/>
+<text x="710" y="42" class="ut" text-anchor="middle">CannonSocket</text>
+<line x1="710" y1="54" x2="710" y2="470" class="ulife"/>
+<rect x="797" y="20" width="136" height="34" rx="4" class="ub m"/>
+<text x="865" y="42" class="ut" text-anchor="middle">CannonFireFX</text>
+<line x1="865" y1="54" x2="865" y2="470" class="ulife"/>
+<rect x="240" y="92" width="10" height="348" class="uact"/>
+<rect x="395" y="132" width="10" height="300" class="uact"/>
+<rect x="550" y="232" width="10" height="168" class="uact"/>
+<path d="M90,92 H241" class="ue" marker-end="url(#sSolid)"/>
+<text x="167.5" y="86" class="ulb" text-anchor="middle">① FireCannon()  [Enter]</text>
+<path d="M245,132 H396" class="ue" marker-end="url(#sSolid)"/>
+<text x="322.5" y="126" class="ulb" text-anchor="middle">② FireAll(World)</text>
+<path d="M400,160 H434 V178 H404" class="ue" marker-end="url(#sSolid)"/>
+<text x="440" y="173" class="ulb" text-anchor="start">③ GetAllActorsOfClass(&quot;Cannon&quot;)</text>
+<rect x="340" y="205" width="595" height="210" rx="4" class="uframe"/>
+<path d="M340,205 h86 v14 l-8,8 h-78 z" class="uframetag"/>
+<text x="346" y="220" class="ulb" text-anchor="start">loop  [대포마다]</text>
+<path d="M400,240 H551" class="ue" marker-end="url(#sSolid)"/>
+<text x="477.5" y="234" class="ulb" text-anchor="middle">④ Fire()</text>
+<path d="M555,272 H706" class="ue" marker-end="url(#sSolid)"/>
+<text x="632.5" y="266" class="ulb" text-anchor="middle">⑤ GetActorTransform()</text>
+<path d="M710,302 H559" class="ud" marker-end="url(#sArr)"/>
+<text x="632.5" y="296" class="ulb" text-anchor="middle">FTransform (월드 위치·회전)</text>
+<path d="M555,320 H589 V338 H559" class="ue" marker-end="url(#sSolid)"/>
+<text x="595" y="333" class="ulb" text-anchor="start">⑥ Dir = Rotate(q, +Y)</text>
+<path d="M555,380 H861" class="ue" marker-end="url(#sSolid)"/>
+<text x="710.0" y="374" class="ulb" text-anchor="middle">⑦ Fire(Pos, Dir)</text>
+<path d="M400,432 H249" class="ud" marker-end="url(#sArr)"/>
+<text x="322.5" y="426" class="ulb" text-anchor="middle">쏜 개수 (int)</text>
+<text x="950" y="402" class="ulb" text-anchor="end">섬광·빛 켜기, 연기 판 EmitSmoke</text>
+<text x="950" y="456" class="ulb" text-anchor="end">다음 프레임부터 CannonFireFX::Tick 이 갱신</text>
+</svg>
+</div>
+<ul>
+<li>실선 화살표 = 호출, 점선 화살표 = 돌려받는 값, 세로 막대 = 그 함수가 실행 중인 구간입니다.</li>
+<li>⑤ 소켓의 월드 트랜스폼은 이미 지난 Tick에서 부모(대포)를 따라 계산돼 있으므로, 쏠 때는 읽기만 합니다.</li>
+<li>⑦ 이후의 연기 이동 · 섬광 꺼짐은 이 호출 안이 아니라 매 프레임 <code>CannonFireFX::Tick()</code>에서 일어납니다 (4장 ⑤ 참고).</li>
+</ul>
+
+<h2>3. 연결 지점 — 호스트가 쓰는 줄은 딱 이것뿐</h2>
+<pre><span style="color:var(--sub)">// GameProjectLoader.cpp</span>
+#include "KMCannon/Loader_KMCannon.h"
+
+void LoadClassRegist()
+{
+    ...호스트 클래스 등록...
+    Loader_KMCannon::RegisterClasses();   <span style="color:var(--sub)">// Cannon · CannonSocket · CannonFireFX</span>
+}
+
+void LoadAssets()
+{
+    Loader_KMCannon::LoadAssets();        <span style="color:var(--sub)">// 대포 메쉬 + 발사 FX 에셋</span>
+    ...호스트 에셋...
+}
+
+<span style="color:var(--sub)">// GameController.cpp</span>
+#include "KMCannon/API_KMCannon.h"
+
+void GameController::FireCannon(FInputValue Value)
+{
+    API_KMCannon::FireAll(GetWorld());
+}</pre>
+<p>이 세 줄이 연결의 전부입니다. 모듈 안에서 클래스를 하나 더 만들어 <code>RegisterClasses()</code>에 넣거나, 텍스처를 <code>LoadAssets()</code>에 넣어도 호스트는 그대로입니다.</p>
+
+<h2>4. 전체 호출 스택 — 언제, 어디서, 무엇이 불리나</h2>
+<p>엔진 <code>ForestPearlEngine.cpp</code> · <code>FPWorld.cpp</code> · <code>FPGameInstance.cpp</code>를 따라간 실제 순서입니다. 들여쓰기 = 안쪽 호출.</p>
+
+<section class="phase">
+<header><b>① 시작 준비 — <code>ForestPearlEngine::PreInitialize()</code></b><small>프로그램 시작 시 1번</small></header>
+<ul class="stack">
+<li class="e l1"><code>ForestPearlEngine::PreInitialize()</code></li>
+<li class="h l2"><code>RegistProjectName()</code> <span class="note">— 프로젝트 이름 "KM_Cannon" → 에셋 경로 결정, GameSetting.json</span></li>
+<li class="e l2">창 · 렌더러 생성, <code>LoadEngineAssets()</code> <span class="note">— Plane_StaticMesh 같은 엔진 기본 에셋</span></li>
+<li class="h l2"><code>LoadLevel()</code> → <code>LoadLevelData("KM_Cannon.json")</code></li>
+<li class="d l3">KM_Cannon.json을 <b>데이터로만</b> 읽음 <span class="note">— class 이름 · name · transform 목록 (아직 객체 없음)</span></li>
+<li class="h l2"><code>LoadClassRegist()</code></li>
+<li class="h l3">호스트 클래스 등록 (GameMode, Ship, Grid …)</li>
+<li class="m l3"><code>Loader_KMCannon::RegisterClasses()</code></li>
+<li class="m l4"><code>Register&lt;Cannon&gt;("Cannon")</code> · <code>Register&lt;CannonSocket&gt;</code> · <code>Register&lt;CannonFireFX&gt;</code> <span class="note">— 문자열 → 생성 함수 표</span></li>
+<li class="h l2"><code>LoadAssets()</code></li>
+<li class="m l3"><code>Loader_KMCannon::LoadAssets()</code></li>
+<li class="d l4">BlenderCannonPixelShader · Canon_T2 텍스처 4장 · 머티리얼 · <code>Canon_1_StaticMesh</code></li>
+<li class="d l4">FXParticle VS/PS · <code>BS_FX_ALPHA</code> · <code>BS_FX_ADD</code> · FX 텍스처 3장 · FX 머티리얼 3개</li>
+<li class="h l3">호스트 에셋 (Terrain, Ship …)</li>
+<li class="e l2"><code>AssetManager-&gt;AllAssetDataCreate()</code> <span class="note">— 읽어 둔 JSON으로 GPU 리소스 실제 생성</span></li>
+</ul>
+</section>
+
+<section class="phase">
+<header><b>② 레벨 열기 — <code>FPWorld::OpenLevel("KM_Cannon")</code></b><small>1번</small></header>
+<ul class="stack">
+<li class="e l1"><code>ForestPearlEngine::Initialize()</code> → <code>FPGameInstance::OpenLevel</code> → <code>FPWorld::OpenLevel</code></li>
+<li class="e l2">GameMode 생성 (레벨 데이터의 GameMode 이름으로)</li>
+<li class="e l2">레벨 데이터 한 줄마다 반복:</li>
+<li class="e l3"><code>CreateClassInstnce("Cannon")</code> <span class="note">— ①에서 등록한 표로 new Cannon</span></li>
+<li class="d l3"><code>SetActorName("Cannon01")</code> · <code>SetActorLocation/Rotation/Scale3D</code> <span class="note">— JSON 값</span></li>
+<li class="d l3">같은 방식으로 <code>Cannon01_Muzzle</code>(CannonSocket) · <code>CannonFireFX01</code></li>
+</ul>
+</section>
+
+<section class="phase">
+<header><b>③ 초기화 — <code>FPWorld::Initialize()</code></b><small>1번, 컴포넌트 만들기</small></header>
+<ul class="stack">
+<li class="e l1"><code>FPWorld::Initialize()</code></li>
+<li class="h l2"><code>GameMode-&gt;Initialize()</code> → <code>GameController::Initialize()</code></li>
+<li class="h l3"><code>AddMappingKey("IA_FireCannon", VK_RETURN)</code> · <code>BindMethod(..., &amp;GameController::FireCannon)</code> <span class="note">— Enter ↔ 함수 연결</span></li>
+<li class="e l2">모든 액터 <code>actor-&gt;Initialize()</code></li>
+<li class="m l3"><code>Cannon::Initialize()</code> <span class="note">— FPStaticMeshComponent("Canon_1_StaticMesh")를 루트로</span></li>
+<li class="m l3"><code>CannonSocket::Initialize()</code> <span class="note">— 빈 함수 (위치 · 회전만 가진 액터)</span></li>
+<li class="m l3"><code>CannonFireFX::Initialize()</code></li>
+<li class="m l4">루트 SceneComponent · 연기 판 32장 · 섬광 판 2장 (<code>MakeQuad</code> → <code>MakeMaterial</code>) · 점광원(꺼둠)</li>
+</ul>
+</section>
+
+<section class="phase">
+<header><b>④ 시작 — <code>FPWorld::BeginPlay()</code></b><small>1번, 서로 찾아서 연결</small></header>
+<ul class="stack">
+<li class="e l1"><code>FPWorld::BeginPlay()</code> → GameMode → 모든 액터 <code>BeginPlay()</code></li>
+<li class="m l2"><code>Cannon::BeginPlay()</code></li>
+<li class="m l3"><code>GetActorOfClass("CannonFireFX")</code> → <code>FireFX</code> 저장</li>
+<li class="m l3"><code>GetActorOfClass("Ship")</code> — 있으면 <code>AttachToActor(Ship)</code> + 상대 위치 (2.8, 3.45, -8) · 크기 0.33 <span class="note">— 없으면 건너뜀</span></li>
+<li class="m l3"><code>GetAllActorsOfClass("CannonSocket")</code> 중 이름이 <code>"Cannon01" + "_Muzzle"</code>인 것</li>
+<li class="m l4"><code>AttachKeepWorld(Muzzle, Mesh)</code> <span class="note">— 월드 값 저장 → 부착 → SetActorLocation/Rotation/Scale로 월드 값 복원 = 상대값 재계산</span></li>
+<li class="m l2"><code>CannonFireFX::BeginPlay()</code> <span class="note">— 자신을 월드 원점에 (자식 상대 위치 = 월드 위치)</span></li>
+</ul>
+</section>
+
+<section class="phase">
+<header><b>⑤ 매 프레임 — <code>ForestPearlEngine::GameLoop()</code></b><small>계속 반복</small></header>
+<ul class="stack">
+<li class="e l1"><code>FPGameInstance::Tick()</code></li>
+<li class="e l2"><code>TickInputSystem()</code> — Enter <b>Down</b> 감지</li>
+<li class="h l3"><code>GameController::FireCannon(Value)</code></li>
+<li class="m l4"><code>API_KMCannon::FireAll(World)</code> → <code>GetAllActorsOfClass("Cannon")</code></li>
+<li class="m l5"><code>Cannon::Fire()</code> — <code>Muzzle-&gt;GetActorTransform()</code> → Pos, <code>Dir = Rotate(q, +Y)</code></li>
+<li class="m l5"><code>CannonFireFX::Fire(Pos, Dir)</code> — 섬광 시간 · 빛 켜기 · 연기 판 <code>EmitSmoke</code></li>
+<li class="e l2"><code>GameTimer-&gt;Tick()</code> — DeltaTime</li>
+<li class="e l2"><code>FPWorld::Tick()</code> → GameMode → 모든 액터 <code>Tick()</code></li>
+<li class="m l3"><code>CannonFireFX::Tick()</code> → <code>UpdateSmoke(dt)</code> · <code>UpdateMuzzle(dt)</code> → <code>__super::Tick()</code></li>
+<li class="e l3">SceneComponent Tick — 부모가 있으면 상대값으로 월드 재계산 <span class="note">— 그래서 소켓이 배 · 대포를 따라감</span></li>
+<li class="e l1"><code>Render-&gt;Create…RenderList()</code> → 렌더 패스 → Present</li>
+</ul>
+</section>
+
+<h2>5. 데이터가 흐르는 길</h2>
+<table>
+<tr><th>데이터</th><th>어디에 적혀 있나</th><th>언제 읽히나</th><th>누가 쓰나</th></tr>
+<tr><td>클래스 이름 <code>"Cannon"</code> 등</td><td><span class="tag m">Loader_KMCannon.cpp</span> + <span class="tag d">KM_Cannon.json</span></td><td>① 등록 / ② 생성</td><td>엔진 ClassRegistry</td></tr>
+<tr><td>에셋 이름 <code>"FX_Smoke_Material"</code> 등</td><td><span class="tag m">Loader_KMCannon.cpp</span> · Assets/*.json</td><td>① LoadAssets</td><td>Cannon · CannonFireFX의 Initialize</td></tr>
+<tr><td>총구 위치 · 회전</td><td><span class="tag d">KM_Cannon.json</span> <code>Cannon01_Muzzle</code></td><td>② OpenLevel</td><td>④ AttachKeepWorld → ⑤ Fire()</td></tr>
+<tr><td>발사 방향 축</td><td><span class="tag m">Cannon.cpp</span> <code>MUZZLE_FORWARD (0,1,0)</code></td><td>⑤ Fire()</td><td>CannonFireFX::Fire(Dir)</td></tr>
+<tr><td>Enter 키</td><td><span class="tag h">GameController.cpp</span></td><td>③ Initialize 바인딩 / ⑤ 입력</td><td>API_KMCannon::FireAll</td></tr>
+</table>
+
+<h2>6. 늘릴 때 — 어디만 고치나</h2>
+<h3>밖에서 부를 기능 추가 (예: 이름으로 한 대만 쏘기)</h3>
+<pre><span style="color:var(--sub)">// API_KMCannon.h — 선언 한 줄</span>
+bool Fire(FPWorld* World, const std::string&amp; CannonName);
+
+<span style="color:var(--sub)">// API_KMCannon.cpp — 몸통</span>
+bool API_KMCannon::Fire(FPWorld* World, const std::string&amp; CannonName)
+{
+    std::vector&lt;FPActor*&gt; Cannons;
+    FPGameplayStatics::GetAllActorsOfClass(World, "Cannon", Cannons);
+    for (FPActor* Actor : Cannons)
+        if (Actor-&gt;GetName() == CannonName) { static_cast&lt;Cannon*&gt;(Actor)-&gt;Fire(); return true; }
+    return false;
+}
+
+<span style="color:var(--sub)">// 호스트 : 이미 API_KMCannon.h 를 include 했으니 바로</span>
+API_KMCannon::Fire(GetWorld(), "Cannon01");</pre>
+
+<h3>새 클래스 · 에셋 추가</h3>
+<p><code>Loader_KMCannon.cpp</code>의 <code>RegisterClasses()</code> / <code>LoadAssets()</code>에 한 줄씩 넣고, 새 .h/.cpp는 <code>KMCannon/</code>에 둡니다. 호스트의 <code>GameProjectLoader.cpp</code>는 그대로입니다.</p>
+
+<h2>7. 다른 프로젝트로 옮기는 체크리스트</h2>
+<div class="card">
+<ol class="check">
+<li><b>코드</b> — <code>KMCannon/</code> 폴더를 복사하고 .vcxproj에 8개 파일 추가 (필터 "KMCannon").</li>
+<li><b>에셋</b> — 종류별 폴더 안의 <code>KM/</code> 하위 폴더 8곳을 그대로 복사합니다. 이 프로젝트 전용 에셋은 섞여 있지 않습니다.
+<pre>Assets/Shader/KM/            FXParticle VS·PS, BlenderCannonPixelShader (.json)
+Assets/ShaderResource/KM/    위 셰이더 원본 (.psh / .vsh)
+Assets/BlendState/KM/        BS_FX_ALPHA, BS_FX_ADD
+Assets/Texture/KM/           FX/, Canon_T2/ (.json)
+Assets/TextureResource/KM/   FX/, Canon_T2/ (이미지)
+Assets/Material/KM/          FX/, Canon_T2/
+Assets/StaticMesh/KM/        Canon_T2/Canon_1_StaticMesh.json
+Assets/Model/KM/             Canon_T2/Canon_T2.fbx</pre>
+  .vcxproj에는 셰이더 3개의 FxCompile 항목(<code>Assets\ShaderResource\KM\…</code>, 출력은 <code>Assets\ShaderResource\bin\%(Filename)</code>)을 추가합니다. 컴파일 결과(.pso/.vso)는 빌드할 때 <code>bin</code>에 생기므로 복사하지 않아도 됩니다.</li>
+<li><b>호스트 연결 3줄</b> — 3장의 <code>RegisterClasses()</code> · <code>LoadAssets()</code> · <code>FireAll()</code>.</li>
+<li><b>레벨 JSON</b> — <code>Cannon</code>, <code>CannonSocket</code>(이름 = 대포이름 + <code>_Muzzle</code>), <code>CannonFireFX</code> 액터 3개를 그 프로젝트 레벨에 추가.</li>
+</ol>
+</div>
+
+<h3>아직 남은 한계</h3>
+<ul>
+<li>레벨 JSON의 액터 3개는 손으로 옮겨야 합니다. 엔진이 레벨 파일 하나만 읽기 때문이고, 모듈 안에서 <code>SpawnActor</code>로 만들 수는 있지만 그러면 총구 위치를 JSON으로 맞추는 장점이 사라집니다.</li>
+<li>배에 붙는 상대 위치 (2.8, 3.45, -8)는 <code>Cannon.cpp</code>에 고정입니다. 배가 없는 프로젝트에서는 레벨 JSON의 대포 위치가 그대로 쓰입니다.</li>
+<li>에셋은 <code>KM/</code> 하위 폴더에 있어서 호스트 에셋과 폴더가 겹치지 않습니다. 단, 엔진은 에셋을 JSON 안의 <code>"Name"</code>으로 찾으므로 호스트에 같은 이름의 에셋(예: <code>FX_Smoke_Material</code>)이 있으면 충돌합니다.</li>
+</ul>
+
+</main>
+</body>
+</html>

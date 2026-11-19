@@ -33,6 +33,20 @@ void Cannon::BeginPlay()
 	FireFX = static_cast<CannonFireFX*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "CannonFireFX"));
 	Balls = static_cast<CannonBall*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "CannonBall"));
 
+	//총구 소켓을 먼저 붙임 : 레벨 JSON 의 대포 · 소켓 자리 관계 그대로 대포의 자식이 됨
+	//→ 아래에서 대포를 배 위 어디로 옮기든 총구 · 이펙트가 같이 따라감 (소켓 좌표를 다시 맞출 필요 없음)
+	std::vector<FPActor*> Sockets;
+	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "CannonSocket", Sockets);
+	for (FPActor* Socket : Sockets)
+	{
+		if (Socket->GetName() == GetName() + MUZZLE_SUFFIX)
+		{
+			Muzzle = Socket;
+			AttachKeepWorld(Muzzle, Mesh);
+			break;
+		}
+	}
+
 	FPActor* ShipActor = FPGameplayStatics::GetActorOfClass(GetWorld(), "Ship");
 
 	//배가 있으면 배에 붙임 (배 없는 프로젝트에서도 대포 · 총구 · 발사는 동작)
@@ -44,19 +58,6 @@ void Cannon::BeginPlay()
 		Mesh->SetRelativeLocation({ 2.8f, 3.45f, -8.0f });
 		Mesh->SetRelativeRotation({ 0.0f, 0.0f, 0.0f });
 		Mesh->SetRelativeScale3D({ 0.33f, 0.33f, 0.33f });
-	}
-
-	//대포 자리가 정해진 뒤에 총구 소켓을 붙임 (레벨에 적은 월드 좌표 = 이 순간의 대포 기준)
-	std::vector<FPActor*> Sockets;
-	FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "CannonSocket", Sockets);
-	for (FPActor* Socket : Sockets)
-	{
-		if (Socket->GetName() == GetName() + MUZZLE_SUFFIX)
-		{
-			Muzzle = Socket;
-			AttachKeepWorld(Muzzle, Mesh);
-			break;
-		}
 	}
 }
 

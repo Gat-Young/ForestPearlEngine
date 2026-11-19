@@ -95,9 +95,11 @@ int Frigate::Fire(API_KMCannon::ESide Side)
 		FPVector3 Pos = Ship.Location + Rotate(Ship.QuaternionRotation, Scaled);
 		FPVector3 Dir = Rotate(Ship.QuaternionRotation * M.Rot, MUZZLE_FORWARD).Normalize();
 
-		if (FireFX != nullptr) FireFX->Fire(Pos, Dir);
+		if (FireFX != nullptr) FireFX->Fire(Pos, Dir);		//섬광 + 연기 + 빛, 포구마다
 		if (Balls != nullptr) Balls->Launch(Pos, Dir);
 		++Count;
+
 	}
+
 	return Count;
 }

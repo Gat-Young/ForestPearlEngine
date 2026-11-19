@@ -1,23 +1,22 @@
-#include "GameController.h"
+Ôªø#include "GameController.h"
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
 #include "ForestPearlEngine/Object/FPPawn.h"
 #include "ForestPearlEngine/Utility/FPGameplayStatics.h"
 
-//Fill/ Cull¿ª ¿ß«ÿ ø£¡¯¿ª ∞°¡Æø¬
+//Fill/ CullÏùÑ ÏúÑÌï¥ ÏóîÏßÑÏùÑ Í∞ÄÏ†∏Ïò®
 #include "ForestPearlEngine/ForestPearlEngine.h"
 
-//UI √≥∏Æ
+//UI Ï≤òÎ¶¨
 #include "UI.h"
 #include "Axis.h"
 #include "Grid.h"
 
-//Directional Light ∫Ø∞Ê
+//Directional Light Î≥ÄÍ≤Ω
 #include "ADirectionalLight.h"
 
-//∞Ë¿˝ √≥∏Æ
+//Í≥ÑÏ†à Ï≤òÎ¶¨
 #include "Terrain.h"
 #include "KMCannon/Input_KMCannon.h"
-
 
 #include <iostream>
 
@@ -55,7 +54,7 @@ void GameController::Initialize()
 
 	GetInputComponent().AddMappingKey("IA_ZoomCamera", static_cast<USHORT>(CUSTOM_MOUSE_INPUT::MOUSE_WHEEL), ModifyInfoA);
 
-	// Axis : Game Pad 
+	// Axis : Game Pad
 	GetInputComponent().AddMappingKey("IA_SetMoveTriangel", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_LSTICK), ModifyInfoD);
 	GetInputComponent().AddMappingKey("IA_SetMoveCamera", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_RSTICK), ModifyInfoD);
 
@@ -88,22 +87,20 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_SetDirectionLightColor", VK_F7, ModifyInfoTriger);
 	GetInputComponent().AddMappingKey("IA_SetSeason", VK_F8, ModifyInfoTriger);
 
-
 	GetInputComponent().AddMappingKey("IA_AttachHead", 'Z', ModifyInfoTriger);
 	GetInputComponent().AddMappingKey("IA_AttachShield", 'X', ModifyInfoTriger);
 
 	Input_KMCannon::AddMappings(GetInputComponent());	//KMCannon : Enter, 1, 2, 3
 
-	//D-PAD LEFT/RIGHT Posses ¿¸»Ø
+	//D-PAD LEFT/RIGHT Posses Ï†ÑÌôò
 	GetInputComponent().AddMappingKey("IA_NextActor", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_DPAD_RIGHT), ModifyInfoTriger); //RIGHT
 	GetInputComponent().AddMappingKey("IA_PrevActor", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_DPAD_LEFT), ModifyInfoTriger); //LEFT
 
-
-	//Posses πŸ¿Œµ˘
+	//Posses Î∞îÏù∏Îî©
 	GetInputComponent().BindMethod("IA_NextActor", this, EKeyState::Down, &GameController::NextPawn);
 	GetInputComponent().BindMethod("IA_PrevActor", this, EKeyState::Down, &GameController::PrevPawn);
 
-	//Fill / Cull πŸ¿Œµ˘
+	//Fill / Cull Î∞îÏù∏Îî©
 	GetInputComponent().BindMethod("IA_SetFillTriangel", this, EKeyState::Down, &GameController::SetFillTriangel);
 	GetInputComponent().BindMethod("IA_SetCullTriangel", this, EKeyState::Down, &GameController::SetCullTriangle);
 
@@ -114,7 +111,7 @@ void GameController::Initialize()
 	GetInputComponent().BindMethod("IA_SetAxis", this, EKeyState::Down, &GameController::SetAxisOn);
 	GetInputComponent().BindMethod("IA_SetNormalLine", this, EKeyState::Down, &GameController::SetNormalLine);
 
-	//Direction Light πŸ¿Œµ˘
+	//Direction Light Î∞îÏù∏Îî©
 	GetInputComponent().BindMethod("IA_SetDirectionLightColor", this, EKeyState::Down, &GameController::SetDirectionalLight);
 
 	//Cannon Fire (Enter)
@@ -153,7 +150,7 @@ void GameController::PrevPawn(FInputValue value)
 }
 
 void GameController::SetFillTriangel(FInputValue Value)
-{	
+{
 	bisFill = !bisFill;
 	std::cout << "Controller" << bisFill << "\n";
 	ForestPearlEngine::GetGameEngine().SetbFill(bisFill);
@@ -244,7 +241,6 @@ void GameController::SetAxisOn(FInputValue Value)
 	}
 	ActorList.clear();
 }
-
 
 void GameController::SetNormalLine(FInputValue Value)
 {

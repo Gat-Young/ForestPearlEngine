@@ -18,7 +18,8 @@ class FPPointLightComponent;
 //           일제 사격(배 포구 34개) 때도 포구마다 자기 자리 · 방향에 섬광 + 연기
 //  2. 연기 : 알파 섞기 · 깊이 쓰기 끔, 주황 → 회색, 퍼지며 사라짐
 //  3. 섬광 : 더하기 섞기, 0.1초 동안 정면 별(보통 빌보드) + 옆 불꽃(늘인 빌보드) → 어느 각도에서 봐도 한쪽은 보임
-//  4. 빛   : 점광원 하나 0.3초, 세기 5 → 0, 마지막에 쏜 포구 자리 (엔진 조명 개수 한도 때문에 포구마다 두지 않음)
+//  4. 빛   : 점광원 LIGHT_MAX 개를 돌려씀, 포구마다 1개 (총구 조금 앞), 0.3초 동안 세기 FLASH_POWER → 0
+//           ponytail: 일제 사격 = 점광원 34개가 0.3초 동안 모든 픽셀에서 계산됨 (무거움). 느리면 뱃전마다 1개로 묶기
 //
 class CannonFireFX : public FPActor
 {
@@ -48,8 +49,15 @@ class CannonFireFX : public FPActor
 		Puff Smoke[SMOKE_MAX];
 
 		Flash Flashes[FLASH_MAX];
-		FPPointLightComponent* FlashLight = nullptr;
-		float LightT = 0;		//빛 남은 시간
+		struct Light
+		{
+			FPPointLightComponent* Comp = nullptr;
+			float T = 0;			//빛 남은 시간
+		};
+
+		static constexpr int LIGHT_MAX = 40;	//포구 34 + 여유 (엔진 한도 64, 꺼진 빛은 안 셈)
+
+		Light Lights[LIGHT_MAX];
 
 		FPStaticMeshComponent* MakeQuad(const char* MaterialName, int Priority);
 		Puff* EmitSmoke(const FPVector3& Pos);
@@ -61,6 +69,9 @@ class CannonFireFX : public FPActor
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
 
-		//쏜 순간 한 번 : Pos = 총구 (월드), Dir = 포신 방향 (월드, 정규화)
-		void Fire(const FPVector3& Pos, const FPVector3& Dir);
+		//쏜 순간 한 번 : Pos = 총구 (월드), Dir = 포신 방향 (월드, 정규화), bLight = 이 자리에 빛도 켬
+		void Fire(const FPVector3& Pos, const FPVector3& Dir, bool bLight = true);
+
+		//빛만 켬 (빈 칸, 없으면 가장 오래된 칸) : 일제 사격 때 뱃전 가운데에 한 번
+		void FlashLight(const FPVector3& Pos);
 };

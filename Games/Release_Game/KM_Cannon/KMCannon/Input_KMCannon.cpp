@@ -1,4 +1,4 @@
-﻿#include "Input_KMCannon.h"
+#include "Input_KMCannon.h"
 #include "API_KMCannon.h"
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
 
@@ -6,9 +6,9 @@ const char* Input_KMCannon::IA_NAME = "IA_KMCannon";
 
 namespace
 {
-	const USHORT KEY_FIRE  = VK_RETURN;
-	const USHORT KEY_ALL   = '1';
-	const USHORT KEY_LEFT  = '2';
+	const USHORT KEY_FIRE = VK_RETURN;
+	const USHORT KEY_ALL = '1';
+	const USHORT KEY_LEFT = '2';
 	const USHORT KEY_RIGHT = '3';
 
 	bool IsDown(USHORT Key)
@@ -33,5 +33,5 @@ void Input_KMCannon::OnKeyDown(FPWorld* World)
 	if (IsDown(KEY_ALL))        API_KMCannon::FireBroadside(World, API_KMCannon::ESide::All);
 	else if (IsDown(KEY_LEFT))  API_KMCannon::FireBroadside(World, API_KMCannon::ESide::Left);
 	else if (IsDown(KEY_RIGHT)) API_KMCannon::FireBroadside(World, API_KMCannon::ESide::Right);
-	else                        API_KMCannon::FireAll(World);	//Enter 만
+	//else                        API_KMCannon::FireAll(World);	//Enter 만
 }

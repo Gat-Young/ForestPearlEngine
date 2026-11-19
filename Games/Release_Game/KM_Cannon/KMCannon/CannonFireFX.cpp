@@ -13,21 +13,23 @@
 //보면서 조절할 값들 (Cena 값 그대로 시작)
 namespace
 {
-	const float MUZZLE_TIME  = 0.1f;		//총구 불꽃 보이는 시간 (초)
-	const float FRONT_SIZE   = 1.5f;		//정면 별 크기 (m)
-	const float SIDE_LEN     = 3.0f;		//옆 불꽃 길이 : 640×480 = 4 : 3
-	const float SIDE_WIDTH   = 2.25f;
-	const float SIDE_BACK    = 0.3f;		//옆 불꽃 왼쪽 꽃잎을 총구 뒤로 이만큼
+	const float MUZZLE_TIME = 0.1f;		//총구 불꽃 보이는 시간 (초)
+	const float FRONT_SIZE = 1.5f;		//정면 별 크기 (m)
+	const float SIDE_LEN = 3.0f;		//옆 불꽃 길이 : 640×480 = 4 : 3
+	const float SIDE_WIDTH = 2.25f;
+	const float SIDE_BACK = 0.3f;		//옆 불꽃 왼쪽 꽃잎을 총구 뒤로 이만큼
 
-	const float FLASH_TIME   = 0.3f;		//섬광 빛 시간
-	const float FLASH_POWER  = 5.0f;		//1 넘게 = 순간 과다 노출
+	const float FLASH_TIME = 0.3f;		//섬광 빛 시간
+	const float FLASH_POWER = 15.0f;		//1 넘게 = 순간 과다 노출
 	const FPVector3 FLASH_COL(1.0f, 0.6f, 0.2f);
 
-	const int   SMOKE_BURST  = 12;			//한 번 쏠 때 연기 수
-	const float SMOKE_ALPHA  = 0.6f;		//연기 진하기
+	const int   SMOKE_BURST = 12;			//한 번 쏠 때 연기 수
+	const float SMOKE_ALPHA = 0.6f;		//연기 진하기
 
-	const int   PRIO_SMOKE   = 100;			//불투명 물체(0) 다 그린 뒤
-	const int   PRIO_FLASH   = 110;			//연기 위에 더하기
+	const int   PRIO_SMOKE = 100;			//불투명 물체(0) 다 그린 뒤
+	const int   PRIO_FLASH = 110;			//연기 위에 더하기
+
+	const float LIGHT_FORWARD = 1.0f;		//빛 자리 : 총구에서 쏘는 방향으로 이만큼 앞 (선체 · 포신 안에 묻히지 않게)
 
 	float Rand(float a, float b) { return a + (b - a) * (rand() / (float)RAND_MAX); }
 }
@@ -57,16 +59,19 @@ void CannonFireFX::Initialize()
 	for (Flash& f : Flashes)
 	{
 		f.Front = MakeQuad("FX_MuzzleFront_Material", PRIO_FLASH);
-		f.Side  = MakeQuad("FX_MuzzleSide_Material", PRIO_FLASH);
+		f.Side = MakeQuad("FX_MuzzleSide_Material", PRIO_FLASH);
 	}
 
 	//섬광 빛 : 평소 꺼짐 (횃불과 같은 감쇠 1 / (0.1d + 0.1d²))
-	FlashLight = new FPPointLightComponent(this);
-	FlashLight->SetupAttachment(Root);
 	FPVector4 Attenuation = { 0.0f, 0.1f, 0.1f, 1.0f };
-	FlashLight->SetAttenuation(Attenuation);
-	FlashLight->SetRange(100.0f);
-	FlashLight->SetActive(false);
+	for (Light& l : Lights)
+	{
+		l.Comp = new FPPointLightComponent(this);
+		l.Comp->SetupAttachment(Root);
+		l.Comp->SetAttenuation(Attenuation);
+		l.Comp->SetRange(100.0f);
+		l.Comp->SetActive(false);
+	}
 }
 
 void CannonFireFX::BeginPlay()
@@ -77,7 +82,7 @@ void CannonFireFX::BeginPlay()
 	SetActorScale3D({ 1.0f, 1.0f, 1.0f });
 }
 
-void CannonFireFX::Fire(const FPVector3& Pos, const FPVector3& Dir)
+void CannonFireFX::Fire(const FPVector3& Pos, const FPVector3& Dir, bool bLight)
 {
 	//섬광 : 빈 칸 (없으면 가장 오래된 칸) 에 자리 · 방향 기억
 	Flash* f = &Flashes[0];
@@ -88,9 +93,7 @@ void CannonFireFX::Fire(const FPVector3& Pos, const FPVector3& Dir)
 	f->Dir = Dir;
 	f->Rot = Rand(0, 2 * PI);
 
-	LightT = FLASH_TIME;
-	FlashLight->SetRelativeLocation(Pos);
-	FlashLight->SetActive(true);
+	if (bLight) FlashLight(Pos + Dir * LIGHT_FORWARD);
 
 	//연기 : 포신 방향으로 확 뿜어졌다가 공기 저항으로 멈추고 위로 퍼짐
 	for (int i = 0; i < SMOKE_BURST; i++)
@@ -101,6 +104,16 @@ void CannonFireFX::Fire(const FPVector3& Pos, const FPVector3& Dir)
 		p->Life = Rand(2.0f, 3.5f);
 		p->Size = Rand(0.5f, 0.9f);
 	}
+}
+
+void CannonFireFX::FlashLight(const FPVector3& Pos)
+{
+	Light* l = &Lights[0];
+	for (Light& c : Lights)
+		if (c.T < l->T) l = &c;
+	l->T = FLASH_TIME;
+	l->Comp->SetRelativeLocation(Pos);
+	l->Comp->SetActive(true);
 }
 
 //빈 칸 하나에 새 연기 (빈 칸 없으면 nullptr) : 부르는 쪽에서 속도 · 수명을 덮어씀
@@ -157,13 +170,14 @@ void CannonFireFX::UpdateSmoke(float dTime)
 void CannonFireFX::UpdateMuzzle(float dTime)
 {
 	//빛 : 남은 시간 비율만큼 세기 (power → 0), 다 되면 끔
-	if (LightT > 0)
+	for (Light& l : Lights)
 	{
-		LightT -= dTime;
-		float k = (std::max)(LightT, 0.0f) / FLASH_TIME * FLASH_POWER;
+		if (l.T <= 0) continue;
+		l.T -= dTime;
+		float k = (std::max)(l.T, 0.0f) / FLASH_TIME * FLASH_POWER;
 		FPVector4 LightColor = { FLASH_COL.x * k, FLASH_COL.y * k, FLASH_COL.z * k, 1.0f };
-		FlashLight->SetLightColor(LightColor);
-		if (LightT <= 0) FlashLight->SetActive(false);
+		l.Comp->SetLightColor(LightColor);
+		if (l.T <= 0) l.Comp->SetActive(false);
 	}
 
 	for (Flash& f : Flashes)

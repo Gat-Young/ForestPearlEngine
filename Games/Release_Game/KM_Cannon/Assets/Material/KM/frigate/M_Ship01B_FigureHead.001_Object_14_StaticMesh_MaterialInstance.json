@@ -2,7 +2,7 @@
     "Material": {
         "Name": "M_Ship01B_FigureHead.001_Object_14_StaticMesh_MaterialInstance",
         "VertexShader": "DefaultVertexShader",
-        "PixelShader": "DefaultPixelShader",
+        "PixelShader": "BlenderShipPixelShader",
         "TwoSided": false,
         "BlendState": "BS_ADD",
         "DepthStencilState": "DS_DEPTH_ON",
@@ -37,7 +37,7 @@
                     ],
                     "Material.Roughness": [
                         1.0,
-                        1.0,
+                        0.2,
                         1.0,
                         1.0
                     ],
@@ -67,12 +67,12 @@
         "Samplers": [
             {
                 "Type": "PS",
-                "Parameter": "DiffuseColor",
+                "Parameter": "DiffuseColorSampler",
                 "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
             },
             {
                 "Type": "PS",
-                "Parameter": "NormalMap",
+                "Parameter": "NormalMapSampler",
                 "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
             }
         ]

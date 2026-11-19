@@ -373,9 +373,10 @@ void Ship::Initialize()
 	//카메라 설정
 	SpringArm = new FPSpringArmComponent(this);
 	SpringArm->SetupAttachment(RootComponent);
-	SpringArm->TargetArmLength = 50.0f;
-	SpringArm->SetRelativeLocation({ 0.0f, 1.2f, 0.0f });
-	SpringArm->SetRelativeRotation({ 30.0f, 0.0f, 0.0f });
+	SpringArm->TargetArmLength = 18.0f;
+	SpringArm->SetRelativeLocation({ 0.0f, 0.0f, 0.0f });
+	SpringArm->SetRelativeRotation({ 11.0f, 0.0f, 0.0f });
+	//SpringArm->AddRelativeRotation({ 0.0f, -19.0f, 0.0f });
 	SpringArm->bUsePawnControlRotation = true;
 
 	PlayerCamera = new FPCameraComponent(this);
@@ -423,6 +424,8 @@ void Ship::CameraMove(FInputValue value)
 	std::cout << "PlayerController Rotation [ " << Controller->GetActorRotation().x << " : " << Controller->GetActorRotation().y << " : " << Controller->GetActorRotation().z << " ]\n";
 	std::cout << "SprtingArm Rotation [ " << SpringArm->GetComponentRotation().x << " : " << SpringArm->GetComponentRotation().y << " : " << SpringArm->GetComponentRotation().z << " ]\n";
 	std::cout << "Actor Rotation [ " << GetActorRotation().x << " : " << GetActorRotation().y << " : " << GetActorRotation().z << " ]\n";
+	std::cout << "SpringArm Length [ " << SpringArm->TargetArmLength << " ]" << "\n";
+	std::cout << "SpringArm Location [ " << SpringArm->GetComponentLocation().x << " : " << SpringArm->GetComponentLocation().y << " : " << SpringArm->GetComponentLocation().z << " ]" << "\n";
 	std::cout << "Input [ " << value.X << " : " << value.Y << " ]\n";
 
 	float mov = 30.0f;

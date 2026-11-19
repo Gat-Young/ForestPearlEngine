@@ -1528,15 +1528,15 @@ void Renderer::ResizeRenderTarget()
 void Renderer::MakeQuad2DMVP(RenderingData::MVPConstBuffer& MVPCB, float DisplayWidth, float DisplayHeight)
 {
 	//View는 단위 행렬 사용
-	FPMatrix View = FPMatrix::MatrixIdentity();
+	FPMatrix View = MatrixIdentity();
 
 	//Ortho-Off Projection 행렬
-	FPMatrix Proj = FPMatrix::MatrixOrthographicOffCenterLH(0, (float)DisplayWidth,(float)DisplayHeight, 0.0f, 1.0f, 100.0f);
+	FPMatrix Proj = MatrixOrthographicOffCenterLH(0, (float)DisplayWidth,(float)DisplayHeight, 0.0f, 1.0f, 100.0f);
 
 	//화면 해상도 대응 : 렌더타겟과 동일, 화면 중앙 이동
-	FPMatrix Scale = FPMatrix::MatrixScaling((float)DisplayWidth, (float)DisplayHeight, 1);
-	FPMatrix Rotation = FPMatrix::MatrixIdentity();
-	FPMatrix Location = FPMatrix::MatrixTranslation(DisplayWidth/2, DisplayHeight/2, 2.0f);
+	FPMatrix Scale = MatrixScaling((float)DisplayWidth, (float)DisplayHeight, 1);
+	FPMatrix Rotation = MatrixIdentity();
+	FPMatrix Location = MatrixTranslation(DisplayWidth/2, DisplayHeight/2, 2.0f);
 
 	////World/View/Proj 행렬 설정 (HLSL과 곱셈 순서가 반대)
 	MVPCB.WorldMatrix = (Scale * Rotation * Location).Matrix;

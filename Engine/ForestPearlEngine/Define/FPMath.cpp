@@ -132,6 +132,34 @@ FPVector3 Rotate(const FPQuaternion& quat, const FPVector3& vec)
 	return FPVector3{result.x, result.y, result.z};
 }
 
+FPVector4 PlaneFromPointNormal(const FPVector3& Point, const FPVector3& Normal)
+{
+	DirectX::XMVECTOR PointVec{ Point.x, Point.y, Point.z };
+	DirectX::XMVECTOR NormalVec{ Normal.x, Normal.y, Normal.z };
+
+	return FPVector4(DirectX::XMPlaneFromPointNormal(PointVec, NormalVec));
+}
+
+FPMatrix MatrixIdentity()
+{
+	return FPMatrix(DirectX::XMMatrixIdentity());
+}
+
+FPMatrix MatrixOrthographicOffCenterLH(float ViewLeft, float ViewRight, float ViewBottom, float ViewTop, float NearZ, float FarZ)
+{
+	return FPMatrix(DirectX::XMMatrixOrthographicOffCenterLH(ViewLeft, ViewRight, ViewBottom, ViewTop, NearZ, FarZ));
+}
+
+FPMatrix MatrixScaling(float x, float y, float z)
+{
+	return FPMatrix(DirectX::XMMatrixScaling(x, y, z));
+}
+
+FPMatrix MatrixTranslation(float x, float y, float z)
+{
+	return FPMatrix(DirectX::XMMatrixTranslation(x, y, z));
+}
+
 FPQuaternion Conjugate(const FPQuaternion& quat)
 {
 	return FPQuaternion{ -quat.x, -quat.y, -quat.z, quat.w };
@@ -267,15 +295,17 @@ FPMatrix MatrixRotationQuaternion(const FPQuaternion& quat)
 }
 
 //Scale 행렬
-FPMatrix MatrixScaling(const float& x, const float& y, const float& z)
-{
-	return FPMatrix(DirectX::XMMatrixScaling(x, y, z));
-}
-
 FPMatrix MatrixScaling(const FPVector3& Scale)
 {
 	DirectX::XMVECTOR ScaleVec{ Scale.x, Scale.y, Scale.z };
 	return FPMatrix(DirectX::XMMatrixScalingFromVector(ScaleVec));
+}
+
+//Reflect 행렬
+FPMatrix MatrixReflect(const FPVector4& Plane)
+{
+	DirectX::XMVECTOR PlaneVec{ Plane.x, Plane.y, Plane.z, Plane.w };
+	return FPMatrix(DirectX::XMMatrixReflect(PlaneVec));
 }
 
 

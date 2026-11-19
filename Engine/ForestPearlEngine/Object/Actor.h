@@ -38,6 +38,11 @@ class FPActor : public FPObject
 		struct FPVector3 GetActorRotation();
 		struct FPVector3 GetActorScale3D();
 
+		//축 벡터 (RootComponent 기준, DX 기준 : Right +X, Up +Y, Forward +Z)
+		struct FPVector3 GetActorForwardVector();
+		struct FPVector3 GetActorRightVector();
+		struct FPVector3 GetActorUpVector();
+
 		//생성된 FPActor의 이름을 설정
 		void SetActorName(std::string Name) { ActorName = Name; }
 		//이름 가져오기

@@ -1,0 +1,14 @@
+{
+    "Name": "Object_37_StaticMesh",
+    "NodeName": "Object_37",
+    "MeshData": [
+        {
+            "Path": "KM/frigate/frigate.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "M_Ship01B_Spyglass_Object_37_StaticMesh_MaterialInstance"
+    }
+}

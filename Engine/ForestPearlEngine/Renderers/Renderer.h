@@ -122,15 +122,22 @@ class Renderer
 		void MaskedRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 		void TranslucentRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 
+		//CamItem 기준으로 Planar Reflection RT를 렌더링. SceneCaptureItem도 CameraItem으로 변환해 전달 가능
+		void PlanarReflectionRenderPass(const RenderingData::CameraItem& CamItem);
 		void PlanarReflectionOpaqueRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 		void PlanarReflectionMaskedRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 		void PlanarReflectionmTranslucentRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
+
+		//SceneCaptureRenderPass에서 사용하는 Planar Reflection Mesh Pass (MeshRenderPass와 동일한 구조)
+		void PlanarReflectionOpaqueSceneCaptureRenderPass(const RenderingData::SceneCaptureItem& CaptureItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
+		void PlanarReflectionMaskedSceneCaptureRenderPass(const RenderingData::SceneCaptureItem& CaptureItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
+		void PlanarReflectionmTranslucentSceneCaptureRenderPass(const RenderingData::SceneCaptureItem& CaptureItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 
 		//Quad2D 모델/뷰/투영 행렬 (Quad2DRenderPass와 PostProcessRenderPass가 공유)
 		void MakeQuad2DMVP(RenderingData::MVPConstBuffer& MVPCB, float DisplayWidth, float DisplayHeight);
 
 		//SceneCaptureRenderPass sub-pass: single RenderItem draw
-		void DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::SceneCaptureItem& CaptureItem, FPAssetManager* AssetManager, const std::string& DepthStencilState);
+		void DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::SceneCaptureItem& CaptureItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, const FPMatrix& ReflectionViewProj = FPMatrix());
 
 	public:
 		Renderer(RenderingDevice& Device);
@@ -157,8 +164,6 @@ class Renderer
 		void PreDepthStencilRenderPass();
 
 		void SceneCaptureRenderPass();
-
-		void PlanarReflectionRenderPass();
 
 		void MeshRenderPass();
 

@@ -52,7 +52,7 @@ struct VSOutput
     float2 uv   : TEXCOORD0;
     float4 T    : TEXCOORD2;
     float4 N    : TEXCOORD3;
-    float2 ReflectionUV : TEXCOORD4;
+    float4 ReflectionClip : TEXCOORD4;
     float ClipDistance : SV_ClipDistance0;
 };
 
@@ -133,13 +133,10 @@ VSOutput VS_Main(
         o.ClipDistance = dot(WorldPos, GlobalClipPlane);
     }
 
-    //반사 카메라의 View*Projection으로 반사 RenderTarget 샘플링용 UV 계산
-    float4 ReflectedClip = mul(ReflectionViewProj, WorldPos);
-    float2 NDC = ReflectedClip.xy / ReflectedClip.w;
-    o.ReflectionUV = float2(
-        NDC.x * 0.5f + 0.5f,
-        0.5f - NDC.y * 0.5f
-    );
+    //반사 카메라의 View*Projection으로 반사 RenderTarget 샘플링용 클립좌표 계산
+    //(w로 나누지 않고 그대로 넘김: 여기서 미리 나누면 삼각형 내부에서 선형 보간되어
+    //텍스처가 늘어지는 현상이 생기므로, 나누기는 PS에서 픽셀 단위로 수행한다)
+    o.ReflectionClip = mul(ReflectionViewProj, WorldPos);
 
     return o;
 }

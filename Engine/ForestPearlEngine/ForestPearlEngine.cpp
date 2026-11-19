@@ -126,7 +126,6 @@ void ForestPearlEngine::GameLoop()
         // Clear -> RenderPass 1 -> RenderPass 2 -> RenderPass 3 -> RenderPass N -> Preset 
         Render->ClearDepthStencil();
         Render->PreDepthStencilRenderPass();
-        Render->PlanarReflectionRenderPass();
         Render->SceneCaptureRenderPass();                   //Object를 그리기 전 반드시 먼저 수행
         Render->MeshRenderPass();
         Render->PostProcessRenderPass();                    //MeshRenderPass 결과 -> PostProcess Material -> BackBuffer (Quad2D)

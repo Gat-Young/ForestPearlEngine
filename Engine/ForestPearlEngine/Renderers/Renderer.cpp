@@ -668,14 +668,11 @@ void Renderer::CreatePlanarReflectionList()
 	}
 }
 
-void Renderer::PlanarReflectionRenderPass()
+void Renderer::PlanarReflectionRenderPass(const RenderingData::CameraItem& CamItem)
 {
 	if (PlanarReflectionList.empty()) return;
-	if (CameraList.empty()) return;
 
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
-
-	const RenderingData::CameraItem& MainCamera = CameraList[0];
 
 	bool bAnyDrawn = false;
 
@@ -688,16 +685,16 @@ void Renderer::PlanarReflectionRenderPass()
 		FPRenderTargetData& RTData = AssetManager->GetRenderTargetData(PlanarReflectionItem.RenderTarget);
 		FPDepthStencilData& DSData = AssetManager->GetDepthStencilData(PlanarReflectionItem.DepthStencil);
 
-		//카메라가 아닌 장면(Scene)을 반사: ReflectedView = ReflectionMatrix * MainCamera.View
+		//카메라가 아닌 장면(Scene)을 반사: ReflectedView = ReflectionMatrix * CamItem.View
 		RenderingData::CameraItem ReflectedCamera;
-		ReflectedCamera.Location = MainCamera.Location;
-		ReflectedCamera.Rotation = MainCamera.Rotation;
-		ReflectedCamera.Scale = MainCamera.Scale;
-		ReflectedCamera.View = PlanarReflectionItem.ReflectionMatrix * MainCamera.View;
+		ReflectedCamera.Location = CamItem.Location;
+		ReflectedCamera.Rotation = CamItem.Rotation;
+		ReflectedCamera.Scale = CamItem.Scale;
+		ReflectedCamera.View = PlanarReflectionItem.ReflectionMatrix * CamItem.View;
 
 		//Proj 재계산
 		DirectX::XMFLOAT4X4 ProjFloat;
-		DirectX::XMStoreFloat4x4(&ProjFloat, MainCamera.Projection.Matrix);
+		DirectX::XMStoreFloat4x4(&ProjFloat, CamItem.Projection.Matrix);
 		float RTAspect = (float)RTInfo.SizeX / (float)RTInfo.SizeY;
 		ProjFloat._11 = ProjFloat._22 / RTAspect;
 		ReflectedCamera.Projection = FPMatrix(DirectX::XMLoadFloat4x4(&ProjFloat));
@@ -796,7 +793,7 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 	return hr;
 }
 
-void Renderer::DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::SceneCaptureItem& CaptureItem, FPAssetManager* AssetManager, const std::string& DepthStencilState)
+void Renderer::DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::SceneCaptureItem& CaptureItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, const FPMatrix& ReflectionViewProj)
 {
 	RenderingData::MVPConstBuffer MVPCB;
 
@@ -920,6 +917,7 @@ void Renderer::DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& Ren
 	//Object ConstBuffer Update
 	Device.UpdateVertexShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
 	RenderingData::ClipPlanarReflectionConstBuffer ClipCB;
+	ClipCB.ReflectionViewProj = ReflectionViewProj;
 	Device.UpdateVertexShaderSubresource(13, reinterpret_cast<const uint8_t*>(&ClipCB), 0, sizeof(RenderingData::ClipPlanarReflectionConstBuffer));
 	Device.UpdatePixelShaderSubresource(0, reinterpret_cast<const uint8_t*>(&MVPCB), 0, 1280);
 
@@ -955,6 +953,23 @@ void Renderer::SceneCaptureRenderPass()
 
 	for (const RenderingData::SceneCaptureItem& CaptureItem : SceneCaptureList)
 	{
+		//이 SceneCaptureItem의 시점(View/Projection)을 CameraItem으로 변환해 Planar Reflection RT를 먼저 갱신
+		RenderingData::CameraItem CaptureCamItem;
+		CaptureCamItem.Location = CaptureItem.Location;
+		CaptureCamItem.Rotation = CaptureItem.Rotation;
+		CaptureCamItem.Scale = CaptureItem.Scale;
+		CaptureCamItem.View = CaptureItem.View;
+		CaptureCamItem.Projection = CaptureItem.Projection;
+		PlanarReflectionRenderPass(CaptureCamItem);
+
+		//PlanarReflectionRenderPass가 바꾼 상태를 이 Capture용으로 복원
+		for (int i = 0; i < 14; ++i)
+		{
+			Device.VSSetConstantBuffers(i, 1);
+			Device.PSSetConstantBuffers(i, 1);
+		}
+		Device.IASetPrimitiveTopology(Topology::TRIANGLELIST);
+
 		if (!AssetManager->HasRenderTargetData(CaptureItem.RenderTarget))
 		{
 			std::cout << "SceneCapture RenderTarget not loaded: " << CaptureItem.RenderTarget << "\n";
@@ -982,16 +997,19 @@ void Renderer::SceneCaptureRenderPass()
 			DrawSceneCaptureMeshItem(RenderItem, CaptureItem, AssetManager, "DS_DEPTH_WRITE_OFF");
 		}
 
+		PlanarReflectionOpaqueSceneCaptureRenderPass(CaptureItem, CaptureCamItem, AssetManager);
 		for (const RenderingData::MeshRenderItem& RenderItem : OpaqueRenderList)
 		{
 			DrawSceneCaptureMeshItem(RenderItem, CaptureItem, AssetManager, "DS_DEPTH_ON");
 		}
 
+		PlanarReflectionMaskedSceneCaptureRenderPass(CaptureItem, CaptureCamItem, AssetManager);
 		for (const RenderingData::MeshRenderItem& RenderItem : MaskedRenderList)
 		{
 			DrawSceneCaptureMeshItem(RenderItem, CaptureItem, AssetManager, "DS_DEPTH_ON");
 		}
 
+		PlanarReflectionmTranslucentSceneCaptureRenderPass(CaptureItem, CaptureCamItem, AssetManager);
 		for (const RenderingData::MeshRenderItem& RenderItem : TranslucentRenderList)
 		{
 			DrawSceneCaptureMeshItem(RenderItem, CaptureItem, AssetManager, "DS_DEPTH_WRITE_OFF");
@@ -1347,6 +1365,33 @@ void Renderer::PlanarReflectionmTranslucentRenderPass(const RenderingData::Camer
 	}
 }
 
+void Renderer::PlanarReflectionOpaqueSceneCaptureRenderPass(const RenderingData::SceneCaptureItem& CaptureItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager)
+{
+	for (const RenderingData::MeshRenderItem& RenderItem : PlanarReflectionOpaqueRenderList)
+	{
+		FPMatrix ReflectionViewProj = ComputePlanarReflectionViewProj(RenderItem, CamItem, AssetManager);
+		DrawSceneCaptureMeshItem(RenderItem, CaptureItem, AssetManager, "DS_DEPTH_ON", ReflectionViewProj);
+	}
+}
+
+void Renderer::PlanarReflectionMaskedSceneCaptureRenderPass(const RenderingData::SceneCaptureItem& CaptureItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager)
+{
+	for (const RenderingData::MeshRenderItem& RenderItem : PlanarReflectionMaskedRenderList)
+	{
+		FPMatrix ReflectionViewProj = ComputePlanarReflectionViewProj(RenderItem, CamItem, AssetManager);
+		DrawSceneCaptureMeshItem(RenderItem, CaptureItem, AssetManager, "DS_DEPTH_ON", ReflectionViewProj);
+	}
+}
+
+void Renderer::PlanarReflectionmTranslucentSceneCaptureRenderPass(const RenderingData::SceneCaptureItem& CaptureItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager)
+{
+	for (const RenderingData::MeshRenderItem& RenderItem : PlanarReflectionmTranslucentRenderList)
+	{
+		FPMatrix ReflectionViewProj = ComputePlanarReflectionViewProj(RenderItem, CamItem, AssetManager);
+		DrawSceneCaptureMeshItem(RenderItem, CaptureItem, AssetManager, "DS_DEPTH_WRITE_OFF", ReflectionViewProj);
+	}
+}
+
 void Renderer::MeshRenderPass()
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
@@ -1386,6 +1431,20 @@ void Renderer::MeshRenderPass()
 
 	for (RenderingData::CameraItem& CamItem : CameraList)
 	{
+		//이 CamItem 시점 기준으로 Planar Reflection RT를 먼저 갱신 (MeshRenderPass의 RT/ViewPort 상태를 바꾸므로 이후 복원)
+		PlanarReflectionRenderPass(CamItem);
+
+		Device.OMSetRenderTargets(1, RTData.RenderTargetView, BackBufferDepthStencilData.DepthStencilView);
+
+		for (int i = 0; i < 14; ++i)
+		{
+			Device.VSSetConstantBuffers(i, 1);
+			Device.PSSetConstantBuffers(i, 1);
+		}
+
+		Device.IASetPrimitiveTopology(Topology::TRIANGLELIST);
+		Device.SetViewPort(ViewPortTopLeftX, ViewPortTopLeftY, ViewPortWidth, ViewPortHeight, 0.0f, 1.0f);
+
 		SkyBoxRenderPass(CamItem, AssetManager);
 
 		PlanarReflectionOpaqueRenderPass(CamItem, AssetManager);

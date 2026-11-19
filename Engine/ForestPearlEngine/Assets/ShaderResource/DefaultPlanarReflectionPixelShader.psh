@@ -20,9 +20,16 @@ float4 PS_Main(
                 float2 uv   : TEXCOORD0,    //[입력] uv
                 float4 T    : TEXCOORD2,    //[입력] WV변환된 Tangent
                 float4 N    : TEXCOORD3,    //[입력] 역전치WV 변환된 normal
-                float2 ReflectionUV : TEXCOORD4,  //[입력] VS에서 계산된 반사 샘플링 UV
+                float4 ReflectionClip : TEXCOORD4,  //[입력] VS에서 계산된 반사 카메라 클립좌표 (w로 나누기 전)
                 bool IsFrontFace : SV_IsFrontFace   //CULLMODE None일때 앞 뒷면 판단
                 ) : SV_TARGET
 {
+    //w로 나누는 것을 픽셀 단위로 수행해야 늘어짐 없이 올바르게 투영됨
+    float2 NDC = ReflectionClip.xy / ReflectionClip.w;
+    float2 ReflectionUV = float2(
+        NDC.x * 0.5f + 0.5f,
+        0.5f - NDC.y * 0.5f
+    );
+
     return ReflectionTex.Sample(Smpler, ReflectionUV);
 }

@@ -45,6 +45,9 @@
     <ClInclude Include="Cannon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CannonFireFX.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="GameMode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -98,6 +101,9 @@
     <ClCompile Include="Cannon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CannonFireFX.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Level\KM_Cannon.json">
@@ -109,6 +115,12 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\ShaderResource\BlenderCannonPixelShader.psh">
+      <Filter>Assets\ShaderResource</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\FXParticleVertexShader.vsh">
+      <Filter>Assets\ShaderResource</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\FXParticlePixelShader.psh">
       <Filter>Assets\ShaderResource</Filter>
     </FxCompile>
     <FxCompile Include="Assets\ShaderResource\ShipPixelShader.psh">

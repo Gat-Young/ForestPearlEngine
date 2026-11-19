@@ -24,6 +24,26 @@
  },
 
     {
+      "class": "CannonSocket",
+      "name": "Cannon01_Muzzle",
+      "transform": {
+        "location": {          "x": 3.9,          "y": 4.4,          "z": -7.5        },
+        "rotation": {          "x": 0.0,          "y": 0.0,          "z": -80.0        },
+        "scale": {             "x": 1.0,          "y": 1.0,          "z": 1.0        }
+      }
+    },
+
+    {
+      "class": "CannonFireFX",
+      "name": "CannonFireFX01",
+      "transform": {
+        "location": {          "x": 0.0,          "y": 0.0,          "z": 0.0        },
+        "rotation": {          "x": 0.0,          "y": 0.0,          "z": 0.0        },
+        "scale": {             "x": 1.0,          "y": 1.0,          "z": 1.0        }
+      }
+    },
+
+    {
       "class": "Axis",
       "name": "SystemAxis",
       "transform": {

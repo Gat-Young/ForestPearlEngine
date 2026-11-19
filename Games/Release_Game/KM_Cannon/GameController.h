@@ -39,4 +39,6 @@ class GameController : public FPAController
 		void SetAxisOn(FInputValue Value);
 
 		void SetDirectionalLight(FInputValue Value);
+
+		void FireCannon(FInputValue Value);	//Enter : all cannons fire
 };

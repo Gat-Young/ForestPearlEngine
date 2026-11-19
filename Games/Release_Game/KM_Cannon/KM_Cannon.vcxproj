@@ -26,6 +26,7 @@
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Ship.h" />
     <ClInclude Include="Cannon.h" />
+    <ClInclude Include="CannonFireFX.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="UI.h" />
   </ItemGroup>
@@ -38,6 +39,7 @@
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Ship.cpp" />
     <ClCompile Include="Cannon.cpp" />
+    <ClCompile Include="CannonFireFX.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="UI.cpp" />
   </ItemGroup>
@@ -46,6 +48,18 @@
     <None Include="Assets\Level\KM_Cannon.json" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Assets\ShaderResource\FXParticleVertexShader.vsh">
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+      <EntryPointName>VS_Main</EntryPointName>
+      <ObjectFileOutput>$(ProjectDir)Assets\ShaderResource\bin\%(Filename).vso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\FXParticlePixelShader.psh">
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+      <EntryPointName>PS_Main</EntryPointName>
+      <ObjectFileOutput>$(ProjectDir)Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+    </FxCompile>
     <FxCompile Include="Assets\ShaderResource\BlenderCannonPixelShader.psh">
       <ShaderType>Pixel</ShaderType>
       <ShaderModel>5.0</ShaderModel>

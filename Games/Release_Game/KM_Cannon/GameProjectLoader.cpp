@@ -1,4 +1,4 @@
-#include "ForestPearlEngine/GameProjectLoader.h"
+﻿#include "ForestPearlEngine/GameProjectLoader.h"
 #include "ADirectionalLight.h"
 #include "Axis.h"
 #include "GameController.h"
@@ -6,6 +6,7 @@
 #include "Grid.h"
 #include "Ship.h"
 #include "Cannon.h"
+#include "CannonFireFX.h"
 #include "UI.h"
 #include "Terrain.h"
 
@@ -30,6 +31,8 @@ void LoadClassRegist()
 	ClassRegistry->Register<UI>("UI");
 	ClassRegistry->Register<Ship>("Ship");
 	ClassRegistry->Register<Cannon>("Cannon");
+	ClassRegistry->Register<CannonSocket>("CannonSocket");
+	ClassRegistry->Register<CannonFireFX>("CannonFireFX");
 	ClassRegistry->Register<Grid>("Grid");
 	ClassRegistry->Register<Axis>("Axis");
 	ClassRegistry->Register<Terrain>("Terrain");
@@ -67,6 +70,24 @@ void LoadAssets()
 		}
 	}
 
+	//Cannon Fire FX : 연기 + 총구 섬광 (CannonFireFX)
+	{
+		//Shader
+		AssetLoader->LoadVertexShader("FXParticleVertexShader.json", AssetOwner::User);
+		AssetLoader->LoadPixelShader("FXParticlePixelShader.json", AssetOwner::User);
+		//BlendState : 연기 = 알파, 섬광 = 더하기 (ONE + ONE)
+		AssetLoader->LoadBlendState("BS_FX_ALPHA.json", AssetOwner::User);
+		AssetLoader->LoadBlendState("BS_FX_ADD.json", AssetOwner::User);
+		//Texture
+		AssetLoader->LoadTexture("FX/FX_Smoke_dds.json", AssetOwner::User);
+		AssetLoader->LoadTexture("FX/FX_MuzzleFront_jpg.json", AssetOwner::User);
+		AssetLoader->LoadTexture("FX/FX_MuzzleSide_jpg.json", AssetOwner::User);
+		//Material : 판(Plane_StaticMesh) 마다 MakeMaterial 로 새로 만들어 씀
+		AssetLoader->LoadMaterial("FX/FX_Smoke_Material.json", AssetOwner::User);
+		AssetLoader->LoadMaterial("FX/FX_MuzzleFront_Material.json", AssetOwner::User);
+		AssetLoader->LoadMaterial("FX/FX_MuzzleSide_Material.json", AssetOwner::User);
+	}
+
 	//Terrain
 	{
 		//Shader Load
@@ -88,7 +109,6 @@ void LoadAssets()
 	//{
 	//	//Shader Load
 	//	AssetLoader->LoadPixelShader("ShipPixelShader.json", AssetOwner::User);
-
 	//	//JosenShip Texture
 	//	{
 	//		AssetLoader->LoadTexture("JosenShip/T_Cauldron01a_BC._png.json", AssetOwner::User);

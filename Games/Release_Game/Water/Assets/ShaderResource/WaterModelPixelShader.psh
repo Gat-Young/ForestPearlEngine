@@ -1,0 +1,7 @@
+cbuffer ModelSettings : register(b3) { float4 Tint; };
+
+float4 PS_Main(float4 position : SV_POSITION, float3 normal : NORMAL) : SV_TARGET
+{
+    float diffuse = saturate(dot(normalize(normal), normalize(float3(-0.4, 0.85, -0.3))));
+    return float4(Tint.rgb * (0.25 + 0.75 * diffuse), 1);
+}

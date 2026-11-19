@@ -2,6 +2,7 @@
 #include "ForestPearlEngine/GameProjectLoader.h"
 #include "Cannon.h"
 #include "CannonFireFX.h"
+#include "CannonBall.h"
 
 void Loader_KMCannon::RegisterClasses()
 {
@@ -9,6 +10,7 @@ void Loader_KMCannon::RegisterClasses()
 	ClassRegistry->Register<Cannon>("Cannon");
 	ClassRegistry->Register<CannonSocket>("CannonSocket");
 	ClassRegistry->Register<CannonFireFX>("CannonFireFX");
+	ClassRegistry->Register<CannonBall>("CannonBall");
 }
 
 //★ 모듈 에셋은 종류별 폴더 안의 KM 하위 폴더에 있음 (Assets/Texture/KM, Assets/Material/KM ...)

@@ -1,5 +1,6 @@
 ﻿#include "Cannon.h"
 #include "CannonFireFX.h"
+#include "CannonBall.h"
 #include "ForestPearlEngine/FPStaticMeshComponent.h"
 
 #include "ForestPearlEngine/Utility/FPGameplayStatics.h"
@@ -30,6 +31,7 @@ void Cannon::Initialize()
 void Cannon::BeginPlay()
 {
 	FireFX = static_cast<CannonFireFX*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "CannonFireFX"));
+	Balls = static_cast<CannonBall*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "CannonBall"));
 
 	FPActor* ShipActor = FPGameplayStatics::GetActorOfClass(GetWorld(), "Ship");
 
@@ -60,11 +62,12 @@ void Cannon::BeginPlay()
 
 void Cannon::Fire()
 {
-	if (FireFX == nullptr || Muzzle == nullptr) return;
+	if (Muzzle == nullptr) return;
 
 	//이펙트가 필요할 때 총구 오브젝트의 월드 위치 · 방향만 읽음 (배 · 대포가 움직여도 지난 Tick 의 월드 값이 따라와 있음)
 	FTransform World = Muzzle->GetActorTransform();
 	FPVector3 Pos = World.Location;
 	FPVector3 Dir = Rotate(World.QuaternionRotation, MUZZLE_FORWARD).Normalize();
-	FireFX->Fire(Pos, Dir);
+	if (FireFX != nullptr) FireFX->Fire(Pos, Dir);
+	if (Balls != nullptr) Balls->Launch(Pos, Dir);
 }

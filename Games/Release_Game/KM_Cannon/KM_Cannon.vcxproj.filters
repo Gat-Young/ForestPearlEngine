@@ -48,6 +48,9 @@
     <ClInclude Include="KMCannon\Cannon.h">
       <Filter>KMCannon</Filter>
     </ClInclude>
+    <ClInclude Include="KMCannon\CannonBall.h">
+      <Filter>KMCannon</Filter>
+    </ClInclude>
     <ClInclude Include="KMCannon\CannonFireFX.h">
       <Filter>KMCannon</Filter>
     </ClInclude>
@@ -108,6 +111,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="KMCannon\Cannon.cpp">
+      <Filter>KMCannon</Filter>
+    </ClCompile>
+    <ClCompile Include="KMCannon\CannonBall.cpp">
       <Filter>KMCannon</Filter>
     </ClCompile>
     <ClCompile Include="KMCannon\CannonFireFX.cpp">

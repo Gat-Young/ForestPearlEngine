@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>엔진 호출 순서 가이드</title>
+<style>
+:root{
+  --bg:#f7f6f2; --panel:#ffffff; --ink:#1d1d1b; --sub:#5e5d58; --line:#d9d6cc;
+  --engine:#5b6b8c; --engine-bg:#e8ecf4;
+  --host:#8a6a2f;   --host-bg:#f5ecd9;
+  --data:#8c4a5b;   --data-bg:#f3e2e6;
+  --ok:#2f7a5b; --ok-bg:#dcefe6; --no:#a3402e; --no-bg:#f6e0da;
+  --code-bg:#f0eee7;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#171716; --panel:#201f1d; --ink:#ecebe6; --sub:#a6a49c; --line:#3a3935;
+    --engine:#9fb1d6; --engine-bg:#2a3142;
+    --host:#d9b56f;   --host-bg:#3a3121;
+    --data:#e09aac;   --data-bg:#3d2730;
+    --ok:#77c9a4; --ok-bg:#1f3a2f; --no:#ec9a86; --no-bg:#40261f;
+    --code-bg:#2a2926;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#171716; --panel:#201f1d; --ink:#ecebe6; --sub:#a6a49c; --line:#3a3935;
+  --engine:#9fb1d6; --engine-bg:#2a3142;
+  --host:#d9b56f;   --host-bg:#3a3121;
+  --data:#e09aac;   --data-bg:#3d2730;
+  --ok:#77c9a4; --ok-bg:#1f3a2f; --no:#ec9a86; --no-bg:#40261f;
+  --code-bg:#2a2926;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.7 "Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:32px 16px 96px}
+h1{font-size:28px;margin:0 0 6px}
+h2{font-size:21px;margin:56px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:16px;margin:26px 0 8px}
+.lead{color:var(--sub);margin:0 0 18px}
+code,pre{font-family:Consolas,"D2Coding",monospace;font-size:13px}
+code{background:var(--code-bg);padding:1px 5px;border-radius:4px}
+pre{background:var(--code-bg);padding:14px 16px;border-radius:8px;overflow-x:auto;line-height:1.5;margin:10px 0}
+pre .c{color:var(--sub)}
+nav.toc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 18px;margin:18px 0}
+nav.toc ol{margin:4px 0;padding-left:20px}
+nav.toc a{color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:8px 0 6px;font-size:13px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.sw.e{background:var(--engine)} .sw.h{background:var(--host)} .sw.d{background:var(--data)}
+.diagram{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin:12px 0;overflow-x:auto}
+.diagram svg.uml{min-width:760px}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
+th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+th{color:var(--sub);font-weight:600;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:0 7px;border-radius:10px;font-weight:600;white-space:nowrap}
+.tag.e{background:var(--engine-bg);color:var(--engine)}
+.tag.h{background:var(--host-bg);color:var(--host)}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}
+.tag.no{background:var(--no-bg);color:var(--no)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.grid .card{margin:0}
+.grid.one{grid-template-columns:1fr}
+.card h4{margin:0 0 6px;font-size:15px}
+.warn{border-left:4px solid var(--no)}
+.tip{border-left:4px solid var(--ok)}
+.notation{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;margin:8px 0 4px}
+.notation svg.leg{width:56px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px;min-width:0}
+
+/* UML */
+.uml text{font-family:"Malgun Gothic",system-ui,sans-serif;fill:var(--ink)}
+.uml .ub{stroke-width:1.4}
+.uml .ub.e{fill:var(--engine-bg);stroke:var(--engine)}
+.uml .ub.h{fill:var(--host-bg);stroke:var(--host)}
+.uml .ub.d{fill:var(--data-bg);stroke:var(--data)}
+.uml .ul{stroke-width:1}
+.uml .ul.e{stroke:var(--engine)} .uml .ul.h{stroke:var(--host)} .uml .ul.d{stroke:var(--data)}
+.uml .ut{font-size:13px;font-weight:700}
+.uml .ut.sm{font-size:12px}
+.uml .us{font-size:10.5px;fill:var(--sub)}
+.uml .um{font-size:11.5px;font-family:Consolas,"D2Coding",monospace}
+.uml .ulb{font-size:11.5px}
+.uml .unote{font-size:11px;fill:var(--sub)}
+.uml .ue{fill:none;stroke:var(--ink);stroke-width:1.3}
+.uml .ud{fill:none;stroke:var(--ink);stroke-width:1.2;stroke-dasharray:5 4}
+.uml .ulife{stroke:var(--sub);stroke-width:1;stroke-dasharray:4 4}
+.uml .uframe{fill:none;stroke:var(--sub);stroke-width:1}
+.uml .uframetag{fill:var(--panel);stroke:var(--sub);stroke-width:1}
+.uml .uphase{fill:var(--code-bg);stroke:none}
+.uml .uphaset{font-size:12.5px;font-weight:700}
+.uml .mk-hollow{fill:var(--panel);stroke:var(--ink);stroke-width:1.2}
+.uml .mk-fill{fill:var(--ink)}
+.uml .mk-open{fill:none;stroke:var(--ink);stroke-width:1.4}
+
+</style>
+</head>
+<body>
+<main>
+<h1>ForestPearlEngine 호출 순서 가이드</h1>
+<p class="lead">콘텐츠 제작자용. 엔진이 <b>언제</b> 내 코드를 부르는지, 그때 <b>무엇에 접근해서 무엇을 호출</b>하면 되는지 정리했습니다. 내용은 <code>Engine/ForestPearlEngine</code> 소스(ForestPearlEngine.cpp · FPWorld.cpp · FPGameInstance.cpp · Actor.cpp · FPAGameMode.cpp · FPAController.cpp)를 따라가며 확인했습니다.</p>
+
+<div class="legend">
+  <span><i class="sw e"></i>엔진 (건드리지 않음)</span>
+  <span><i class="sw h"></i>내 코드 (콘텐츠 제작자가 채움)</span>
+  <span><i class="sw d"></i>데이터 (레벨 JSON 등)</span>
+</div>
+
+<nav class="toc"><b>목차</b>
+<ol>
+<li><a href="#s1">한눈에 — 내가 채우는 곳 5가지</a></li>
+<li><a href="#s2">엔진 전체 생명주기 (시퀀스 다이어그램)</a></li>
+<li><a href="#s3">클래스 구조 (클래스 다이어그램)</a></li>
+<li><a href="#s4">매 프레임 안에서 (시퀀스 다이어그램)</a></li>
+<li><a href="#s5">액터 하나의 일생 (상태 다이어그램) · 함수별로 할 일</a></li>
+<li><a href="#s6">접근 치트시트 — 무엇을 어디서 가져오나</a></li>
+<li><a href="#s7">흔한 실수</a></li>
+<li><a href="#s8">따라하기 — 새 액터 하나 추가</a></li>
+</ol></nav>
+
+<h2 id="s1">1. 한눈에 — 내가 채우는 곳 5가지</h2>
+<p>이 엔진은 <b>"엔진이 부르고, 나는 채운다"</b> 구조입니다. <code>main</code>도, 게임 루프도 엔진이 갖고 있고, 콘텐츠 제작자는 엔진이 정해진 시점에 부르는 함수 안을 채웁니다.</p>
+<div class="grid">
+<div class="card"><h4>① GameProjectLoader.cpp <span class="tag h">시작 1번</span></h4>
+<code>RegistProjectName()</code> · <code>LoadLevel()</code> · <code>LoadClassRegist()</code> · <code>LoadAssets()</code> · <code>ReturnStartLevel()</code><br>프로젝트 이름, 레벨 파일, 클래스 이름표, 에셋 목록, 시작 레벨.</div>
+<div class="card"><h4>② 레벨 JSON <span class="tag h">데이터</span></h4>
+<code>Assets/Level/*.json</code> — <code>"gamemode"</code> 이름과 <code>"actors"</code> 목록(class · name · transform). 여기 적힌 순서가 Initialize · BeginPlay · Tick 순서입니다.</div>
+<div class="card"><h4>③ GameMode <span class="tag h">FPAGameMode 상속</span></h4>
+<code>Initialize()</code>에서 <code>ControllerList.push_back("GameController")</code> 후 <code>__super::Initialize()</code>. 컨트롤러를 만들어 주는 곳.</div>
+<div class="card"><h4>④ Controller <span class="tag h">FPAController 상속</span></h4>
+<code>Initialize()</code>에서 키 매핑(<code>AddMappingKey</code>)과 함수 바인딩(<code>BindMethod</code>). 레벨 전체에 걸친 입력(F키 토글, 발사 등).</div>
+<div class="card"><h4>⑤ Actor · Pawn <span class="tag h">FPActor / FPPawn 상속</span></h4>
+<code>Initialize()</code> 컴포넌트 만들기 → <code>BeginPlay()</code> 다른 액터 찾기 → <code>Tick()</code> 매 프레임 로직. 게임 내용의 대부분.</div>
+</div>
+
+<h2 id="s2">2. 엔진 전체 생명주기</h2>
+<p><code>Runners/Runner/Runner.cpp</code>가 <code>PreInitialize → Initialize → GameLoop → Finalize</code>를 차례로 부릅니다. 노란 세로줄이 내 코드가 불리는 지점입니다.</p>
+<div class="notation">
+<span><svg viewBox="0 0 56 14" class="uml leg" role="img" aria-label="">
+<defs>
+<marker id="m6Inh" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1,1 L11,6 L1,11 z" class="mk-hollow"/></marker>
+<marker id="m6Comp" viewBox="0 0 16 10" refX="1" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 z" class="mk-fill"/></marker>
+<marker id="m6Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" class="mk-open"/></marker>
+<marker id="m6Sol" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-fill"/></marker>
+</defs>
+<path d="M4,7 H50" class="ue" marker-end="url(#m6Inh)"/>
+</svg>상속 (is-a)</span>
+<span><svg viewBox="0 0 56 14" class="uml leg" role="img" aria-label="">
+<defs>
+<marker id="m7Inh" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1,1 L11,6 L1,11 z" class="mk-hollow"/></marker>
+<marker id="m7Comp" viewBox="0 0 16 10" refX="1" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 z" class="mk-fill"/></marker>
+<marker id="m7Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" class="mk-open"/></marker>
+<marker id="m7Sol" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-fill"/></marker>
+</defs>
+<path d="M4,7 H50" class="ue" marker-start="url(#m7Comp)" marker-end="url(#m7Arr)"/>
+</svg>소유 (내가 만들어 가짐)</span>
+<span><svg viewBox="0 0 56 14" class="uml leg" role="img" aria-label="">
+<defs>
+<marker id="m8Inh" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1,1 L11,6 L1,11 z" class="mk-hollow"/></marker>
+<marker id="m8Comp" viewBox="0 0 16 10" refX="1" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 z" class="mk-fill"/></marker>
+<marker id="m8Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" class="mk-open"/></marker>
+<marker id="m8Sol" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-fill"/></marker>
+</defs>
+<path d="M4,7 H50" class="ue" marker-end="url(#m8Sol)"/>
+</svg>호출</span>
+<span><svg viewBox="0 0 56 14" class="uml leg" role="img" aria-label="">
+<defs>
+<marker id="m9Inh" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1,1 L11,6 L1,11 z" class="mk-hollow"/></marker>
+<marker id="m9Comp" viewBox="0 0 16 10" refX="1" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 z" class="mk-fill"/></marker>
+<marker id="m9Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" class="mk-open"/></marker>
+<marker id="m9Sol" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-fill"/></marker>
+</defs>
+<path d="M4,7 H50" class="ud" marker-end="url(#m9Arr)"/>
+</svg>돌려받는 값</span>
+</div>
+<div class="diagram">
+<svg viewBox="0 0 1000 1478" class="uml" role="img" aria-label="엔진 전체 생명주기 시퀀스 다이어그램">
+<defs>
+<marker id="m1Inh" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1,1 L11,6 L1,11 z" class="mk-hollow"/></marker>
+<marker id="m1Comp" viewBox="0 0 16 10" refX="1" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 z" class="mk-fill"/></marker>
+<marker id="m1Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" class="mk-open"/></marker>
+<marker id="m1Sol" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-fill"/></marker>
+</defs>
+<rect x="12.0" y="20" width="116" height="50" rx="4" class="ub e"/>
+<text x="70.0" y="40" class="ut sm" text-anchor="middle">Runner</text>
+<text x="70.0" y="54" class="ut sm" text-anchor="middle">(main)</text>
+<line x1="70.0" y1="70" x2="70.0" y2="1468" class="ulife"/>
+<rect x="155.33333333333334" y="20" width="116" height="50" rx="4" class="ub e"/>
+<text x="213.33333333333334" y="40" class="ut sm" text-anchor="middle">ForestPearl</text>
+<text x="213.33333333333334" y="54" class="ut sm" text-anchor="middle">Engine</text>
+<line x1="213.33333333333334" y1="70" x2="213.33333333333334" y2="1468" class="ulife"/>
+<rect x="298.6666666666667" y="20" width="116" height="50" rx="4" class="ub h"/>
+<text x="356.6666666666667" y="40" class="ut sm" text-anchor="middle">GameProject</text>
+<text x="356.6666666666667" y="54" class="ut sm" text-anchor="middle">Loader.cpp</text>
+<line x1="356.6666666666667" y1="70" x2="356.6666666666667" y2="1468" class="ulife"/>
+<rect x="442.0" y="20" width="116" height="50" rx="4" class="ub e"/>
+<text x="500.0" y="40" class="ut sm" text-anchor="middle">GameInstance</text>
+<text x="500.0" y="54" class="ut sm" text-anchor="middle">· World</text>
+<line x1="500.0" y1="70" x2="500.0" y2="1468" class="ulife"/>
+<rect x="585.3333333333334" y="20" width="116" height="50" rx="4" class="ub h"/>
+<text x="643.3333333333334" y="40" class="ut sm" text-anchor="middle">GameMode</text>
+<text x="643.3333333333334" y="54" class="ut sm" text-anchor="middle">· Controller</text>
+<line x1="643.3333333333334" y1="70" x2="643.3333333333334" y2="1468" class="ulife"/>
+<rect x="728.6666666666667" y="20" width="116" height="36" rx="4" class="ub h"/>
+<text x="786.6666666666667" y="40" class="ut sm" text-anchor="middle">내 Actor들</text>
+<line x1="786.6666666666667" y1="56" x2="786.6666666666667" y2="1468" class="ulife"/>
+<rect x="872.0" y="20" width="116" height="36" rx="4" class="ub e"/>
+<text x="930.0" y="40" class="ut sm" text-anchor="middle">Renderer</text>
+<line x1="930.0" y1="56" x2="930.0" y2="1468" class="ulife"/>
+<rect x="8" y="70" width="984" height="24" rx="4" class="uphase"/>
+<text x="18" y="87" class="uphaset" text-anchor="start">① PreInitialize — 프로그램 시작 시 1번 (아직 레벨 · 액터 없음)</text>
+<path d="M70.0,116 H208.33333333333334" class="ue" marker-end="url(#m1Sol)"/>
+<text x="141.66666666666669" y="110" class="ulb" text-anchor="middle">PreInitialize()</text>
+<path d="M213.33333333333334,150 H351.6666666666667" class="ue" marker-end="url(#m1Sol)"/>
+<text x="285.0" y="144" class="ulb" text-anchor="middle">RegistProjectName()</text>
+<text x="364.6666666666667" y="154" class="unote" text-anchor="start">프로젝트 이름 → 에셋 경로, GameSetting.json</text>
+<path d="M213.33333333333334,184 H241.33333333333334 V200 H218.33333333333334" class="ue" marker-end="url(#m1Sol)"/>
+<text x="247.33333333333334" y="196" class="ulb" text-anchor="start">창 · 입력장치 · 렌더 디바이스 생성, LoadEngineAssets()</text>
+<path d="M213.33333333333334,228 H351.6666666666667" class="ue" marker-end="url(#m1Sol)"/>
+<text x="285.0" y="222" class="ulb" text-anchor="middle">LoadLevel()</text>
+<text x="364.6666666666667" y="232" class="unote" text-anchor="start">레벨 JSON 을 &quot;데이터로만&quot; 읽음</text>
+<path d="M213.33333333333334,262 H351.6666666666667" class="ue" marker-end="url(#m1Sol)"/>
+<text x="285.0" y="256" class="ulb" text-anchor="middle">LoadClassRegist()</text>
+<text x="364.6666666666667" y="266" class="unote" text-anchor="start">Register&lt;T&gt;(&quot;클래스이름&quot;)</text>
+<path d="M213.33333333333334,296 H351.6666666666667" class="ue" marker-end="url(#m1Sol)"/>
+<text x="285.0" y="290" class="ulb" text-anchor="middle">LoadAssets()</text>
+<text x="364.6666666666667" y="300" class="unote" text-anchor="start">Load*(json) : 셰이더·텍스처·머티리얼·메쉬</text>
+<path d="M213.33333333333334,330 H495.0" class="ue" marker-end="url(#m1Sol)"/>
+<text x="356.6666666666667" y="324" class="ulb" text-anchor="middle">AssetManager.AllAssetDataCreate()</text>
+<text x="508.0" y="334" class="unote" text-anchor="start">GPU 리소스 실제 생성</text>
+<rect x="8" y="354" width="984" height="24" rx="4" class="uphase"/>
+<text x="18" y="371" class="uphaset" text-anchor="start">② Initialize — 1번 (레벨을 열고 액터를 만든다)</text>
+<path d="M70.0,400 H208.33333333333334" class="ue" marker-end="url(#m1Sol)"/>
+<text x="141.66666666666669" y="394" class="ulb" text-anchor="middle">Initialize()</text>
+<path d="M213.33333333333334,434 H351.6666666666667" class="ue" marker-end="url(#m1Sol)"/>
+<text x="285.0" y="428" class="ulb" text-anchor="middle">ReturnStartLevel()</text>
+<path d="M356.6666666666667,468 H218.33333333333334" class="ud" marker-end="url(#m1Arr)"/>
+<text x="285.0" y="462" class="ulb" text-anchor="middle">&quot;KM_Cannon&quot;</text>
+<path d="M213.33333333333334,502 H495.0" class="ue" marker-end="url(#m1Sol)"/>
+<text x="356.6666666666667" y="496" class="ulb" text-anchor="middle">OpenLevel(이름)</text>
+<path d="M500.0,536 H638.3333333333334" class="ue" marker-end="url(#m1Sol)"/>
+<text x="571.6666666666667" y="530" class="ulb" text-anchor="middle">GameMode 생성 (JSON &quot;gamemode&quot;)</text>
+<path d="M500.0,606 H781.6666666666667" class="ue" marker-end="url(#m1Sol)"/>
+<text x="643.3333333333334" y="600" class="ulb" text-anchor="middle">생성자 → SetActorName · SetActorLocation/Rotation/Scale3D</text>
+<rect x="454.0" y="566" width="378.66666666666674" height="74" rx="4" class="uframe"/>
+<path d="M454.0,566 h199.20000000000002 v14 l-8,8 h-191.20000000000002 z" class="uframetag"/>
+<text x="460.0" y="581" class="ulb" text-anchor="start">loop [레벨 JSON 의 actors 순서]</text>
+<path d="M213.33333333333334,666 H495.0" class="ue" marker-end="url(#m1Sol)"/>
+<text x="356.6666666666667" y="660" class="ulb" text-anchor="middle">World::Initialize()</text>
+<path d="M500.0,700 H638.3333333333334" class="ue" marker-end="url(#m1Sol)"/>
+<text x="571.6666666666667" y="694" class="ulb" text-anchor="middle">GameMode::Initialize()</text>
+<text x="651.3333333333334" y="704" class="unote" text-anchor="start">Controller 생성 → Controller::Initialize (키 매핑 · 바인딩)</text>
+<path d="M500.0,770 H781.6666666666667" class="ue" marker-end="url(#m1Sol)"/>
+<text x="643.3333333333334" y="764" class="ulb" text-anchor="middle">Actor::Initialize()</text>
+<text x="643.3333333333334" y="785" class="unote" text-anchor="middle">컴포넌트 생성 · SetRootComponent</text>
+<rect x="454.0" y="730" width="378.66666666666674" height="86" rx="4" class="uframe"/>
+<path d="M454.0,730 h127.2 v14 l-8,8 h-119.2 z" class="uframetag"/>
+<text x="460.0" y="745" class="ulb" text-anchor="start">loop [actors 순서]</text>
+<path d="M213.33333333333334,842 H495.0" class="ue" marker-end="url(#m1Sol)"/>
+<text x="356.6666666666667" y="836" class="ulb" text-anchor="middle">World::BeginPlay()</text>
+<path d="M500.0,876 H638.3333333333334" class="ue" marker-end="url(#m1Sol)"/>
+<text x="571.6666666666667" y="870" class="ulb" text-anchor="middle">GameMode · Controller::BeginPlay()</text>
+<path d="M500.0,946 H781.6666666666667" class="ue" marker-end="url(#m1Sol)"/>
+<text x="643.3333333333334" y="940" class="ulb" text-anchor="middle">Actor::BeginPlay()</text>
+<text x="643.3333333333334" y="961" class="unote" text-anchor="middle">다른 액터 찾기 · 부착</text>
+<rect x="454.0" y="906" width="378.66666666666674" height="86" rx="4" class="uframe"/>
+<path d="M454.0,906 h127.2 v14 l-8,8 h-119.2 z" class="uframetag"/>
+<text x="460.0" y="921" class="ulb" text-anchor="start">loop [actors 순서]</text>
+<rect x="8" y="1008" width="984" height="24" rx="4" class="uphase"/>
+<text x="18" y="1025" class="uphaset" text-anchor="start">③ GameLoop — 창이 닫힐 때까지 매 프레임</text>
+<path d="M70.0,1054 H208.33333333333334" class="ue" marker-end="url(#m1Sol)"/>
+<text x="141.66666666666669" y="1048" class="ulb" text-anchor="middle">GameLoop()</text>
+<path d="M213.33333333333334,1124 H495.0" class="ue" marker-end="url(#m1Sol)"/>
+<text x="356.6666666666667" y="1118" class="ulb" text-anchor="middle">GameInstance::Tick()</text>
+<text x="508.0" y="1128" class="unote" text-anchor="start">입력 → 시간 → World::Tick (4장에서 자세히)</text>
+<path d="M500.0,1158 H638.3333333333334" class="ue" marker-end="url(#m1Sol)"/>
+<text x="571.6666666666667" y="1152" class="ulb" text-anchor="middle">Controller::Tick() → 입력 콜백</text>
+<path d="M500.0,1192 H781.6666666666667" class="ue" marker-end="url(#m1Sol)"/>
+<text x="643.3333333333334" y="1186" class="ulb" text-anchor="middle">Actor::Tick()</text>
+<path d="M213.33333333333334,1226 H925.0" class="ue" marker-end="url(#m1Sol)"/>
+<text x="571.6666666666666" y="1220" class="ulb" text-anchor="middle">Create…RenderList() → RenderPass → Present</text>
+<rect x="167.33333333333334" y="1084" width="808.6666666666666" height="176" rx="4" class="uframe"/>
+<path d="M167.33333333333334,1084 h98.4 v14 l-8,8 h-90.4 z" class="uframetag"/>
+<text x="173.33333333333334" y="1099" class="ulb" text-anchor="start">loop [매 프레임]</text>
+<rect x="8" y="1276" width="984" height="24" rx="4" class="uphase"/>
+<text x="18" y="1293" class="uphaset" text-anchor="start">④ Finalize — 종료 시 1번</text>
+<path d="M70.0,1322 H208.33333333333334" class="ue" marker-end="url(#m1Sol)"/>
+<text x="141.66666666666669" y="1316" class="ulb" text-anchor="middle">Finalize()</text>
+<path d="M213.33333333333334,1356 H495.0" class="ue" marker-end="url(#m1Sol)"/>
+<text x="356.6666666666667" y="1350" class="ulb" text-anchor="middle">World::Finalize() → UnLoadData()</text>
+<path d="M500.0,1390 H781.6666666666667" class="ue" marker-end="url(#m1Sol)"/>
+<text x="643.3333333333334" y="1384" class="ulb" text-anchor="middle">delete actor (소멸자)</text>
+<path d="M213.33333333333334,1424 H925.0" class="ue" marker-end="url(#m1Sol)"/>
+<text x="571.6666666666666" y="1418" class="ulb" text-anchor="middle">Renderer::Finalize()</text>
+</svg>
+</div>
+<div class="card tip">
+<ul>
+<li><b>①에서는 액터가 아직 없습니다.</b> 이 단계의 내 코드는 "이름표 등록 · 파일 목록 적기"만 합니다. 에셋은 <code>LoadAssets()</code>에서 등록만 하고, 엔진이 바로 뒤 <code>AllAssetDataCreate()</code>에서 한꺼번에 GPU 리소스를 만듭니다.</li>
+<li><b>②에서 생성 → Initialize → BeginPlay 가 "모든 액터에 대해 단계별로"</b> 돕니다. 즉 모든 액터가 생성된 뒤에 Initialize가 시작되고, 모든 Initialize가 끝난 뒤에 BeginPlay가 시작됩니다.</li>
+<li><b>GameMode · Controller가 항상 먼저</b>입니다. 그래서 Pawn의 <code>Initialize()</code>에서 <code>GetWorld()-&gt;GetController(0)</code>로 컨트롤러를 가져와 입력을 바인딩할 수 있습니다 (Ship이 이렇게 함).</li>
+<li><b>④ 종료 시에는 소멸자만</b> 불립니다. <code>EndPlay</code> 같은 함수는 없으므로 정리할 것이 있으면 소멸자에 둡니다.</li>
+</ul>
+</div>
+
+<h2 id="s3">3. 클래스 구조</h2>
+<h3>3-1. 액터 계열 — 무엇을 상속해서 만드나</h3>
+<div class="diagram">
+<svg viewBox="0 0 1000 634" class="uml" role="img" aria-label="액터 계열 클래스 다이어그램">
+<defs>
+<marker id="m2Inh" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1,1 L11,6 L1,11 z" class="mk-hollow"/></marker>
+<marker id="m2Comp" viewBox="0 0 16 10" refX="1" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 z" class="mk-fill"/></marker>
+<marker id="m2Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" class="mk-open"/></marker>
+<marker id="m2Sol" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-fill"/></marker>
+</defs>
+<rect x="410" y="20" width="180" height="82" rx="4" class="ub e"/>
+<text x="500.0" y="36" class="us" text-anchor="middle">«engine»</text>
+<text x="500.0" y="52" class="ut" text-anchor="middle">FPObject</text>
+<line x1="410" y1="60" x2="590" y2="60" class="ul e"/>
+<text x="418" y="76" class="um" text-anchor="start">+ GetWorld() : FPWorld*</text>
+<text x="418" y="93" class="um" text-anchor="start">+ SetOuter(FPObject*)</text>
+<rect x="290" y="125" width="420" height="192" rx="4" class="ub e"/>
+<text x="500.0" y="141" class="us" text-anchor="middle">«engine · abstract»</text>
+<text x="500.0" y="157" class="ut" text-anchor="middle">FPActor</text>
+<line x1="290" y1="165" x2="710" y2="165" class="ul e"/>
+<text x="298" y="181" class="um" text-anchor="start"># RootComponent : FPSceneComponent*</text>
+<text x="298" y="198" class="um" text-anchor="start"># ActorName : string</text>
+<line x1="290" y1="207" x2="710" y2="207" class="ul e"/>
+<text x="298" y="223" class="um" text-anchor="start">+ Initialize() = 0      // 꼭 구현</text>
+<text x="298" y="240" class="um" text-anchor="start">+ BeginPlay() = 0       // 꼭 구현</text>
+<text x="298" y="257" class="um" text-anchor="start">+ Tick()                // override 시 __super::Tick()</text>
+<text x="298" y="274" class="um" text-anchor="start">+ SetActorLocation · Rotation · Scale3D()  // 월드</text>
+<text x="298" y="291" class="um" text-anchor="start">+ AttachToActor() · AttachToComponent()</text>
+<text x="298" y="308" class="um" text-anchor="start">+ SetRootComponent() · GetName()</text>
+<path d="M500,125 V102" class="ue" marker-end="url(#m2Inh)"/>
+<rect x="20" y="357" width="200" height="99" rx="4" class="ub e"/>
+<text x="120.0" y="373" class="us" text-anchor="middle">«engine»</text>
+<text x="120.0" y="389" class="ut" text-anchor="middle">FPPawn</text>
+<line x1="20" y1="397" x2="220" y2="397" class="ul e"/>
+<text x="28" y="413" class="um" text-anchor="start">+ GetController()</text>
+<text x="28" y="430" class="um" text-anchor="start">+ AddControllerYawInput()</text>
+<text x="28" y="447" class="um" text-anchor="start">+ PossessedBy()</text>
+<rect x="240" y="357" width="210" height="99" rx="4" class="ub e"/>
+<text x="345.0" y="373" class="us" text-anchor="middle">«engine»</text>
+<text x="345.0" y="389" class="ut" text-anchor="middle">FPAController</text>
+<line x1="240" y1="397" x2="450" y2="397" class="ul e"/>
+<text x="248" y="413" class="um" text-anchor="start">+ GetInputComponent()</text>
+<text x="248" y="430" class="um" text-anchor="start">+ Possess(Pawn)</text>
+<text x="248" y="447" class="um" text-anchor="start">+ AddYawInput() …</text>
+<rect x="470" y="357" width="200" height="107" rx="4" class="ub e"/>
+<text x="570.0" y="373" class="us" text-anchor="middle">«engine»</text>
+<text x="570.0" y="389" class="ut" text-anchor="middle">FPAGameMode</text>
+<line x1="470" y1="397" x2="670" y2="397" class="ul e"/>
+<text x="478" y="413" class="um" text-anchor="start"># ControllerList : string[]</text>
+<text x="478" y="430" class="um" text-anchor="start"># GameController : 목록</text>
+<line x1="470" y1="439" x2="670" y2="439" class="ul e"/>
+<text x="478" y="455" class="um" text-anchor="start">+ GetController(i)</text>
+<rect x="690" y="357" width="290" height="99" rx="4" class="ub h"/>
+<text x="835.0" y="373" class="us" text-anchor="middle">«내 코드»</text>
+<text x="835.0" y="389" class="ut" text-anchor="middle">내 Actor  (Cannon, Terrain, UI …)</text>
+<line x1="690" y1="397" x2="980" y2="397" class="ul h"/>
+<text x="698" y="413" class="um" text-anchor="start">+ Initialize() override</text>
+<text x="698" y="430" class="um" text-anchor="start">+ BeginPlay() override</text>
+<text x="698" y="447" class="um" text-anchor="start">+ Tick() override</text>
+<path d="M500,317 V333 M120,333 H835 M120,333 V357 M345,333 V357 M570,333 V357 M835,333 V357" class="ue"/>
+<path d="M500,333 V319" class="ue" marker-end="url(#m2Inh)"/>
+<rect x="20" y="524" width="200" height="82" rx="4" class="ub h"/>
+<text x="120.0" y="540" class="us" text-anchor="middle">«내 코드 · Pawn»</text>
+<text x="120.0" y="556" class="ut" text-anchor="middle">Ship</text>
+<line x1="20" y1="564" x2="220" y2="564" class="ul h"/>
+<text x="28" y="580" class="um" text-anchor="start">Initialize() : 입력 바인딩</text>
+<text x="28" y="597" class="um" text-anchor="start">Move(FInputValue)</text>
+<rect x="240" y="524" width="210" height="82" rx="4" class="ub h"/>
+<text x="345.0" y="540" class="us" text-anchor="middle">«내 코드»</text>
+<text x="345.0" y="556" class="ut" text-anchor="middle">GameController</text>
+<line x1="240" y1="564" x2="450" y2="564" class="ul h"/>
+<text x="248" y="580" class="um" text-anchor="start">Initialize() : 키 매핑</text>
+<text x="248" y="597" class="um" text-anchor="start">FireCannon(FInputValue)</text>
+<rect x="470" y="524" width="200" height="82" rx="4" class="ub h"/>
+<text x="570.0" y="540" class="us" text-anchor="middle">«내 코드»</text>
+<text x="570.0" y="556" class="ut" text-anchor="middle">GameMode</text>
+<line x1="470" y1="564" x2="670" y2="564" class="ul h"/>
+<text x="478" y="580" class="um" text-anchor="start">Initialize() :</text>
+<text x="478" y="597" class="um" text-anchor="start">ControllerList 에 이름 추가</text>
+<rect x="690" y="524" width="290" height="82" rx="4" class="ub e"/>
+<text x="835.0" y="540" class="us" text-anchor="middle">«engine»</text>
+<text x="835.0" y="556" class="ut" text-anchor="middle">FPInputComponent</text>
+<line x1="690" y1="564" x2="980" y2="564" class="ul e"/>
+<text x="698" y="580" class="um" text-anchor="start">+ AddMappingKey(IA, 키, FModifyInfo)</text>
+<text x="698" y="597" class="um" text-anchor="start">+ BindMethod(IA, obj, EKeyState, &amp;함수)</text>
+<path d="M120,524 V458" class="ue" marker-end="url(#m2Inh)"/>
+<path d="M345,524 V458" class="ue" marker-end="url(#m2Inh)"/>
+<path d="M570,524 V466" class="ue" marker-end="url(#m2Inh)"/>
+<path d="M450,397 H462 V502 H835 V522" class="ue" marker-start="url(#m2Comp)" marker-end="url(#m2Arr)"/>
+<text x="600" y="496" class="ulb" text-anchor="start">InputComponent 1</text>
+<path d="M470,427 H452" class="ue" marker-start="url(#m2Comp)" marker-end="url(#m2Arr)"/>
+<path d="M220,387 H238" class="ue" marker-end="url(#m2Arr)"/>
+<text x="222" y="381" class="ulb" text-anchor="start">ctrl</text>
+</svg>
+</div>
+<ul>
+<li>레벨에 놓는 것은 전부 <code>FPActor</code>의 자식입니다. <code>Initialize()</code>와 <code>BeginPlay()</code>는 순수 가상이라 <b>반드시 구현</b>해야 합니다 (할 일이 없으면 빈 <code>{}</code>).</li>
+<li>입력을 받아 조종당하는 캐릭터·탈것은 <code>FPPawn</code>, 레벨 전체 입력은 <code>FPAController</code>, 컨트롤러 목록은 <code>FPAGameMode</code>를 상속합니다.</li>
+<li>컨트롤러는 레벨 JSON에 넣지 않습니다. GameMode가 <code>ControllerList</code>의 이름으로 만들어서 소유합니다 (액터 목록에도 없음).</li>
+</ul>
+
+<h3>3-2. 컴포넌트 계열 — 액터 안에 무엇을 붙이나</h3>
+<div class="diagram">
+<svg viewBox="0 0 1000 470" class="uml" role="img" aria-label="컴포넌트 계열 클래스 다이어그램">
+<defs>
+<marker id="m3Inh" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1,1 L11,6 L1,11 z" class="mk-hollow"/></marker>
+<marker id="m3Comp" viewBox="0 0 16 10" refX="1" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 z" class="mk-fill"/></marker>
+<marker id="m3Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" class="mk-open"/></marker>
+<marker id="m3Sol" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-fill"/></marker>
+</defs>
+<rect x="20" y="20" width="260" height="90" rx="4" class="ub e"/>
+<text x="150.0" y="36" class="us" text-anchor="middle">«engine»</text>
+<text x="150.0" y="52" class="ut" text-anchor="middle">FPActorComponent</text>
+<line x1="20" y1="60" x2="280" y2="60" class="ul e"/>
+<text x="28" y="76" class="um" text-anchor="start"># Owner : FPActor*</text>
+<line x1="20" y1="85" x2="280" y2="85" class="ul e"/>
+<text x="28" y="101" class="um" text-anchor="start">+ GetOwner()</text>
+<rect x="330" y="20" width="230" height="40" rx="4" class="ub e"/>
+<text x="445.0" y="36" class="us" text-anchor="middle">«engine · 위치 없음»</text>
+<text x="445.0" y="52" class="ut" text-anchor="middle">FPMovementComponent</text>
+<path d="M330,45 H282" class="ue" marker-end="url(#m3Inh)"/>
+<rect x="20" y="150" width="300" height="150" rx="4" class="ub e"/>
+<text x="170.0" y="166" class="us" text-anchor="middle">«engine · 위치 있음»</text>
+<text x="170.0" y="182" class="ut" text-anchor="middle">FPSceneComponent</text>
+<line x1="20" y1="190" x2="320" y2="190" class="ul e"/>
+<text x="28" y="206" class="um" text-anchor="start">+ SetRelativeLocation · Rotation · Scale3D()</text>
+<text x="28" y="223" class="um" text-anchor="start">+ SetWorldLocation · Rotation · Scale3D()</text>
+<text x="28" y="240" class="um" text-anchor="start">+ AddWorldOffset() · AddLocalOffset()</text>
+<text x="28" y="257" class="um" text-anchor="start">+ SetupAttachment(Parent)  // 상대값 유지</text>
+<text x="28" y="274" class="um" text-anchor="start">+ GetComponentTransform()</text>
+<text x="28" y="291" class="um" text-anchor="start">+ Tick()  // 월드 행렬 → 자식 Tick</text>
+<path d="M150,150 V112" class="ue" marker-end="url(#m3Inh)"/>
+<path d="M350,200 V438" class="ue"/>
+<path d="M350,200 H322" class="ue" marker-end="url(#m3Inh)"/>
+<rect x="380" y="150" width="180" height="26" rx="4" class="ub e"/>
+<text x="470.0" y="168" class="ut" text-anchor="middle">FPPrimitiveComponent</text>
+<rect x="580" y="150" width="190" height="68" rx="4" class="ub e"/>
+<text x="675.0" y="168" class="ut" text-anchor="middle">FPMeshComponent</text>
+<line x1="580" y1="176" x2="770" y2="176" class="ul e"/>
+<text x="588" y="192" class="um" text-anchor="start">+ SetActive(bool)</text>
+<text x="588" y="209" class="um" text-anchor="start">+ Set/GetMaterial()</text>
+<rect x="790" y="150" width="200" height="68" rx="4" class="ub e"/>
+<text x="890.0" y="168" class="ut" text-anchor="middle">FPStaticMeshComponent</text>
+<line x1="790" y1="176" x2="990" y2="176" class="ul e"/>
+<text x="798" y="192" class="um" text-anchor="start">(Owner, &quot;메쉬이름&quot;)</text>
+<text x="798" y="209" class="um" text-anchor="start">생성 = MeshRenderList 등록</text>
+<path d="M378,163 H350" class="ue"/>
+<path d="M580,163 H562" class="ue" marker-end="url(#m3Inh)"/>
+<path d="M790,163 H772" class="ue" marker-end="url(#m3Inh)"/>
+<rect x="380" y="255" width="180" height="26" rx="4" class="ub e"/>
+<text x="470.0" y="273" class="ut" text-anchor="middle">FPLightComponentBase</text>
+<rect x="580" y="255" width="190" height="51" rx="4" class="ub e"/>
+<text x="675.0" y="273" class="ut" text-anchor="middle">FPLightComponent</text>
+<line x1="580" y1="281" x2="770" y2="281" class="ul e"/>
+<text x="588" y="297" class="um" text-anchor="start">Directional · Local …</text>
+<rect x="790" y="255" width="200" height="51" rx="4" class="ub e"/>
+<text x="890.0" y="273" class="ut" text-anchor="middle">FPPointLightComponent</text>
+<line x1="790" y1="281" x2="990" y2="281" class="ul e"/>
+<text x="798" y="297" class="um" text-anchor="start">(LocalLight 경유)</text>
+<path d="M378,268 H350" class="ue"/>
+<path d="M580,268 H562" class="ue" marker-end="url(#m3Inh)"/>
+<path d="M790,268 H772" class="ue" marker-end="url(#m3Inh)"/>
+<rect x="380" y="345" width="230" height="26" rx="4" class="ub e"/>
+<text x="495.0" y="363" class="ut" text-anchor="middle">FPCameraComponent</text>
+<path d="M378,358 H350" class="ue"/>
+<rect x="380" y="385" width="230" height="26" rx="4" class="ub e"/>
+<text x="495.0" y="403" class="ut" text-anchor="middle">FPSpringArmComponent</text>
+<path d="M378,398 H350" class="ue"/>
+<rect x="380" y="425" width="230" height="26" rx="4" class="ub e"/>
+<text x="495.0" y="443" class="ut" text-anchor="middle">FPSceneCaptureComponent</text>
+<path d="M378,438 H350" class="ue"/>
+<text x="640" y="365" class="unote" text-anchor="start">← 모두 FPSceneComponent 를 상속</text>
+<text x="640" y="383" class="unote" text-anchor="start">   (위치를 가지므로 부착 · 이동 가능)</text>
+</svg>
+</div>
+<ul>
+<li>모든 액터는 생성될 때 빈 <code>FPSceneComponent</code>를 루트로 갖습니다. <code>Initialize()</code>에서 메쉬 등을 만들고 <code>SetRootComponent(Mesh)</code>로 바꾸면, 레벨 JSON에서 받은 위치·회전·크기가 새 루트로 옮겨집니다.</li>
+<li><code>FPStaticMeshComponent(this, "메쉬이름")</code>은 <b>만드는 순간 렌더 목록에 등록</b>됩니다. 숨기려면 <code>SetActive(false)</code>.</li>
+<li>루트가 아닌 컴포넌트는 <code>SetupAttachment(RootComponent)</code>로 루트 아래에 붙여야 위치가 계산됩니다 (Tick이 루트부터 자식으로 내려가며 계산하기 때문).</li>
+</ul>
+
+<h2 id="s4">4. 매 프레임 안에서</h2>
+<p><code>FPGameInstance::Tick()</code> → <code>FPWorld::Tick()</code> → 렌더링 순서입니다.</p>
+<div class="diagram">
+<svg viewBox="0 0 1000 718" class="uml" role="img" aria-label="매 프레임 시퀀스 다이어그램">
+<defs>
+<marker id="m4Inh" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1,1 L11,6 L1,11 z" class="mk-hollow"/></marker>
+<marker id="m4Comp" viewBox="0 0 16 10" refX="1" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 z" class="mk-fill"/></marker>
+<marker id="m4Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" class="mk-open"/></marker>
+<marker id="m4Sol" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-fill"/></marker>
+</defs>
+<rect x="12.0" y="20" width="116" height="36" rx="4" class="ub e"/>
+<text x="70.0" y="40" class="ut sm" text-anchor="middle">GameLoop</text>
+<line x1="70.0" y1="56" x2="70.0" y2="708" class="ulife"/>
+<rect x="134.85714285714286" y="20" width="116" height="36" rx="4" class="ub e"/>
+<text x="192.85714285714286" y="40" class="ut sm" text-anchor="middle">InputSystem</text>
+<line x1="192.85714285714286" y1="56" x2="192.85714285714286" y2="708" class="ulife"/>
+<rect x="257.7142857142857" y="20" width="116" height="36" rx="4" class="ub e"/>
+<text x="315.7142857142857" y="40" class="ut sm" text-anchor="middle">GameTimer</text>
+<line x1="315.7142857142857" y1="56" x2="315.7142857142857" y2="708" class="ulife"/>
+<rect x="380.57142857142856" y="20" width="116" height="36" rx="4" class="ub e"/>
+<text x="438.57142857142856" y="40" class="ut sm" text-anchor="middle">FPWorld</text>
+<line x1="438.57142857142856" y1="56" x2="438.57142857142856" y2="708" class="ulife"/>
+<rect x="503.42857142857144" y="20" width="116" height="50" rx="4" class="ub h"/>
+<text x="561.4285714285714" y="40" class="ut sm" text-anchor="middle">내 Controller</text>
+<text x="561.4285714285714" y="54" class="ut sm" text-anchor="middle">+ InputComponent</text>
+<line x1="561.4285714285714" y1="70" x2="561.4285714285714" y2="708" class="ulife"/>
+<rect x="626.2857142857143" y="20" width="116" height="36" rx="4" class="ub h"/>
+<text x="684.2857142857143" y="40" class="ut sm" text-anchor="middle">내 Actor</text>
+<line x1="684.2857142857143" y1="56" x2="684.2857142857143" y2="708" class="ulife"/>
+<rect x="749.1428571428571" y="20" width="116" height="50" rx="4" class="ub e"/>
+<text x="807.1428571428571" y="40" class="ut sm" text-anchor="middle">SceneComponent</text>
+<text x="807.1428571428571" y="54" class="ut sm" text-anchor="middle">(루트·자식)</text>
+<line x1="807.1428571428571" y1="70" x2="807.1428571428571" y2="708" class="ulife"/>
+<rect x="872.0" y="20" width="116" height="36" rx="4" class="ub e"/>
+<text x="930.0" y="40" class="ut sm" text-anchor="middle">Renderer</text>
+<line x1="930.0" y1="56" x2="930.0" y2="708" class="ulife"/>
+<path d="M70.0,80 H187.85714285714286" class="ue" marker-end="url(#m4Sol)"/>
+<text x="131.42857142857144" y="74" class="ulb" text-anchor="middle">TickInputSystem()</text>
+<text x="200.85714285714286" y="84" class="unote" text-anchor="start">이번 프레임 키 상태 수집</text>
+<path d="M70.0,114 H310.7142857142857" class="ue" marker-end="url(#m4Sol)"/>
+<text x="192.85714285714286" y="108" class="ulb" text-anchor="middle">Tick()</text>
+<text x="323.7142857142857" y="118" class="unote" text-anchor="start">DeltaTime 계산</text>
+<path d="M70.0,148 H433.57142857142856" class="ue" marker-end="url(#m4Sol)"/>
+<text x="254.28571428571428" y="142" class="ulb" text-anchor="middle">World::Tick()</text>
+<path d="M438.57142857142856,182 H556.4285714285714" class="ue" marker-end="url(#m4Sol)"/>
+<text x="500.0" y="176" class="ulb" text-anchor="middle">GameMode::Tick() → Controller::Tick()</text>
+<path d="M561.4285714285714,216 H589.4285714285714 V232 H566.4285714285714" class="ue" marker-end="url(#m4Sol)"/>
+<text x="595.4285714285714" y="228" class="ulb" text-anchor="start">InputComponent::ProcessInputTick()</text>
+<path d="M561.4285714285714,296 H679.2857142857143" class="ue" marker-end="url(#m4Sol)"/>
+<text x="622.8571428571429" y="290" class="ulb" text-anchor="middle">바인딩한 함수(FInputValue)</text>
+<text x="692.2857142857143" y="300" class="unote" text-anchor="start">예: Ship::Move, GameController::FireCannon</text>
+<rect x="515.4285714285714" y="256" width="214.8571428571429" height="74" rx="4" class="uframe"/>
+<path d="M515.4285714285714,256 h242.4 v14 l-8,8 h-234.4 z" class="uframetag"/>
+<text x="521.4285714285714" y="271" class="ulb" text-anchor="start">opt [매핑된 키가 Down / Pressed / Up]</text>
+<path d="M561.4285714285714,356 H589.4285714285714 V372 H566.4285714285714" class="ue" marker-end="url(#m4Sol)"/>
+<text x="595.4285714285714" y="368" class="ulb" text-anchor="start">루트 회전 = ControlRotation</text>
+<path d="M438.57142857142856,436 H679.2857142857143" class="ue" marker-end="url(#m4Sol)"/>
+<text x="561.4285714285714" y="430" class="ulb" text-anchor="middle">Actor::Tick()</text>
+<path d="M684.2857142857143,470 H712.2857142857143 V486 H689.2857142857143" class="ue" marker-end="url(#m4Sol)"/>
+<text x="718.2857142857143" y="482" class="ulb" text-anchor="start">내 로직 (DeltaTime 으로 이동 등)</text>
+<path d="M684.2857142857143,514 H802.1428571428571" class="ue" marker-end="url(#m4Sol)"/>
+<text x="745.7142857142858" y="508" class="ulb" text-anchor="middle">__super::Tick() → Root-&gt;Tick()</text>
+<path d="M807.1428571428571,548 H835.1428571428571 V564 H812.1428571428571" class="ue" marker-end="url(#m4Sol)"/>
+<text x="841.1428571428571" y="560" class="ulb" text-anchor="start">월드 행렬 → 자식 Tick</text>
+<rect x="392.57142857142856" y="396" width="460.57142857142856" height="196" rx="4" class="uframe"/>
+<path d="M392.57142857142856,396 h249.6 v14 l-8,8 h-241.6 z" class="uframetag"/>
+<text x="398.57142857142856" y="411" class="ulb" text-anchor="start">loop [GameActorList — 레벨 JSON 순서]</text>
+<path d="M70.0,618 H925.0" class="ue" marker-end="url(#m4Sol)"/>
+<text x="500.0" y="612" class="ulb" text-anchor="middle">Create…RenderList()</text>
+<text x="500.0" y="633" class="unote" text-anchor="middle">활성(SetActive) 컴포넌트만</text>
+<path d="M70.0,664 H925.0" class="ue" marker-end="url(#m4Sol)"/>
+<text x="500.0" y="658" class="ulb" text-anchor="middle">SceneCapture → Mesh → Gizmo → Normal → UI Pass → Present</text>
+</svg>
+</div>
+<div class="card tip">
+<ul>
+<li><b>입력 콜백은 액터 Tick보다 먼저</b> 불립니다. 키 함수에서 값을 바꾸면 같은 프레임의 Tick에서 그 값을 쓸 수 있습니다.</li>
+<li><b>Down</b> = 누른 프레임 1번, <b>Pressed</b> = 누르고 있는 동안 매 프레임, <b>Up</b> = 뗀 프레임 1번.</li>
+<li>액터 Tick 순서 = 레벨 JSON 순서 (실행 중 Spawn한 액터는 맨 뒤). 다른 액터의 이번 프레임 결과에 기대는 코드는 순서를 확인하세요.</li>
+<li><code>Tick()</code>을 override하면 <b>마지막에 <code>__super::Tick()</code></b>을 불러야 위치 행렬이 갱신됩니다. 빼먹으면 움직여도 화면이 안 바뀝니다.</li>
+<li>렌더러는 매 프레임 "활성 컴포넌트" 목록을 새로 만들어 그립니다. 그리는 코드를 직접 부를 필요는 없습니다.</li>
+</ul>
+</div>
+
+<h2 id="s5">5. 액터 하나의 일생 · 함수별로 할 일</h2>
+<div class="diagram">
+<svg viewBox="0 0 1000 250" class="uml" role="img" aria-label="액터 생명주기 상태 다이어그램">
+<defs>
+<marker id="m5Inh" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1,1 L11,6 L1,11 z" class="mk-hollow"/></marker>
+<marker id="m5Comp" viewBox="0 0 16 10" refX="1" refY="5" markerWidth="16" markerHeight="10" orient="auto"><path d="M1,5 L8,1 L15,5 L8,9 z" class="mk-fill"/></marker>
+<marker id="m5Arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" class="mk-open"/></marker>
+<marker id="m5Sol" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-fill"/></marker>
+</defs>
+<circle cx="22" cy="72" r="8" class="mk-fill"/>
+<text x="10" y="30" class="uphaset" text-anchor="start">레벨에 놓은 액터 (OpenLevel)</text>
+<rect x="40" y="45" width="135" height="54" rx="22" class="ub e"/>
+<text x="107.5" y="68" class="ut sm" text-anchor="middle">생성자</text>
+<text x="107.5" y="86" class="ulb" text-anchor="middle">GetWorld 금지</text>
+<rect x="190" y="45" width="135" height="54" rx="22" class="ub d"/>
+<text x="257.5" y="68" class="ut sm" text-anchor="middle">이름·Transform</text>
+<text x="257.5" y="86" class="ulb" text-anchor="middle">JSON 값 적용</text>
+<path d="M175,72 H188" class="ue" marker-end="url(#m5Arr)"/>
+<rect x="340" y="45" width="135" height="54" rx="22" class="ub h"/>
+<text x="407.5" y="68" class="ut sm" text-anchor="middle">Initialize</text>
+<text x="407.5" y="86" class="ulb" text-anchor="middle">컴포넌트 만들기</text>
+<path d="M325,72 H338" class="ue" marker-end="url(#m5Arr)"/>
+<rect x="490" y="45" width="135" height="54" rx="22" class="ub h"/>
+<text x="557.5" y="68" class="ut sm" text-anchor="middle">BeginPlay</text>
+<text x="557.5" y="86" class="ulb" text-anchor="middle">서로 찾아 연결</text>
+<path d="M475,72 H488" class="ue" marker-end="url(#m5Arr)"/>
+<rect x="640" y="45" width="135" height="54" rx="22" class="ub h"/>
+<text x="707.5" y="68" class="ut sm" text-anchor="middle">Tick ↻</text>
+<text x="707.5" y="86" class="ulb" text-anchor="middle">매 프레임</text>
+<path d="M625,72 H638" class="ue" marker-end="url(#m5Arr)"/>
+<rect x="790" y="45" width="135" height="54" rx="22" class="ub e"/>
+<text x="857.5" y="68" class="ut sm" text-anchor="middle">소멸자</text>
+<text x="857.5" y="86" class="ulb" text-anchor="middle">Finalize 때 delete</text>
+<path d="M775,72 H788" class="ue" marker-end="url(#m5Arr)"/>
+<path d="M30,72 H38" class="ue" marker-end="url(#m5Arr)"/>
+<path d="M720,45 C720,20 745,20 745,43" class="ue" marker-end="url(#m5Arr)"/>
+<circle cx="960" cy="72" r="9" class="mk-hollow"/><circle cx="960" cy="72" r="5" class="mk-fill"/>
+<path d="M925,72 H949" class="ue" marker-end="url(#m5Arr)"/>
+<text x="10" y="150" class="uphaset" text-anchor="start">실행 중 SpawnActor(&quot;클래스&quot;, &quot;이름&quot;)</text>
+<rect x="40" y="165" width="135" height="54" rx="22" class="ub e"/>
+<text x="107.5" y="188" class="ut sm" text-anchor="middle">생성자</text>
+<text x="107.5" y="206" class="ulb" text-anchor="middle"></text>
+<rect x="190" y="165" width="135" height="54" rx="22" class="ub h"/>
+<text x="257.5" y="188" class="ut sm" text-anchor="middle">Initialize</text>
+<text x="257.5" y="206" class="ulb" text-anchor="middle">바로 호출</text>
+<path d="M175,192 H188" class="ue" marker-end="url(#m5Arr)"/>
+<rect x="340" y="165" width="135" height="54" rx="22" class="ub h"/>
+<text x="407.5" y="188" class="ut sm" text-anchor="middle">BeginPlay</text>
+<text x="407.5" y="206" class="ulb" text-anchor="middle">바로 호출</text>
+<path d="M325,192 H338" class="ue" marker-end="url(#m5Arr)"/>
+<rect x="490" y="165" width="135" height="54" rx="22" class="ub d"/>
+<text x="557.5" y="188" class="ut sm" text-anchor="middle">이름 설정</text>
+<text x="557.5" y="206" class="ulb" text-anchor="middle">BeginPlay 뒤!</text>
+<path d="M475,192 H488" class="ue" marker-end="url(#m5Arr)"/>
+<rect x="640" y="165" width="135" height="54" rx="22" class="ub h"/>
+<text x="707.5" y="188" class="ut sm" text-anchor="middle">Tick ↻</text>
+<text x="707.5" y="206" class="ulb" text-anchor="middle">다음 프레임부터</text>
+<path d="M625,192 H638" class="ue" marker-end="url(#m5Arr)"/>
+<circle cx="22" cy="192" r="8" class="mk-fill"/>
+<path d="M30,192 H38" class="ue" marker-end="url(#m5Arr)"/>
+<text x="790" y="190" class="unote" text-anchor="start">Transform 은 Spawn 뒤에</text>
+<text x="790" y="206" class="unote" text-anchor="start">직접 SetActorLocation</text>
+</svg>
+</div>
+<table>
+<tr><th>함수</th><th>언제</th><th>여기서 할 일 <span class="tag ok">O</span></th><th>하면 안 되는 것 <span class="tag no">X</span></th></tr>
+<tr><td><code>생성자</code></td><td>OpenLevel 중</td><td>멤버 변수 기본값 정도</td><td><code>GetWorld()</code> — 아직 Outer가 없어 크래시. 컴포넌트 생성도 Initialize로</td></tr>
+<tr><td><code>Initialize()</code></td><td>모든 액터 생성 후, 레벨 순서대로 1번</td><td>컴포넌트 <code>new</code>, <code>SetRootComponent</code>, <code>SetupAttachment</code>, 머티리얼 설정, (Pawn) 컨트롤러 가져와 <code>BindMethod</code> · <code>Possess</code></td><td>다른 액터의 컴포넌트에 접근 — 뒤 순서 액터는 아직 Initialize 전일 수 있음</td></tr>
+<tr><td><code>BeginPlay()</code></td><td>모든 Initialize 후 1번</td><td><code>GetActorOfClass</code>로 다른 액터 찾기, <code>AttachToActor</code>, 상대 위치 설정, 포인터 저장</td><td>다른 액터의 BeginPlay 결과에 기대기 (순서 의존)</td></tr>
+<tr><td><code>Tick()</code></td><td>매 프레임</td><td><code>DeltaTime</code>으로 이동·애니메이션, 타이머, 상태 갱신 → 마지막에 <code>__super::Tick()</code></td><td>매 프레임 <code>GetAllActorsOfClass</code> 같은 검색 (BeginPlay에서 찾아 저장)</td></tr>
+<tr><td>입력 함수<br><code>void F(FInputValue)</code></td><td>Controller Tick 안, 키 상태가 맞을 때</td><td><code>Value.X / Y</code> 읽어서 이동·토글·발사</td><td>무거운 작업 (프레임마다 불릴 수 있음 — Pressed)</td></tr>
+<tr><td><code>소멸자</code></td><td>종료 시</td><td>직접 <code>new</code>한 것 정리</td><td>다른 액터 접근 — 이미 지워졌을 수 있음</td></tr>
+</table>
+
+<h2 id="s6">6. 접근 치트시트 — 무엇을 어디서 가져오나</h2>
+<div class="grid one">
+<div class="card"><h4>월드 · 시간</h4>
+<pre>FPWorld* World = GetWorld();          <span class="c">// 액터 안</span>
+FPWorld* World = GetOwner()-&gt;GetWorld(); <span class="c">// 컴포넌트 안</span>
+float dt = GetWorld()-&gt;GetGameTimer()-&gt;DeltaTime(); <span class="c">// 초</span></pre></div>
+<div class="card"><h4>다른 액터 찾기 <code>FPGameplayStatics</code></h4>
+<pre>FPActor* Ship = FPGameplayStatics::GetActorOfClass(GetWorld(), "Ship");
+std::vector&lt;FPActor*&gt; List;
+FPGameplayStatics::GetAllActorsOfClass(GetWorld(), "Cannon", List);
+<span class="c">// "클래스이름" = Register 할 때 쓴 문자열. 이름은 actor-&gt;GetName()</span></pre></div>
+<div class="card"><h4>입력 (Controller · Pawn)</h4>
+<pre><span class="c">// Controller::Initialize</span>
+GetInputComponent().AddMappingKey("IA_Fire", VK_RETURN, { ESwizzle::XYZ, ENegative::Positive });
+GetInputComponent().BindMethod("IA_Fire", this, EKeyState::Down, &amp;GameController::Fire);
+<span class="c">// Pawn::Initialize — 컨트롤러는 이미 있음</span>
+FPAController* C = GetWorld()-&gt;GetController(0);
+C-&gt;GetInputComponent().BindMethod("IA_Move", this, EKeyState::Pressed, &amp;Ship::Move);
+C-&gt;Possess(this);</pre></div>
+<div class="card"><h4>위치 · 부착</h4>
+<pre>SetActorLocation({ x, y, z });   <span class="c">// 월드, 회전은 도(°)</span>
+Mesh-&gt;SetRelativeLocation({...}); <span class="c">// 부모 기준</span>
+RootComponent-&gt;AddWorldOffset({...});
+AttachToActor(Ship);             <span class="c">// 상대값 유지 → 부모 자리로 붙음</span>
+FTransform T = GetActorTransform(); <span class="c">// T.Location, T.QuaternionRotation</span></pre></div>
+<div class="card"><h4>컴포넌트 · 보이기</h4>
+<pre>Mesh = new FPStaticMeshComponent(this, "Canon_1_StaticMesh");
+SetRootComponent(Mesh);
+Light = new FPPointLightComponent(this);
+Light-&gt;SetupAttachment(Mesh);
+Mesh-&gt;SetActive(false);          <span class="c">// 숨기기 (삭제 API 없음)</span></pre></div>
+<div class="card"><h4>에셋 · 머티리얼</h4>
+<pre><span class="c">// GameProjectLoader::LoadAssets 안에서만 등록</span>
+AssetLoader-&gt;LoadTexture("FX/FX_Smoke_dds.json", AssetOwner::User);
+<span class="c">// 컴포넌트마다 다른 값이 필요하면 복제본</span>
+auto* AM = static_cast&lt;FPAssetManager*&gt;(FPGameInstance::Get().GetAssetManager());
+Mesh-&gt;SetMaterial(AM-&gt;MakeMaterial("FX_Smoke_Material"));</pre></div>
+<div class="card"><h4>실행 중 생성</h4>
+<pre>FPActor* A = GetWorld()-&gt;SpawnActor("Cannon", "Cannon02");
+A-&gt;SetActorLocation({ 0, 0, 5 }); <span class="c">// Spawn 뒤에 직접</span></pre></div>
+<div class="card"><h4>클래스 등록 (이름표)</h4>
+<pre><span class="c">// GameProjectLoader::LoadClassRegist</span>
+ClassRegistry-&gt;Register&lt;Cannon&gt;("Cannon");
+<span class="c">// 레벨 JSON  "class": "Cannon"  과 글자까지 같아야 함</span></pre></div>
+</div>
+
+<h2 id="s7">7. 흔한 실수</h2>
+<div class="grid">
+<div class="card warn"><h4>JSON에 등록 안 된 class 이름</h4>레벨 JSON의 <code>"class"</code>가 <code>Register</code>에 없으면 OpenLevel에서 생성 결과가 <code>nullptr</code>인 채로 쓰여 <b>시작하자마자 크래시</b>합니다. 오타부터 확인.</div>
+<div class="card warn"><h4>Tick override에서 <code>__super::Tick()</code> 누락</h4>위치를 바꿔도 화면이 그대로입니다. 월드 행렬은 루트 Tick에서 계산됩니다.</div>
+<div class="card warn"><h4>Initialize에서 다른 액터 사용</h4>뒤 순서 액터는 컴포넌트가 아직 없습니다. 찾고 붙이는 일은 BeginPlay로.</div>
+<div class="card warn"><h4>SpawnActor의 이름 · 위치</h4>Spawn한 액터는 Initialize · BeginPlay가 <b>이름이 정해지기 전에</b> 불립니다 (그 안에서 <code>GetName()</code>은 빈 문자열). 위치도 설정되지 않으니 Spawn 뒤에 직접 설정.</div>
+<div class="card warn"><h4>AttachToActor 하면 위치가 튐</h4>부착은 상대값을 유지하므로 부모 자리로 붙습니다. 월드 위치를 지키려면 부착 전 <code>GetActorTransform()</code>을 저장했다가 부착 후 <code>SetActorLocation/Rotation/Scale3D</code>로 되돌립니다 (Cannon의 <code>AttachKeepWorld</code>).</div>
+<div class="card warn"><h4><code>GetMaterial().SetParameter</code>가 다른 액터까지 바꿈</h4>메쉬 에셋의 머티리얼은 공유입니다. 개별 값은 <code>MakeMaterial</code> + <code>SetMaterial</code>.</div>
+<div class="card warn"><h4>생성자 · 컴포넌트에서 <code>GetWorld()</code></h4>생성자에서는 Outer가 없고, 컴포넌트에는 Outer가 설정되지 않습니다. 액터는 Initialize부터, 컴포넌트는 <code>GetOwner()-&gt;GetWorld()</code>.</div>
+<div class="card warn"><h4>에셋 경로 규칙</h4>엔진은 <code>Assets/&lt;종류&gt;/</code> 아래만 읽습니다 (Texture, Material, StaticMesh, Model, Shader …). JSON 안의 <code>"Path"</code>는 <code>TextureResource/</code>, <code>Model/</code>, <code>ShaderResource/bin/</code> 기준입니다.</div>
+</div>
+
+<h2 id="s8">8. 따라하기 — 새 액터 하나 추가</h2>
+<ol>
+<li><b>클래스</b> — <code>FPActor</code>를 상속하고 세 함수를 채웁니다.
+<pre>class Barrel : public FPActor
+{
+    FPStaticMeshComponent* Mesh = nullptr;
+public:
+    void Initialize() override
+    {
+        Mesh = new FPStaticMeshComponent(this, "Barrel_StaticMesh");
+        SetRootComponent(Mesh);              <span class="c">// 레벨 JSON 위치가 Mesh 로 옮겨짐</span>
+    }
+    void BeginPlay() override {}
+    void Tick() override
+    {
+        float dt = GetWorld()-&gt;GetGameTimer()-&gt;DeltaTime();
+        RootComponent-&gt;AddWorldRotation({ 0, 30 * dt, 0 });
+        __super::Tick();                     <span class="c">// 꼭 마지막에</span>
+    }
+};</pre></li>
+<li><b>에셋</b> — <code>LoadAssets()</code>에 텍스처 · 머티리얼 · 스태틱메쉬 JSON을 등록합니다. 머티리얼은 텍스처를, 메쉬는 머티리얼을 <b>이름</b>으로 참조하므로 기존 코드처럼 이 순서로 적는 것이 안전합니다.</li>
+<li><b>이름표</b> — <code>LoadClassRegist()</code>에 <code>Register&lt;Barrel&gt;("Barrel");</code></li>
+<li><b>배치</b> — 레벨 JSON <code>"actors"</code>에 <code>{ "class": "Barrel", "name": "Barrel01", "transform": {...} }</code></li>
+<li><b>빌드 · 실행</b> — 크래시하면 7장의 첫 번째(class 이름)부터 확인.</li>
+</ol>
+<p class="lead">모듈로 묶어 다른 프로젝트에 옮기는 방법은 <code>Docs/CallFlow_KMCannon.html</code>을 참고하세요.</p>
+
+</main>
+</body>
+</html>

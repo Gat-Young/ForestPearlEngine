@@ -51,6 +51,9 @@
     <ClInclude Include="KMCannon\CannonBall.h">
       <Filter>KMCannon</Filter>
     </ClInclude>
+    <ClInclude Include="KMCannon\Frigate.h">
+      <Filter>KMCannon</Filter>
+    </ClInclude>
     <ClInclude Include="KMCannon\CannonFireFX.h">
       <Filter>KMCannon</Filter>
     </ClInclude>
@@ -116,6 +119,9 @@
     <ClCompile Include="KMCannon\CannonBall.cpp">
       <Filter>KMCannon</Filter>
     </ClCompile>
+    <ClCompile Include="KMCannon\Frigate.cpp">
+      <Filter>KMCannon</Filter>
+    </ClCompile>
     <ClCompile Include="KMCannon\CannonFireFX.cpp">
       <Filter>KMCannon</Filter>
     </ClCompile>
@@ -136,6 +142,9 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\ShaderResource\KM\BlenderCannonPixelShader.psh">
+      <Filter>Assets\ShaderResource</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\KM\BlenderShipPixelShader.psh">
       <Filter>Assets\ShaderResource</Filter>
     </FxCompile>
     <FxCompile Include="Assets\ShaderResource\KM\FXParticleVertexShader.vsh">

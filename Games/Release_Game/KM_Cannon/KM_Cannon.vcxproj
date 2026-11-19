@@ -28,6 +28,7 @@
     <ClInclude Include="KMCannon\Cannon.h" />
     <ClInclude Include="KMCannon\CannonBall.h" />
     <ClInclude Include="KMCannon\CannonFireFX.h" />
+    <ClInclude Include="KMCannon\Frigate.h" />
     <ClInclude Include="KMCannon\API_KMCannon.h" />
     <ClInclude Include="KMCannon\Loader_KMCannon.h" />
     <ClInclude Include="Terrain.h" />
@@ -44,6 +45,7 @@
     <ClCompile Include="KMCannon\Cannon.cpp" />
     <ClCompile Include="KMCannon\CannonBall.cpp" />
     <ClCompile Include="KMCannon\CannonFireFX.cpp" />
+    <ClCompile Include="KMCannon\Frigate.cpp" />
     <ClCompile Include="KMCannon\API_KMCannon.cpp" />
     <ClCompile Include="KMCannon\Loader_KMCannon.cpp" />
     <ClCompile Include="Terrain.cpp" />
@@ -67,6 +69,13 @@
       <ObjectFileOutput>$(ProjectDir)Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="Assets\ShaderResource\KM\BlenderCannonPixelShader.psh">
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+      <EntryPointName>PS_Main</EntryPointName>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileOutput>$(ProjectDir)Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\KM\BlenderShipPixelShader.psh">
       <ShaderType>Pixel</ShaderType>
       <ShaderModel>5.0</ShaderModel>
       <EntryPointName>PS_Main</EntryPointName>

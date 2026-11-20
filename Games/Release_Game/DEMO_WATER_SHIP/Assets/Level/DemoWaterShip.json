@@ -1,0 +1,95 @@
+{
+  "gamemode": "GameMode",
+
+  "actors": [
+    {
+      "class": "Player",
+      "name": "Player_1",
+      "transform": {
+        "location": { "x": 0.0, "y": 1.0, "z": -24.0 },
+        "rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+      }
+    },
+
+    {
+      "class": "AWater",
+      "name": "Water_1",
+      "transform": {
+        "location": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "scale": { "x": 25.0, "y": 25.0, "z": 25.0 }
+      }
+    },
+
+    {
+      "class": "ADirectionalLight",
+      "name": "DirectionalLight",
+      "transform": {
+        "location": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+      }
+    },
+
+    {
+      "class": "ASkyLight",
+      "name": "SkyLight_1",
+      "transform": {
+        "location": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+      }
+    },
+
+    {
+      "class": "ASkyBox",
+      "name": "SkyBox_1",
+      "transform": {
+        "location": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+      }
+    },
+
+    {
+      "class": "AColorBox",
+      "name": "Box_Red",
+      "transform": {
+        "location": { "x": -7.0, "y": 1.2, "z": 5.0 },
+        "rotation": { "x": 0.0, "y": 15.0, "z": 0.0 },
+        "scale": { "x": 1.5, "y": 1.5, "z": 1.5 }
+      }
+    },
+
+    {
+      "class": "AColorBox",
+      "name": "Box_Green",
+      "transform": {
+        "location": { "x": 7.0, "y": 1.2, "z": 5.0 },
+        "rotation": { "x": 0.0, "y": -15.0, "z": 0.0 },
+        "scale": { "x": 1.5, "y": 1.5, "z": 1.5 }
+      }
+    },
+
+    {
+      "class": "AColorBox",
+      "name": "Box_Blue",
+      "transform": {
+        "location": { "x": -5.0, "y": 1.2, "z": -6.0 },
+        "rotation": { "x": 0.0, "y": 30.0, "z": 0.0 },
+        "scale": { "x": 1.5, "y": 1.5, "z": 1.5 }
+      }
+    },
+
+    {
+      "class": "AColorBox",
+      "name": "Box_Orange",
+      "transform": {
+        "location": { "x": 5.0, "y": 1.2, "z": -6.0 },
+        "rotation": { "x": 0.0, "y": -30.0, "z": 0.0 },
+        "scale": { "x": 1.5, "y": 1.5, "z": 1.5 }
+      }
+    }
+  ]
+}

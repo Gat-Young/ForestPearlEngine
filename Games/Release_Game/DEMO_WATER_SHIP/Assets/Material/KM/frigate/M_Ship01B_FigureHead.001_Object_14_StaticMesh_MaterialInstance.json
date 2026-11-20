@@ -1,0 +1,80 @@
+{
+    "Material": {
+        "Name": "M_Ship01B_FigureHead.001_Object_14_StaticMesh_MaterialInstance",
+        "VertexShader": "DefaultVertexShader",
+        "PixelShader": "BlenderShipPixelShader",
+        "TwoSided": false,
+        "BlendState": "BS_ADD",
+        "DepthStencilState": "DS_DEPTH_ON",
+        "Parameters": [
+            {
+                "Type": "PS",
+                "ConstantBuffer": "MaterialConstBuffer",
+                "Values": {
+                    "Material.BaseColor": [
+                        0.800000011920929,
+                        0.800000011920929,
+                        0.800000011920929,
+                        1.0
+                    ],
+                    "Material.Diffuse": [
+                        0.800000011920929,
+                        0.800000011920929,
+                        0.800000011920929,
+                        1.0
+                    ],
+                    "Material.Ambient": [
+                        0.05087608844041824,
+                        0.05087608844041824,
+                        0.05087608844041824,
+                        1.0
+                    ],
+                    "Material.Specular": [
+                        0.800000011920929,
+                        0.800000011920929,
+                        0.800000011920929,
+                        1.0
+                    ],
+                    "Material.Roughness": [
+                        1.0,
+                        0.2,
+                        1.0,
+                        1.0
+                    ],
+                    "Material.Emissive": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            }
+        ],
+        "Textures": [
+            {
+                "Type": "PS",
+                "Parameter": "DiffuseColor",
+                "Asset": "Image_22",
+                "TextureType": "Texture2D"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "NormalMap",
+                "Asset": "Image_23",
+                "TextureType": "Texture2D"
+            }
+        ],
+        "Samplers": [
+            {
+                "Type": "PS",
+                "Parameter": "DiffuseColorSampler",
+                "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "NormalMapSampler",
+                "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
+            }
+        ]
+    }
+}

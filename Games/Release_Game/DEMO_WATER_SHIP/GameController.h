@@ -9,4 +9,7 @@ class GameController : public FPAController
 		virtual void Initialize() override;
 		virtual void BeginPlay() override;
 		virtual void Tick() override;
+
+		// Enter: fire every Cannon. Enter+1/2/3: Frigate broadside (All/Left/Right).
+		void FireCannon(FInputValue Value);
 };

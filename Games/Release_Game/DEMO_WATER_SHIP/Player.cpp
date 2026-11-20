@@ -50,9 +50,16 @@ void Player::Tick()
 void Player::Move(FInputValue Value)
 {
 	float mov = 12.0f;
-	float move_x = Value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
-	float move_y = Value.Y * mov * (GetWorld()->GetGameTimer()->DeltaTime());
-	RootComponent->AddWorldOffset(FPVector3{ move_x, 0.0f, move_y });
+	float dt = GetWorld()->GetGameTimer()->DeltaTime();
+
+	//Move relative to where the camera is looking: W/S along the full look direction
+	//(pitch included), A/D strafes along the horizontal right vector (yaw only).
+	FPVector3 ControlRotation = GetController()->GetActorRotation();
+	FPVector3 Forward = Rotate(FromEuler({ ControlRotation.x, ControlRotation.y, 0.0f }), FPVector3{ 0.0f, 0.0f, 1.0f });
+	FPVector3 Right = Rotate(FromEuler({ 0.0f, ControlRotation.y, 0.0f }), FPVector3{ 1.0f, 0.0f, 0.0f });
+
+	FPVector3 Offset = (Forward * Value.Y + Right * Value.X) * (mov * dt);
+	RootComponent->AddWorldOffset(Offset);
 }
 
 void Player::CameraMove(FInputValue Value)

@@ -1,0 +1,14 @@
+{
+    "Name": "Object_12_StaticMesh",
+    "NodeName": "Object_12",
+    "MeshData": [
+        {
+            "Path": "KM/frigate/frigate.fbx",
+            "Topology": "TRIANGLELIST"
+        }
+    ],
+    "Sockets": [],
+    "Material": {
+        "Name": "M_Ship01B_CannonSupport_Object_12_StaticMesh_MaterialInstance"
+    }
+}

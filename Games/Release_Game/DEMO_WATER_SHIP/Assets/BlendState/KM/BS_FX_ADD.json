@@ -1,0 +1,17 @@
+{
+  "Name": "BS_FX_ADD",
+  "AlphaToCoverageEnable": false,
+  "IndependentBlendEnable": false,
+  "RenderTargets": [
+    {
+      "BlendEnable": true,
+      "SrcBlend": "ONE",
+      "DestBlend": "ONE",
+      "BlendOp": "ADD",
+      "SrcBlendAlpha": "ONE",
+      "DestBlendAlpha": "ZERO",
+      "BlendOpAlpha": "ADD",
+      "RenderTargetWriteMask": ["RED", "GREEN", "BLUE", "ALPHA"]
+    }
+  ]
+}

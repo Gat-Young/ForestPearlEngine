@@ -12,7 +12,7 @@ struct WaterSettings
 {
 	float FlowSpeed = 0.3f;           //UV flow speed (U direction, per second)
 	float DistortionStrength = 0.8f;  //Bump height-gradient distortion strength
-	float Tiling = 2.0f;              //Bump map UV tiling
+	float Tiling = 20.0f;              //Bump map UV tiling (scaled up with the 10x larger water plane)
 	float ReflectionAmount = 0.8f;    //Reflection blend amount
 	FPVector4 WaterColor = { 0.035f, 0.18f, 0.24f, 1.0f };
 };

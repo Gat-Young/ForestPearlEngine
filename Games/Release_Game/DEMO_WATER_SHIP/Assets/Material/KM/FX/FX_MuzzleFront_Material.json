@@ -1,0 +1,43 @@
+{
+    "Material": {
+        "Name": "FX_MuzzleFront_Material",
+        "VertexShader": "FXParticleVertexShader",
+        "PixelShader": "FXParticlePixelShader",
+        "TwoSided": true,
+        "BlendState": "BS_FX_ADD",
+        "DepthStencilState": "DS_DEPTH_WRITE_OFF",
+        "Details": "Masked",
+        "Parameters": [
+            {
+                "Type": "VS",
+                "ConstantBuffer": "FXVertexCB",
+                "Values": {
+                    "Axis": [ 0.0, 0.0, 1.0, 0.0 ],
+                    "Size": [ 1.0, 1.0, 0.0, 0.0 ]
+                }
+            },
+            {
+                "Type": "PS",
+                "ConstantBuffer": "FXPixelCB",
+                "Values": {
+                    "Color": [ 1.0, 1.0, 1.0, 1.0 ]
+                }
+            }
+        ],
+        "Textures": [
+            {
+                "Type": "PS",
+                "Parameter": "TexDiff",
+                "Asset": "FX_MuzzleFront_jpg",
+                "TextureType": "Texture2D"
+            }
+        ],
+        "Samplers": [
+            {
+                "Type": "PS",
+                "Parameter": "Smp",
+                "SamplerType": "Filter_Tri_Linear_Sampler_CLAMP"
+            }
+        ]
+    }
+}

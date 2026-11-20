@@ -27,6 +27,10 @@
     <ClInclude Include="GameController.h" />
     <ClInclude Include="GameMode.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Cannon.h" />
+    <ClInclude Include="CannonBall.h" />
+    <ClInclude Include="CannonFireFX.h" />
+    <ClInclude Include="Frigate.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ADirectionalLight.cpp" />
@@ -38,6 +42,10 @@
     <ClCompile Include="GameMode.cpp" />
     <ClCompile Include="GameProjectLoader.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Cannon.cpp" />
+    <ClCompile Include="CannonBall.cpp" />
+    <ClCompile Include="CannonFireFX.cpp" />
+    <ClCompile Include="Frigate.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\GameSetting\GameSetting.json" />
@@ -56,6 +64,25 @@
     <None Include="Assets\StaticMesh\ColorBox_Orange_StaticMesh.json" />
     <None Include="Assets\RenderTarget\Water_RenderTarget.json" />
     <None Include="Assets\DepthStencil\Water_DepthStencil.json" />
+    <None Include="Assets\Shader\KM\BlenderCannonPixelShader.json" />
+    <None Include="Assets\Shader\KM\BlenderShipPixelShader.json" />
+    <None Include="Assets\Shader\KM\FXParticleVertexShader.json" />
+    <None Include="Assets\Shader\KM\FXParticlePixelShader.json" />
+    <None Include="Assets\BlendState\KM\BS_FX_ALPHA.json" />
+    <None Include="Assets\BlendState\KM\BS_FX_ADD.json" />
+    <None Include="Assets\Material\KM\Canon_T2\Canon_Canon_1_StaticMesh_MaterialInstance.json" />
+    <None Include="Assets\Material\KM\FX\FX_Smoke_Material.json" />
+    <None Include="Assets\Material\KM\FX\FX_MuzzleFront_Material.json" />
+    <None Include="Assets\Material\KM\FX\FX_MuzzleSide_Material.json" />
+    <None Include="Assets\StaticMesh\KM\Canon_T2\Canon_1_StaticMesh.json" />
+    <None Include="Assets\Texture\KM\Canon_T2\Canon_Low_Canon_BaseColor_png.json" />
+    <None Include="Assets\Texture\KM\Canon_T2\Canon_Low_Canon_Normal_png.json" />
+    <None Include="Assets\Texture\KM\Canon_T2\Canon_Low_Canon_Metallic_png.json" />
+    <None Include="Assets\Texture\KM\Canon_T2\Canon_Low_Canon_Roughness_png.json" />
+    <None Include="Assets\Texture\KM\FX\FX_Smoke_dds.json" />
+    <None Include="Assets\Texture\KM\FX\FX_MuzzleFront_jpg.json" />
+    <None Include="Assets\Texture\KM\FX\FX_MuzzleSide_jpg.json" />
+    <None Include="Assets\Model\KM\frigate\Cannon_Muzzles.json" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\ShaderResource\WaterVertexShader.vsh">
@@ -72,6 +99,58 @@
       <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
     </FxCompile>
     <FxCompile Include="Assets\ShaderResource\WaterPixelShader.psh">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS_Main</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS_Main</EntryPointName>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\</AdditionalIncludeDirectories>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\KM\BlenderCannonPixelShader.psh">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS_Main</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS_Main</EntryPointName>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\</AdditionalIncludeDirectories>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\KM\BlenderShipPixelShader.psh">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS_Main</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS_Main</EntryPointName>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).pso</ObjectFileOutput>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\</AdditionalIncludeDirectories>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\KM\FXParticleVertexShader.vsh">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS_Main</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VS_Main</EntryPointName>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).vso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Assets\ShaderResource\bin\%(Filename).vso</ObjectFileOutput>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Engine\ForestPearlEngine\Assets\ShaderResource\</AdditionalIncludeDirectories>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\KM\FXParticlePixelShader.psh">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>

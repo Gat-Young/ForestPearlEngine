@@ -18,7 +18,7 @@
       "transform": {
         "location": { "x": 0.0, "y": 0.0, "z": 0.0 },
         "rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
-        "scale": { "x": 25.0, "y": 25.0, "z": 25.0 }
+        "scale": { "x": 250.0, "y": 250.0, "z": 250.0 }
       }
     },
 
@@ -89,6 +89,56 @@
         "location": { "x": 5.0, "y": 1.2, "z": -6.0 },
         "rotation": { "x": 0.0, "y": -30.0, "z": 0.0 },
         "scale": { "x": 1.5, "y": 1.5, "z": 1.5 }
+      }
+    },
+
+    {
+      "class": "Frigate",
+      "name": "Frigate01",
+      "transform": {
+        "location": { "x": 0.0, "y": 0.0, "z": 10.0 },
+        "rotation": { "x": 0.0, "y": 180.0, "z": 0.0 },
+        "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+      }
+    },
+
+    {
+      "class": "Cannon",
+      "name": "Cannon01",
+      "transform": {
+        "location": { "x": 6.0, "y": 1.5, "z": -15.0 },
+        "rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "scale": { "x": 0.33, "y": 0.33, "z": 0.33 }
+      }
+    },
+
+    {
+      "class": "CannonSocket",
+      "name": "Cannon01_Muzzle",
+      "transform": {
+        "location": { "x": 6.0, "y": 1.45, "z": -15.0 },
+        "rotation": { "x": 0.0, "y": 0.0, "z": -80.0 },
+        "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+      }
+    },
+
+    {
+      "class": "CannonFireFX",
+      "name": "CannonFireFX01",
+      "transform": {
+        "location": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+      }
+    },
+
+    {
+      "class": "CannonBall",
+      "name": "CannonBall01",
+      "transform": {
+        "location": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "scale": { "x": 1.0, "y": 1.0, "z": 1.0 }
       }
     }
   ]

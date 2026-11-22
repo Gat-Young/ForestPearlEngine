@@ -38,6 +38,13 @@ void GameController::Initialize()
 	// Zoom Camera (Mouse Wheel)
 	GetInputComponent().AddMappingKey("IA_ZoomCamera", static_cast<USHORT>(CUSTOM_MOUSE_INPUT::MOUSE_WHEEL), ModifyInfoA);
 
+	// GamePad: L-Stick Move, R-Stick Camera Rotate, L/R Trigger Zoom In/Out
+	FModifyInfo ModifyInfoStick = { ESwizzle::XYZ , ENegative::Positive };
+	GetInputComponent().AddMappingKey("IA_SetMovePlayer", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_LSTICK), ModifyInfoStick);
+	GetInputComponent().AddMappingKey("IA_SetMoveCamera", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_RSTICK), ModifyInfoStick);
+	GetInputComponent().AddMappingKey("IA_ZoomCamera", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_LEFT_TRIGER), ModifyInfoS);
+	GetInputComponent().AddMappingKey("IA_ZoomCamera", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_RIGHT_TRIGER), ModifyInfoW);
+
 	// Fire Cannon: Enter alone fires every Cannon; Enter+1/2/3 fires a Frigate broadside (All/Left/Right)
 	FModifyInfo ModifyInfoTrigger = { ESwizzle::XYZ , ENegative::Positive };
 	GetInputComponent().AddMappingKey("IA_FireCannon", VK_RETURN, ModifyInfoTrigger);

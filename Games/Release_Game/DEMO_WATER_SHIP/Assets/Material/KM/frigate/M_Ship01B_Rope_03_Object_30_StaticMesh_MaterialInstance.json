@@ -2,7 +2,7 @@
     "Material": {
         "Name": "M_Ship01B_Rope_03_Object_30_StaticMesh_MaterialInstance",
         "VertexShader": "DefaultVertexShader",
-        "PixelShader": "BlenderShipPixelShader",
+        "PixelShader": "FrigatePixelShader",
         "TwoSided": false,
         "BlendState": "BS_ADD",
         "DepthStencilState": "DS_DEPTH_ON",
@@ -53,13 +53,13 @@
         "Textures": [
             {
                 "Type": "PS",
-                "Parameter": "DiffuseColor",
+                "Parameter": "TexDiff",
                 "Asset": "Image_46",
                 "TextureType": "Texture2D"
             },
             {
                 "Type": "PS",
-                "Parameter": "NormalMap",
+                "Parameter": "TexBumpMap",
                 "Asset": "Image_47",
                 "TextureType": "Texture2D"
             }
@@ -67,12 +67,7 @@
         "Samplers": [
             {
                 "Type": "PS",
-                "Parameter": "DiffuseColorSampler",
-                "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
-            },
-            {
-                "Type": "PS",
-                "Parameter": "NormalMapSampler",
+                "Parameter": "Smpler",
                 "SamplerType": "Filter_Tri_Linear_Sampler_Wrap"
             }
         ]

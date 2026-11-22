@@ -108,7 +108,7 @@ void LoadAssets()
 
 	//KMCannon : ship (frigate.fbx) - one mesh per node (Object_2 ~ Object_42), textures Image_0 ~ Image_63
 	{
-		AssetLoader->LoadPixelShader("KM/BlenderShipPixelShader.json", AssetOwner::User);
+		AssetLoader->LoadPixelShader("KM/FrigatePixelShader.json", AssetOwner::User);
 
 		for (int i = 0; i < Frigate::IMAGE_COUNT; ++i)
 			AssetLoader->LoadTexture("KM/frigate/Image_" + std::to_string(i) + ".json", AssetOwner::User);

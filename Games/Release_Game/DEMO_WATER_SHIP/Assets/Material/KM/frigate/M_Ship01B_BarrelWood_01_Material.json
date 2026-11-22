@@ -2,7 +2,7 @@
     "Material": {
         "Name": "M_Ship01B_BarrelWood_01_Material",
         "VertexShader": "DefaultVertexShader",
-        "PixelShader": "DefaultPixelShader",
+        "PixelShader": "FrigatePixelShader",
         "TwoSided": false,
         "BlendState": "BS_ADD",
         "DepthStencilState": "DS_DEPTH_ON",

@@ -2,10 +2,11 @@
     "Material": {
         "Name": "M_Ship01B_Glass_Object_17_StaticMesh_MaterialInstance",
         "VertexShader": "DefaultVertexShader",
-        "PixelShader": "BlenderShipPixelShader",
+        "PixelShader": "DefaultPixelShader",
         "TwoSided": false,
         "BlendState": "BS_ADD",
-        "DepthStencilState": "DS_DEPTH_ON",
+        "DepthStencilState": "DS_DEPTH_WRITE_OFF",
+        "Details": "Translucent",
         "Parameters": [
             {
                 "Type": "PS",
@@ -50,7 +51,20 @@
                 }
             }
         ],
-        "Textures": [],
-        "Samplers": []
+        "Textures": [
+            {
+                "Type": "PS",
+                "Parameter": "TexDiff",
+                "Asset": "Default_Texture512",
+                "TextureType": "Texture2D"
+            }
+        ],
+        "Samplers": [
+            {
+                "Type": "PS",
+                "Parameter": "Smpler",
+                "SamplerType": "Filter_Tri_Linear_Sampler_CLAMP"
+            }
+        ]
     }
 }

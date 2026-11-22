@@ -49,6 +49,21 @@
                     ]
                 }
             }
+        ],
+        "Textures": [
+            {
+                "Type": "PS",
+                "Parameter": "TexDiff",
+                "Asset": "Default_Texture512",
+                "TextureType": "Texture2D"
+            }
+        ],
+        "Samplers": [
+            {
+                "Type": "PS",
+                "Parameter": "Smpler",
+                "SamplerType": "Filter_Tri_Linear_Sampler_CLAMP"
+            }
         ]
     }
 }

@@ -678,6 +678,7 @@ void Renderer::PlanarReflectionRenderPass(const RenderingData::CameraItem& CamIt
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
 	bool bAnyDrawn = false;
+	std::vector<std::string> UsedDepthStencils;
 
 	for (const RenderingData::PlanarReflectionItem& PlanarReflectionItem : PlanarReflectionList)
 	{
@@ -750,6 +751,10 @@ void Renderer::PlanarReflectionRenderPass(const RenderingData::CameraItem& CamIt
 		Device.ResolveRenderTarget(RTInfo.RenderTragetFormat, RTData.Texture, RTData.ResolveTexture);
 
 		bAnyDrawn = true;
+		if (std::find(UsedDepthStencils.begin(), UsedDepthStencils.end(), PlanarReflectionItem.DepthStencil) == UsedDepthStencils.end())
+		{
+			UsedDepthStencils.push_back(PlanarReflectionItem.DepthStencil);
+		}
 	}
 
 	if (!bAnyDrawn) return;
@@ -757,6 +762,14 @@ void Renderer::PlanarReflectionRenderPass(const RenderingData::CameraItem& CamIt
 	//이후 Pass에 영향이 없도록 Clip Plane을 다시 비활성화
 	RenderingData::ClipPlanarReflectionConstBuffer DisabledClipCB;
 	Device.UpdateVertexShaderSubresource(13, reinterpret_cast<const uint8_t*>(&DisabledClipCB), 0, sizeof(RenderingData::ClipPlanarReflectionConstBuffer));
+
+	//이 Pass가 사용한 Depth/Stencil은 다음 사용 전에 깨끗이 지워둠 (다음 카메라/다음 프레임 캡처에 이전 깊이가 남지 않도록)
+	for (const std::string& DepthStencilName : UsedDepthStencils)
+	{
+		FPDepthStencilData& UsedDSData = AssetManager->GetDepthStencilData(DepthStencilName);
+		FPDepthStencilInfo& UsedDSInfo = AssetManager->HasDepthStencilInfoData(DepthStencilName) ? AssetManager->GetDepthStencilInfoData(DepthStencilName) : AssetManager->GetBuiltInDepthStencilInfoData(DepthStencilName);
+		Device.ClearDepthStencilView(UsedDSData.DepthStencilView, UsedDSInfo.ClearDepth, (UINT8)UsedDSInfo.ClearStencil);
+	}
 
 	Device.OMSetBlendState(AssetManager->GetBlendStateData("BS_DEFAULT").BlendStateData);
 }

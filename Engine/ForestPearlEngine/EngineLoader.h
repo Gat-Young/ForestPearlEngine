@@ -78,4 +78,12 @@ void LoadEngineAssets()
 	AssetLoader->LoadRasterizerState("RS_CULLFRONT.json", AssetOwner::Engine);
 	AssetLoader->LoadRasterizerState("RS_WIRECULLBACK.json", AssetOwner::Engine);
 	AssetLoader->LoadRasterizerState("RS_WIRECULLFRONT.json", AssetOwner::Engine);
+
+	//FrontCounterClockwise = true 짝 (반사로 핸드니스가 뒤집히는 PlanarReflectionRenderPass 전용)
+	AssetLoader->LoadRasterizerState("RS_SOLID_FCCW.json", AssetOwner::Engine);
+	AssetLoader->LoadRasterizerState("RS_WIREFRM_FCCW.json", AssetOwner::Engine);
+	AssetLoader->LoadRasterizerState("RS_CULLBACK_FCCW.json", AssetOwner::Engine);
+	AssetLoader->LoadRasterizerState("RS_CULLFRONT_FCCW.json", AssetOwner::Engine);
+	AssetLoader->LoadRasterizerState("RS_WIRECULLBACK_FCCW.json", AssetOwner::Engine);
+	AssetLoader->LoadRasterizerState("RS_WIRECULLFRONT_FCCW.json", AssetOwner::Engine);
 };

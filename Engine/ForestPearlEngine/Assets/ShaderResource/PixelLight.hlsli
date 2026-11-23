@@ -137,15 +137,17 @@ void DirLight(float4 posv, float4 nrm, matrix mView, LIGHT LightData, inout floa
     float4 N = Normal;
     N.w = 0; //4성분 되면서 w가 0이 아니게 될 수 있음.
     N = normalize(N);
+    N.w = 0;
     
     float4 L = float4(LightData.Direction.xyz, 0.0f);
     L = mul(mView, L);
     L.w = 0.0f;
     L = normalize(L);
+    L.w = 0.0f;
     
     posv.w = 0;
     float4 V = normalize(-(posv));
-    
+    V.w = 0;
     
     Diff = LambertLight(N, L, LightData.Diffuse, Material.Diffuse) * Material.BaseColor;
     Spec = SpecularBlinPhongLight(N, L, V, LightData.Specular, Material.Specular, Material.Roughness);

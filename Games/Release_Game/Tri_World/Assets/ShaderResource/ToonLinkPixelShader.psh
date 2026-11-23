@@ -70,7 +70,7 @@ float4 PS_Main(
     //Front Back 확인
     if (!IsFrontFace)
     {
-        N = -N;
+       N = -N;
     }
     
     //NormalMap 변환

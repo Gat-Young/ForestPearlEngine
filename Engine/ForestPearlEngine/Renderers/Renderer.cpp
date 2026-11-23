@@ -63,8 +63,11 @@ template<typename T> void _SafeDelArray(T*& ptr)
 void Renderer::SetRasterizerState(FPAssetManager* AssetManager, bool bFillSolid, bool bCullBack, bool bFlipCull)
 {
 	std::string Name;
-	if (bFillSolid) Name = bCullBack ? (bFlipCull ? "RS_CULLFRONT" : "RS_CULLBACK") : "RS_SOLID";
-	else Name = bCullBack ? (bFlipCull ? "RS_WIRECULLFRONT" : "RS_WIRECULLBACK") : "RS_WIREFRM";
+	if (bFillSolid) Name = bCullBack ? "RS_CULLBACK" : "RS_SOLID";
+	else Name = bCullBack ? "RS_WIRECULLBACK" : "RS_WIREFRM";
+
+	//반사 등으로 핸드니스가 뒤집히는 경우 CullMode는 그대로 두고 FrontCounterClockwise만 뒤집은 전용 State 사용
+	if (bFlipCull) Name += "_FCCW";
 
 	FPRasterizerStateData& RasterizerStateData = AssetManager->GetRasterizerStateData(Name);
 	Device.RSSetState(RasterizerStateData.RasterizerStateData);

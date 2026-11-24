@@ -76,6 +76,18 @@ void FPSceneCaptureComponent2D::SetZf(float Zf)
 	this->Zf = Zf;
 }
 
+void FPSceneCaptureComponent2D::SetProjectionMode(FPProjectionMode Mode)
+{
+	this->ProjectionMode = Mode;
+	RecalculateProjectionMatrix();
+}
+
+void FPSceneCaptureComponent2D::SetOrthoWidth(float OrthoWidth)
+{
+	this->OrthoWidth = OrthoWidth;
+	RecalculateProjectionMatrix();
+}
+
 //호출 시 현재 프레임을 캡처
 void FPSceneCaptureComponent2D::CaptureScene()
 {
@@ -87,7 +99,7 @@ void FPSceneCaptureComponent2D::Tick()
 	__super::Tick();
 
 	ViewMatrix = MatrtixTranslation(-WorldTransform.Location) * Transpose(WorldTransform.RotationMatrix);
-	ProjectionMatrix = MatrixPerspectiveFovLH(Fov, Aspect, Zn, Zf);
+	RecalculateProjectionMatrix();
 }
 
 //HiddenActors 운용 함수
@@ -109,4 +121,18 @@ void FPSceneCaptureComponent2D::RemoveHiddenAcotr(FPActor* Actor)
 void FPSceneCaptureComponent2D::EmptyHiddenActor()
 {
 	HiddenActors.clear();
+}
+
+void FPSceneCaptureComponent2D::RecalculateProjectionMatrix()
+{
+	if (ProjectionMode == Perspective)
+	{
+		ProjectionMatrix = MatrixPerspectiveFovLH(Fov, Aspect, Zn, Zf);
+	}
+	else
+	{
+		float HalfWidth = OrthoWidth * 0.5f;
+		float HalfHeight = HalfWidth / Aspect;
+		ProjectionMatrix = MatrixOrthographicOffCenterLH(-HalfWidth, HalfWidth, -HalfHeight, HalfHeight, Zn, Zf);
+	}
 }

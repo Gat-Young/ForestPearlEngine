@@ -66,4 +66,5 @@ class Player : public FPPawn
 		void OnTorch(FInputValue Value);
 
 		FPSceneComponent* GetShieldPivot();
+		FPCameraComponent* GetPlayerCamera() const { return PlayerCamera; }
 };

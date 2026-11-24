@@ -21,4 +21,6 @@ public:
 
 	void CameraMove(FInputValue Value);
 	void CameraZoom(FInputValue Value);
+
+	FPSceneCaptureComponent2D* GetScreenCaptureComponent() const { return ScreenCaptureComponent; }
 };

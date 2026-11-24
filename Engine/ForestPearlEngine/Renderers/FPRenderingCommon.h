@@ -32,6 +32,13 @@ enum AssetOwner
 	User
 };
 
+//Camera / SceneCapture components Projection mode
+enum FPProjectionMode
+{
+	Perspective,
+	Orthographic
+};
+
 //정점 구조체 분리 
 //Position
 struct POSITION_VERTEX

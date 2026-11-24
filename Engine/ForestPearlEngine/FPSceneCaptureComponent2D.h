@@ -15,6 +15,8 @@ class FPSceneCaptureComponent2D : public FPSceneCaptureComponent
 		float Aspect = 960.0f / 600.0f;							//가로:세로 비율
 		float Zn = 1.0f;										//근평면 거리
 		float Zf = 300.0f;										//원평면 거리
+		FPProjectionMode ProjectionMode = Perspective;		
+		float OrthoWidth = 100.0f;								
 		FPMatrix ViewMatrix;									//View Matrix
 		FPMatrix ProjectionMatrix;								//Projection Matrix
 		bool Active = true;										//카메라 사용 여부
@@ -37,9 +39,15 @@ class FPSceneCaptureComponent2D : public FPSceneCaptureComponent
 		virtual void SetAspect(float Aspect);
 		virtual void SetZn(float Zn);
 		virtual void SetZf(float Zf);
+		virtual void SetProjectionMode(FPProjectionMode Mode);
+		virtual void SetOrthoWidth(float OrthoWidth);
+		virtual FPProjectionMode GetProjectionMode() { return ProjectionMode; }
 
 		//HiddenActors 운용 함수
 		void AddHiddenActor(FPActor* Acotr) override;
 		void RemoveHiddenAcotr(FPActor* Actor) override;
 		void EmptyHiddenActor() override;
+
+	protected:
+		void RecalculateProjectionMatrix();
 };

@@ -4,6 +4,16 @@
 class FPDirectionalLightComponent : public FPLightComponent
 {
 	protected:
+        bool CastShadow = true;                     //해당 광원의 그림자 생성 여부
+        unsigned int CascadeCount = 4;              //Cascade 개수
+        unsigned int ShadowResolution = 2048;       //Cascade 해상도
+        float DynamicShadowDistance = 150.0f;       //CSM 최대거리 f
+        float CascadeSplitLambda = 0.75f;           //Uniform Split과 Log Split의 보간값 
+        float CascadeTransitionFraction = 0.1f;     // Cascade 사이 보간 영역
+        float ShadowDistanceFadeoutFraction = 0.1f; // 최대 그림자 거리에서 Fade Out
+        float ShadowBias = 0.0005f;                 // Depth 오차 보정
+       
+        std::string CascadeShadowMapName = "";
 
 	public:
 		FPDirectionalLightComponent(FPActor* Owner);

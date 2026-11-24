@@ -86,7 +86,6 @@ struct FPVector3
 	float Length() const;
 
 	FPVector3 Normalize() const;
-
 };
 
 
@@ -233,44 +232,34 @@ struct FPMatrix
 		return FPMatrix(rhs * Matrix);
 	}
 
-	//开 青纺
-	FPMatrix MatrixInverse()
-	{
-		return FPMatrix(DirectX::XMMatrixInverse(nullptr, Matrix));
-	}
-
-	FPMatrix Transpose()
-	{
-		return FPMatrix(DirectX::XMMatrixTranspose(Matrix));
-	}
-
-	static FPMatrix MatrixIdentity()
-	{
-		return FPMatrix(DirectX::XMMatrixIdentity());
-	}
-
-	static FPMatrix MatrixOrthographicOffCenterLH(float ViewLeft, float ViewRight, float ViewBottom, float ViewTop, float NearZ, float FarZ)
-	{
-		return FPMatrix(DirectX::XMMatrixOrthographicOffCenterLH(ViewLeft, ViewRight, ViewBottom, ViewTop, NearZ, FarZ));
-	}
-
-	static FPMatrix MatrixScaling(float x, float y, float z)
-	{
-		return FPMatrix(DirectX::XMMatrixScaling(x, y, z));
-	}
-
-	static FPMatrix MatrixTranslation(float x, float y, float z)
-	{
-		return FPMatrix(DirectX::XMMatrixTranslation(x, y, z));
-	}
 
 };
+
 
 float Dot(const FPVector3& A, const FPVector3& B);
 
 FPVector3 Cross(const FPVector3& A, const FPVector3& B);
 
 FPVector3 Rotate(const FPQuaternion& quat, const FPVector3& vec);
+
+
+FPVector4 PlaneFromPointNormal(const FPVector3& Point, const FPVector3& Normal);
+
+
+FPMatrix MatrixIdentity();
+
+FPMatrix MatrixOrthographicOffCenterLH(float ViewLeft, float ViewRight, float ViewBottom, float ViewTop, float NearZ, float FarZ);
+
+FPMatrix MatrixScaling(float x, float y, float z);
+
+FPMatrix MatrixTranslation(float x, float y, float z);
+
+FPMatrix MatrixReflect(const FPVector4& Plane);
+
+//开 青纺
+FPMatrix MatrixInverse(FPMatrix& Matrix);
+
+FPMatrix Transpose(FPMatrix& Matrix);
 
 FPQuaternion Conjugate(const FPQuaternion& quat);
 
@@ -298,8 +287,6 @@ FPMatrix MatrixRotaionRollPitch(const float& PitchDegree, const float& YawDegree
 FPMatrix MatrixRotationQuaternion(const FPQuaternion& quat);
 
 //Scale 青纺
-FPMatrix MatrixScaling(const float& x, const float& y, const float& z);
-
 FPMatrix MatrixScaling(const FPVector3& Scale);
 
 

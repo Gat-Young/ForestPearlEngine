@@ -70,12 +70,12 @@ float4 PS_Main(
     //Front Back 확인
     if (!IsFrontFace)
     {
-        N = -N;
+       N = -N;
     }
     
     //NormalMap 변환
     float3 BumpNormal = normalize(N.xyz);
-    CalculateBumpNormal(BumpMap, T, N, BumpNormal);
+    CalculateBumpNormal(BumpMap, T, N, mWV, BumpNormal);
     
     float4 DiffuseLit;
     float4 SpecularLit;

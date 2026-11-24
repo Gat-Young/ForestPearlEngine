@@ -1,0 +1,13 @@
+{
+  "Name": "RS_CULLBACK",
+  "FillMode": "SOLID",
+  "CullMode": "BACK",
+  "FrontCounterClockwise": true,
+  "DepthBias": 0,
+  "DepthBiasClamp": 0.0,
+  "SlopeScaledDepthBias": 0.0,
+  "DepthClipEnable": true,
+  "ScissorEnable": false,
+  "MultisampleEnable": true,
+  "AntialiasedLineEnable": true
+}

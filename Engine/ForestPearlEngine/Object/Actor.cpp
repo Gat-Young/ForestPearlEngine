@@ -87,3 +87,18 @@ FPVector3 FPActor::GetActorScale3D()
 {
     return RootComponent->GetComponentScale();
 }
+
+FPVector3 FPActor::GetActorForwardVector()
+{
+    return RootComponent->GetForwardVector();
+}
+
+FPVector3 FPActor::GetActorRightVector()
+{
+    return RootComponent->GetRightVector();
+}
+
+FPVector3 FPActor::GetActorUpVector()
+{
+    return RootComponent->GetUpVector();
+}

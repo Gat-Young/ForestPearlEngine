@@ -27,6 +27,9 @@ class FPSceneComponent : public FPActorComponent
 		//로컬 트랜스폼 계산
 		void CalculateLocalTransform();
 
+		//Transform 행렬(Location/Rotation/Scale Matrix) 계산
+		void CalculateTransformMatrices();
+
 		void AttachChildComponent(FPSceneComponent* Child);
 		void DetachChildComponent(FPSceneComponent* Child);
 
@@ -72,6 +75,11 @@ class FPSceneComponent : public FPActorComponent
 		FPVector3 GetComponentRotation();
 		FPQuaternion GetComponentQuat();
 		FPVector3 GetComponentScale();
+
+		//축 벡터 (DX 기준 : Right +X, Up +Y, Forward +Z)
+		FPVector3 GetForwardVector();
+		FPVector3 GetRightVector();
+		FPVector3 GetUpVector();
 
 		//Root Component 찾기
 		FPSceneComponent* GetAttachmentRoot();

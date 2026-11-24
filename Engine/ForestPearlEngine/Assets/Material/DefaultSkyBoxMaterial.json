@@ -7,6 +7,7 @@
         "BlendState": "BS_DEFAULT",
         "Details": "Translucent",
         "bIsSky": true,
+        "bUsePlanarForwardReflections": false,
         "Parameters": [ ],
         "Textures": [
             {

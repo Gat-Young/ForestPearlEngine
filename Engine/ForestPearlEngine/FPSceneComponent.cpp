@@ -138,6 +138,21 @@ FPVector3 FPSceneComponent::GetComponentScale()
 	return WorldTransform.Scale;
 }
 
+FPVector3 FPSceneComponent::GetForwardVector()
+{
+	return WorldTransform.Forward();
+}
+
+FPVector3 FPSceneComponent::GetRightVector()
+{
+	return WorldTransform.Right();
+}
+
+FPVector3 FPSceneComponent::GetUpVector()
+{
+	return WorldTransform.Up();
+}
+
 FPSceneComponent* FPSceneComponent::GetAttachmentRoot()
 {
 	if (this->ParentComponent == nullptr) return this;
@@ -179,11 +194,24 @@ void FPSceneComponent::CalculateTransformBranch()
 	if (ParentComponent == nullptr)
 	{
 		WorldTransform = RelativeTransform;
+		CalculateTransformMatrices();
 	}
 	else
 	{
 		CalculateWorldTransform();
 	}
+}
+
+//Transform 행렬(Location/Rotation/Scale Matrix) 계산
+void FPSceneComponent::CalculateTransformMatrices()
+{
+	RelativeTransform.LocationMatrix = MatrtixTranslation(RelativeTransform.Location);
+	RelativeTransform.RotationMatrix = MatrixRotationQuaternion(RelativeTransform.QuaternionRotation);
+	RelativeTransform.ScaleMatrix = MatrixScaling(RelativeTransform.Scale);
+
+	WorldTransform.LocationMatrix = MatrtixTranslation(WorldTransform.Location);
+	WorldTransform.RotationMatrix = MatrixRotationQuaternion(WorldTransform.QuaternionRotation);
+	WorldTransform.ScaleMatrix = MatrixScaling(WorldTransform.Scale);
 }
 
 
@@ -192,16 +220,6 @@ void FPSceneComponent::Tick()
 {
 	//Transform 계산 분기, virtual 함수 이므로 필요에 따라 상속으로 변경 가능
 	CalculateTransformBranch();
-
-	//그래픽스 연산 용 행렬 계산
-	RelativeTransform.LocationMatrix = MatrtixTranslation(RelativeTransform.Location);
-	RelativeTransform.RotationMatrix = MatrixRotationQuaternion(RelativeTransform.QuaternionRotation);
-	RelativeTransform.ScaleMatrix = MatrixScaling(RelativeTransform.Scale);
-
-	WorldTransform.LocationMatrix = MatrtixTranslation(WorldTransform.Location);
-	WorldTransform.RotationMatrix = MatrixRotationQuaternion(WorldTransform.QuaternionRotation);
-	WorldTransform.ScaleMatrix = MatrixScaling(WorldTransform.Scale);
-	//
 
 	for (FPSceneComponent* child : ChildComponent)
 	{
@@ -232,7 +250,7 @@ void FPSceneComponent::DetachFromComponent()
 void FPSceneComponent::CalculateWorldTransform()
 {
 	//자신이 Root Component인 경우
-	if (ParentComponent == nullptr) { WorldTransform = RelativeTransform; return; };
+	if (ParentComponent == nullptr) { WorldTransform = RelativeTransform; CalculateTransformMatrices(); return; };
 
 	//Socket을 가지고 있다면 Socket 위치까지 고려한 부모의 월드를 사용
 	FTransform ParentWorldTransform = ParentComponent->GetSocketTransform(ParentSocketName);
@@ -247,6 +265,7 @@ void FPSceneComponent::CalculateWorldTransform()
 	//Location 계산 (부모 위치 + Rotate(부모 회전 사원수, (자식 위치 * 부모 크기)) 
 	CalculateWorldLocation(ParentWorldTransform);
 
+	CalculateTransformMatrices();
 }
 
 void FPSceneComponent::CalculateWorldScale(const FTransform& ParentWorldTransform)
@@ -274,7 +293,7 @@ void FPSceneComponent::CalculateWorldLocation(const FTransform& ParentWorldTrans
 void FPSceneComponent::CalculateLocalTransform()
 {
 	//자신이 Root Component인 경우
-	if (ParentComponent == nullptr) { RelativeTransform = WorldTransform; return; };
+	if (ParentComponent == nullptr) { RelativeTransform = WorldTransform; CalculateTransformMatrices(); return; };
 
 	//Socket을 가지고 있다면 Socket 위치까지 고려한 부모의 월드를 사용
 	FTransform ParentWorldTransform = ParentComponent->GetSocketTransform(ParentSocketName);
@@ -306,6 +325,8 @@ void FPSceneComponent::CalculateLocalTransform()
 			ParentConjugateRotation,
 			ParentToWorldLocation
 		) * ParentInverseScale;
+
+	CalculateTransformMatrices();
 }
 
 void FPSceneComponent::AttachChildComponent(FPSceneComponent* Child)

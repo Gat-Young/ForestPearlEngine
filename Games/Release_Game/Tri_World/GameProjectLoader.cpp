@@ -15,6 +15,7 @@
 #include "ATorchLight.h"
 #include "ABox.h"
 #include "AWall.h"
+#include "ALake.h"
 #include "ADwaf.h"
 #include "AMirror.h"
 #include "AUtaTeapot.h"
@@ -54,6 +55,7 @@ void LoadClassRegist()
 	ClassRegistry->Register<ATorchLight>("ATorchLight");
 	ClassRegistry->Register<ABox>("ABox");
 	ClassRegistry->Register<AWall>("AWall");
+	ClassRegistry->Register<ALake>("ALake");
 	ClassRegistry->Register<ADwaf>("ADwaf");
 	ClassRegistry->Register<AMirror>("AMirror");
 	ClassRegistry->Register<AUtaTeapot>("AUtaTeapot");
@@ -74,11 +76,16 @@ void LoadAssets()
 	AssetLoader->LoadPixelShader("DwarfPixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("ToonLinkPixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("MirrorPixelShader.json", AssetOwner::User);
+	AssetLoader->LoadPixelShader("LakePixelShader.json", AssetOwner::User);
 	AssetLoader->LoadPixelShader("PostProcessPixelShader.json", AssetOwner::User);
 
 	//Mirror RenderTarget / DepthStencil Load
 	AssetLoader->LoadRenderTargetTexture2D("Mirror_RenderTarget.json", AssetOwner::User);
 	AssetLoader->LoadDepthStencil("Mirror_DepthStencil.json", AssetOwner::User);
+
+	//Lake RenderTarget / DepthStencil Load
+	AssetLoader->LoadRenderTargetTexture2D("Lake_RenderTarget.json", AssetOwner::User);
+	AssetLoader->LoadDepthStencil("Lake_DepthStencil.json", AssetOwner::User);
 
 	//Texture Load
 
@@ -203,6 +210,9 @@ void LoadAssets()
 
 	//Mirror Material
 	AssetLoader->LoadMaterial("Mirror/Mirror_Material.json", AssetOwner::User);
+
+	//Lake Material
+	AssetLoader->LoadMaterial("Lake/Lake_Material.json", AssetOwner::User);
 
 	//PostProcess Material
 	AssetLoader->LoadMaterial("PostProcess/PostProcessMaterial.json", AssetOwner::User);

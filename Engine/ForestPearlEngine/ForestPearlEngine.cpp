@@ -117,6 +117,7 @@ void ForestPearlEngine::GameLoop()
         Render->CreateNormalRenderList();
         Render->CreateUIRenderList();
         Render->CreateSceneCaptureList();
+        Render->CreatePlanarReflectionList();
 
         ///////////////////
         // Rendering

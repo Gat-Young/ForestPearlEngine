@@ -32,7 +32,7 @@ struct FTransform
 		return Up;
 	}
 
-	FPVector3 Foraward()
+	FPVector3 Forward()
 	{
 		FPVector3 Forward(RotationMatrix.Matrix.r[2]);
 		return Forward;

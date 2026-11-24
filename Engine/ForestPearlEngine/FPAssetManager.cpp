@@ -186,6 +186,11 @@ void FPAssetManager::AllAssetDataCreate()
 		MakeBlendState(Asset);
 	}
 
+	for (auto& [AssetName, Asset] : LoadedRasterizerStateData)
+	{
+		MakeRasterizerState(Asset);
+	}
+
 	//Fbx Load
 	for (auto& [AssetName, Asset] : LoadedStaticMeshData)
 	{
@@ -1728,6 +1733,54 @@ void FPAssetManager::MakeBlendState(FPBlendStateInfo& BlendStateInfo)
 	BlendStateData[BlendStateInfo.Name] = BSStateData;
 }
 
+FPRasterizerStateInfo& FPAssetManager::GetRasterizerStateInfoData(std::string RasterizerStateName)
+{
+	return LoadedRasterizerStateData[RasterizerStateName];
+}
+
+void FPAssetManager::AddRasterizerStateInfoData(std::string RasterizerStateName, FPRasterizerStateInfo& RasterizerStateInfoData)
+{
+	this->LoadedRasterizerStateData[RasterizerStateName] = RasterizerStateInfoData;
+}
+
+bool FPAssetManager::HasRasterizerStateInfoData(std::string RasterizerStateName)
+{
+	if (LoadedRasterizerStateData.count(RasterizerStateName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+FPRasterizerStateData& FPAssetManager::GetRasterizerStateData(std::string RasterizerStateName)
+{
+	return RasterizerStateData[RasterizerStateName];
+}
+
+void FPAssetManager::AddRasterizerStateData(std::string RasterizerStateName, FPRasterizerStateData& RasterizerStateData)
+{
+	this->RasterizerStateData[RasterizerStateName] = RasterizerStateData;
+}
+
+bool FPAssetManager::HasRasterizerStateData(std::string RasterizerStateName)
+{
+	if (RasterizerStateData.count(RasterizerStateName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void FPAssetManager::MakeRasterizerState(FPRasterizerStateInfo& RasterizerStateInfo)
+{
+	FPRasterizerStateData RSStateData;
+
+	RenderingDevice::GetRenderingDevice().CreateRasterizerState(RasterizerStateInfo, &RSStateData.RasterizerStateData);
+	RasterizerStateData[RasterizerStateInfo.Name] = RSStateData;
+}
+
 FPMaterialData& FPAssetManager::GetMaterialData(std::string MaterialName)
 {
 	return this->LoadedMaterialData[MaterialName];
@@ -1850,6 +1903,7 @@ FPMaterialInterface* FPAssetManager::MakeMaterial(std::string MaterialName, bool
 	Material->SetBlendState(MaterialData.BlendState);
 	Material->SetDetail(MaterialData.Detail);
 	Material->SetIsSky(MaterialData.bIsSky);
+	Material->SetUsePlanarForwardReflections(MaterialData.bUsePlanarForwardReflections);
 	
 	const FPVertexShaderData& VS = GetVertexShaderData(MaterialData.VertexShader);
 	const FPPixelShaderData& PS = GetPixelShaderData(MaterialData.PixelShader);

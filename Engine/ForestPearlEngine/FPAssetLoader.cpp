@@ -249,6 +249,7 @@ void FPAssetLoader::LoadBuiltInMaterial(std::string BuiltInMaterialPath)
 	MaterialData.BlendState = Material.value("BlendState", std::string("BS_ADD"));
 	MaterialData.Detail = StringToFPMaterialDetail(Material.value("Details", std::string("Opaque")));
 	MaterialData.bIsSky = Material.value("bIsSky", false);
+	MaterialData.bUsePlanarForwardReflections = Material.value("bUsePlanarForwardReflections", false);
 
 
 	//Material Parameter 정보 가져오기
@@ -930,6 +931,7 @@ void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsse
 	MaterialData.BlendState = Material.value("BlendState", std::string("BS_ADD"));
 	MaterialData.Detail = StringToFPMaterialDetail(Material.value("Details", std::string("Opaque")));
 	MaterialData.bIsSky = Material.value("bIsSky", false);
+	MaterialData.bUsePlanarForwardReflections = Material.value("bUsePlanarForwardReflections", false);
 
 
 	//Material Parameter 정보 가져오기
@@ -1267,4 +1269,60 @@ void FPAssetLoader::LoadBlendState(std::string BlendStatePath, AssetOwner Engine
 
 	//AssetManager에 Load한 정보 등록
 	AssetManager->AddBlendStateInfoData(BlendStateInfo.Name, BlendStateInfo);
+}
+
+void FPAssetLoader::LoadRasterizerState(std::string RasterizerStatePath, AssetOwner EngineAsset)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::ifstream File(FPPathManager::Get().GetAssetPath("RasterizerState/" + RasterizerStatePath));
+	if (EngineAsset == AssetOwner::Engine) File = std::ifstream(FPPathManager::Get().GetEngineAssetPath("RasterizerState/" + RasterizerStatePath));
+
+	if (!File.is_open())
+	{
+		std::cerr << RasterizerStatePath << " file open failed\n";
+		return;
+	}
+
+	json JsonRasterizerStateData;
+
+	try
+	{
+		File >> JsonRasterizerStateData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON parse error: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPRasterizerStateInfo RasterizerStateInfo;
+
+	RasterizerStateInfo.Name = JsonRasterizerStateData["Name"].get<std::string>();
+
+	RasterizerStateInfo.FillMode = StringToFPFillMode(JsonRasterizerStateData["FillMode"].get<std::string>());
+	RasterizerStateInfo.CullMode = StringToFPCullMode(JsonRasterizerStateData["CullMode"].get<std::string>());
+	RasterizerStateInfo.FrontCounterClockwise = JsonRasterizerStateData.value("FrontCounterClockwise", false);
+
+	RasterizerStateInfo.DepthBias = JsonRasterizerStateData.value("DepthBias", 0);
+	RasterizerStateInfo.DepthBiasClamp = JsonRasterizerStateData.value("DepthBiasClamp", 0.0f);
+	RasterizerStateInfo.SlopeScaledDepthBias = JsonRasterizerStateData.value("SlopeScaledDepthBias", 0.0f);
+
+	RasterizerStateInfo.DepthClipEnable = JsonRasterizerStateData.value("DepthClipEnable", true);
+	RasterizerStateInfo.ScissorEnable = JsonRasterizerStateData.value("ScissorEnable", false);
+	RasterizerStateInfo.MultisampleEnable = JsonRasterizerStateData.value("MultisampleEnable", true);
+	RasterizerStateInfo.AntialiasedLineEnable = JsonRasterizerStateData.value("AntialiasedLineEnable", true);
+
+	RasterizerStateInfo.Owner = EngineAsset;
+
+	if (AssetManager->HasRasterizerStateInfoData(RasterizerStateInfo.Name))
+	{
+		std::cout << "Duplicate RasterizerState name." << "\n";
+		return;
+	}
+
+	AssetManager->AddRasterizerStateInfoData(RasterizerStateInfo.Name, RasterizerStateInfo);
 }

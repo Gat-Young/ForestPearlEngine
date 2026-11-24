@@ -8,6 +8,12 @@ FPSceneCaptureComponent2D::FPSceneCaptureComponent2D(FPActor* Owner) : FPSceneCa
 	RegistSceneCaptureComponent();
 }
 
+FPSceneCaptureComponent2D::~FPSceneCaptureComponent2D()
+{
+	FPSceneCaptureList* SceneCaptureList = static_cast<FPSceneCaptureList*>(FPGameInstance::Get().GetSceneCaptureList());
+	SceneCaptureList->UnregistRenderList(SceneCaptureItem);
+}
+
 //SceneCaptureComponent¸¦ µî·Ï
 void FPSceneCaptureComponent2D::RegistSceneCaptureComponent()
 {
@@ -80,7 +86,7 @@ void FPSceneCaptureComponent2D::Tick()
 {
 	__super::Tick();
 
-	ViewMatrix = MatrtixTranslation(-WorldTransform.Location) * WorldTransform.RotationMatrix.Transpose();
+	ViewMatrix = MatrtixTranslation(-WorldTransform.Location) * Transpose(WorldTransform.RotationMatrix);
 	ProjectionMatrix = MatrixPerspectiveFovLH(Fov, Aspect, Zn, Zf);
 }
 

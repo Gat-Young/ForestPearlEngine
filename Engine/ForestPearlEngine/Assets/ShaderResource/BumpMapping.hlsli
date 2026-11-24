@@ -2,7 +2,7 @@
 #define BUMP_MAPPING_HLSLI
 
 //투입되는 Normal과 Tangent는 View 공간으로 옮길 것 Out Normal은 View 공간 Normal로 나옴
-void CalculateBumpNormal(float4 texNorm, float4 T, float3 N, out float3 Normal)
+void CalculateBumpNormal(float4 texNorm, float4 T, float3 N, matrix mWV, out float3 Normal)
 {
     //노말 변환
     float3 NormalVS = normalize(N);
@@ -10,6 +10,12 @@ void CalculateBumpNormal(float4 texNorm, float4 T, float3 N, out float3 Normal)
     //탄젠트 기저, 정규 직교화
     float3 Tangent = normalize(T.xyz - (dot(NormalVS, T.xyz) * NormalVS));
     float H = T.w < 0.0f ? -1.0f : 1.0f;
+    
+    if (determinant((float3x3) mWV) < 0.0f)
+    {
+        H = -H;
+    }
+    
     float3 BiTangent = H * cross(NormalVS, Tangent);
     
     float3x3 TBN = {

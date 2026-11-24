@@ -1,0 +1,68 @@
+// Lake Pixel Shader
+// Projects the planar-reflection RenderTarget onto the lake surface using the
+// reflected camera's View*Projection (screen-space reflection UV), instead of
+// the mesh's own UV, so the reflection stays aligned under any mesh/UV layout.
+
+cbuffer ObejctConstBuffer : register(b0)
+{
+    matrix mWorld;
+    matrix mInverseWorld;
+    matrix mTranseposeWorld;
+    matrix mInverseTranseposeWorld;
+
+    matrix mView;
+    matrix mInverseView;
+    matrix mTranseposeView;
+    matrix mInverseTranseposeView;
+
+    matrix mProj;
+    matrix mInverseProj;
+    matrix mTranseposeProj;
+    matrix mInverseTranseposeProj;
+
+    matrix mWV;
+    matrix mInverseWV;
+    matrix mTranseposeWV;
+    matrix mInverseTranseposeWV;
+
+    matrix mWVP;
+    matrix mInverseWVP;
+    matrix mTranseposeWVP;
+    matrix mInverseTranseposeWVP;
+};
+
+//Reflected camera's View*Projection, broadcast every draw by the engine (fixed slot b5)
+cbuffer ReflectionViewProjConstBuffer : register(b5)
+{
+    matrix ReflectionViewProjection;
+};
+
+Texture2D LakeTex : register(t0);
+SamplerState Smpler : register(s0);
+
+float4 PS_Main(
+                float4 pos : SV_POSITION,
+                float4 col : COLOR0,
+                float4 posv : TEXCOORD1,
+                float2 uv : TEXCOORD0,
+                float4 T : TEXCOORD2,
+                float4 N : TEXCOORD3,
+                bool IsFrontFace : SV_IsFrontFace
+                ) : SV_TARGET
+{
+    float3 WorldPos = mul(mInverseView, posv).xyz;
+
+    float4 ReflectedClip = mul(
+        ReflectionViewProjection,
+        float4(WorldPos, 1.0f)
+    );
+
+    float2 NDC = ReflectedClip.xy / ReflectedClip.w;
+
+    float2 ReflectionUV = float2(
+        NDC.x * 0.5f + 0.5f,
+        0.5f - NDC.y * 0.5f
+    );
+
+    return LakeTex.Sample(Smpler, ReflectionUV);
+}

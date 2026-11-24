@@ -289,6 +289,7 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 		BaseMaterialBody["BlendState"] = "BS_ADD";
 		BaseMaterialBody["Details"] = "Opaque";
 		BaseMaterialBody["bIsSky"] = false;
+		BaseMaterialBody["bUsePlanarForwardReflections"] = false;
 		BaseMaterialBody["Parameters"] = ParametersArray;
 
 		json BaseMaterialFileJson;
@@ -315,6 +316,7 @@ json FbxToStaticMeshJsonTranslator::ExportMeshMaterial(const ufbx_mesh& Mesh, co
 	MaterialInstanceBody["BlendState"] = "BS_ADD";
 	MaterialInstanceBody["Details"] = "Opaque";
 	MaterialInstanceBody["bIsSky"] = false;
+	MaterialInstanceBody["bUsePlanarForwardReflections"] = false;
 	MaterialInstanceBody["Parameters"] = ParametersArray;
 	MaterialInstanceBody["Textures"] = TexturesArray;
 	MaterialInstanceBody["Samplers"] = SamplersArray;

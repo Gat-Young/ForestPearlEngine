@@ -51,30 +51,6 @@ class RenderingDevice
 		////////////////////////////////////////
 
 
-		//Rasterizer 상태 객체
-		enum {
-			RS_SOLID,				//기본 렌더링 : 솔리드 Solid
-			RS_WIREFRAME,			//와이어프레임 렌더링
-			RS_CULLBACK,			//뒷면 컬링(ON) : BackFaceCulling - "CCW"
-			RS_WIRECULLBACK,		//와이어 프레임 + 뒷면 컬링 (ON)
-
-			RS_MAX_
-		};
-
-		//렌더링 모드 : 다수의 렌더링 모드 조합 및 운용을 위한 정의
-		enum
-		{
-			RM_SOLID = 0x0000,			//삼각형채우기 : ON, Solid
-			RM_WIREFRAME = 0x0001,		//삼각형채우기 : OFF, Wire-frame
-			RM_CULLBACK = 0x0002,		//뒷면 컬링 : On "CCW"
-
-			//렌더링 기본 모드 : Solid + Cull-On
-			RM_DEFAULT = RM_SOLID | RM_CULLBACK,
-		};
-		DWORD RMode = RM_DEFAULT; //"현재 렌더링 모드"
-
-		//Rasterizer 상태 객체 배열
-		ID3D11RasterizerState* RState[RS_MAX_] = { NULL, };
 
 		//샘플러 상태 객체
 		ID3D11SamplerState* SamplerState[Sampler_MAX_];
@@ -144,6 +120,8 @@ class RenderingDevice
 		D3D11_BLEND FPBlendToD3DBlend(FPBlend& Blend);
 		D3D11_BLEND_OP FPBlendOpToD3DBlendOp(FPBlendOp& BlendOp);
 		UINT8 FPColorWriteMaskVectorToD3DColorWriteMask(std::vector<FPColorWriteMask>& WriteMask);
+		D3D11_FILL_MODE FPFillModeToD3DFillMode(FPFillMode& FillMode);
+		D3D11_CULL_MODE FPCullModeToD3DCullMode(FPCullMode& CullMode);
 		
 	public:
 		static RenderingDevice& GetRenderingDevice();
@@ -290,15 +268,11 @@ class RenderingDevice
 		//VRAM 정보 획득
 		HRESULT GetDXVRAMInfo(IDXGIAdapter1* Adapter, DEVICEINFO& Di);
 
-		//레스터라이저 상태 객체 생성
-		void RasterStateCreate();
+		//RasterizerState create object
+		HRESULT CreateRasterizerState(FPRasterizerStateInfo& RasterizerStateInfo, void** OutRSState);
 
-		//레스터라이저 상태 객체 제거
-		void RasterStateRelease();
-
-
-		//렌더링스테이트 업데이트 함수
-		void UpdateRSSetState(bool isFill, bool isCull);
+		//RasterizerState bind
+		void RSSetState(void* InRasterizerState);
 
 		//셰이더 설정
 		void VSSetShader(void* VS);

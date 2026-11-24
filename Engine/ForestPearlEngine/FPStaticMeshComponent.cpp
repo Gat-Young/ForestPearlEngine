@@ -60,6 +60,7 @@ void FPStaticMeshComponent::SetRenderItemData()
 	RenderItem->BlendState = SelectedMaterial->GetBlendState();
 	RenderItem->Detail = SelectedMaterial->GetDetail();
 	RenderItem->bIsSky = SelectedMaterial->GetIsSky();
+	RenderItem->bUsePlanarForwardReflections = SelectedMaterial->GetUsePlanarForwardReflections();
 	RenderItem->StencilRefValue = &(this->StencilRefValue);
 	RenderItem->bCustomDepthStencil = &(this->bCustomDepthStencil);
 

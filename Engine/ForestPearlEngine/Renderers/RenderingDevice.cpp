@@ -289,6 +289,45 @@ UINT8 RenderingDevice::FPColorWriteMaskVectorToD3DColorWriteMask(std::vector<FPC
 	return Mask;
 }
 
+D3D11_FILL_MODE RenderingDevice::FPFillModeToD3DFillMode(FPFillMode& FillMode)
+{
+	static const std::unordered_map<FPFillMode, D3D11_FILL_MODE> FormatMap =
+	{
+		{ FPFillMode::SOLID,     D3D11_FILL_SOLID },
+		{ FPFillMode::WIREFRAME, D3D11_FILL_WIREFRAME },
+	};
+
+	auto it = FormatMap.find(FillMode);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	//Default : SOLID
+	return D3D11_FILL_SOLID;
+}
+
+D3D11_CULL_MODE RenderingDevice::FPCullModeToD3DCullMode(FPCullMode& CullMode)
+{
+	static const std::unordered_map<FPCullMode, D3D11_CULL_MODE> FormatMap =
+	{
+		{ FPCullMode::NONE,  D3D11_CULL_NONE },
+		{ FPCullMode::FRONT, D3D11_CULL_FRONT },
+		{ FPCullMode::BACK,  D3D11_CULL_BACK },
+	};
+
+	auto it = FormatMap.find(CullMode);
+
+	if (it != FormatMap.end())
+	{
+		return it->second;
+	}
+
+	//Default : NONE
+	return D3D11_CULL_NONE;
+}
+
 //싱글톤 렌더링 디바이스 객체 가져오기
 RenderingDevice& RenderingDevice::GetRenderingDevice()
 {
@@ -1950,80 +1989,36 @@ HRESULT RenderingDevice::GetDXVRAMInfo(IDXGIAdapter1* Adapter, DEVICEINFO& Di)
 	return hr;
 }
 
-void RenderingDevice::RasterStateCreate()
+HRESULT RenderingDevice::CreateRasterizerState(FPRasterizerStateInfo& RasterizerStateInfo, void** OutRSState)
 {
-	//상태객체 1 : 기본 렌더링 상태 객체
-	D3D11_RASTERIZER_DESC rd;
-	rd.FillMode = D3D11_FILL_SOLID;		//삼각형 색상 채우기(기본값)
-	rd.CullMode = D3D11_CULL_NONE;		//컬링 없음. (기본값은 컬링 Back)
-	rd.FrontCounterClockwise = true;	//이하 기본값
-	rd.DepthBias = 0;
-	rd.DepthBiasClamp = 0;
-	rd.SlopeScaledDepthBias = 0;
-	rd.DepthClipEnable = true;
-	rd.ScissorEnable = false;
-	rd.MultisampleEnable = true;	//MS-AA 적용.★
-	rd.AntialiasedLineEnable = true;	//Line 그리기시 AA 적용 여부 (옵션)★
+	HRESULT hr = S_OK;
 
-	//레스터라이저 객체 생성
-	Device->CreateRasterizerState(&rd, &RState[RS_SOLID]);
+	D3D11_RASTERIZER_DESC Desc = {};
+	Desc.FillMode = FPFillModeToD3DFillMode(RasterizerStateInfo.FillMode);
+	Desc.CullMode = FPCullModeToD3DCullMode(RasterizerStateInfo.CullMode);
+	Desc.FrontCounterClockwise = RasterizerStateInfo.FrontCounterClockwise ? TRUE : FALSE;
+	Desc.DepthBias = RasterizerStateInfo.DepthBias;
+	Desc.DepthBiasClamp = RasterizerStateInfo.DepthBiasClamp;
+	Desc.SlopeScaledDepthBias = RasterizerStateInfo.SlopeScaledDepthBias;
+	Desc.DepthClipEnable = RasterizerStateInfo.DepthClipEnable ? TRUE : FALSE;
+	Desc.ScissorEnable = RasterizerStateInfo.ScissorEnable ? TRUE : FALSE;
+	Desc.MultisampleEnable = RasterizerStateInfo.MultisampleEnable ? TRUE : FALSE;
+	Desc.AntialiasedLineEnable = RasterizerStateInfo.AntialiasedLineEnable ? TRUE : FALSE;
 
-	
-	//상태객체 2 : 와이어 프레임 그리기
-	rd.FillMode = D3D11_FILL_WIREFRAME;
-	rd.CullMode = D3D11_CULL_NONE;
-	Device->CreateRasterizerState(&rd, &RState[RS_WIREFRAME]);
+	ID3D11RasterizerState* State;
+	hr = Device->CreateRasterizerState(&Desc, &State);
+	if (FAILED(hr)) { std::cout << "RasterizerState Create Fail!" << "\n"; return hr; }
 
-	//상태객체 3 : 컬링 ON CCW
-	rd.FillMode = D3D11_FILL_SOLID;
-	rd.CullMode = D3D11_CULL_BACK;
-	Device->CreateRasterizerState(&rd, &RState[RS_CULLBACK]);
-
-	//상태객체 4 : 와이어 프레임 + 컬링 ON CCW
-	rd.FillMode = D3D11_FILL_WIREFRAME;
-	rd.CullMode = D3D11_CULL_BACK;
-	Device->CreateRasterizerState(&rd, &RState[RS_WIRECULLBACK]);
+	*OutRSState = State;
+	return hr;
 }
 
-void RenderingDevice::RasterStateRelease()
+void RenderingDevice::RSSetState(void* InRasterizerState)
 {
-	for (int i = 0; i < RS_MAX_; i++)
-	{
-		SafeRelease(RState[i]);
-	}
+	ID3D11RasterizerState* State = static_cast<ID3D11RasterizerState*>(InRasterizerState);
+	DeviceContext->RSSetState(State);
 }
 
-#define CheckRMode(k, v) if((k)) RMode |= (v); else RMode &= ~(v);
-
-void RenderingDevice::UpdateRSSetState(bool isFill, bool isCull)
-{
-	//렌더링 모드 체크
-	CheckRMode(!isFill, RM_WIREFRAME);
-	CheckRMode(isCull, RM_CULLBACK);
-
-	ID3D11RasterizerState* SelectedState = nullptr;
-	//레스터 모드 전환
-	switch (RMode)
-	{
-	default:
-	case RM_SOLID:
-		SelectedState = RState[RS_SOLID];
-		break;
-
-	case RM_WIREFRAME:
-		SelectedState = RState[RS_WIREFRAME];
-		break;
-
-	case RM_CULLBACK:
-		SelectedState = RState[RS_CULLBACK];
-		break;
-
-	case RM_WIREFRAME | RM_CULLBACK:
-		SelectedState = RState[RS_WIRECULLBACK];
-		break;
-	}
-	DeviceContext->RSSetState(SelectedState);
-}
 
 void RenderingDevice::VSSetShader(void* VS)
 {

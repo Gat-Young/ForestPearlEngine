@@ -40,6 +40,13 @@ cbuffer NormalDebugConstBuffer : register(b2)
     float NormalSign;
 };
 
+cbuffer ClipPlanarReflectionConstantBuffer : register(b13)
+{
+    float4 GlobalClipPlane;
+    uint ClipPlaneEnabled;
+    float3 Padding;
+};
+
 // Mesh Vertex Input
 struct VSInput
 {
@@ -54,6 +61,7 @@ struct VSOutput
 {
     float4 Position : SV_POSITION;
     float4 Color : COLOR0;
+    float ClipDistance : SV_ClipDistance0;
 };
 
 // Vertex Shader
@@ -91,6 +99,12 @@ VSOutput VS_Main(VSInput input)
 
     // Green
     Output.Color = NormalSign > 0.0f ? float4(0.0f, 1.0f, 0.0f, 1.0f) : float4(1.0f, 0.5f, 0.0f, 1.0f);
+
+    Output.ClipDistance = 1.0f;
+    if (ClipPlaneEnabled != 0)
+    {
+        Output.ClipDistance = dot(float4(WorldPosition, 1.0f), GlobalClipPlane);
+    }
 
     return Output;
 }

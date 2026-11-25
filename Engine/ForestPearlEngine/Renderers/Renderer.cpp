@@ -20,6 +20,7 @@
 #include "../FPMeshNormalRenderList.h"
 #include "../FPSceneCaptureList.h"
 #include "../FPPlanarReflectionList.h"
+#include "../FPCascadeShadowRenderList.h"
 
 //맘에 안들기는 하는 데 우선..
 #include "../Object/Actor.h"
@@ -535,6 +536,37 @@ void Renderer::CreateSkyLightRenderList()
 	}
 }
 
+void Renderer::CreateCascadeShadowRenderList()
+{
+	CascadeShadowList.clear();
+
+	FPCascadeShadowRenderList* CascadeShadowRenderList = static_cast<FPCascadeShadowRenderList*>(FPGameInstance::Get().GetCascadeShadowRenderList());
+	std::vector<FPCascadeShadowRenderItem> RenderList = CascadeShadowRenderList->GetRenderList();
+
+	for (FPCascadeShadowRenderItem CascadeShadowItem : RenderList)
+	{
+		//그림자를 그리지 않는다면 넘어감
+		if (!*(CascadeShadowItem.CastShadow))
+		{
+			continue;
+		}
+
+		RenderingData::FPCascadeShadowRenderItem CascadeShadowRenderingData;
+		CascadeShadowRenderingData.CastShadow = *(CascadeShadowItem.CastShadow);
+		CascadeShadowRenderingData.Direction = *(CascadeShadowItem.Direction);
+		CascadeShadowRenderingData.CascadeCount = *(CascadeShadowItem.CascadeCount);
+		CascadeShadowRenderingData.ShadowResolution = *(CascadeShadowItem.ShadowResolution);
+		CascadeShadowRenderingData.DynamicShadowDistance = *(CascadeShadowItem.DynamicShadowDistance);
+		CascadeShadowRenderingData.CascadeSplitLambda = *(CascadeShadowItem.CascadeSplitLambda);
+		CascadeShadowRenderingData.CascadeTransitionFraction = *(CascadeShadowItem.CascadeTransitionFraction);
+		CascadeShadowRenderingData.ShadowDistanceFadeoutFraction = *(CascadeShadowItem.ShadowDistanceFadeoutFraction);
+		CascadeShadowRenderingData.ShadowBias = *(CascadeShadowItem.ShadowBias);
+		CascadeShadowRenderingData.ShadowSlopeBias = *(CascadeShadowItem.ShadowSlopeBias);
+		CascadeShadowRenderingData.CascadeShadowMapName = *(CascadeShadowItem.CascadeShadowMapName);
+
+		CascadeShadowList.push_back(CascadeShadowRenderingData);
+	}
+}
 void Renderer::CreateNormalRenderList()
 {
 	//비어 있지 않다면 비우기

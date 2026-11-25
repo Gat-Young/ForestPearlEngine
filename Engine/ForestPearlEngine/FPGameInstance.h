@@ -24,6 +24,7 @@ enum class GameInstanceSubSystemName : size_t
 	ViewPortClient,
 	SceneCaptureList,
 	PlanarReflectionList,
+	CascadeShadowRenderList,
 
 	GameInstanceSubSystemList_MAX
 };
@@ -77,6 +78,7 @@ class FPGameInstance : public FPObject
 		FPGameInstanceSubSystem* GetNormalRenderList();
 		FPGameInstanceSubSystem* GetSceneCaptureList();
 		FPGameInstanceSubSystem* GetPlanarReflectionList();
+		FPGameInstanceSubSystem* GetCascadeShadowRenderList();
 	
 
 		void Initialize();

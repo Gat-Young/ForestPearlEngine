@@ -149,6 +149,7 @@
     <ClInclude Include="FPLightComponent.h" />
     <ClInclude Include="FPLightComponentBase.h" />
     <ClInclude Include="FPLightRenderList.h" />
+    <ClInclude Include="FPCascadeShadowRenderList.h" />
     <ClInclude Include="FPSkyLightRenderList.h" />
     <ClInclude Include="FPLocalLightComponent.h" />
     <ClInclude Include="FPMaterial.h" />
@@ -226,6 +227,7 @@
     <ClCompile Include="FPLightComponent.cpp" />
     <ClCompile Include="FPLightComponentBase.cpp" />
     <ClCompile Include="FPLightRenderList.cpp" />
+    <ClCompile Include="FPCascadeShadowRenderList.cpp" />
     <ClCompile Include="FPSkyLightRenderList.cpp" />
     <ClCompile Include="FPLocalLightComponent.cpp" />
     <ClCompile Include="FPMaterial.cpp" />

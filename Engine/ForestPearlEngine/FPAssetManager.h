@@ -64,8 +64,8 @@ private:
 	std::unordered_map<std::string, FPDepthStencilData> DepthStencilData;
 
 	//DepthStencil Array
-	std::unordered_map<std::string, FPCascadeDepthStencilArrayInfo> LoadedDepthStencilArrayData;
-	std::unordered_map<std::string, FPArrayDepthStencilData> DepthStencilArrayData;
+	std::unordered_map<std::string, FPDepthStencilArrayInfo> LoadedDepthStencilArrayData;
+	std::unordered_map<std::string, FPDepthStencilArrayData> DepthStencilArrayData;
 
 	//Cascade Shadow Map 이름 자동 생성용 Counter
 	unsigned int CascadeShadowMapCount = 0;
@@ -252,16 +252,16 @@ public:
 	std::unordered_map<std::string, FPDepthStencilData>& GetDepthStencilDataMap(); //살짝 아쉬움
 
 	//DepthStencil Array Info
-	FPCascadeDepthStencilArrayInfo& GetDepthStencilArrayInfoData(std::string DepthStencilArrayName);
-	void AddDepthStencilArrayInfoData(std::string DepthStencilArrayName, FPCascadeDepthStencilArrayInfo& DepthStencilArrayInfo);
+	FPDepthStencilArrayInfo& GetDepthStencilArrayInfoData(std::string DepthStencilArrayName);
+	void AddDepthStencilArrayInfoData(std::string DepthStencilArrayName, FPDepthStencilArrayInfo& DepthStencilArrayInfo);
 	bool HasDepthStencilArrayInfoData(std::string DepthStencilArrayName);
 
 	//DepthStencil Array Data
-	FPArrayDepthStencilData& GetDepthStencilArrayData(std::string DepthStencilArrayName);
-	void AddDepthStencilArrayData(std::string DepthStencilArrayName, FPArrayDepthStencilData& DepthStencilArrayData);
+	FPDepthStencilArrayData& GetDepthStencilArrayData(std::string DepthStencilArrayName);
+	void AddDepthStencilArrayData(std::string DepthStencilArrayName, FPDepthStencilArrayData& DepthStencilArrayData);
 	bool HasDepthStencilArrayData(std::string DepthStencilArrayName);
-	void MakeDepthStencilArray(FPCascadeDepthStencilArrayInfo& DepthStencilArrayInfo);
-	std::unordered_map<std::string, FPArrayDepthStencilData>& GetDepthStencilArrayDataMap();
+	void MakeDepthStencilArray(FPDepthStencilArrayInfo& DepthStencilArrayInfo);
+	std::unordered_map<std::string, FPDepthStencilArrayData>& GetDepthStencilArrayDataMap();
 
 	//Cascade Shadow Map 생성/갱신 (자동 할당된 Name을 반환)
 	std::string CreateCascadeShadowMap(unsigned int CascadeCount, unsigned int ShadowResolution);

@@ -12,8 +12,13 @@ class FPDirectionalLightComponent : public FPLightComponent
         float CascadeTransitionFraction = 0.1f;     // Cascade 사이 보간 영역
         float ShadowDistanceFadeoutFraction = 0.1f; // 최대 그림자 거리에서 Fade Out
         float ShadowBias = 0.0005f;                 // Depth 오차 보정
+        float ShadowSlopeBias = 0.0005f;            // Slope-Scaled Depth Bias
        
         std::string CascadeShadowMapName = "";
+
+        FPCascadeShadowRenderItem* CascadeShadowRenderItem = nullptr;
+
+        void RegistCascadeShadowRenderList();
 
 	public:
 		FPDirectionalLightComponent(FPActor* Owner);
@@ -21,4 +26,11 @@ class FPDirectionalLightComponent : public FPLightComponent
 
 		void SetCascadeCount(unsigned int InCascadeCount);
 		void SetShadowResolution(unsigned int InShadowResolution);
+
+		void SetDynamicShadowDistance(float InDynamicShadowDistance);
+		void SetCascadeSplitLambda(float InCascadeSplitLambda);
+		void SetCascadeTransitionFraction(float InCascadeTransitionFraction);
+		void SetShadowDistanceFadeoutFraction(float InShadowDistanceFadeoutFraction);
+		void SetShadowBias(float InShadowBias);
+		void SetShadowSlopeBias(float InShadowSlopeBias);
 };

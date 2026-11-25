@@ -1643,12 +1643,12 @@ std::unordered_map<std::string, FPDepthStencilData>& FPAssetManager::GetDepthSte
 	return DepthStencilData;
 }
 
-FPCascadeDepthStencilArrayInfo& FPAssetManager::GetDepthStencilArrayInfoData(std::string DepthStencilArrayName)
+FPDepthStencilArrayInfo& FPAssetManager::GetDepthStencilArrayInfoData(std::string DepthStencilArrayName)
 {
 	return LoadedDepthStencilArrayData[DepthStencilArrayName];
 }
 
-void FPAssetManager::AddDepthStencilArrayInfoData(std::string DepthStencilArrayName, FPCascadeDepthStencilArrayInfo& DepthStencilArrayInfo)
+void FPAssetManager::AddDepthStencilArrayInfoData(std::string DepthStencilArrayName, FPDepthStencilArrayInfo& DepthStencilArrayInfo)
 {
 	this->LoadedDepthStencilArrayData[DepthStencilArrayName] = DepthStencilArrayInfo;
 }
@@ -1663,12 +1663,12 @@ bool FPAssetManager::HasDepthStencilArrayInfoData(std::string DepthStencilArrayN
 	return false;
 }
 
-FPArrayDepthStencilData& FPAssetManager::GetDepthStencilArrayData(std::string DepthStencilArrayName)
+FPDepthStencilArrayData& FPAssetManager::GetDepthStencilArrayData(std::string DepthStencilArrayName)
 {
 	return DepthStencilArrayData[DepthStencilArrayName];
 }
 
-void FPAssetManager::AddDepthStencilArrayData(std::string DepthStencilArrayName, FPArrayDepthStencilData& DepthStencilArrayData)
+void FPAssetManager::AddDepthStencilArrayData(std::string DepthStencilArrayName, FPDepthStencilArrayData& DepthStencilArrayData)
 {
 	this->DepthStencilArrayData[DepthStencilArrayName] = DepthStencilArrayData;
 }
@@ -1683,11 +1683,11 @@ bool FPAssetManager::HasDepthStencilArrayData(std::string DepthStencilArrayName)
 	return false;
 }
 
-void FPAssetManager::MakeDepthStencilArray(FPCascadeDepthStencilArrayInfo& DepthStencilArrayInfo)
+void FPAssetManager::MakeDepthStencilArray(FPDepthStencilArrayInfo& DepthStencilArrayInfo)
 {
 	if (HasDepthStencilArrayData(DepthStencilArrayInfo.Name))
 	{
-		FPArrayDepthStencilData& OldDepthStencilResource = DepthStencilArrayData[DepthStencilArrayInfo.Name];
+		FPDepthStencilArrayData& OldDepthStencilResource = DepthStencilArrayData[DepthStencilArrayInfo.Name];
 		if (OldDepthStencilResource.ShaderResourceView) static_cast<ID3D11ShaderResourceView*>(OldDepthStencilResource.ShaderResourceView)->Release();
 		if (OldDepthStencilResource.StencilShaderResourceView) static_cast<ID3D11ShaderResourceView*>(OldDepthStencilResource.StencilShaderResourceView)->Release();
 		for (void* DSView : OldDepthStencilResource.DepthStencilView)
@@ -1697,7 +1697,7 @@ void FPAssetManager::MakeDepthStencilArray(FPCascadeDepthStencilArrayInfo& Depth
 		if (OldDepthStencilResource.Texture) static_cast<ID3D11Texture2D*>(OldDepthStencilResource.Texture)->Release();
 	}
 
-	FPArrayDepthStencilData DepthStencilResource;
+	FPDepthStencilArrayData DepthStencilResource;
 	RenderingDevice::GetRenderingDevice().CreateDepthStencilArrayTexture(DepthStencilArrayInfo.SizeX, DepthStencilArrayInfo.SizeY, DepthStencilArrayInfo.ArraySize, DepthStencilArrayInfo.MSAA, DepthStencilArrayInfo.ShaderResource, DepthStencilArrayInfo.DepthStencilFormat, &DepthStencilResource.Texture);
 	RenderingDevice::GetRenderingDevice().CreateDepthStencilArrayViews(DepthStencilArrayInfo.DepthStencilFormat, DepthStencilArrayInfo.MSAA, DepthStencilArrayInfo.ArraySize, DepthStencilResource.Texture, &DepthStencilResource.DepthStencilView);
 	RenderingDevice::GetRenderingDevice().CreateDepthStencilArraySRView(DepthStencilArrayInfo.DepthStencilFormat, DepthStencilArrayInfo.ShaderResource, DepthStencilArrayInfo.MSAA, DepthStencilArrayInfo.ArraySize, DepthStencilResource.Texture, &DepthStencilResource.ShaderResourceView);
@@ -1705,14 +1705,14 @@ void FPAssetManager::MakeDepthStencilArray(FPCascadeDepthStencilArrayInfo& Depth
 	DepthStencilArrayData[DepthStencilArrayInfo.Name] = DepthStencilResource;
 }
 
-std::unordered_map<std::string, FPArrayDepthStencilData>& FPAssetManager::GetDepthStencilArrayDataMap()
+std::unordered_map<std::string, FPDepthStencilArrayData>& FPAssetManager::GetDepthStencilArrayDataMap()
 {
 	return DepthStencilArrayData;
 }
 
 std::string FPAssetManager::CreateCascadeShadowMap(unsigned int CascadeCount, unsigned int ShadowResolution)
 {
-	FPCascadeDepthStencilArrayInfo DepthStencilArrayInfo;
+	FPDepthStencilArrayInfo DepthStencilArrayInfo;
 	DepthStencilArrayInfo.Name = "CascadeShadowMap_" + std::to_string(CascadeShadowMapCount);
 	CascadeShadowMapCount++;
 
@@ -1741,7 +1741,7 @@ void FPAssetManager::UpdateCascadeShadowMap(std::string CascadeShadowMapName, un
 	}
 
 	//기존 Info 정보 갱신
-	FPCascadeDepthStencilArrayInfo& DepthStencilArrayInfo = GetDepthStencilArrayInfoData(CascadeShadowMapName);
+	FPDepthStencilArrayInfo& DepthStencilArrayInfo = GetDepthStencilArrayInfoData(CascadeShadowMapName);
 	DepthStencilArrayInfo.SizeX = ShadowResolution;
 	DepthStencilArrayInfo.SizeY = ShadowResolution;
 	DepthStencilArrayInfo.ArraySize = static_cast<int>(CascadeCount);

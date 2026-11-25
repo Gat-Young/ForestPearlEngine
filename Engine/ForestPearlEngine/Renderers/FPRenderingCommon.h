@@ -348,7 +348,7 @@ struct FPDepthStencilData
 };
 
 //DepthStencil Array
-struct FPCascadeDepthStencilArrayInfo
+struct FPDepthStencilArrayInfo
 {
 	std::string Name;
 	unsigned int SizeX;
@@ -366,7 +366,7 @@ struct FPCascadeDepthStencilArrayInfo
 	AssetOwner Owner;
 };
 
-struct FPArrayDepthStencilData
+struct FPDepthStencilArrayData
 {
 	void* Texture = nullptr;
 	std::vector<void*> DepthStencilView;
@@ -910,6 +910,25 @@ struct FPSkyLightRenderItem
 	std::string* CubeMap = nullptr;
 };
 
+struct FPCascadeShadowRenderItem
+{
+	bool* CastShadow = nullptr;
+
+	FPVector3* Direction = nullptr;
+
+	unsigned int* CascadeCount = nullptr;
+	unsigned int* ShadowResolution = nullptr;
+
+	float* DynamicShadowDistance = nullptr;
+	float* CascadeSplitLambda = nullptr;
+	float* CascadeTransitionFraction = nullptr;
+	float* ShadowDistanceFadeoutFraction = nullptr;
+	float* ShadowBias = nullptr;
+	float* ShadowSlopeBias = nullptr;
+
+	std::string* CascadeShadowMapName = nullptr;
+};
+
 namespace RenderingData
 {
 
@@ -996,6 +1015,25 @@ namespace RenderingData
 		FPSkyLightDataItem SkyLightDataItem;
 
 		std::string CubeMap;
+	};
+
+	struct FPCascadeShadowRenderItem
+	{
+		bool CastShadow;
+
+		FPVector3 Direction;
+
+		unsigned int CascadeCount;
+		unsigned int ShadowResolution;
+
+		float DynamicShadowDistance;
+		float CascadeSplitLambda;
+		float CascadeTransitionFraction;
+		float ShadowDistanceFadeoutFraction;
+		float ShadowBias;
+		float ShadowSlopeBias;
+
+		std::string CascadeShadowMapName;
 	};
 
 	constexpr unsigned int Light_MAX = 64;

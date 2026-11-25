@@ -95,6 +95,9 @@ class Renderer
 		//Planar Reflection Item
 		std::vector<RenderingData::PlanarReflectionItem> PlanarReflectionList;
 
+		//Cascade Shadow Render Item
+		std::vector<RenderingData::FPCascadeShadowRenderItem> CascadeShadowList;
+
 		//Material이 샘플링하는 RenderTarget 텍스처 이름으로 조회하는, RenderTarget별 캐싱된 ReflectionMatrix/Plane
 		std::unordered_map<std::string, RenderingData::PlanarReflectionCacheData> PlanarReflectionCache;
 
@@ -149,6 +152,7 @@ class Renderer
 		void CreateUIRenderList();
 		void CreateLightRenderList();
 		void CreateSkyLightRenderList();
+		void CreateCascadeShadowRenderList();
 		void CreateNormalRenderList();
 		void CreateSceneCaptureList();
 		void CreatePlanarReflectionList();

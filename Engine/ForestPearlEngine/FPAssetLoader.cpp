@@ -1166,7 +1166,7 @@ void FPAssetLoader::LoadDepthStencilArray(std::string DepthStencilArrayPath, Ass
 		return;
 	}
 
-	FPCascadeDepthStencilArrayInfo DepthStencilArrayInfo;
+	FPDepthStencilArrayInfo DepthStencilArrayInfo;
 
 	DepthStencilArrayInfo.Name = JsonDepthStencilArrayData["Name"].get<std::string>();
 	DepthStencilArrayInfo.SizeX = JsonDepthStencilArrayData["SizeX"].get<unsigned int>();

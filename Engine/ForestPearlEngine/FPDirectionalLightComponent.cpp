@@ -1,6 +1,7 @@
 #include "FPDirectionalLightComponent.h"
 #include "FPGameInstance.h"
 #include "FPAssetManager.h"
+#include "FPCascadeShadowRenderList.h"
 
 #include <iostream>
 
@@ -22,6 +23,29 @@ FPDirectionalLightComponent::FPDirectionalLightComponent(FPActor* Owner) : FPLig
 
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 	CascadeShadowMapName = AssetManager->CreateCascadeShadowMap(CascadeCount, ShadowResolution);
+
+	RegistCascadeShadowRenderList();
+}
+
+void FPDirectionalLightComponent::RegistCascadeShadowRenderList()
+{
+	//Cascade Shadow Render List에 등록
+	FPCascadeShadowRenderList* CascadeShadowRenderList = static_cast<FPCascadeShadowRenderList*>(FPGameInstance::Get().GetCascadeShadowRenderList());
+	CascadeShadowRenderItem = CascadeShadowRenderList->RegistRenderList();
+
+	if (CascadeShadowRenderItem == nullptr) { std::cout << "[DirectionalLightComponent] : 등록 받은 Cascade Shadow 렌더 아이템이 없습니다." << "\n"; return; }
+
+	CascadeShadowRenderItem->CastShadow = &(this->CastShadow);
+	CascadeShadowRenderItem->Direction = &(this->LightConstantBuffer.Direction);
+	CascadeShadowRenderItem->CascadeCount = &(this->CascadeCount);
+	CascadeShadowRenderItem->ShadowResolution = &(this->ShadowResolution);
+	CascadeShadowRenderItem->DynamicShadowDistance = &(this->DynamicShadowDistance);
+	CascadeShadowRenderItem->CascadeSplitLambda = &(this->CascadeSplitLambda);
+	CascadeShadowRenderItem->CascadeTransitionFraction = &(this->CascadeTransitionFraction);
+	CascadeShadowRenderItem->ShadowDistanceFadeoutFraction = &(this->ShadowDistanceFadeoutFraction);
+	CascadeShadowRenderItem->ShadowBias = &(this->ShadowBias);
+	CascadeShadowRenderItem->ShadowSlopeBias = &(this->ShadowSlopeBias);
+	CascadeShadowRenderItem->CascadeShadowMapName = &(this->CascadeShadowMapName);
 }
 
 void FPDirectionalLightComponent::SetCascadeCount(unsigned int InCascadeCount)
@@ -38,6 +62,36 @@ void FPDirectionalLightComponent::SetShadowResolution(unsigned int InShadowResol
 
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 	AssetManager->UpdateCascadeShadowMap(CascadeShadowMapName, CascadeCount, ShadowResolution);
+}
+
+void FPDirectionalLightComponent::SetDynamicShadowDistance(float InDynamicShadowDistance)
+{
+	DynamicShadowDistance = InDynamicShadowDistance;
+}
+
+void FPDirectionalLightComponent::SetCascadeSplitLambda(float InCascadeSplitLambda)
+{
+	CascadeSplitLambda = InCascadeSplitLambda;
+}
+
+void FPDirectionalLightComponent::SetCascadeTransitionFraction(float InCascadeTransitionFraction)
+{
+	CascadeTransitionFraction = InCascadeTransitionFraction;
+}
+
+void FPDirectionalLightComponent::SetShadowDistanceFadeoutFraction(float InShadowDistanceFadeoutFraction)
+{
+	ShadowDistanceFadeoutFraction = InShadowDistanceFadeoutFraction;
+}
+
+void FPDirectionalLightComponent::SetShadowBias(float InShadowBias)
+{
+	ShadowBias = InShadowBias;
+}
+
+void FPDirectionalLightComponent::SetShadowSlopeBias(float InShadowSlopeBias)
+{
+	ShadowSlopeBias = InShadowSlopeBias;
 }
 
 FPDirectionalLightComponent::~FPDirectionalLightComponent()

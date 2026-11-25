@@ -342,8 +342,7 @@ void FPAssetLoader::LoadBuiltInMaterial(std::string BuiltInMaterialPath)
 				Entry.ArrayIndex = static_cast<unsigned int>(Raw);
 			}
 
-			const std::string SamplerType = S.at("SamplerType").get<std::string>();
-			Entry.SamplerType = StringToSamplerType(SamplerType);
+			Entry.SamplerType = S.at("SamplerType").get<std::string>();
 			MaterialData.NamedSamplers.push_back(std::move(Entry));
 		}
 	}
@@ -1024,8 +1023,7 @@ void FPAssetLoader::LoadMaterial(std::string MaterialPath, AssetOwner EngineAsse
 				Entry.ArrayIndex = static_cast<unsigned int>(Raw);
 			}
 
-			const std::string SamplerType = S.at("SamplerType").get<std::string>();
-			Entry.SamplerType = StringToSamplerType(SamplerType);
+			Entry.SamplerType = S.at("SamplerType").get<std::string>();
 			MaterialData.NamedSamplers.push_back(std::move(Entry));
 		}
 	}
@@ -1376,4 +1374,69 @@ void FPAssetLoader::LoadRasterizerState(std::string RasterizerStatePath, AssetOw
 	}
 
 	AssetManager->AddRasterizerStateInfoData(RasterizerStateInfo.Name, RasterizerStateInfo);
+}
+
+void FPAssetLoader::LoadSamplerState(std::string SamplerStatePath, AssetOwner EngineAsset)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::ifstream File(FPPathManager::Get().GetAssetPath("SamplerState/" + SamplerStatePath));
+	if (EngineAsset == AssetOwner::Engine) File = std::ifstream(FPPathManager::Get().GetEngineAssetPath("SamplerState/" + SamplerStatePath));
+
+	if (!File.is_open())
+	{
+		std::cerr << SamplerStatePath << " file open failed\n";
+		return;
+	}
+
+	json JsonSamplerStateData;
+
+	try
+	{
+		File >> JsonSamplerStateData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON parse error: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPSamplerStateInfo SamplerStateInfo;
+
+	SamplerStateInfo.Name = JsonSamplerStateData["Name"].get<std::string>();
+
+	SamplerStateInfo.Filter = StringToFPSamplerFilterType(JsonSamplerStateData["Filter"].get<std::string>());
+	SamplerStateInfo.AddressU = StringToFPTextureAddressMode(JsonSamplerStateData.value("AddressU", std::string("CLAMP")));
+	SamplerStateInfo.AddressV = StringToFPTextureAddressMode(JsonSamplerStateData.value("AddressV", std::string("CLAMP")));
+	SamplerStateInfo.AddressW = StringToFPTextureAddressMode(JsonSamplerStateData.value("AddressW", std::string("CLAMP")));
+
+	SamplerStateInfo.ComparisonFunc = StringToFPCompraisonFunc(JsonSamplerStateData.value("ComparisonFunc", std::string("NERVER")));
+
+	if (JsonSamplerStateData.contains("BorderColor"))
+	{
+		const json& BorderColor = JsonSamplerStateData["BorderColor"];
+		SamplerStateInfo.BorderColor = FPVector4(BorderColor[0].get<float>(), BorderColor[1].get<float>(), BorderColor[2].get<float>(), BorderColor[3].get<float>());
+	}
+	else
+	{
+		SamplerStateInfo.BorderColor = FPVector4(1.0f, 1.0f, 1.0f, 1.0f);
+	}
+
+	SamplerStateInfo.MaxAnisotropy = JsonSamplerStateData.value("MaxAnisotropy", 1);
+	SamplerStateInfo.MinLOD = JsonSamplerStateData.value("MinLOD", 0.0f);
+	SamplerStateInfo.MaxLOD = JsonSamplerStateData.value("MaxLOD", 3.402823466e+38f);
+	SamplerStateInfo.MipLODBias = JsonSamplerStateData.value("MipLODBias", 0.0f);
+
+	SamplerStateInfo.Owner = EngineAsset;
+
+	if (AssetManager->HasSamplerStateInfoData(SamplerStateInfo.Name))
+	{
+		std::cout << "Duplicate SamplerState name." << "\n";
+		return;
+	}
+
+	AssetManager->AddSamplerStateInfoData(SamplerStateInfo.Name, SamplerStateInfo);
 }

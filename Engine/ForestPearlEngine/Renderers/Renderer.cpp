@@ -157,7 +157,7 @@ void Renderer::Quad2DRenderPass(std::string& InRenderTarget)
 	Device.PSSetShaderResources(0, 1, TextureData);
 
 	//텍스처 샘플러는 Clamp를 씀
-	Device.PSSetSamplers(0, 1, FPSamplerType::Filter_Tri_Linear_Sampler_CLAMP);
+	Device.PSSetSamplers(0, 1, AssetManager->GetSamplerStateData("Filter_Tri_Linear_Sampler_CLAMP").SamplerStateData);
 
 	//Quad Mesh Setting
 	FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer("Quad2D_Mesh");
@@ -679,7 +679,7 @@ std::vector<RenderingData::FPCascadeFrustum> Renderer::CalculateFrustumCascade(c
 }
 
 //하나의 Cascade에 대한 Light View/Projection(LightVP) 계산. Bounding Sphere 기준 고정 크기 직교 투영, Near 확장과 Texel Snapping으로 CSM을 안정화
-FPMatrix Renderer::CalculateCascadeLightViewProj(const RenderingData::FPCascadeNearFar& CascadeNearFar, const RenderingData::FPCascadeFrustum& CascadeFrustum, const RenderingData::FPCascadeShadowRenderItem& CascadeShadowItem)
+FPMatrix Renderer::CalculateCascadeLightViewProj(const RenderingData::FPCascadeNearFar& CascadeNearFar, const RenderingData::FPCascadeFrustum& CascadeFrustum, const RenderingData::FPCascadeShadowRenderItem& CascadeShadowItem, float& OutLightDepthRange)
 {
 	FPVector3 Center = CascadeFrustum.Center;
 
@@ -707,6 +707,8 @@ FPMatrix Renderer::CalculateCascadeLightViewProj(const RenderingData::FPCascadeN
 
 	FPMatrix LightProj = MatrixOrthographicOffCenterLH(-Radius, Radius, -Radius, Radius, Near, Far);
 
+	OutLightDepthRange = Far - Near;
+
 	//Texel Snapping : Light View 공간에서 Center를 Shadow Map 텍셀 간격에 맞춰 스냅
 	if (CascadeShadowItem.ShadowResolution > 0 && Radius > 0.0f)
 	{
@@ -729,29 +731,90 @@ FPMatrix Renderer::CalculateCascadeLightViewProj(const RenderingData::FPCascadeN
 	return LightVP;
 }
 
-//Cascade Shadow Map RenderPass (추후 구현)
+//Cascade Shadow Map(DepthStencilArray)의 CascadeIndex 슬라이스에 Depth-only로 그림자 캐스터를 렌더링
 void Renderer::CascadeShadowMapRenderPass(const RenderingData::FPCascadeShadowRenderItem& CascadeShadowItem, unsigned int CascadeIndex, const FPMatrix& LightVP)
 {
-	//TODO: Cascade Shadow Map 렌더링 구현
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
+	//해당 Cascade Shadow Map 리소스가 없으면 스킵
+	if (!AssetManager->HasDepthStencilArrayData(CascadeShadowItem.CascadeShadowMapName)) return;
+
+	FPDepthStencilArrayData& ShadowMapData = AssetManager->GetDepthStencilArrayData(CascadeShadowItem.CascadeShadowMapName);
+	if (CascadeIndex >= ShadowMapData.DepthStencilView.size()) return;
+
+	//DepthStencilArray의 해당 Cascade 슬라이스를 DepthStencil로 Bind (Color RT 없음)
+	Device.OMSetRenderTargets(0, nullptr, ShadowMapData.DepthStencilView[CascadeIndex]);
+	Device.SetViewPort(0.0f, 0.0f, (float)CascadeShadowItem.ShadowResolution, (float)CascadeShadowItem.ShadowResolution, 0.0f, 1.0f);
+	Device.IASetPrimitiveTopology(Topology::TRIANGLELIST);
+
+	//Light View/Projection(LightVP)을 CameraItem.View에 그대로 전달 (Projection은 Identity로 두어 WVP = World * LightVP가 되도록 함)
+	RenderingData::CameraItem ShadowCamItem;
+	ShadowCamItem.View = LightVP;
+
+	CascadeShadowMapOpaqueRenderPass(ShadowCamItem, AssetManager);
+	CascadeShadowMapMaskedRenderPass(ShadowCamItem, AssetManager);
+	CascadeShadowMapTranslucentRenderPass(ShadowCamItem, AssetManager);
 }
 
-//카메라(또는 그에 대응하는 시점) 사용 시 Cascade별 LightVP를 계산해 CascadeShadowMapRenderPass()를 호출
-void Renderer::UpdateCascadeShadowMaps(const RenderingData::CameraItem& CamItem)
+//Opaque: bCastShadow가 false인 Mesh는 제외하고 Depth만 기록 (PixelShader 비활성화)
+void Renderer::CascadeShadowMapOpaqueRenderPass(const RenderingData::CameraItem& ShadowCamItem, FPAssetManager* AssetManager)
 {
+	for (const RenderingData::MeshRenderItem& RenderItem : OpaqueRenderList)
+	{
+		if (!RenderItem.bCastShadow) continue;
+		DrawMeshRenderItem(RenderItem, ShadowCamItem, AssetManager, "DS_DEPTH_ON", 0, true);
+	}
+}
+
+//Masked: 추후 Alpha Test 처리 (TODO)
+void Renderer::CascadeShadowMapMaskedRenderPass(const RenderingData::CameraItem& ShadowCamItem, FPAssetManager* AssetManager)
+{
+}
+
+//Translucent: 추후 처리 (TODO)
+void Renderer::CascadeShadowMapTranslucentRenderPass(const RenderingData::CameraItem& ShadowCamItem, FPAssetManager* AssetManager)
+{
+}
+
+//카메라(또는 그에 대응하는 시점) 사용 시 Cascade별 LightVP를 계산해 CascadeShadowMapRenderPass()로 ShadowMap만 그리고, 계산된 CascadeShadowConstBuffer를 Light별로 반환
+std::vector<RenderingData::CascadeShadowConstBuffer> Renderer::UpdateCascadeShadowMaps(const RenderingData::CameraItem& CamItem)
+{
+	std::vector<RenderingData::CascadeShadowConstBuffer> CascadeShadowCBList;
+
 	for (RenderingData::FPCascadeShadowRenderItem& CascadeShadowItem : CascadeShadowList)
 	{
 		std::vector<RenderingData::FPCascadeNearFar> CascadeNearFarList = CalculateCascadeNearFar(CamItem.Zn, CamItem.Zf, CascadeShadowItem.CascadeCount, CascadeShadowItem.DynamicShadowDistance, CascadeShadowItem.CascadeSplitLambda);
 		std::vector<RenderingData::FPCascadeFrustum> CascadeFrustumList = CalculateFrustumCascade(CamItem, CascadeNearFarList);
 
-		for (size_t CascadeIndex = 0; CascadeIndex < CascadeFrustumList.size(); ++CascadeIndex)
+		RenderingData::CascadeShadowConstBuffer CascadeShadowCB{};
+		CascadeShadowCB.CascadeCount = static_cast<unsigned int>(CascadeFrustumList.size());
+		CascadeShadowCB.ShadowResolution = CascadeShadowItem.ShadowResolution;
+		CascadeShadowCB.DynamicShadowDistance = CascadeShadowItem.DynamicShadowDistance;
+		CascadeShadowCB.CascadeTransitionFraction = CascadeShadowItem.CascadeTransitionFraction;
+		CascadeShadowCB.ShadowDistanceFadeoutFraction = CascadeShadowItem.ShadowDistanceFadeoutFraction;
+		CascadeShadowCB.ShadowBias = CascadeShadowItem.ShadowBias;
+		CascadeShadowCB.CastShadow = CascadeShadowItem.CastShadow ? 1u : 0u;
+
+		for (size_t CascadeIndex = 0; CascadeIndex < CascadeFrustumList.size() && CascadeIndex < RenderingData::Cascade_MAX; ++CascadeIndex)
 		{
-			FPMatrix LightVP = CalculateCascadeLightViewProj(CascadeNearFarList[CascadeIndex], CascadeFrustumList[CascadeIndex], CascadeShadowItem);
+			float LightDepthRange = 0.0f;
+			FPMatrix LightVP = CalculateCascadeLightViewProj(CascadeNearFarList[CascadeIndex], CascadeFrustumList[CascadeIndex], CascadeShadowItem, LightDepthRange);
 
 			CascadeShadowMapRenderPass(CascadeShadowItem, static_cast<unsigned int>(CascadeIndex), LightVP);
+
+			CascadeShadowCB.mLightViewProj[CascadeIndex] = LightVP;
+			CascadeShadowCB.CascadeNear[CascadeIndex].x = CascadeNearFarList[CascadeIndex].Near;
+			CascadeShadowCB.CascadeFar[CascadeIndex].x = CascadeNearFarList[CascadeIndex].Far;
+			CascadeShadowCB.CascadeDepthRange[CascadeIndex].x = LightDepthRange;
 		}
+
+		CascadeShadowCBList.push_back(CascadeShadowCB);
 	}
+
+	return CascadeShadowCBList;
 }
+
+
 
 //해당 CamItem에 대한 RenderPass가 모두 끝난 뒤 호출. 사용이 끝난 CSM(DepthStencilArray)을 전부 Clear
 void Renderer::ClearCascadeShadowMaps()
@@ -1139,7 +1202,7 @@ void Renderer::DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& Ren
 
 	for (const FPReflectionSamplerInfo& SamplerItem : Samplers)
 	{
-		Device.PSSetSamplers(SamplerItem.Slot, 1, SamplerItem.SamplerType);
+		Device.PSSetSamplers(SamplerItem.Slot, 1, AssetManager->GetSamplerStateData(SamplerItem.SamplerType).SamplerStateData);
 	}
 	//Sampler Set End.
 
@@ -1151,7 +1214,7 @@ void Renderer::DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& Ren
 		EnvTextureData = AssetManager->GetTextureData(FPSkyLightList[0].CubeMap).ShaderResourceView;
 	}
 	Device.PSSetShaderResources(127, 1, EnvTextureData);
-	Device.PSSetSamplers(15, 1, FPSamplerType::Filter_Tri_Linear_Sampler_CLAMP);
+	Device.PSSetSamplers(15, 1, AssetManager->GetSamplerStateData("Filter_Tri_Linear_Sampler_CLAMP").SamplerStateData);
 	FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
 	FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.MeshPath);
 	FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);
@@ -1410,7 +1473,7 @@ void Renderer::DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderIte
 
 	for (const FPReflectionSamplerInfo& SamplerItem : Samplers)
 	{
-		Device.PSSetSamplers(SamplerItem.Slot, 1, SamplerItem.SamplerType);
+		Device.PSSetSamplers(SamplerItem.Slot, 1, AssetManager->GetSamplerStateData(SamplerItem.SamplerType).SamplerStateData);
 	}
 
 	//Sampler 셋팅 End.
@@ -1422,7 +1485,7 @@ void Renderer::DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderIte
 		EnvTextureData = AssetManager->GetTextureData(FPSkyLightList[0].CubeMap).ShaderResourceView;
 	}
 	Device.PSSetShaderResources(127, 1, EnvTextureData);
-	Device.PSSetSamplers(15, 1, FPSamplerType::Filter_Tri_Linear_Sampler_CLAMP);
+	Device.PSSetSamplers(15, 1, AssetManager->GetSamplerStateData("Filter_Tri_Linear_Sampler_CLAMP").SamplerStateData);
 	FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
 	FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.MeshPath);
 	FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);
@@ -2282,7 +2345,7 @@ void Renderer::PostProcessRenderPass()
 		const std::vector<FPReflectionSamplerInfo>& Samplers = Material->GetReflectionData()->Samplers;
 		for (const FPReflectionSamplerInfo& SamplerItem : Samplers)
 		{
-			Device.PSSetSamplers(SamplerItem.Slot, 1, SamplerItem.SamplerType);
+			Device.PSSetSamplers(SamplerItem.Slot, 1, AssetManager->GetSamplerStateData(SamplerItem.SamplerType).SamplerStateData);
 		}
 
 		//Quad Mesh 설정

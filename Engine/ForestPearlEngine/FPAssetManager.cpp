@@ -197,6 +197,11 @@ void FPAssetManager::AllAssetDataCreate()
 		MakeRasterizerState(Asset);
 	}
 
+	for (auto& [AssetName, Asset] : LoadedSamplerStateData)
+	{
+		MakeSamplerState(Asset);
+	}
+
 	//Fbx Load
 	for (auto& [AssetName, Asset] : LoadedStaticMeshData)
 	{
@@ -1919,6 +1924,56 @@ void FPAssetManager::MakeRasterizerState(FPRasterizerStateInfo& RasterizerStateI
 	RenderingDevice::GetRenderingDevice().CreateRasterizerState(RasterizerStateInfo, &RSStateData.RasterizerStateData);
 	RasterizerStateData[RasterizerStateInfo.Name] = RSStateData;
 }
+
+FPSamplerStateInfo& FPAssetManager::GetSamplerStateInfoData(std::string SamplerStateName)
+{
+	return LoadedSamplerStateData[SamplerStateName];
+}
+
+void FPAssetManager::AddSamplerStateInfoData(std::string SamplerStateName, FPSamplerStateInfo& SamplerStateInfoData)
+{
+	this->LoadedSamplerStateData[SamplerStateName] = SamplerStateInfoData;
+}
+
+bool FPAssetManager::HasSamplerStateInfoData(std::string SamplerStateName)
+{
+	if (LoadedSamplerStateData.count(SamplerStateName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+FPSamplerStateData& FPAssetManager::GetSamplerStateData(std::string SamplerStateName)
+{
+	return SamplerStateData[SamplerStateName];
+}
+
+void FPAssetManager::AddSamplerStateData(std::string SamplerStateName, FPSamplerStateData& SamplerStateData)
+{
+	this->SamplerStateData[SamplerStateName] = SamplerStateData;
+}
+
+bool FPAssetManager::HasSamplerStateData(std::string SamplerStateName)
+{
+	if (SamplerStateData.count(SamplerStateName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void FPAssetManager::MakeSamplerState(FPSamplerStateInfo& SamplerStateInfo)
+{
+	FPSamplerStateData SSData;
+
+	RenderingDevice::GetRenderingDevice().CreateSamplerState(SamplerStateInfo, &SSData.SamplerStateData);
+	SamplerStateData[SamplerStateInfo.Name] = SSData;
+}
+
+
 
 FPMaterialData& FPAssetManager::GetMaterialData(std::string MaterialName)
 {

@@ -51,10 +51,6 @@ class RenderingDevice
 		////////////////////////////////////////
 
 
-
-		//샘플러 상태 객체
-		ID3D11SamplerState* SamplerState[Sampler_MAX_];
-
 		DXGI_MODE_DESC1 DisplayMode;
 
 		//해당 설정을 Project Setting 에서 할 수 있도록 변경
@@ -122,6 +118,8 @@ class RenderingDevice
 		UINT8 FPColorWriteMaskVectorToD3DColorWriteMask(std::vector<FPColorWriteMask>& WriteMask);
 		D3D11_FILL_MODE FPFillModeToD3DFillMode(FPFillMode& FillMode);
 		D3D11_CULL_MODE FPCullModeToD3DCullMode(FPCullMode& CullMode);
+		D3D11_FILTER FPSamplerFilterTypeToD3DFilter(FPSamplerFilterType& FilterType);
+		D3D11_TEXTURE_ADDRESS_MODE FPTextureAddressModeToD3DAddressMode(FPTextureAddressMode& AddressMode);
 		
 	public:
 		static RenderingDevice& GetRenderingDevice();
@@ -236,11 +234,11 @@ class RenderingDevice
 		//깊이 스텐실 버퍼 상태 설정
 		void OMSetDepthStencilState(void* InDepthStencilState, UINT StencilRef = 0);
 
-		//Sampler 상태객체 생성
-		HRESULT CreateSamplers();
+		//SamplerState 상태 객체 생성
+		HRESULT CreateSamplerState(FPSamplerStateInfo& SamplerStateInfo, void** OutSamplerState);
 
 		//Sampler 상태 설정
-		HRESULT PSSetSamplers(UINT Slot, UINT NumSamplers, FPSamplerType SamplerType);
+		HRESULT PSSetSamplers(UINT Slot, UINT NumSamplers, void* InSamplerState);
 
 		//BlendState 상태 객체 생성
 		HRESULT CreateBlendState(FPBlendStateInfo& BlendStateInfo, void** OutBSState);

@@ -1,0 +1,12 @@
+{
+  "Name": "Filter_Shadow_Comparison_Sampler",
+  "Filter": "ComparisonBiLinear",
+  "AddressU": "BORDER",
+  "AddressV": "BORDER",
+  "AddressW": "BORDER",
+  "ComparisonFunc": "LESS_EQUAL",
+  "BorderColor": [1.0, 1.0, 1.0, 1.0],
+  "MaxAnisotropy": 1,
+  "MinLOD": 0.0,
+  "MipLODBias": 0.0
+}

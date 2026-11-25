@@ -82,6 +82,10 @@ private:
 	std::unordered_map<std::string, FPRasterizerStateInfo> LoadedRasterizerStateData;
 	std::unordered_map<std::string, FPRasterizerStateData> RasterizerStateData;
 
+	//SamplerState
+	std::unordered_map<std::string, FPSamplerStateInfo> LoadedSamplerStateData;
+	std::unordered_map<std::string, FPSamplerStateData> SamplerStateData;
+
 	bool CalculateTriangleTangent(const POSITION_VERTEX& P0, const POSITION_VERTEX& P1, const POSITION_VERTEX& P2,
 									const UV_VERTEX& UV0, const UV_VERTEX& UV1, const UV_VERTEX& UV2,
 										FPVector3& OutTangent, FPVector3& OutBinormal);
@@ -300,6 +304,17 @@ public:
 	void AddRasterizerStateData(std::string RasterizerStateName, FPRasterizerStateData& RasterizerStateData);
 	bool HasRasterizerStateData(std::string RasterizerStateName);
 	void MakeRasterizerState(FPRasterizerStateInfo& RasterizerStateInfo);
+
+	//SamplerState Info
+	FPSamplerStateInfo& GetSamplerStateInfoData(std::string SamplerStateName);
+	void AddSamplerStateInfoData(std::string SamplerStateName, FPSamplerStateInfo& SamplerStateInfoData);
+	bool HasSamplerStateInfoData(std::string SamplerStateName);
+
+	//SamplerState Data
+	FPSamplerStateData& GetSamplerStateData(std::string SamplerStateName);
+	void AddSamplerStateData(std::string SamplerStateName, FPSamplerStateData& SamplerStateData);
+	bool HasSamplerStateData(std::string SamplerStateName);
+	void MakeSamplerState(FPSamplerStateInfo& SamplerStateInfo);
 
 	//Material Info
 	FPMaterialData& GetMaterialData(std::string MaterialName);

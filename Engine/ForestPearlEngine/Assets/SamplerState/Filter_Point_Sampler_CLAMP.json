@@ -1,0 +1,10 @@
+{
+  "Name": "Filter_Point_Sampler_CLAMP",
+  "Filter": "Point",
+  "AddressU": "CLAMP",
+  "AddressV": "CLAMP",
+  "AddressW": "CLAMP",
+  "MaxAnisotropy": 1,
+  "MinLOD": 0.0,
+  "MipLODBias": 0.0
+}

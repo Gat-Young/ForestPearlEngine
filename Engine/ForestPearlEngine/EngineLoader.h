@@ -86,4 +86,52 @@ void LoadEngineAssets()
 	AssetLoader->LoadRasterizerState("RS_CULLFRONT_FCCW.json", AssetOwner::Engine);
 	AssetLoader->LoadRasterizerState("RS_WIRECULLBACK_FCCW.json", AssetOwner::Engine);
 	AssetLoader->LoadRasterizerState("RS_WIRECULLFRONT_FCCW.json", AssetOwner::Engine);
+
+	//SamplerState Load
+	//Point
+	AssetLoader->LoadSamplerState("Filter_Point_Sampler_CLAMP.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Point_Sampler_Wrap.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Point_Sampler_Mirror.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Point_Sampler_Mirror_Once.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Point_Sampler_Border.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Point_Sampler_BorderColor_RED.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Point_Sampler_BorderColor_BLUE.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Point_Sampler_BorderColor_GREEN.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Point_Sampler_BorderColor_MAGENTA.json", AssetOwner::Engine);
+
+	//Bi-Linear
+	AssetLoader->LoadSamplerState("Filter_Bi_Linear_Sampler_CLAMP.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Bi_Linear_Sampler_Wrap.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Bi_Linear_Sampler_Mirror.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Bi_Linear_Sampler_Mirror_Once.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Bi_Linear_Sampler_Border.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Bi_Linear_Sampler_BorderColor_RED.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Bi_Linear_Sampler_BorderColor_BLUE.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Bi_Linear_Sampler_BorderColor_GREEN.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Bi_Linear_Sampler_BorderColor_MAGENTA.json", AssetOwner::Engine);
+
+	//Tri-Linear (Mip-Map On)
+	AssetLoader->LoadSamplerState("Filter_Tri_Linear_Sampler_CLAMP.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Tri_Linear_Sampler_Wrap.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Tri_Linear_Sampler_Mirror.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Tri_Linear_Sampler_Mirror_Once.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Tri_Linear_Sampler_Border.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Tri_Linear_Sampler_BorderColor_RED.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Tri_Linear_Sampler_BorderColor_BLUE.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Tri_Linear_Sampler_BorderColor_GREEN.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Tri_Linear_Sampler_BorderColor_MAGENTA.json", AssetOwner::Engine);
+
+	//Anistropy
+	AssetLoader->LoadSamplerState("Filter_Anistropy_Linear_Sampler_CLAMP.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Anistropy_Linear_Sampler_Wrap.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Anistropy_Linear_Sampler_Mirror.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Anistropy_Linear_Sampler_Mirror_Once.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Anistropy_Linear_Sampler_Border.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Anistropy_Linear_Sampler_BorderColor_RED.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Anistropy_Linear_Sampler_BorderColor_BLUE.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Anistropy_Linear_Sampler_BorderColor_GREEN.json", AssetOwner::Engine);
+	AssetLoader->LoadSamplerState("Filter_Anistropy_Linear_Sampler_BorderColor_MAGENTA.json", AssetOwner::Engine);
+
+	//Shadow Map PCF Comparison Sampler
+	AssetLoader->LoadSamplerState("Filter_Shadow_Comparison_Sampler.json", AssetOwner::Engine);
 };

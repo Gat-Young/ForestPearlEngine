@@ -144,56 +144,31 @@ struct FPStaticMeshData
 };
 
 
-enum FPSamplerType
+enum class FPSamplerFilterType
 {
-	//Point
-	Filter_Point_Sampler_CLAMP,
-	Filter_Point_Sampler_Wrap,
-	Filter_Point_Sampler_Mirror,
-	Filter_Point_Sampler_Mirror_Once,
-	Filter_Point_Sampler_Border,
-	Filter_Point_Sampler_BorderColor_RED,
-	Filter_Point_Sampler_BorderColor_BLUE,
-	Filter_Point_Sampler_BorderColor_GREEN,
-	Filter_Point_Sampler_BorderColor_MAGENTA,
+	Point,
+	BiLinear,
+	TriLinear,
+	Anisotropic,
+	ComparisonBiLinear,
 
-	//Bi-Linear
-	Filter_Bi_Linear_Sampler_CLAMP,
-	Filter_Bi_Linear_Sampler_Wrap,
-	Filter_Bi_Linear_Sampler_Mirror,
-	Filter_Bi_Linear_Sampler_Mirror_Once,
-	Filter_Bi_Linear_Sampler_Border,
-	Filter_Bi_Linear_Sampler_BorderColor_RED,
-	Filter_Bi_Linear_Sampler_BorderColor_BLUE,
-	Filter_Bi_Linear_Sampler_BorderColor_GREEN,
-	Filter_Bi_Linear_Sampler_BorderColor_MAGENTA,
-
-	//Tri-Linear (Mip-Map On)
-	Filter_Tri_Linear_Sampler_CLAMP,
-	Filter_Tri_Linear_Sampler_Wrap,
-	Filter_Tri_Linear_Sampler_Mirror,
-	Filter_Tri_Linear_Sampler_Mirror_Once,
-	Filter_Tri_Linear_Sampler_Border,
-	Filter_Tri_Linear_Sampler_BorderColor_RED,
-	Filter_Tri_Linear_Sampler_BorderColor_BLUE,
-	Filter_Tri_Linear_Sampler_BorderColor_GREEN,
-	Filter_Tri_Linear_Sampler_BorderColor_MAGENTA,
-
-	//Anistropy
-	Filter_Anistropy_Linear_Sampler_CLAMP,
-	Filter_Anistropy_Linear_Sampler_Wrap,
-	Filter_Anistropy_Linear_Sampler_Mirror,
-	Filter_Anistropy_Linear_Sampler_Mirror_Once,
-	Filter_Anistropy_Linear_Sampler_Border,
-	Filter_Anistropy_Linear_Sampler_BorderColor_RED,
-	Filter_Anistropy_Linear_Sampler_BorderColor_BLUE,
-	Filter_Anistropy_Linear_Sampler_BorderColor_GREEN,
-	Filter_Anistropy_Linear_Sampler_BorderColor_MAGENTA,
-
-	Sampler_MAX_
+	FPSamplerFilterType_MAX_
 };
 
-FPSamplerType StringToSamplerType(const std::string& Name);
+FPSamplerFilterType StringToFPSamplerFilterType(const std::string& Name);
+
+enum class FPTextureAddressMode
+{
+	CLAMP,
+	WRAP,
+	MIRROR,
+	MIRROR_ONCE,
+	BORDER,
+
+	FPTextureAddressMode_MAX_
+};
+
+FPTextureAddressMode StringToFPTextureAddressMode(const std::string& Name);
 
 enum class FPBlend
 {
@@ -497,6 +472,32 @@ struct FPRasterizerStateData
 	void* RasterizerStateData;
 };
 
+struct FPSamplerStateInfo
+{
+	std::string Name;
+
+	FPSamplerFilterType Filter;
+	FPTextureAddressMode AddressU;
+	FPTextureAddressMode AddressV;
+	FPTextureAddressMode AddressW;
+
+	//ComparisonBiLinear(PCF) Filter에서만 사용
+	FPCompraisonFunc ComparisonFunc;
+	FPVector4 BorderColor;
+
+	unsigned int MaxAnisotropy;
+	float MinLOD;
+	float MaxLOD;
+	float MipLODBias;
+
+	AssetOwner Owner;
+};
+
+struct FPSamplerStateData
+{
+	void* SamplerStateData = nullptr;
+};
+
 
 //BlendState
 struct FPRenderTargetBlendDesc
@@ -609,7 +610,7 @@ struct FPReflectionResourceInfo
 struct FPReflectionSamplerInfo
 {
 	std::string Name;
-	FPSamplerType SamplerType = Filter_Tri_Linear_Sampler_CLAMP;
+	std::string SamplerType = "Filter_Tri_Linear_Sampler_CLAMP";
 	unsigned int Slot = 0;
 	unsigned int BindCount = 1;
 };
@@ -646,7 +647,7 @@ struct FPSamplerParameterData
 {
 	FPShaderType Type = FPShaderType::PS;
 	std::string Parameter;							// HLSL 샘플러 변수 이름
-	FPSamplerType SamplerType = Filter_Tri_Linear_Sampler_Wrap;
+	std::string SamplerType = "Filter_Tri_Linear_Sampler_Wrap";
 	unsigned int ArrayIndex = 0;					// HLSL SamplerState 배열 원소 번호
 };
 
@@ -1078,6 +1079,30 @@ namespace RenderingData
 		FPMatrix InvCascadeVP;
 	};
 
+	//한 Light가 가질 수 있는 최대 Cascade 개수 (CascadeShadow.hlsli의 MAX_CASCADE와 일치해야 함)
+	constexpr unsigned int Cascade_MAX = 8;
+
+	//CascadeShadow.hlsli의 CascadeShadowConstBuffer(register b13)와 1:1 대응되는 구조체
+	struct alignas(16) CascadeShadowConstBuffer
+	{
+		FPMatrix mLightViewProj[Cascade_MAX];           //Shadow Map 투영 좌표 계산
+
+		//HLSL에서 float 배열의 각 원소는 16B 단위로 패킹되므로 x만 사용
+		FPVector4 CascadeNear[Cascade_MAX];             //Cascade 시작 깊이
+		FPVector4 CascadeFar[Cascade_MAX];              //Cascade 종료 깊이 및 선택
+		FPVector4 CascadeDepthRange[Cascade_MAX];       //Light Projection의 Far-Near, Bias 정규화
+
+		unsigned int CascadeCount;                      //Cascade 개수
+		unsigned int ShadowResolution;                  //PCF의 Texel 크기 계산
+		float DynamicShadowDistance;                    //최대 그림자 적용 거리
+		float CascadeTransitionFraction;                //Cascade Blending
+
+		float ShadowDistanceFadeoutFraction;            //거리 기반 Shadow Fade Out
+		float ShadowBias;                               //깊이 비교 보정
+		unsigned int CastShadow;                        //그림자 적용 여부
+		float Padding;                               //16B 정렬용 Padding (CascadeShadowConstBuffer 전체 크기를 16의 배수로 맞춤)
+	};
+
 	constexpr unsigned int Light_MAX = 64;
 
 	struct alignas(16) LightDataItem
@@ -1171,14 +1196,14 @@ namespace RenderingData
 	{
 		int Slot;
 		std::string TexturePath;
-		FPSamplerType SamplerType;
+		std::string SamplerType;
 		FPTextureType TextureType;
 	};
 
 	struct FPSamplerItem
 	{
 		int Slot;
-		FPSamplerType SamplerType;
+		std::string SamplerType;
 	};
 
 	struct MeshRenderItem

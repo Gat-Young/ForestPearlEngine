@@ -37,7 +37,7 @@ class FPMaterialInterface : public FPObject
 		virtual bool GetParameterElement(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, unsigned int ArrayIndex, std::vector<float>& OutValues) const = 0;
 
 		virtual bool SetNamedTexture(FPShaderType ShaderType, const std::string& HLSLTexture, std::string AssetName, FPTextureType TextureType, unsigned int ArrayIndex = 0) = 0;
-		virtual bool SetNamedSampler(FPShaderType ShaderType, const std::string& HLSLSampler, FPSamplerType SamplerType, unsigned int ArrayIndex = 0) = 0;
+		virtual bool SetNamedSampler(FPShaderType ShaderType, const std::string& HLSLSampler, const std::string& SamplerType, unsigned int ArrayIndex = 0) = 0;
 		//TwoSide
 		virtual void SetTwoSided(bool isTwoSide) = 0;
 		virtual bool* GetTwoSided() = 0;

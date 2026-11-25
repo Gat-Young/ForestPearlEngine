@@ -51,6 +51,9 @@ void FPDirectionalLightComponent::RegistCascadeShadowRenderList()
 
 void FPDirectionalLightComponent::SetCascadeCount(unsigned int InCascadeCount)
 {
+	//Cascade Shadow Map(Texture2DArray)의 최대 슬라이스 개수(MAX_CASCADE, CascadeShadow.hlsli)에 맞춰 Clamp
+	if (InCascadeCount > 8) InCascadeCount = 8;
+
 	CascadeCount = InCascadeCount;
 
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());

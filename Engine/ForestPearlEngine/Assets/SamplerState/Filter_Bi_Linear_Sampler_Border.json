@@ -1,0 +1,11 @@
+{
+  "Name": "Filter_Bi_Linear_Sampler_Border",
+  "Filter": "BiLinear",
+  "AddressU": "BORDER",
+  "AddressV": "BORDER",
+  "AddressW": "BORDER",
+  "BorderColor": [1.0, 1.0, 1.0, 1.0],
+  "MaxAnisotropy": 1,
+  "MinLOD": 0.0,
+  "MipLODBias": 0.0
+}

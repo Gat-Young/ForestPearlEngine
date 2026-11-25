@@ -1,0 +1,10 @@
+{
+  "Name": "Filter_Anistropy_Linear_Sampler_Wrap",
+  "Filter": "Anisotropic",
+  "AddressU": "WRAP",
+  "AddressV": "WRAP",
+  "AddressW": "WRAP",
+  "MaxAnisotropy": 8,
+  "MinLOD": 0.0,
+  "MipLODBias": 0.0
+}

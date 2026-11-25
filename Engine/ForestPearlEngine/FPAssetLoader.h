@@ -61,4 +61,7 @@ class FPAssetLoader : public FPGameInstanceSubSystem
 		//BlendState Load
 		void LoadBlendState(std::string BlendStatePath, AssetOwner EngineAsset);
 		void LoadRasterizerState(std::string RasterizerStatePath, AssetOwner EngineAsset);
+
+		//SamplerState Load
+		void LoadSamplerState(std::string SamplerStatePath, AssetOwner EngineAsset);
 };

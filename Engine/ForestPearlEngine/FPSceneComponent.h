@@ -39,7 +39,7 @@ class FPSceneComponent : public FPActorComponent
 		//Tick에서 트랜스폼 계산을 위한 분기용 함수 (필요에 따라 상속한 컴포넌트에서 분기를 구현)
 		virtual void CalculateTransformBranch();
 
-		//Bounds 계산(Local) / 갱신(World로 변환해 Bounds에 반영), 매 Tick 호출
+		//Bounds 계산(Local) / 갱신(World로 변환해 Bounds에 반영), GetBounds 호출 시에만 처리
 		virtual FPBoxSphereBounds CalculateBounds();
 		virtual void UpdateBounds();
 

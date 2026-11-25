@@ -370,6 +370,7 @@ void Renderer::CreateMeshRenderList()
 		MeshRenderData.bUsePlanarForwardReflections = *(RenderItemData.bUsePlanarForwardReflections);
 		MeshRenderData.StencilRefValue = *(RenderItemData.StencilRefValue);
 		MeshRenderData.bCustomDepthStencil = *(RenderItemData.bCustomDepthStencil);
+		MeshRenderData.bCastShadow = *(RenderItemData.bCastShadow);
 
 		//Material Detail에 따라 각각의 RenderPass에 넣음
 		if (MeshRenderData.bIsSky)
@@ -569,6 +570,7 @@ void Renderer::CreateCascadeShadowRenderList()
 		CascadeShadowRenderingData.ShadowDistanceFadeoutFraction = *(CascadeShadowItem.ShadowDistanceFadeoutFraction);
 		CascadeShadowRenderingData.ShadowBias = *(CascadeShadowItem.ShadowBias);
 		CascadeShadowRenderingData.ShadowSlopeBias = *(CascadeShadowItem.ShadowSlopeBias);
+		CascadeShadowRenderingData.DistanceMargin = *(CascadeShadowItem.DistanceMargin);
 		CascadeShadowRenderingData.CascadeShadowMapName = *(CascadeShadowItem.CascadeShadowMapName);
 
 		CascadeShadowList.push_back(CascadeShadowRenderingData);
@@ -674,6 +676,57 @@ std::vector<RenderingData::FPCascadeFrustum> Renderer::CalculateFrustumCascade(c
 	}
 
 	return Result;
+}
+
+//하나의 Cascade에 대한 Light View/Projection(LightVP) 계산. Bounding Sphere 기준 고정 크기 직교 투영, Near 확장과 Texel Snapping으로 CSM을 안정화
+FPMatrix Renderer::CalculateCascadeLightViewProj(const RenderingData::FPCascadeNearFar& CascadeNearFar, const RenderingData::FPCascadeFrustum& CascadeFrustum, const RenderingData::FPCascadeShadowRenderItem& CascadeShadowItem)
+{
+	FPVector3 Center = CascadeFrustum.Center;
+
+	//1. 중심과 Frustum 정점(월드 공간) 중 가장 긴 거리를 Bounding Sphere 반지름으로 계산, + DistanceMargin
+	float Radius = 0.0f;
+	for (const FPVector3& NDCCorner : CascadeFrustum.NDCVertex)
+	{
+		FPVector3 WorldCorner = TransformCoord(NDCCorner, CascadeFrustum.InvCascadeVP);
+		float Dist = (WorldCorner - Center).Length();
+		Radius = max(Radius, Dist);
+	}
+
+	float Distance = Radius + CascadeShadowItem.DistanceMargin;
+
+	FPVector3 LightDirection = CascadeShadowItem.Direction.Normalize();
+	FPVector3 UpVector = (std::abs(Dot(LightDirection, FPVector3(0.0f, 1.0f, 0.0f))) > 0.99f) ? FPVector3(0.0f, 0.0f, 1.0f) : FPVector3(0.0f, 1.0f, 0.0f);
+
+	FPVector3 LightPosition = Center - (LightDirection * Distance);
+
+	FPMatrix LightView = MatrixLookToLH(LightPosition, LightDirection, UpVector);
+
+	//2. X/Y/Z 모두 Bounding Sphere 반지름 기준 고정 직교 투영 범위로 LightProj 계산, Z축 Near 확장
+	float Near = 0.0f;
+	float Far = Distance + Radius;
+
+	FPMatrix LightProj = MatrixOrthographicOffCenterLH(-Radius, Radius, -Radius, Radius, Near, Far);
+
+	//Texel Snapping : Light View 공간에서 Center를 Shadow Map 텍셀 간격에 맞춰 스냅
+	if (CascadeShadowItem.ShadowResolution > 0 && Radius > 0.0f)
+	{
+		float WorldUnitsPerTexel = (Radius * 2.0f) / static_cast<float>(CascadeShadowItem.ShadowResolution);
+
+		FPVector3 CenterInLightView = TransformCoord(Center, LightView);
+
+		float SnappedX = std::floor(CenterInLightView.x / WorldUnitsPerTexel) * WorldUnitsPerTexel;
+		float SnappedY = std::floor(CenterInLightView.y / WorldUnitsPerTexel) * WorldUnitsPerTexel;
+
+		float OffsetX = SnappedX - CenterInLightView.x;
+		float OffsetY = SnappedY - CenterInLightView.y;
+
+		LightView = LightView * MatrixTranslation(OffsetX, OffsetY, 0.0f);
+	}
+
+	//3. LightVP 반환
+	FPMatrix LightVP = LightView * LightProj;
+
+	return LightVP;
 }
 
 void Renderer::CreateNormalRenderList()

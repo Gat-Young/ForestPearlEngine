@@ -35,8 +35,6 @@ void FPWorld::Tick()
 	{
 		actor->Tick();
 	}
-
-	UpdateBounds();
 }
 
 void FPWorld::UpdateBounds()

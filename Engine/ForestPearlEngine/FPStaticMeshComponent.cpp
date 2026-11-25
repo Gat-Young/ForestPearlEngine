@@ -63,6 +63,7 @@ void FPStaticMeshComponent::SetRenderItemData()
 	RenderItem->bUsePlanarForwardReflections = SelectedMaterial->GetUsePlanarForwardReflections();
 	RenderItem->StencilRefValue = &(this->StencilRefValue);
 	RenderItem->bCustomDepthStencil = &(this->bCustomDepthStencil);
+	RenderItem->bCastShadow = &(this->bCastShadow);
 
 	RenderItem->VertexConstBuffer = SelectedMaterial->GetVertexConstantBufferRenderData();
 	RenderItem->PixelConstBuffer = SelectedMaterial->GetPixelConstantBufferRenderData();

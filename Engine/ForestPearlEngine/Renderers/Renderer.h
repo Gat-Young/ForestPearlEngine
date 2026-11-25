@@ -150,6 +150,9 @@ class Renderer
 		//CalculateCascadeNearFar() 호출 이후 사용. 매 카메라 사용 시(카메라별로) 호출되어야 함
 		std::vector<RenderingData::FPCascadeFrustum> CalculateFrustumCascade(const RenderingData::CameraItem& CamItem, std::vector<RenderingData::FPCascadeNearFar> CascadeNearFarList);
 
+		//Near/Far, Frustum, Light Shadow 설정을 받아 하나의 Cascade에 대한 Light View/Projection(LightVP) 계산
+		FPMatrix CalculateCascadeLightViewProj(const RenderingData::FPCascadeNearFar& CascadeNearFar, const RenderingData::FPCascadeFrustum& CascadeFrustum, const RenderingData::FPCascadeShadowRenderItem& CascadeShadowItem);
+
 	public:
 		Renderer(RenderingDevice& Device);
 

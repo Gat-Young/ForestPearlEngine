@@ -11,8 +11,6 @@ FPActor::FPActor()
 void FPActor::Tick()
 {
     if (RootComponent != nullptr) RootComponent->Tick();
-
-    UpdateBounds();
 }
 
 void FPActor::UpdateBounds()

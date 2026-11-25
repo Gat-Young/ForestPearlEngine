@@ -45,6 +45,7 @@ void FPDirectionalLightComponent::RegistCascadeShadowRenderList()
 	CascadeShadowRenderItem->ShadowDistanceFadeoutFraction = &(this->ShadowDistanceFadeoutFraction);
 	CascadeShadowRenderItem->ShadowBias = &(this->ShadowBias);
 	CascadeShadowRenderItem->ShadowSlopeBias = &(this->ShadowSlopeBias);
+	CascadeShadowRenderItem->DistanceMargin = &(this->DistanceMargin);
 	CascadeShadowRenderItem->CascadeShadowMapName = &(this->CascadeShadowMapName);
 }
 
@@ -92,6 +93,11 @@ void FPDirectionalLightComponent::SetShadowBias(float InShadowBias)
 void FPDirectionalLightComponent::SetShadowSlopeBias(float InShadowSlopeBias)
 {
 	ShadowSlopeBias = InShadowSlopeBias;
+}
+
+void FPDirectionalLightComponent::SetDistanceMargin(float InDistanceMargin)
+{
+	DistanceMargin = InDistanceMargin;
 }
 
 FPDirectionalLightComponent::~FPDirectionalLightComponent()

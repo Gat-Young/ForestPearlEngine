@@ -13,6 +13,7 @@ class FPDirectionalLightComponent : public FPLightComponent
         float ShadowDistanceFadeoutFraction = 0.1f; // 최대 그림자 거리에서 Fade Out
         float ShadowBias = 0.0005f;                 // Depth 오차 보정
         float ShadowSlopeBias = 0.0005f;            // Slope-Scaled Depth Bias
+        float DistanceMargin = 200.0f;                 // Cascade Far 평면 거리 여유값
        
         std::string CascadeShadowMapName = "";
 
@@ -33,4 +34,5 @@ class FPDirectionalLightComponent : public FPLightComponent
 		void SetShadowDistanceFadeoutFraction(float InShadowDistanceFadeoutFraction);
 		void SetShadowBias(float InShadowBias);
 		void SetShadowSlopeBias(float InShadowSlopeBias);
+		void SetDistanceMargin(float InDistanceMargin);
 };

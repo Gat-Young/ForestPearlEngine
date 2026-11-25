@@ -250,9 +250,6 @@ void FPSceneComponent::Tick()
 	//Transform 계산 분기, virtual 함수 이므로 필요에 따라 상속으로 변경 가능
 	CalculateTransformBranch();
 
-	//Bounds 갱신, 매 Tick 호출
-	UpdateBounds();
-
 	for (FPSceneComponent* child : ChildComponent)
 	{
 		child->Tick();

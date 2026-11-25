@@ -736,6 +736,7 @@ struct RenderItem
 	bool* bUsePlanarForwardReflections = nullptr;
 	int* StencilRefValue = nullptr;
 	bool* bCustomDepthStencil = nullptr;
+	bool* bCastShadow = nullptr;
 
 	FPMatrix* Location = nullptr;
 	FPMatrix* Rotation = nullptr;
@@ -943,6 +944,7 @@ struct FPCascadeShadowRenderItem
 	float* ShadowDistanceFadeoutFraction = nullptr;
 	float* ShadowBias = nullptr;
 	float* ShadowSlopeBias = nullptr;
+	float* DistanceMargin = nullptr;
 
 	std::string* CascadeShadowMapName = nullptr;
 };
@@ -1058,6 +1060,7 @@ namespace RenderingData
 		float ShadowDistanceFadeoutFraction;
 		float ShadowBias;
 		float ShadowSlopeBias;
+		float DistanceMargin;
 
 		std::string CascadeShadowMapName;
 	};
@@ -1194,6 +1197,7 @@ namespace RenderingData
 		bool bUsePlanarForwardReflections;
 		int StencilRefValue;
 		bool bCustomDepthStencil;
+		bool bCastShadow;
 
 		FPMatrix Location;
 		FPMatrix Rotation;

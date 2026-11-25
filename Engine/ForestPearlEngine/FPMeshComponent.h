@@ -12,6 +12,7 @@ class FPMeshComponent : public FPPrimitiveComponent
 
 		int Priority = 0;
 		bool isActive = true;
+		bool bCastShadow = true;
 		FPMaterialInterface* Material = nullptr;
 
 		RenderItem* RenderItem = nullptr;
@@ -26,6 +27,7 @@ class FPMeshComponent : public FPPrimitiveComponent
 
 		virtual void SetActive(bool Active) { this->isActive = Active; }
 		virtual void SetPriority(int Prio) { Priority = Prio; };
+		void SetCastShadow(bool bInCastShadow) { this->bCastShadow = bInCastShadow; }
 		void SetMaterial(FPMaterialInterface* Material);
 
 		FPMaterialInterface& GetMaterial();

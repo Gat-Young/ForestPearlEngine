@@ -153,6 +153,11 @@ class Renderer
 		//Near/Far, Frustum, Light Shadow 설정을 받아 하나의 Cascade에 대한 Light View/Projection(LightVP) 계산
 		FPMatrix CalculateCascadeLightViewProj(const RenderingData::FPCascadeNearFar& CascadeNearFar, const RenderingData::FPCascadeFrustum& CascadeFrustum, const RenderingData::FPCascadeShadowRenderItem& CascadeShadowItem);
 
+		//카메라(또는 그에 대응하는 시점) 사용 시 Cascade별 LightVP를 계산해 CascadeShadowMapRenderPass()를 호출하고, 사용이 끝난 CSM(DepthStencilArray)은 Clear
+		void UpdateCascadeShadowMaps(const RenderingData::CameraItem& CamItem);
+
+		void ClearCascadeShadowMaps();
+
 	public:
 		Renderer(RenderingDevice& Device);
 
@@ -182,6 +187,8 @@ class Renderer
 		void SceneCaptureRenderPass();
 
 		void MeshRenderPass();
+
+		void CascadeShadowMapRenderPass(const RenderingData::FPCascadeShadowRenderItem& CascadeShadowItem, unsigned int CascadeIndex, const FPMatrix& LightVP);
 
 		void PostProcessRenderPass();
 

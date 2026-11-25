@@ -729,6 +729,50 @@ FPMatrix Renderer::CalculateCascadeLightViewProj(const RenderingData::FPCascadeN
 	return LightVP;
 }
 
+//Cascade Shadow Map RenderPass (추후 구현)
+void Renderer::CascadeShadowMapRenderPass(const RenderingData::FPCascadeShadowRenderItem& CascadeShadowItem, unsigned int CascadeIndex, const FPMatrix& LightVP)
+{
+	//TODO: Cascade Shadow Map 렌더링 구현
+
+}
+
+//카메라(또는 그에 대응하는 시점) 사용 시 Cascade별 LightVP를 계산해 CascadeShadowMapRenderPass()를 호출
+void Renderer::UpdateCascadeShadowMaps(const RenderingData::CameraItem& CamItem)
+{
+	for (RenderingData::FPCascadeShadowRenderItem& CascadeShadowItem : CascadeShadowList)
+	{
+		std::vector<RenderingData::FPCascadeNearFar> CascadeNearFarList = CalculateCascadeNearFar(CamItem.Zn, CamItem.Zf, CascadeShadowItem.CascadeCount, CascadeShadowItem.DynamicShadowDistance, CascadeShadowItem.CascadeSplitLambda);
+		std::vector<RenderingData::FPCascadeFrustum> CascadeFrustumList = CalculateFrustumCascade(CamItem, CascadeNearFarList);
+
+		for (size_t CascadeIndex = 0; CascadeIndex < CascadeFrustumList.size(); ++CascadeIndex)
+		{
+			FPMatrix LightVP = CalculateCascadeLightViewProj(CascadeNearFarList[CascadeIndex], CascadeFrustumList[CascadeIndex], CascadeShadowItem);
+
+			CascadeShadowMapRenderPass(CascadeShadowItem, static_cast<unsigned int>(CascadeIndex), LightVP);
+		}
+	}
+}
+
+//해당 CamItem에 대한 RenderPass가 모두 끝난 뒤 호출. 사용이 끝난 CSM(DepthStencilArray)을 전부 Clear
+void Renderer::ClearCascadeShadowMaps()
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	for (RenderingData::FPCascadeShadowRenderItem& CascadeShadowItem : CascadeShadowList)
+	{
+		if (AssetManager->HasDepthStencilArrayData(CascadeShadowItem.CascadeShadowMapName))
+		{
+			FPDepthStencilArrayData& ShadowMapData = AssetManager->GetDepthStencilArrayData(CascadeShadowItem.CascadeShadowMapName);
+			FPDepthStencilArrayInfo& ShadowMapInfo = AssetManager->GetDepthStencilArrayInfoData(CascadeShadowItem.CascadeShadowMapName);
+
+			for (void* DepthStencilView : ShadowMapData.DepthStencilView)
+			{
+				Device.ClearDepthStencilView(DepthStencilView, ShadowMapInfo.ClearDepth, (UINT8)ShadowMapInfo.ClearStencil);
+			}
+		}
+	}
+}
+
 void Renderer::CreateNormalRenderList()
 {
 	//비어 있지 않다면 비우기
@@ -903,6 +947,14 @@ void Renderer::PlanarReflectionRenderPass(const RenderingData::CameraItem& CamIt
 		float RTAspect = (float)RTInfo.SizeX / (float)RTInfo.SizeY;
 		ProjFloat._11 = ProjFloat._22 / RTAspect;
 		ReflectedCamera.Projection = FPMatrix(DirectX::XMLoadFloat4x4(&ProjFloat));
+		ReflectedCamera.Fov = CamItem.Fov;
+		ReflectedCamera.Aspect = RTAspect;
+		ReflectedCamera.Zn = CamItem.Zn;
+		ReflectedCamera.Zf = CamItem.Zf;
+		ReflectedCamera.ProjectionMode = CamItem.ProjectionMode;
+		ReflectedCamera.OrthoWidth = CamItem.OrthoWidth;
+
+		UpdateCascadeShadowMaps(ReflectedCamera);
 
 		//이 RenderTarget의 ReflectionMatrix/Plane을 캐싱 (샘플링하는 forward-reflection Material이 이름으로 조회)
 		PlanarReflectionCache[PlanarReflectionItem.RenderTarget] = { PlanarReflectionItem.ReflectionMatrix, PlanarReflectionItem.Plane };
@@ -950,6 +1002,8 @@ void Renderer::PlanarReflectionRenderPass(const RenderingData::CameraItem& CamIt
 		}
 
 		Device.ResolveRenderTarget(RTInfo.RenderTragetFormat, RTData.Texture, RTData.ResolveTexture);
+
+		ClearCascadeShadowMaps();
 
 		bAnyDrawn = true;
 		if (std::find(UsedDepthStencils.begin(), UsedDepthStencils.end(), PlanarReflectionItem.DepthStencil) == UsedDepthStencils.end())
@@ -1177,7 +1231,17 @@ void Renderer::SceneCaptureRenderPass()
 		CaptureCamItem.Scale = CaptureItem.Scale;
 		CaptureCamItem.View = CaptureItem.View;
 		CaptureCamItem.Projection = CaptureItem.Projection;
+		CaptureCamItem.Fov = CaptureItem.Fov;
+		CaptureCamItem.Aspect = CaptureItem.Aspect;
+		CaptureCamItem.Zn = CaptureItem.Zn;
+		CaptureCamItem.Zf = CaptureItem.Zf;
+		CaptureCamItem.ProjectionMode = CaptureItem.ProjectionMode;
+		CaptureCamItem.OrthoWidth = CaptureItem.OrthoWidth;
+
 		PlanarReflectionRenderPass(CaptureCamItem);
+
+		//Cascade Shadow Map 계산 및 Cascade별 RenderPass 호출
+		UpdateCascadeShadowMaps(CaptureCamItem);
 
 		//PlanarReflectionRenderPass가 바꾼 상태를 이 Capture용으로 복원
 		for (int i = 0; i < 14; ++i)
@@ -1234,6 +1298,8 @@ void Renderer::SceneCaptureRenderPass()
 
 		//모두 그렸다면 Resolve <- 반드시..MSAA Texture를 일반 Texture로 변환
 		Device.ResolveRenderTarget(CaptureRTInfo.RenderTragetFormat, CaptureRTData.Texture, CaptureRTData.ResolveTexture);
+
+		ClearCascadeShadowMaps();
 	}
 
 	Device.OMSetBlendState(AssetManager->GetBlendStateData("BS_DEFAULT").BlendStateData);
@@ -1648,8 +1714,12 @@ void Renderer::MeshRenderPass()
 
 	for (RenderingData::CameraItem& CamItem : CameraList)
 	{
+
 		//이 CamItem 시점 기준으로 Planar Reflection RT를 먼저 갱신 (MeshRenderPass의 RT/ViewPort 상태를 바꾸므로 이후 복원)
 		PlanarReflectionRenderPass(CamItem);
+
+		//Cascade Shadow Map 계산 및 Cascade별 RenderPass 호출
+		UpdateCascadeShadowMaps(CamItem);
 
 		Device.OMSetRenderTargets(1, RTData.RenderTargetView, BackBufferDepthStencilData.DepthStencilView);
 
@@ -1674,6 +1744,8 @@ void Renderer::MeshRenderPass()
 		TranslucentRenderPass(CamItem, AssetManager);
 
 		Device.ResolveRenderTarget(RTInfo.RenderTragetFormat, RTData.Texture, RTData.ResolveTexture);
+
+		ClearCascadeShadowMaps();
 	}
 
 	Quad2DRenderPass(MeshRenderPassRT);
@@ -1992,6 +2064,17 @@ void Renderer::ClearDepthStencil()
 
 		FPDepthStencilInfo& DepthStencilInfo = AssetManager->HasDepthStencilInfoData(DepthStencilName) ? AssetManager->GetDepthStencilInfoData(DepthStencilName) : AssetManager->GetBuiltInDepthStencilInfoData(DepthStencilName);
 		Device.ClearDepthStencilView(DepthStencilData.DepthStencilView, DepthStencilInfo.ClearDepth, (UINT8)DepthStencilInfo.ClearStencil);
+	}
+
+	//Cascade Shadow Map(DepthStencilArray)도 Clear
+	for (auto& [DepthStencilArrayName, DepthStencilArrayData] : AssetManager->GetDepthStencilArrayDataMap())
+	{
+		FPDepthStencilArrayInfo& DepthStencilArrayInfo = AssetManager->GetDepthStencilArrayInfoData(DepthStencilArrayName);
+
+		for (void* DepthStencilView : DepthStencilArrayData.DepthStencilView)
+		{
+			Device.ClearDepthStencilView(DepthStencilView, DepthStencilArrayInfo.ClearDepth, (UINT8)DepthStencilArrayInfo.ClearStencil);
+		}
 	}
 }
 

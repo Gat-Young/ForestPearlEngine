@@ -1,0 +1,11 @@
+{
+  "Name": "CSM_DepthStencilArray",
+  "SizeX": 2048,
+  "SizeY": 2048,
+  "DepthStencilFormat": "D32F",
+  "ArraySize": 4,
+  "ClearDepth": 1.0,
+  "ClearStencil": 0,
+  "MSAA": 1,
+  "ShaderResource": true
+}

@@ -1,4 +1,6 @@
 #include "FPDirectionalLightComponent.h"
+#include "FPGameInstance.h"
+#include "FPAssetManager.h"
 
 #include <iostream>
 
@@ -17,6 +19,25 @@ FPDirectionalLightComponent::FPDirectionalLightComponent(FPActor* Owner) : FPLig
 	LightConstantBuffer = DirectionLightSetting;
 
 	RegistLightRenderList();
+
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	CascadeShadowMapName = AssetManager->CreateCascadeShadowMap(CascadeCount, ShadowResolution);
+}
+
+void FPDirectionalLightComponent::SetCascadeCount(unsigned int InCascadeCount)
+{
+	CascadeCount = InCascadeCount;
+
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	AssetManager->UpdateCascadeShadowMap(CascadeShadowMapName, CascadeCount, ShadowResolution);
+}
+
+void FPDirectionalLightComponent::SetShadowResolution(unsigned int InShadowResolution)
+{
+	ShadowResolution = InShadowResolution;
+
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+	AssetManager->UpdateCascadeShadowMap(CascadeShadowMapName, CascadeCount, ShadowResolution);
 }
 
 FPDirectionalLightComponent::~FPDirectionalLightComponent()

@@ -1138,6 +1138,57 @@ void FPAssetLoader::LoadDepthStencil(std::string DepthStencilPath, AssetOwner En
 	AssetManager->AddDepthStencilInfoData(DepthStencilInfo.Name, DepthStencilInfo);
 }
 
+void FPAssetLoader::LoadDepthStencilArray(std::string DepthStencilArrayPath, AssetOwner EngineAsset)
+{
+	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
+
+	std::ifstream File(FPPathManager::Get().GetAssetPath("DepthStencilArray/" + DepthStencilArrayPath));
+	if (EngineAsset == AssetOwner::Engine) File = std::ifstream(FPPathManager::Get().GetEngineAssetPath("DepthStencilArray/" + DepthStencilArrayPath));
+
+	if (!File.is_open())
+	{
+		std::cerr << DepthStencilArrayPath << "파일 열기 실패\n";
+		return;
+	}
+
+	json JsonDepthStencilArrayData;
+
+	try
+	{
+		File >> JsonDepthStencilArrayData;
+	}
+	catch (const json::parse_error& Error)
+	{
+		std::cerr << "JSON 파싱 실패: "
+			<< Error.what()
+			<< '\n';
+
+		return;
+	}
+
+	FPCascadeDepthStencilArrayInfo DepthStencilArrayInfo;
+
+	DepthStencilArrayInfo.Name = JsonDepthStencilArrayData["Name"].get<std::string>();
+	DepthStencilArrayInfo.SizeX = JsonDepthStencilArrayData["SizeX"].get<unsigned int>();
+	DepthStencilArrayInfo.SizeY = JsonDepthStencilArrayData["SizeY"].get<unsigned int>();
+	DepthStencilArrayInfo.DepthStencilFormat = StringToFPDepthStencilFormat(JsonDepthStencilArrayData["DepthStencilFormat"].get<std::string>());
+	DepthStencilArrayInfo.ArraySize = JsonDepthStencilArrayData["ArraySize"].get<int>();
+	DepthStencilArrayInfo.ClearDepth = JsonDepthStencilArrayData["ClearDepth"].get<float>();
+	DepthStencilArrayInfo.ClearStencil = JsonDepthStencilArrayData["ClearStencil"].get<unsigned int>();
+	DepthStencilArrayInfo.MSAA = JsonDepthStencilArrayData["MSAA"].get<unsigned int>();
+	DepthStencilArrayInfo.ShaderResource = JsonDepthStencilArrayData["ShaderResource"].get<bool>();
+	DepthStencilArrayInfo.Owner = EngineAsset;
+
+	if (AssetManager->HasDepthStencilArrayInfoData(DepthStencilArrayInfo.Name))
+	{
+		std::cout << "같은 이름의 DepthStencil Array가 존재합니다." << "\n";
+		return;
+	}
+
+	//AssetManager에 Load한 정보 등록
+	AssetManager->AddDepthStencilArrayInfoData(DepthStencilArrayInfo.Name, DepthStencilArrayInfo);
+}
+
 void FPAssetLoader::LoadDepthStencilState(std::string DepthStencilStatePath, AssetOwner EngineAsset)
 {
 	FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());

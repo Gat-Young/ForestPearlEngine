@@ -347,6 +347,33 @@ struct FPDepthStencilData
 	void* StencilShaderResourceView = nullptr;
 };
 
+//DepthStencil Array
+struct FPCascadeDepthStencilArrayInfo
+{
+	std::string Name;
+	unsigned int SizeX;
+	unsigned int SizeY;
+	float ScaleX;
+	float ScaleY;
+	FPDepthStencilFormat DepthStencilFormat = FPDepthStencilFormat::D24_S8_UINT;
+	int ArraySize = 1;
+	float ClearDepth = 1.0;
+	unsigned int ClearStencil = 0;
+	unsigned int MSAA = 1;
+	bool ShaderResource = false;
+
+
+	AssetOwner Owner;
+};
+
+struct FPArrayDepthStencilData
+{
+	void* Texture = nullptr;
+	std::vector<void*> DepthStencilView;
+	void* ShaderResourceView = nullptr;
+	void* StencilShaderResourceView = nullptr;
+};
+
 
 //DepthStencilState
 enum class FPDepthWriteMask

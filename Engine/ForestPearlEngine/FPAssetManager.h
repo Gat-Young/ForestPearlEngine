@@ -63,6 +63,13 @@ private:
 	std::unordered_map<std::string, FPDepthStencilInfo> LoadedDepthStencilData;
 	std::unordered_map<std::string, FPDepthStencilData> DepthStencilData;
 
+	//DepthStencil Array
+	std::unordered_map<std::string, FPCascadeDepthStencilArrayInfo> LoadedDepthStencilArrayData;
+	std::unordered_map<std::string, FPArrayDepthStencilData> DepthStencilArrayData;
+
+	//Cascade Shadow Map 이름 자동 생성용 Counter
+	unsigned int CascadeShadowMapCount = 0;
+
 	//DepthStencill State
 	std::unordered_map<std::string, FPDepthStencilStateInfo> LoadedDepthStencilStateData;
 	std::unordered_map<std::string, FPDepthStencilStateData> DepthStencilStateData;
@@ -243,6 +250,22 @@ public:
 	void MakeDepthStencil(FPDepthStencilInfo& DepthStecilInfo);
 	void MakeBuiltInDepthStencil(FPDepthStencilInfo& DepthStecilInfo);
 	std::unordered_map<std::string, FPDepthStencilData>& GetDepthStencilDataMap(); //살짝 아쉬움
+
+	//DepthStencil Array Info
+	FPCascadeDepthStencilArrayInfo& GetDepthStencilArrayInfoData(std::string DepthStencilArrayName);
+	void AddDepthStencilArrayInfoData(std::string DepthStencilArrayName, FPCascadeDepthStencilArrayInfo& DepthStencilArrayInfo);
+	bool HasDepthStencilArrayInfoData(std::string DepthStencilArrayName);
+
+	//DepthStencil Array Data
+	FPArrayDepthStencilData& GetDepthStencilArrayData(std::string DepthStencilArrayName);
+	void AddDepthStencilArrayData(std::string DepthStencilArrayName, FPArrayDepthStencilData& DepthStencilArrayData);
+	bool HasDepthStencilArrayData(std::string DepthStencilArrayName);
+	void MakeDepthStencilArray(FPCascadeDepthStencilArrayInfo& DepthStencilArrayInfo);
+	std::unordered_map<std::string, FPArrayDepthStencilData>& GetDepthStencilArrayDataMap();
+
+	//Cascade Shadow Map 생성/갱신 (자동 할당된 Name을 반환)
+	std::string CreateCascadeShadowMap(unsigned int CascadeCount, unsigned int ShadowResolution);
+	void UpdateCascadeShadowMap(std::string CascadeShadowMapName, unsigned int CascadeCount, unsigned int ShadowResolution);
 
 
 	//DepthStencilState Info

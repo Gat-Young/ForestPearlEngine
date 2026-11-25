@@ -155,13 +155,19 @@ class RenderingDevice
 		HRESULT CreateDepthStencilSRView(FPDepthStencilFormat& DepthStencilFormat, bool ShaderResource, UINT MSAA, void* InDSTex, void** OutDSSRView);
 		HRESULT CreateDepthStencilStencilSRView(FPDepthStencilFormat& DepthStencilFormat, bool ShaderResource, UINT MSAA, void* InDSTex, void** OutDSSRView);
 
+		//Depth Stencil Array Create (Cascade Shadow Map 등 Texture2DArray용)
+		HRESULT CreateDepthStencilArrayTexture(UINT SizeX, UINT SizeY, UINT ArraySize, UINT MSAA, bool ShaderResource, FPDepthStencilFormat& DepthStencilFormat, void** OutDSTex);
+		HRESULT CreateDepthStencilArrayViews(FPDepthStencilFormat& DepthStencilFormat, UINT MSAA, UINT ArraySize, void* InDSTex, std::vector<void*>* OutDSViews);
+		HRESULT CreateDepthStencilArraySRView(FPDepthStencilFormat& DepthStencilFormat, bool ShaderResource, UINT MSAA, UINT ArraySize, void* InDSTex, void** OutDSSRView);
+		HRESULT CreateDepthStencilArrayStencilSRView(FPDepthStencilFormat& DepthStencilFormat, bool ShaderResource, UINT MSAA, UINT ArraySize, void* InDSTex, void** OutDSSRView);
+
 		//Depth Stencil State Create
 		HRESULT CreateDepthStencilState(FPDepthStencilStateInfo& DepthStencilInfo, void** OutDSState);
 
 
 		HRESULT CreateBackBufferRenderTarget();
 
-		HRESULT OMSetBackBufferRenderTargets(UINT RenderTargetNum, void* InDepthStencilView);										//Back Buffer RenderTarget Setting
+		HRESULT OMSetBackBufferRenderTargets(UINT RenderTargetNum, void* InDepthStencilView);								//Back Buffer RenderTarget Setting
 		HRESULT OMSetRenderTargets(UINT RenderTargetNum, void* InRenderTargetView, void* InDepthStencilView);				//지정된 RenderTarget Setting
 
 		HRESULT OMResetRenderTargets();

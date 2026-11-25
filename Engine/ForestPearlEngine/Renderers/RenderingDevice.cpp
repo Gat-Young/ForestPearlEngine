@@ -722,6 +722,149 @@ HRESULT RenderingDevice::CreateDepthStencilStencilSRView(FPDepthStencilFormat& D
 	return hr;
 }
 
+HRESULT RenderingDevice::CreateDepthStencilArrayTexture(UINT SizeX, UINT SizeY, UINT ArraySize, UINT MSAA, bool ShaderResource, FPDepthStencilFormat& DepthStencilFormat, void** OutDSTex)
+{
+	HRESULT hr = S_OK;
+
+	//Cascade Shadow Map 등 Depth-Stencil Texture2DArray용 정보 구성
+	D3D11_TEXTURE2D_DESC TextureDesc;
+	TextureDesc.Width = SizeX;
+	TextureDesc.Height = SizeY;
+	TextureDesc.MipLevels = 1;
+	TextureDesc.ArraySize = ArraySize;
+	TextureDesc.Format = FPDepthStencilFormatToDXGI_FORMAT(DepthStencilFormat);						//깊이 버퍼 Format
+	TextureDesc.SampleDesc = { MSAA, 0 };				//MSAA 설정
+	TextureDesc.Usage = D3D11_USAGE_DEFAULT;
+	TextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;	//깊이-스텐실 버퍼용으로 설정
+	TextureDesc.CPUAccessFlags = 0;
+	TextureDesc.MiscFlags = 0;
+
+	if (ShaderResource)
+	{
+		TextureDesc.Format = DSVFormatToTextureFormat(TextureDesc.Format);			//ShaderResource로도 사용된다면 해당 해당 타입으로 변환
+		TextureDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;						//ShaderResource Binding 추가
+	}
+
+	ID3D11Texture2D* Texture;
+	hr = Device->CreateTexture2D(&TextureDesc, NULL, &Texture);
+	if (FAILED(hr)) { std::cout << "DepthStencil Array Texture Create Fail!" << "\n"; return hr; }
+	*OutDSTex = Texture;
+
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateDepthStencilArrayViews(FPDepthStencilFormat& DepthStencilFormat, UINT MSAA, UINT ArraySize, void* InDSTex, std::vector<void*>* OutDSViews)
+{
+	HRESULT hr = S_OK;
+
+	ID3D11Texture2D* DSTex = static_cast<ID3D11Texture2D*>(InDSTex);
+	OutDSViews->clear();
+	OutDSViews->reserve(ArraySize);
+
+	//Cascade마다 1개씩, Array Slice별 DSV 생성
+	for (UINT i = 0; i < ArraySize; i++)
+	{
+		D3D11_DEPTH_STENCIL_VIEW_DESC DSVDesc = {};
+		DSVDesc.Format = FPDepthStencilFormatToDXGI_FORMAT(DepthStencilFormat);
+		DSVDesc.Flags = 0;
+
+		if (MSAA > 1)
+		{
+			DSVDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY;
+			DSVDesc.Texture2DMSArray.FirstArraySlice = i;
+			DSVDesc.Texture2DMSArray.ArraySize = 1;
+		}
+		else
+		{
+			DSVDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+			DSVDesc.Texture2DArray.MipSlice = 0;
+			DSVDesc.Texture2DArray.FirstArraySlice = i;
+			DSVDesc.Texture2DArray.ArraySize = 1;
+		}
+
+		ID3D11DepthStencilView* DSV;
+		hr = Device->CreateDepthStencilView(DSTex, &DSVDesc, &DSV);
+		if (FAILED(hr)) { std::cout << "DepthStencil Array DSV Create Fail!" << "\n"; return hr; }
+
+		OutDSViews->push_back(DSV);
+	}
+
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateDepthStencilArraySRView(FPDepthStencilFormat& DepthStencilFormat, bool ShaderResource, UINT MSAA, UINT ArraySize, void* InDSTex, void** OutDSSRView)
+{
+	HRESULT hr = S_OK;
+	if (!ShaderResource) return hr;
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+	DXGI_FORMAT DSVFormat = FPDepthStencilFormatToDXGI_FORMAT(DepthStencilFormat);
+	SRVDesc.Format = DSVFormatToSRVFormat(DSVFormat);
+
+	if (MSAA > 1)
+	{
+		SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY;
+		SRVDesc.Texture2DMSArray.FirstArraySlice = 0;
+		SRVDesc.Texture2DMSArray.ArraySize = ArraySize;
+	}
+	else
+	{
+		SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+		SRVDesc.Texture2DArray.MostDetailedMip = 0;
+		SRVDesc.Texture2DArray.MipLevels = 1;
+		SRVDesc.Texture2DArray.FirstArraySlice = 0;
+		SRVDesc.Texture2DArray.ArraySize = ArraySize;
+	}
+
+	ID3D11ShaderResourceView* DSSRV;
+	ID3D11Texture2D* DSTex = static_cast<ID3D11Texture2D*>(InDSTex);
+
+	hr = Device->CreateShaderResourceView(DSTex, &SRVDesc, &DSSRV);
+	if (FAILED(hr)) { std::cout << "DepthStencil Array DSSRV Create Fail!" << "\n"; return hr; }
+
+	*OutDSSRView = DSSRV;
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateDepthStencilArrayStencilSRView(FPDepthStencilFormat& DepthStencilFormat, bool ShaderResource, UINT MSAA, UINT ArraySize, void* InDSTex, void** OutDSSRView)
+{
+	HRESULT hr = S_OK;
+	if (!ShaderResource) return hr;
+
+	DXGI_FORMAT DSVFormat = FPDepthStencilFormatToDXGI_FORMAT(DepthStencilFormat);
+	DXGI_FORMAT StencilSRVFormat = DSVFormatToStencilSRVFormat(DSVFormat);
+
+	//No stencil channel for this format (D16, D32F, etc.) : skip SRV creation
+	if (StencilSRVFormat == DXGI_FORMAT_UNKNOWN) return hr;
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+	SRVDesc.Format = StencilSRVFormat;
+
+	if (MSAA > 1)
+	{
+		SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY;
+		SRVDesc.Texture2DMSArray.FirstArraySlice = 0;
+		SRVDesc.Texture2DMSArray.ArraySize = ArraySize;
+	}
+	else
+	{
+		SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+		SRVDesc.Texture2DArray.MostDetailedMip = 0;
+		SRVDesc.Texture2DArray.MipLevels = 1;
+		SRVDesc.Texture2DArray.FirstArraySlice = 0;
+		SRVDesc.Texture2DArray.ArraySize = ArraySize;
+	}
+
+	ID3D11ShaderResourceView* DSSRV;
+	ID3D11Texture2D* DSTex = static_cast<ID3D11Texture2D*>(InDSTex);
+
+	hr = Device->CreateShaderResourceView(DSTex, &SRVDesc, &DSSRV);
+	if (FAILED(hr)) { std::cout << "Stencil DepthStencil Array DSSRV Create Fail!" << "\n"; return hr; }
+
+	*OutDSSRView = DSSRV;
+	return hr;
+}
+
 HRESULT RenderingDevice::CreateDepthStencilState(FPDepthStencilStateInfo& DepthStencilInfo, void** OutDSState)
 {
 	HRESULT hr = S_OK;

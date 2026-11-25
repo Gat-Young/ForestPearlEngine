@@ -18,4 +18,7 @@ class FPDirectionalLightComponent : public FPLightComponent
 	public:
 		FPDirectionalLightComponent(FPActor* Owner);
 		~FPDirectionalLightComponent();
+
+		void SetCascadeCount(unsigned int InCascadeCount);
+		void SetShadowResolution(unsigned int InShadowResolution);
 };

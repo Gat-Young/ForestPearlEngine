@@ -284,6 +284,9 @@ FPBoxSphereBounds TransformBounds(const FPBoxSphereBounds& Bounds, const FPMatri
 //FPAABB(Min/Max)로 FPBoxSphereBounds 생성
 FPBoxSphereBounds BoundsFromAABB(const FPAABB& AABB);
 
+//Box Union (두 BoxSphereBounds를 하나로 합침)
+FPBoxSphereBounds CombineBounds(const FPBoxSphereBounds& A, const FPBoxSphereBounds& B);
+
 FPQuaternion Conjugate(const FPQuaternion& quat);
 
 FPQuaternion Inverse(const FPQuaternion& quat);

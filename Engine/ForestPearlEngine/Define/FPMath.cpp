@@ -227,6 +227,33 @@ FPBoxSphereBounds BoundsFromAABB(const FPAABB& AABB)
 	return Result;
 }
 
+FPBoxSphereBounds CombineBounds(const FPBoxSphereBounds& A, const FPBoxSphereBounds& B)
+{
+	FPVector3 MinA = A.Origin - A.BoxExtent;
+	FPVector3 MaxA = A.Origin + A.BoxExtent;
+
+	FPVector3 MinB = B.Origin - B.BoxExtent;
+	FPVector3 MaxB = B.Origin + B.BoxExtent;
+
+	FPVector3 Min;
+	FPVector3 Max;
+
+	Min.x = (MinA.x < MinB.x) ? MinA.x : MinB.x;
+	Min.y = (MinA.y < MinB.y) ? MinA.y : MinB.y;
+	Min.z = (MinA.z < MinB.z) ? MinA.z : MinB.z;
+
+	Max.x = (MaxA.x > MaxB.x) ? MaxA.x : MaxB.x;
+	Max.y = (MaxA.y > MaxB.y) ? MaxA.y : MaxB.y;
+	Max.z = (MaxA.z > MaxB.z) ? MaxA.z : MaxB.z;
+
+	FPBoxSphereBounds Result;
+	Result.Origin = (Min + Max) * 0.5f;
+	Result.BoxExtent = (Max - Min) * 0.5f;
+	Result.SphereRadius = Result.BoxExtent.Length();
+
+	return Result;
+}
+
 FPQuaternion Conjugate(const FPQuaternion& quat)
 {
 	return FPQuaternion{ -quat.x, -quat.y, -quat.z, quat.w };

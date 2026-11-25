@@ -141,3 +141,11 @@ bool FPStaticMeshComponent::GetCustomDepthStencil() const
 {
 	return this->bCustomDepthStencil;
 }
+
+//StaticMesh의 Bounds 정보를 가져와 Local Bounds로 사용
+FPBoxSphereBounds FPStaticMeshComponent::CalculateBounds()
+{
+	if (StaticMesh == nullptr) { return __super::CalculateBounds(); }
+
+	return StaticMesh->GetBounds();
+}

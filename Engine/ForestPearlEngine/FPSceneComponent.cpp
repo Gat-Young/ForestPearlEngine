@@ -167,6 +167,11 @@ FPSceneComponent* FPSceneComponent::GetAttachmentRoot()
 	return this->ParentComponent->GetAttachmentRoot();
 }
 
+const std::vector<FPSceneComponent*>& FPSceneComponent::GetChildComponents() const
+{
+	return ChildComponent;
+}
+
 FTransform FPSceneComponent::GetSocketTransform(const std::string& SocketName) const
 {
 	//Socket을 사용하지 않거나 Socket이 없는 경우는 현재 컴포넌트의 Transform을 반환

@@ -12,6 +12,10 @@ class FPStaticMeshComponent : public FPMeshComponent
 		int StencilRefValue = 0;
 		bool bCustomDepthStencil = false;
 
+	protected:
+		//StaticMesh의 Bounds 정보를 가져와 Local Bounds로 사용
+		FPBoxSphereBounds CalculateBounds() override;
+
 	public:
 		FPStaticMeshComponent(FPActor* Owner, std::string StaticMeshName);
 		~FPStaticMeshComponent();

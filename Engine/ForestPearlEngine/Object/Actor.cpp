@@ -11,6 +11,32 @@ FPActor::FPActor()
 void FPActor::Tick()
 {
     if (RootComponent != nullptr) RootComponent->Tick();
+
+    UpdateBounds();
+}
+
+void FPActor::UpdateBounds()
+{
+    if (RootComponent == nullptr) { return; }
+
+    Bounds = RootComponent->GetBounds();
+
+    CombineChildBounds(RootComponent);
+}
+
+void FPActor::CombineChildBounds(FPSceneComponent* Component)
+{
+    for (FPSceneComponent* Child : Component->GetChildComponents())
+    {
+        Bounds = CombineBounds(Bounds, Child->GetBounds());
+        CombineChildBounds(Child);
+    }
+}
+
+FPBoxSphereBounds FPActor::GetBounds()
+{
+    UpdateBounds();
+    return Bounds;
 }
 
 bool FPActor::AttachToComponent(FPSceneComponent* Parent, std::string SocketName)

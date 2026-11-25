@@ -94,6 +94,9 @@ class FPSceneComponent : public FPActorComponent
 		//Root Component 찾기
 		FPSceneComponent* GetAttachmentRoot();
 
+		//Child Component 목록 반환
+		const std::vector<FPSceneComponent*>& GetChildComponents() const;
+
 		//Socekt
 		virtual FTransform GetSocketTransform(const std::string& SocketName) const;
 

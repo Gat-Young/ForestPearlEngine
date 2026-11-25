@@ -35,6 +35,26 @@ void FPWorld::Tick()
 	{
 		actor->Tick();
 	}
+
+	UpdateBounds();
+}
+
+void FPWorld::UpdateBounds()
+{
+	if (GameActorList.empty()) { return; }
+
+	Bounds = GameActorList[0]->GetBounds();
+
+	for (size_t i = 1; i < GameActorList.size(); i++)
+	{
+		Bounds = CombineBounds(Bounds, GameActorList[i]->GetBounds());
+	}
+}
+
+FPBoxSphereBounds FPWorld::GetBounds()
+{
+	UpdateBounds();
+	return Bounds;
 }
 
 void FPWorld::UnLoadData()

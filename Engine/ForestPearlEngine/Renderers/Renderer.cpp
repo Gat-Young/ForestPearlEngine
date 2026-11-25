@@ -203,6 +203,13 @@ void Renderer::CreateCamList()
 		RenderCamItem.View = *(CamItem.View);
 		RenderCamItem.Projection = *(CamItem.Projection);
 
+		RenderCamItem.Fov = *(CamItem.Fov);
+		RenderCamItem.Aspect = *(CamItem.Aspect);
+		RenderCamItem.Zn = *(CamItem.Zn);
+		RenderCamItem.Zf = *(CamItem.Zf);
+		RenderCamItem.ProjectionMode = *(CamItem.ProjectionMode);
+		RenderCamItem.OrthoWidth = *(CamItem.OrthoWidth);
+
 		this->CameraList.push_back(RenderCamItem);
 	}
 
@@ -567,6 +574,108 @@ void Renderer::CreateCascadeShadowRenderList()
 		CascadeShadowList.push_back(CascadeShadowRenderingData);
 	}
 }
+
+//카메라 Near/Far, Light의 CascadeCount/DynamicShadowDistance/CascadeSplitLambda로 Cascade별 Near/Far 계산
+//TODO: 각 카메라가 사용되기 전에 호출될 예정 (현재는 호출하지 않음)
+std::vector<RenderingData::FPCascadeNearFar> Renderer::CalculateCascadeNearFar(float CameraNear, float CameraFar, unsigned int CascadeCount, float DynamicShadowDistance, float CascadeSplitLambda)
+{
+	std::vector<RenderingData::FPCascadeNearFar> Result;
+
+	if (CascadeCount == 0)
+	{
+		return Result;
+	}
+
+	//DynamicShadowDistance로 그림자 적용 거리를 제한
+	float EffectiveFar = (CameraFar < DynamicShadowDistance) ? CameraFar : DynamicShadowDistance;
+	if (EffectiveFar <= CameraNear)
+	{
+		EffectiveFar = CameraNear + 0.01f;
+	}
+
+	float PrevFar = CameraNear;
+
+	for (unsigned int i = 0; i < CascadeCount; i++)
+	{
+		float Ratio = static_cast<float>(i + 1) / static_cast<float>(CascadeCount);
+
+		//Uniform Split
+		float UniformSplit = CameraNear + (EffectiveFar - CameraNear) * Ratio;
+
+		//Logarithmic Split
+		float LogSplit = CameraNear * std::pow(EffectiveFar / CameraNear, Ratio);
+
+		//CascadeSplitLambda로 Uniform/Log 보간
+		float Split = (CascadeSplitLambda * LogSplit) + ((1.0f - CascadeSplitLambda) * UniformSplit);
+
+		RenderingData::FPCascadeNearFar CascadeNearFarData;
+		CascadeNearFarData.Near = PrevFar;
+		CascadeNearFarData.Far = Split;
+
+		Result.push_back(CascadeNearFarData);
+
+		PrevFar = Split;
+	}
+
+	return Result;
+}
+
+//매 카메라 사용 시(카메라별로) CalculateCascadeNearFar() 이후 호출되어야 함
+std::vector<RenderingData::FPCascadeFrustum> Renderer::CalculateFrustumCascade(const RenderingData::CameraItem& CamItem, std::vector<RenderingData::FPCascadeNearFar> CascadeNearFarList)
+{
+	std::vector<RenderingData::FPCascadeFrustum> Result;
+
+	//NDC 공간의 단위 큐브 8개 정점 (LH, Depth 0~1)
+	std::vector<FPVector3> NDCVertex =
+	{
+		FPVector3(-1.0f,  1.0f, 0.0f),
+		FPVector3( 1.0f,  1.0f, 0.0f),
+		FPVector3( 1.0f, -1.0f, 0.0f),
+		FPVector3(-1.0f, -1.0f, 0.0f),
+		FPVector3(-1.0f,  1.0f, 1.0f),
+		FPVector3( 1.0f,  1.0f, 1.0f),
+		FPVector3( 1.0f, -1.0f, 1.0f),
+		FPVector3(-1.0f, -1.0f, 1.0f),
+	};
+
+	for (RenderingData::FPCascadeNearFar& CascadeNearFar : CascadeNearFarList)
+	{
+		//카메라 Projection 설정을 바탕으로 Cascade Near/Far의 Projection 생성
+		FPMatrix CascadeProjection;
+
+		if (CamItem.ProjectionMode == Perspective)
+		{
+			CascadeProjection = MatrixPerspectiveFovLH(CamItem.Fov, CamItem.Aspect, CascadeNearFar.Near, CascadeNearFar.Far);
+		}
+		else
+		{
+			float HalfWidth = CamItem.OrthoWidth * 0.5f;
+			float HalfHeight = HalfWidth / CamItem.Aspect;
+			CascadeProjection = MatrixOrthographicOffCenterLH(-HalfWidth, HalfWidth, -HalfHeight, HalfHeight, CascadeNearFar.Near, CascadeNearFar.Far);
+		}
+
+		FPMatrix CascadeVP = CamItem.View * CascadeProjection;
+		FPMatrix InvCascadeVP = MatrixInverse(CascadeVP);
+
+		//NDC 정점을 월드 공간으로 변환해 Center(중심점) 계산
+		FPVector3 Center;
+		for (FPVector3& Vertex : NDCVertex)
+		{
+			Center = Center + TransformCoord(Vertex, InvCascadeVP);
+		}
+		Center = Center * (1.0f / static_cast<float>(NDCVertex.size()));
+
+		RenderingData::FPCascadeFrustum CascadeFrustum;
+		CascadeFrustum.NDCVertex = NDCVertex;
+		CascadeFrustum.Center = Center;
+		CascadeFrustum.InvCascadeVP = InvCascadeVP;
+
+		Result.push_back(CascadeFrustum);
+	}
+
+	return Result;
+}
+
 void Renderer::CreateNormalRenderList()
 {
 	//비어 있지 않다면 비우기
@@ -657,6 +766,13 @@ void Renderer::CreateSceneCaptureList()
 
 			//Hidden Actor 명단을 그대로 복사
 			RenderSceneCaptureItem.HiddenActors = *(SceneCaptureItem.HiddenActors);
+
+			RenderSceneCaptureItem.Fov = *(SceneCaptureItem.Fov);
+			RenderSceneCaptureItem.Aspect = *(SceneCaptureItem.Aspect);
+			RenderSceneCaptureItem.Zn = *(SceneCaptureItem.Zn);
+			RenderSceneCaptureItem.Zf = *(SceneCaptureItem.Zf);
+			RenderSceneCaptureItem.ProjectionMode = *(SceneCaptureItem.ProjectionMode);
+			RenderSceneCaptureItem.OrthoWidth = *(SceneCaptureItem.OrthoWidth);
 
 			this->SceneCaptureList.push_back(RenderSceneCaptureItem);
 		}

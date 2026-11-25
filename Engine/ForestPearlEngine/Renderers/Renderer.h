@@ -142,6 +142,14 @@ class Renderer
 		//SceneCaptureRenderPass sub-pass: single RenderItem draw
 		void DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::SceneCaptureItem& CaptureItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, const FPMatrix& ReflectionViewProj = FPMatrix());
 
+
+		//카메라 Near/Far, Light의 CascadeCount/DynamicShadowDistance/CascadeSplitLambda로 Cascade별 Near/Far 계산
+		//TODO: 각 카메라가 사용되기 전에 호출될 예정 (현재는 호출하지 않음)
+		std::vector<RenderingData::FPCascadeNearFar> CalculateCascadeNearFar(float CameraNear, float CameraFar, unsigned int CascadeCount, float DynamicShadowDistance, float CascadeSplitLambda);
+
+		//CalculateCascadeNearFar() 호출 이후 사용. 매 카메라 사용 시(카메라별로) 호출되어야 함
+		std::vector<RenderingData::FPCascadeFrustum> CalculateFrustumCascade(const RenderingData::CameraItem& CamItem, std::vector<RenderingData::FPCascadeNearFar> CascadeNearFarList);
+
 	public:
 		Renderer(RenderingDevice& Device);
 
@@ -153,6 +161,7 @@ class Renderer
 		void CreateLightRenderList();
 		void CreateSkyLightRenderList();
 		void CreateCascadeShadowRenderList();
+
 		void CreateNormalRenderList();
 		void CreateSceneCaptureList();
 		void CreatePlanarReflectionList();

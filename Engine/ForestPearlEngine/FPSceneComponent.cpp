@@ -138,6 +138,14 @@ FPVector3 FPSceneComponent::GetComponentScale()
 	return WorldTransform.Scale;
 }
 
+//가장 최신의 BoundBox 정보를 가져옴 (즉시 재계산 후 반환)
+FPBoxSphereBounds FPSceneComponent::GetBounds()
+{
+	UpdateBounds();
+
+	return Bounds;
+}
+
 FPVector3 FPSceneComponent::GetForwardVector()
 {
 	return WorldTransform.Forward();
@@ -214,12 +222,31 @@ void FPSceneComponent::CalculateTransformMatrices()
 	WorldTransform.ScaleMatrix = MatrixScaling(WorldTransform.Scale);
 }
 
+//Local Bounds 계산 (기본: 반지름 1 Box/Sphere), 파생 클래스에서 재정의하여 사용
+FPBoxSphereBounds FPSceneComponent::CalculateBounds()
+{
+	return { FPVector3(0.0f, 0.0f, 0.0f), FPVector3(1.0f, 1.0f, 1.0f), 1.0f };
+}
+
+//Local Bounds를 World Transform으로 변환해 Bounds에 반영
+void FPSceneComponent::UpdateBounds()
+{
+	FPBoxSphereBounds LocalBounds = CalculateBounds();
+
+	FPMatrix WorldMatrix = WorldTransform.ScaleMatrix * WorldTransform.RotationMatrix * WorldTransform.LocationMatrix;
+
+	Bounds = TransformBounds(LocalBounds, WorldMatrix);
+}
+
 
 //임시로 사용
 void FPSceneComponent::Tick()
 {
 	//Transform 계산 분기, virtual 함수 이므로 필요에 따라 상속으로 변경 가능
 	CalculateTransformBranch();
+
+	//Bounds 갱신, 매 Tick 호출
+	UpdateBounds();
 
 	for (FPSceneComponent* child : ChildComponent)
 	{

@@ -10,6 +10,9 @@ class FPSceneComponent : public FPActorComponent
 	protected:
 		FTransform WorldTransform;
 		FTransform RelativeTransform;
+
+		//BoundSphereBounds (기본 크기: 반지름 1)
+		FPBoxSphereBounds Bounds = { FPVector3(0.0f, 0.0f, 0.0f), FPVector3(1.0f, 1.0f, 1.0f), 1.0f };
 		
 		FPSceneComponent* ParentComponent = nullptr;
 		std::vector<FPSceneComponent*> ChildComponent;
@@ -35,6 +38,10 @@ class FPSceneComponent : public FPActorComponent
 
 		//Tick에서 트랜스폼 계산을 위한 분기용 함수 (필요에 따라 상속한 컴포넌트에서 분기를 구현)
 		virtual void CalculateTransformBranch();
+
+		//Bounds 계산(Local) / 갱신(World로 변환해 Bounds에 반영), 매 Tick 호출
+		virtual FPBoxSphereBounds CalculateBounds();
+		virtual void UpdateBounds();
 
 	public:
 		FPSceneComponent(FPActor* Owner);
@@ -75,6 +82,9 @@ class FPSceneComponent : public FPActorComponent
 		FPVector3 GetComponentRotation();
 		FPQuaternion GetComponentQuat();
 		FPVector3 GetComponentScale();
+
+		//가장 최신의 BoundBox(BoxSphereBounds) 정보를 가져옴 (즉시 재계산)
+		FPBoxSphereBounds GetBounds();
 
 		//축 벡터 (DX 기준 : Right +X, Up +Y, Forward +Z)
 		FPVector3 GetForwardVector();

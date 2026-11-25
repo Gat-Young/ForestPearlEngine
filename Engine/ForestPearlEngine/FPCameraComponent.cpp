@@ -37,6 +37,13 @@ void FPCameraComponent::RegistCamera()
 
 	CamItem->Active = &(this->Active);
 	CamItem->PostProcessMaterial = &(this->PostProcessMaterial);
+
+	CamItem->Fov = &(this->Fov);
+	CamItem->Aspect = &(this->Aspect);
+	CamItem->Zn = &(this->Zn);
+	CamItem->Zf = &(this->Zf);
+	CamItem->ProjectionMode = &(this->ProjectionMode);
+	CamItem->OrthoWidth = &(this->OrthoWidth);
 }
 
 void FPCameraComponent::Tick()

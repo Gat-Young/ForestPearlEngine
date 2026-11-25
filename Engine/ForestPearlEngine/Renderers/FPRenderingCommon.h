@@ -104,6 +104,8 @@ struct FPMeshData
 	std::vector<TANGENT_VERTEX> Tangent_Vertices;
 	std::vector<INDEX_32BIT> Index;
 	std::vector<std::vector<uint32_t>> VertexAdjacency;
+
+	FPAABB BoundingBox;
 };
 
 //소켓용 트랜스폼
@@ -802,6 +804,14 @@ struct CameraItem
 
 	//PostProcess Material (nullptr = 없음). PostProcess Material을 가진 Camera는 PostProcessList에 등록됨
 	FPMaterialInterface** PostProcessMaterial = nullptr;
+
+	//Projection 설정
+	float* Fov = nullptr;
+	float* Aspect = nullptr;
+	float* Zn = nullptr;
+	float* Zf = nullptr;
+	FPProjectionMode* ProjectionMode = nullptr;
+	float* OrthoWidth = nullptr;
 };
 
 //SceneCapture Component
@@ -824,6 +834,14 @@ struct SceneCaptureItem
 	bool* CaptureThisFrame = nullptr;
 
 	std::vector<std::string>* HiddenActors = nullptr;
+
+	//Projection 설정
+	float* Fov = nullptr;
+	float* Aspect = nullptr;
+	float* Zn = nullptr;
+	float* Zf = nullptr;
+	FPProjectionMode* ProjectionMode = nullptr;
+	float* OrthoWidth = nullptr;
 };
 
 //Planar Reflection Component
@@ -986,6 +1004,14 @@ namespace RenderingData
 
 		FPMatrix View;
 		FPMatrix Projection;
+
+		//Projection 설정
+		float Fov;
+		float Aspect;
+		float Zn;
+		float Zf;
+		FPProjectionMode ProjectionMode;
+		float OrthoWidth;
 	};
 
 	//PostProcess 목록 항목 (PostProcess Material을 가진 Camera)
@@ -1034,6 +1060,19 @@ namespace RenderingData
 		float ShadowSlopeBias;
 
 		std::string CascadeShadowMapName;
+	};
+
+	struct FPCascadeNearFar
+	{
+		float Near;
+		float Far;
+	};
+
+	struct FPCascadeFrustum
+	{
+		std::vector<FPVector3> NDCVertex;
+		FPVector3 Center;
+		FPMatrix InvCascadeVP;
 	};
 
 	constexpr unsigned int Light_MAX = 64;
@@ -1185,6 +1224,14 @@ namespace RenderingData
 		std::string DepthStencil;
 
 		std::vector<std::string> HiddenActors;
+
+		//Projection 설정
+		float Fov;
+		float Aspect;
+		float Zn;
+		float Zf;
+		FPProjectionMode ProjectionMode;
+		float OrthoWidth;
 	};
 
 	struct PlanarReflectionItem

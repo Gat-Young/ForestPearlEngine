@@ -170,6 +170,63 @@ FPMatrix Transpose(FPMatrix& Matrix)
 	return FPMatrix(DirectX::XMMatrixTranspose(Matrix.Matrix));
 }
 
+FPVector3 TransformCoord(const FPVector3& Point, const FPMatrix& Matrix)
+{
+	DirectX::XMVECTOR Vector = DirectX::XMVectorSet(Point.x, Point.y, Point.z, 1.0f);
+	DirectX::XMVECTOR Result = DirectX::XMVector3TransformCoord(Vector, Matrix.Matrix);
+
+	return FPVector3(Result);
+}
+
+FPBoxSphereBounds TransformBounds(const FPBoxSphereBounds& Bounds, const FPMatrix& Matrix)
+{
+	//Box의 8개 코너
+	FPVector3 Corner[8] =
+	{
+		Bounds.Origin + FPVector3(-Bounds.BoxExtent.x, -Bounds.BoxExtent.y, -Bounds.BoxExtent.z),
+		Bounds.Origin + FPVector3( Bounds.BoxExtent.x, -Bounds.BoxExtent.y, -Bounds.BoxExtent.z),
+		Bounds.Origin + FPVector3(-Bounds.BoxExtent.x,  Bounds.BoxExtent.y, -Bounds.BoxExtent.z),
+		Bounds.Origin + FPVector3( Bounds.BoxExtent.x,  Bounds.BoxExtent.y, -Bounds.BoxExtent.z),
+		Bounds.Origin + FPVector3(-Bounds.BoxExtent.x, -Bounds.BoxExtent.y,  Bounds.BoxExtent.z),
+		Bounds.Origin + FPVector3( Bounds.BoxExtent.x, -Bounds.BoxExtent.y,  Bounds.BoxExtent.z),
+		Bounds.Origin + FPVector3(-Bounds.BoxExtent.x,  Bounds.BoxExtent.y,  Bounds.BoxExtent.z),
+		Bounds.Origin + FPVector3( Bounds.BoxExtent.x,  Bounds.BoxExtent.y,  Bounds.BoxExtent.z),
+	};
+
+	FPVector3 Min = TransformCoord(Corner[0], Matrix);
+	FPVector3 Max = Min;
+
+	for (int i = 1; i < 8; i++)
+	{
+		FPVector3 World = TransformCoord(Corner[i], Matrix);
+
+		Min.x = (World.x < Min.x) ? World.x : Min.x;
+		Min.y = (World.y < Min.y) ? World.y : Min.y;
+		Min.z = (World.z < Min.z) ? World.z : Min.z;
+
+		Max.x = (World.x > Max.x) ? World.x : Max.x;
+		Max.y = (World.y > Max.y) ? World.y : Max.y;
+		Max.z = (World.z > Max.z) ? World.z : Max.z;
+	}
+
+	FPBoxSphereBounds Result;
+	Result.Origin = (Min + Max) * 0.5f;
+	Result.BoxExtent = (Max - Min) * 0.5f;
+	Result.SphereRadius = Result.BoxExtent.Length();
+
+	return Result;
+}
+
+FPBoxSphereBounds BoundsFromAABB(const FPAABB& AABB)
+{
+	FPBoxSphereBounds Result;
+	Result.Origin = (AABB.Min + AABB.Max) * 0.5f;
+	Result.BoxExtent = (AABB.Max - AABB.Min) * 0.5f;
+	Result.SphereRadius = Result.BoxExtent.Length();
+
+	return Result;
+}
+
 FPQuaternion Conjugate(const FPQuaternion& quat)
 {
 	return FPQuaternion{ -quat.x, -quat.y, -quat.z, quat.w };

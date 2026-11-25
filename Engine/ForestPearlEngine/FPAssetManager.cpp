@@ -1197,6 +1197,29 @@ FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_nod
 		Result.Index.push_back(Index);
 	}
 
+	// --------------------------------------------------------
+	// 5. BoundingBox(AABB) 계산
+	// --------------------------------------------------------
+	if (!Result.Position_Vertices.empty())
+	{
+		FPVector3 Min(Result.Position_Vertices[0].x, Result.Position_Vertices[0].y, Result.Position_Vertices[0].z);
+		FPVector3 Max = Min;
+
+		for (const POSITION_VERTEX& PositionVertex : Result.Position_Vertices)
+		{
+			Min.x = (PositionVertex.x < Min.x) ? PositionVertex.x : Min.x;
+			Min.y = (PositionVertex.y < Min.y) ? PositionVertex.y : Min.y;
+			Min.z = (PositionVertex.z < Min.z) ? PositionVertex.z : Min.z;
+
+			Max.x = (PositionVertex.x > Max.x) ? PositionVertex.x : Max.x;
+			Max.y = (PositionVertex.y > Max.y) ? PositionVertex.y : Max.y;
+			Max.z = (PositionVertex.z > Max.z) ? PositionVertex.z : Max.z;
+		}
+
+		Result.BoundingBox.Min = Min;
+		Result.BoundingBox.Max = Max;
+	}
+
 	return Result;
 
 }
@@ -1232,6 +1255,10 @@ FPStaticMesh* FPAssetManager::GetStaticMeshData(std::string StaticMeshName)
 	StaticMesh->SetMaterial(Material);
 	StaticMesh->SetStencilRefValue(StaticMeshData.StencilRefValue);
 	StaticMesh->SetCustomDepthStencil(StaticMeshData.bCustomDepthStencil);
+
+	//Mesh의 BoundingBox(AABB)를 StaticMesh에 반영
+	FPMeshData& MeshData = GetMeshData(StaticMeshData.Name);
+	StaticMesh->SetBoundingBox(MeshData.BoundingBox);
 
 	return StaticMesh;
 }

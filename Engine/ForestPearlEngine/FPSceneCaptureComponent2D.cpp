@@ -33,6 +33,13 @@ void FPSceneCaptureComponent2D::RegistSceneCaptureComponent()
 	SceneCaptureItem->CaptureEveryFrame = &(this->CaptureEveryFrame);
 	SceneCaptureItem->CaptureThisFrame = &(this->CaptureThisFrame);
 	SceneCaptureItem->HiddenActors = &(this->HiddenActors);
+
+	SceneCaptureItem->Fov = &(this->Fov);
+	SceneCaptureItem->Aspect = &(this->Aspect);
+	SceneCaptureItem->Zn = &(this->Zn);
+	SceneCaptureItem->Zf = &(this->Zf);
+	SceneCaptureItem->ProjectionMode = &(this->ProjectionMode);
+	SceneCaptureItem->OrthoWidth = &(this->OrthoWidth);
 }
 
 void FPSceneCaptureComponent2D::SetActive(bool Active)

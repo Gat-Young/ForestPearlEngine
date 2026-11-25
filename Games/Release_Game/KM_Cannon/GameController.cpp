@@ -90,8 +90,6 @@ void GameController::Initialize()
 	GetInputComponent().AddMappingKey("IA_AttachHead", 'Z', ModifyInfoTriger);
 	GetInputComponent().AddMappingKey("IA_AttachShield", 'X', ModifyInfoTriger);
 
-	Input_KMCannon::AddMappings(GetInputComponent());	//KMCannon : Enter, 1, 2, 3
-
 	//D-PAD LEFT/RIGHT Posses 전환
 	GetInputComponent().AddMappingKey("IA_NextActor", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_DPAD_RIGHT), ModifyInfoTriger); //RIGHT
 	GetInputComponent().AddMappingKey("IA_PrevActor", static_cast<USHORT>(XBOX_GAMEPAD::GAMEPAD_DPAD_LEFT), ModifyInfoTriger); //LEFT
@@ -116,6 +114,7 @@ void GameController::Initialize()
 
 	//Cannon Fire (Enter)
 	GetInputComponent().BindMethod(Input_KMCannon::IA_NAME, this, EKeyState::Down, &GameController::KMCannonInput);
+	Input_KMCannon::AddMappings(GetInputComponent());	//KMCannon : Enter, 1, 2, 3
 
 	__super::Initialize();
 }

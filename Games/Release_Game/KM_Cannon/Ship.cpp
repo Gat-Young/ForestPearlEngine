@@ -11,6 +11,29 @@
 #include "ForestPearlEngine/FPMaterialInterface.h"
 #include <iostream>
 
+void Ship::ResetView(FInputValue Value)
+{
+	// 배의 처음 위치·회전·크기 복원
+	SetActorLocation(InitialShipTransform.Location);
+	SetActorRotation(InitialShipTransform.Rotation);
+	SetActorScale3D(InitialShipTransform.Scale);
+
+	// 카메라의 처음 상대 배치와 거리 복원
+	SpringArm->SetRelativeLocation(InitialArmTransform.Location);
+	SpringArm->SetRelativeRotation(InitialArmTransform.Rotation);
+	SpringArm->SetRelativeScale3D(InitialArmTransform.Scale);
+	SpringArm->TargetArmLength = InitialArmLength;
+
+	// CameraMove에서 변경했던 컨트롤러 회전을 취소
+	if (GetController() != nullptr)
+	{
+		AddControllerYawInput(-CameraYawOffset);
+		AddControllerPitchInput(-CameraPitchOffset);
+
+		CameraYawOffset = 0.0f;
+		CameraPitchOffset = 0.0f;
+	}
+}
 void Ship::Initialize()
 {
 	//JosenShip Model
@@ -390,11 +413,21 @@ void Ship::Initialize()
 	Controller->GetInputComponent().BindMethod("IA_SetMoveTriangel", this, EKeyState::Pressed, &Ship::Move);
 	Controller->GetInputComponent().BindMethod("IA_SetMoveCamera", this, EKeyState::Pressed, &Ship::CameraMove);
 	Controller->GetInputComponent().BindMethod("IA_ZoomCamera", this, EKeyState::Pressed, &Ship::CameraZoom);
+
+	Controller->GetInputComponent().BindMethod("IA_ResetView", this, EKeyState::Down, &Ship::ResetView);
 	Controller->Possess(this);
 }
 
 void Ship::BeginPlay()
 {
+	//__super::BeginPlay();
+
+	InitialShipTransform = GetActorTransform();
+	InitialArmTransform = SpringArm->GetRelativeTransform();
+	InitialArmLength = SpringArm->TargetArmLength;
+
+	CameraYawOffset = 0.0f;
+	CameraPitchOffset = 0.0f;
 }
 
 void Ship::Tick()
@@ -432,8 +465,14 @@ void Ship::CameraMove(FInputValue value)
 	float move_x = value.X * mov * (GetWorld()->GetGameTimer()->DeltaTime());
 	float move_y = value.Y * mov * (GetWorld()->GetGameTimer()->DeltaTime());
 
-	AddControllerYawInput(-move_x);
-	AddControllerPitchInput(move_y);
+	float YawDelta = -move_x;
+	float PitchDelta = move_y;
+
+	AddControllerYawInput(YawDelta);
+	AddControllerPitchInput(PitchDelta);
+
+	CameraYawOffset += YawDelta;
+	CameraPitchOffset += PitchDelta;
 }
 
 void Ship::CameraZoom(FInputValue Value)

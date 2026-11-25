@@ -33,6 +33,11 @@ void Input_KMCannon::AddMappings(FPInputComponent& Input)
 {
 	FModifyInfo Trigger = { ESwizzle::XYZ, ENegative::Positive };
 	Input.AddMappingKey(IA_NAME, KEY_FIRE, Trigger);
+
+	//키보드
+	FModifyInfo ModifyInfoTriger = { ESwizzle::XYZ , ENegative::Positive };
+	Input.AddMappingKey("IA_ResetView", VK_F9, ModifyInfoTriger);
+
 	for (const Shot& S : SHOTS)
 		Input.AddMappingKey(IA_NAME, S.Key, Trigger);
 }

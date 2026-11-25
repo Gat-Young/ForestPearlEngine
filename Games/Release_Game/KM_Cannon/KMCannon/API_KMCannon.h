@@ -17,5 +17,5 @@ namespace API_KMCannon
 	enum class ESide { All, Left, Right };	//배 기준 : Left = 모델 x < 0 쪽 뱃전
 
 	int FireAll(FPWorld* World);					//레벨의 모든 대포 발사, 쏜 개수 반환
-	int FireBroadside(FPWorld* World, ESide Side);	//배(Frigate) 포구에서 일제 사격, 쏜 개수 반환
+	int FireBroadside(FPWorld* World, ESide Side, bool bLight = true);	//배(Frigate) 포구에서 일제 사격, bLight = 포구마다 빛, 쏜 개수 반환
 }

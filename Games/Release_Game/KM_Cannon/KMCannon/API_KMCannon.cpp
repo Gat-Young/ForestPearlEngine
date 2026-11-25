@@ -16,14 +16,14 @@ int API_KMCannon::FireAll(FPWorld* World)
 	return static_cast<int>(Cannons.size());
 }
 
-int API_KMCannon::FireBroadside(FPWorld* World, ESide Side)
+int API_KMCannon::FireBroadside(FPWorld* World, ESide Side, bool bLight)
 {
 	int Count = 0;
 	std::vector<FPActor*> Ships;
 	FPGameplayStatics::GetAllActorsOfClass(World, "Frigate", Ships);
 	for (FPActor* Actor : Ships)
 	{
-		Count += static_cast<Frigate*>(Actor)->Fire(Side);
+		Count += static_cast<Frigate*>(Actor)->Fire(Side, bLight);
 	}
 	return Count;
 }

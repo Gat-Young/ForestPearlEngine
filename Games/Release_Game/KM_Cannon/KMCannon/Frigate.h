@@ -43,5 +43,5 @@ class Frigate : public FPActor
 		virtual void Initialize() override;
 		virtual void BeginPlay() override;
 
-		int Fire(API_KMCannon::ESide Side);	//해당 뱃전 포구에서 발사 (이펙트 + 포탄), 쏜 개수 반환
+		int Fire(API_KMCannon::ESide Side, bool bLight = true);	//해당 뱃전 포구에서 발사 (이펙트 + 포탄, bLight = 포구마다 빛), 쏜 개수 반환
 };

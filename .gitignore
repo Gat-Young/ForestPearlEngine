@@ -436,3 +436,4 @@ Tool/FBXToStaticMeshJsonTranslator/EXE/FBX/*
 !Tool/FBXToStaticMeshJsonTranslator/EXE/FBX/.gitkeep
 Tool/FBXToStaticMeshJsonTranslator/EXE/JSON/*
 !Tool/FBXToStaticMeshJsonTranslator/EXE/JSON/.gitkeep
+/xRef

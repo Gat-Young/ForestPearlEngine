@@ -79,7 +79,7 @@ void Frigate::BeginPlay()
 	SetActorScale3D(World.Scale);
 }
 
-int Frigate::Fire(API_KMCannon::ESide Side)
+int Frigate::Fire(API_KMCannon::ESide Side, bool bLight)
 {
 	//배의 지금 월드 transform (Ship 에 붙어 있으면 Ship 이동 · 회전이 이미 반영됨)
 	FTransform Ship = GetActorTransform();
@@ -95,7 +95,7 @@ int Frigate::Fire(API_KMCannon::ESide Side)
 		FPVector3 Pos = Ship.Location + Rotate(Ship.QuaternionRotation, Scaled);
 		FPVector3 Dir = Rotate(Ship.QuaternionRotation * M.Rot, MUZZLE_FORWARD).Normalize();
 
-		if (FireFX != nullptr) FireFX->Fire(Pos, Dir);		//섬광 + 연기 + 빛, 포구마다
+		if (FireFX != nullptr) FireFX->Fire(Pos, Dir, bLight);	//섬광 + 연기 (+ 빛), 포구마다
 		if (Balls != nullptr) Balls->Launch(Pos, Dir);
 		++Count;
 

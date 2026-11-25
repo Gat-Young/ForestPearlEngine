@@ -1,4 +1,4 @@
-#include "Input_KMCannon.h"
+﻿#include "Input_KMCannon.h"
 #include "API_KMCannon.h"
 #include "ForestPearlEngine/Object/Components/InputComponent.h"
 
@@ -6,10 +6,21 @@ const char* Input_KMCannon::IA_NAME = "IA_KMCannon";
 
 namespace
 {
+	using API_KMCannon::ESide;
+
 	const USHORT KEY_FIRE = VK_RETURN;
-	const USHORT KEY_ALL = '1';
-	const USHORT KEY_LEFT = '2';
-	const USHORT KEY_RIGHT = '3';
+
+	//Enter 누른 채 숫자 : 어느 뱃전을, 빛을 켜고 쏠지
+	struct Shot { USHORT Key; ESide Side; bool bLight; };
+	const Shot SHOTS[] =
+	{
+		{ '1', ESide::All,   true  },
+		{ '2', ESide::Left,  true  },
+		{ '3', ESide::Right, true  },
+		{ '4', ESide::All,   false },
+		{ '5', ESide::Left,  false },
+		{ '6', ESide::Right, false },
+	};
 
 	bool IsDown(USHORT Key)
 	{
@@ -21,17 +32,22 @@ namespace
 void Input_KMCannon::AddMappings(FPInputComponent& Input)
 {
 	FModifyInfo Trigger = { ESwizzle::XYZ, ENegative::Positive };
-	for (USHORT Key : { KEY_FIRE, KEY_ALL, KEY_LEFT, KEY_RIGHT })
-		Input.AddMappingKey(IA_NAME, Key, Trigger);
+	Input.AddMappingKey(IA_NAME, KEY_FIRE, Trigger);
+	for (const Shot& S : SHOTS)
+		Input.AddMappingKey(IA_NAME, S.Key, Trigger);
 }
 
-//Enter 나 숫자가 눌린 순간 : 지금 눌려 있는 키 조합으로 판단
+//Enter 나 숫자가 눌린 순간 : 지금 눌려 있는 키 조합으로 판단 (Enter 만, 숫자만 = 아무것도 안 함)
 void Input_KMCannon::OnKeyDown(FPWorld* World)
 {
-	if (!IsDown(KEY_FIRE)) return;		//숫자만 누른 경우 : 아무것도 안 함
+	if (!IsDown(KEY_FIRE)) return;
 
-	if (IsDown(KEY_ALL))        API_KMCannon::FireBroadside(World, API_KMCannon::ESide::All);
-	else if (IsDown(KEY_LEFT))  API_KMCannon::FireBroadside(World, API_KMCannon::ESide::Left);
-	else if (IsDown(KEY_RIGHT)) API_KMCannon::FireBroadside(World, API_KMCannon::ESide::Right);
-	//else                        API_KMCannon::FireAll(World);	//Enter 만
+	for (const Shot& S : SHOTS)
+	{
+		if (IsDown(S.Key))
+		{
+			API_KMCannon::FireBroadside(World, S.Side, S.bLight);
+			return;
+		}
+	}
 }

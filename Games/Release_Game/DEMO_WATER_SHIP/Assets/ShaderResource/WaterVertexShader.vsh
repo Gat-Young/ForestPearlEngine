@@ -43,7 +43,9 @@ cbuffer ClipPlanarReflectionConstantBuffer : register(b13)
 struct VSOutput
 {
     float4 pos : SV_POSITION;
+    float4 posv : TEXCOORD1;
     float2 uv : TEXCOORD0;
+    float4 N : TEXCOORD3;
     float4 ReflectionClip : TEXCOORD4;
     float ClipDistance : SV_ClipDistance0;
 };
@@ -59,7 +61,13 @@ VSOutput VS_Main(
     VSOutput o = (VSOutput) 0;
 
     o.pos = mul(mWVP, pos);
+    o.posv = mul(mWV, pos);
     o.uv = uv;
+
+    //Shadow의 ViewNormal로 사용 (CalculateShadow의 Slope-Scaled Bias 계산용)
+    float4 N = float4(nrm.xyz, 0.0f);
+    N = mul(mInverseTranseposeWV, N);
+    o.N = float4(normalize(N.xyz), 0.0f);
 
     float4 WorldPos = mul(mWorld, pos);
 

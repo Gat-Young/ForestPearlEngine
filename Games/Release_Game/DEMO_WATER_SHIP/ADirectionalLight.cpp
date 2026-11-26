@@ -4,8 +4,9 @@
 ADirectionalLight::ADirectionalLight()
 {
 	LightComponent = new FPDirectionalLightComponent(this);
-	FPVector3 Dir{ 0.43f, -0.64f, 0.64f };
+	FPVector3 Dir{ -0.43f, -0.64f, -0.64f };
 	LightComponent->SetDirection(Dir);
+	LightComponent->SetShadowBias(0.45f);
 }
 
 ADirectionalLight::~ADirectionalLight()

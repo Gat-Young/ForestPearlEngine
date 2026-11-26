@@ -216,6 +216,9 @@
     <ClInclude Include="Utility\FPPathManager.h">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="Utility\FPSystemTimer.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
     <ClInclude Include="EngineLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -423,6 +426,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Utility\FPPathManager.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\FPSystemTimer.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="FPAssetLoader.cpp">

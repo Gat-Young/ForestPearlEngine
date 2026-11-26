@@ -4,6 +4,9 @@
 // b2 : Light,  b3 : Material
 #include "PixelLight.hlsli"
 
+//Shadow 운용
+#include "CascadeShadow.hlsli"
+
 //cBuffer
 cbuffer ObejctConstBuffer : register(b0)
 {
@@ -90,7 +93,8 @@ float4 PS_Main(
     float3 View = SafeNormalize(-posv.xyz, float3(0, 0, 1));
     float3 Result = Material.Emissive.rgb * Material.BaseColor.rgb;
 
-    
+    float Shadow = CalculateShadow(mul(mInverseView, posv), posv.z, NormalVS);
+
     // Blinn-Phong (view space)
     for (uint i = 0; i < min(LightCnt, (uint)Light_MAX); ++i)
     {
@@ -119,8 +123,8 @@ float4 PS_Main(
             SpecularAmount = pow(saturate(dot(NormalVS, normalize(HalfVector))), Shininess);
 
         float3 Ambient = BaseColor * Material.Ambient.rgb * Light[i].Ambient.rgb;
-        Result += (Diffuse * Light[i].Diffuse.rgb * NdotL
-            + Specular * Light[i].Specular.rgb * SpecularAmount + Ambient)
+        Result += ((Diffuse * Light[i].Diffuse.rgb * NdotL
+            + Specular * Light[i].Specular.rgb * SpecularAmount) * Shadow + Ambient)
             * Light[i].LightColor.rgb * Attenuation;
     }
     

@@ -209,6 +209,7 @@
     <ClInclude Include="FTransform.h" />
     <ClInclude Include="Utility\FPGameplayStatics.h" />
     <ClInclude Include="Utility\FPPathManager.h" />
+    <ClInclude Include="Utility\FPSystemTimer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FPAssetLoader.cpp" />
@@ -278,6 +279,7 @@
     <ClCompile Include="FPTexture2DArray.cpp" />
     <ClCompile Include="Utility\FPGameplayStatics.cpp" />
     <ClCompile Include="Utility\FPPathManager.cpp" />
+    <ClCompile Include="Utility\FPSystemTimer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Material\DefaultMaterial.json" />

@@ -1,10 +1,13 @@
-//기본 Pixel 셰이더 소스
+//기본 Pixel ?�이???�스
 
-// Pixel Light 운용 Shader
+// Pixel Light ?�용 Shader
 // b2 : Light,  b3 : Material
 #include "PixelLight.hlsli"
 
-//상수 버퍼
+//Shadow ?�용
+#include "CascadeShadow.hlsli"
+
+//?�수 버퍼
 cbuffer ObejctConstBuffer : register(b0)
 {
     matrix mWorld;
@@ -36,27 +39,27 @@ cbuffer ObejctConstBuffer : register(b0)
 
 ////////////////////////////////////////////////////////////////////////////// 
 //
-//! Pixel Shader Main : 픽셀 셰이더 메인 함수.
+//! Pixel Shader Main : ?��? ?�이??메인 ?�수.
 //
 ////////////////////////////////////////////////////////////////////////////// 
 
-//텍스처 객체 변수 : 엔진에서 공급됨, 레지스터 직접 지정. (기본값은 t0)
+//?�스�?객체 변??: ?�진?�서 공급?? ?��??�터 직접 지?? (기본값�? t0)
 Texture2D TexDiff : register(t0);
 
-//텍스처 셈플러 (직접지정)  기본값은 s0
+//?�스�??�플??(직접지??  기본값�? s0
 SamplerState Smpler : register(s0);
 
 float4 PS_Main(
-                float4 pos  : SV_POSITION,  //[입력] 정점좌표. Vertex Position(Model Space, 3D) 
-                float4 col  : COLOR0,       //[입력] 정점색. Vertex Color : "Diffuse" 
-                float4 posv : TEXCOORD1,    //[입력] WordlView 변환된 pos
-                float2 uv   : TEXCOORD0,    //[입력] uv
-                float4 T    : TEXCOORD2,    //[입력] WV변환된 Tangent
-                float4 N    : TEXCOORD3,    //[입력] 역전치WV 변환된 normal
-                bool IsFrontFace : SV_IsFrontFace   //CULLMODE None일때 앞 뒷면 판단
+                float4 pos  : SV_POSITION,  //[?�력] ?�점좌표. Vertex Position(Model Space, 3D) 
+                float4 col  : COLOR0,       //[?�력] ?�점?? Vertex Color : "Diffuse" 
+                float4 posv : TEXCOORD1,    //[?�력] WordlView 변?�된 pos
+                float2 uv   : TEXCOORD0,    //[?�력] uv
+                float4 T    : TEXCOORD2,    //[?�력] WV변?�된 Tangent
+                float4 N    : TEXCOORD3,    //[?�력] ??��치WV 변?�된 normal
+                bool IsFrontFace : SV_IsFrontFace   //CULLMODE None?�때 ???�면 ?�단
                 ) : SV_TARGET
 {    
-    //텍스처 샘플링
+    //?�스�??�플�?
     
     if (!IsFrontFace)
     {
@@ -70,6 +73,11 @@ float4 PS_Main(
     float4 AmbientLit = 0;
     
     CalculateLight(posv, N, mView, mInverseView, DiffuseLit, SpecularLit, EmissiveLit, AmbientLit);
+    
+    float Shadow = CalculateShadow(mul(mInverseView, posv), posv.z, N.xyz);
+    
+    DiffuseLit = DiffuseLit * Shadow;
+    SpecularLit = SpecularLit * Shadow;
     
     float4 tex = TexDiff.Sample(Smpler, uv);
     

@@ -743,6 +743,9 @@ void Renderer::CascadeShadowMapRenderPass(const RenderingData::FPCascadeShadowRe
 	if (CascadeIndex >= ShadowMapData.DepthStencilView.size()) return;
 
 	//DepthStencilArray의 해당 Cascade 슬라이스를 DepthStencil로 Bind (Color RT 없음)
+	//이 Shadow Map이 이전 Draw에서 PS t126(CascadeShadowMap)로 바인딩돼 있을 수 있어, DSV로 Set하기 전에 먼저 해제 (Depth 리소스의 읽기/쓰기 동시 바인딩 방지)
+	Device.PSSetShaderResources(126, 1, nullptr);
+
 	Device.OMSetRenderTargets(0, nullptr, ShadowMapData.DepthStencilView[CascadeIndex]);
 	Device.SetViewPort(0.0f, 0.0f, (float)CascadeShadowItem.ShadowResolution, (float)CascadeShadowItem.ShadowResolution, 0.0f, 1.0f);
 	Device.IASetPrimitiveTopology(Topology::TRIANGLELIST);
@@ -751,29 +754,20 @@ void Renderer::CascadeShadowMapRenderPass(const RenderingData::FPCascadeShadowRe
 	RenderingData::CameraItem ShadowCamItem;
 	ShadowCamItem.View = LightVP;
 
-	CascadeShadowMapOpaqueRenderPass(ShadowCamItem, AssetManager);
-	CascadeShadowMapMaskedRenderPass(ShadowCamItem, AssetManager);
-	CascadeShadowMapTranslucentRenderPass(ShadowCamItem, AssetManager);
+	CascadeShadowMapMeshRenderPass(ShadowCamItem, AssetManager);
 }
 
-//Opaque: bCastShadow가 false인 Mesh는 제외하고 Depth만 기록 (PixelShader 비활성화)
-void Renderer::CascadeShadowMapOpaqueRenderPass(const RenderingData::CameraItem& ShadowCamItem, FPAssetManager* AssetManager)
+//일단 Opaque/Masked/Translucent 구분 없이 bCastShadow인 Mesh 전부 Depth만 기록 (PixelShader 비활성화)
+void Renderer::CascadeShadowMapMeshRenderPass(const RenderingData::CameraItem& ShadowCamItem, FPAssetManager* AssetManager)
 {
-	for (const RenderingData::MeshRenderItem& RenderItem : OpaqueRenderList)
+	for (const std::vector<RenderingData::MeshRenderItem>* RenderList : { &OpaqueRenderList, &MaskedRenderList, &TranslucentRenderList })
 	{
-		if (!RenderItem.bCastShadow) continue;
-		DrawMeshRenderItem(RenderItem, ShadowCamItem, AssetManager, "DS_DEPTH_ON", 0, true);
+		for (const RenderingData::MeshRenderItem& RenderItem : *RenderList)
+		{
+			if (!RenderItem.bCastShadow) continue;
+			DrawMeshRenderItem(RenderItem, ShadowCamItem, AssetManager, "DS_DEPTH_ON", 0, true);
+		}
 	}
-}
-
-//Masked: 추후 Alpha Test 처리 (TODO)
-void Renderer::CascadeShadowMapMaskedRenderPass(const RenderingData::CameraItem& ShadowCamItem, FPAssetManager* AssetManager)
-{
-}
-
-//Translucent: 추후 처리 (TODO)
-void Renderer::CascadeShadowMapTranslucentRenderPass(const RenderingData::CameraItem& ShadowCamItem, FPAssetManager* AssetManager)
-{
 }
 
 //카메라(또는 그에 대응하는 시점) 사용 시 Cascade별 LightVP를 계산해 CascadeShadowMapRenderPass()로 ShadowMap만 그리고, 계산된 CascadeShadowConstBuffer를 Light별로 반환
@@ -788,12 +782,18 @@ std::vector<RenderingData::CascadeShadowConstBuffer> Renderer::UpdateCascadeShad
 
 		RenderingData::CascadeShadowConstBuffer CascadeShadowCB{};
 		CascadeShadowCB.CascadeCount = static_cast<unsigned int>(CascadeFrustumList.size());
-		CascadeShadowCB.ShadowResolution = CascadeShadowItem.ShadowResolution;
+
 		CascadeShadowCB.DynamicShadowDistance = CascadeShadowItem.DynamicShadowDistance;
 		CascadeShadowCB.CascadeTransitionFraction = CascadeShadowItem.CascadeTransitionFraction;
 		CascadeShadowCB.ShadowDistanceFadeoutFraction = CascadeShadowItem.ShadowDistanceFadeoutFraction;
 		CascadeShadowCB.ShadowBias = CascadeShadowItem.ShadowBias;
+		CascadeShadowCB.ShadowSlopeBias = CascadeShadowItem.ShadowSlopeBias;
 		CascadeShadowCB.CastShadow = CascadeShadowItem.CastShadow ? 1u : 0u;
+		//Slope-Scaled Bias 계산용으로 빛 방향을 View Space로 변환해 저장 (DirLight의 mul(mView, Direction)과 동일한 변환)
+		CascadeShadowCB.LightDirectionView = FPVector4(DirectX::XMVector3TransformNormal(
+			DirectX::XMVectorSet(CascadeShadowItem.Direction.x, CascadeShadowItem.Direction.y, CascadeShadowItem.Direction.z, 0.0f),
+			CamItem.View.Matrix));
+
 
 		for (size_t CascadeIndex = 0; CascadeIndex < CascadeFrustumList.size() && CascadeIndex < RenderingData::Cascade_MAX; ++CascadeIndex)
 		{
@@ -1017,7 +1017,7 @@ void Renderer::PlanarReflectionRenderPass(const RenderingData::CameraItem& CamIt
 		ReflectedCamera.ProjectionMode = CamItem.ProjectionMode;
 		ReflectedCamera.OrthoWidth = CamItem.OrthoWidth;
 
-		UpdateCascadeShadowMaps(ReflectedCamera);
+		std::vector<RenderingData::CascadeShadowConstBuffer> ShadowList = UpdateCascadeShadowMaps(ReflectedCamera);
 
 		//이 RenderTarget의 ReflectionMatrix/Plane을 캐싱 (샘플링하는 forward-reflection Material이 이름으로 조회)
 		PlanarReflectionCache[PlanarReflectionItem.RenderTarget] = { PlanarReflectionItem.ReflectionMatrix, PlanarReflectionItem.Plane };
@@ -1046,22 +1046,28 @@ void Renderer::PlanarReflectionRenderPass(const RenderingData::CameraItem& CamIt
 			DrawMeshRenderItem(RenderItem, ReflectedCamera, AssetManager, "DS_DEPTH_WRITE_OFF", 0, false, false, true, PlanarReflectionItem.Plane);
 		}
 
-		for (const RenderingData::MeshRenderItem& RenderItem : OpaqueRenderList)
+		//Shadow List 개수만큼 Pass를 반복 수행 (Cascade Shadow를 지는 Light 수만큼 Mesh를 다시 그림)
+		for (size_t ShadowIndex = 0; ShadowIndex < ShadowList.size(); ++ShadowIndex)
 		{
-			if (std::find(PlanarReflectionItem.HiddenActors.begin(), PlanarReflectionItem.HiddenActors.end(), RenderItem.ActorName) != PlanarReflectionItem.HiddenActors.end()) continue;
-			DrawMeshRenderItem(RenderItem, ReflectedCamera, AssetManager, "DS_DEPTH_ON", 0, false, true, true, PlanarReflectionItem.Plane);
-		}
+			const RenderingData::CascadeShadowConstBuffer& ShadowItem = ShadowList[ShadowIndex];
 
-		for (const RenderingData::MeshRenderItem& RenderItem : MaskedRenderList)
-		{
-			if (std::find(PlanarReflectionItem.HiddenActors.begin(), PlanarReflectionItem.HiddenActors.end(), RenderItem.ActorName) != PlanarReflectionItem.HiddenActors.end()) continue;
-			DrawMeshRenderItem(RenderItem, ReflectedCamera, AssetManager, "DS_DEPTH_ON", 0, false, true, true, PlanarReflectionItem.Plane);
-		}
+			for (const RenderingData::MeshRenderItem& RenderItem : OpaqueRenderList)
+			{
+				if (std::find(PlanarReflectionItem.HiddenActors.begin(), PlanarReflectionItem.HiddenActors.end(), RenderItem.ActorName) != PlanarReflectionItem.HiddenActors.end()) continue;
+				DrawMeshRenderItem(RenderItem, ReflectedCamera, AssetManager, "DS_DEPTH_ON", 0, false, true, true, PlanarReflectionItem.Plane, FPMatrix(), ShadowItem, (unsigned int)ShadowIndex);
+			}
 
-		for (const RenderingData::MeshRenderItem& RenderItem : TranslucentRenderList)
-		{
-			if (std::find(PlanarReflectionItem.HiddenActors.begin(), PlanarReflectionItem.HiddenActors.end(), RenderItem.ActorName) != PlanarReflectionItem.HiddenActors.end()) continue;
-			DrawMeshRenderItem(RenderItem, ReflectedCamera, AssetManager, "DS_DEPTH_WRITE_OFF", 0, false, true, true, PlanarReflectionItem.Plane);
+			for (const RenderingData::MeshRenderItem& RenderItem : MaskedRenderList)
+			{
+				if (std::find(PlanarReflectionItem.HiddenActors.begin(), PlanarReflectionItem.HiddenActors.end(), RenderItem.ActorName) != PlanarReflectionItem.HiddenActors.end()) continue;
+				DrawMeshRenderItem(RenderItem, ReflectedCamera, AssetManager, "DS_DEPTH_ON", 0, false, true, true, PlanarReflectionItem.Plane, FPMatrix(), ShadowItem, (unsigned int)ShadowIndex);
+			}
+
+			for (const RenderingData::MeshRenderItem& RenderItem : TranslucentRenderList)
+			{
+				if (std::find(PlanarReflectionItem.HiddenActors.begin(), PlanarReflectionItem.HiddenActors.end(), RenderItem.ActorName) != PlanarReflectionItem.HiddenActors.end()) continue;
+				DrawMeshRenderItem(RenderItem, ReflectedCamera, AssetManager, "DS_DEPTH_WRITE_OFF", 0, false, true, true, PlanarReflectionItem.Plane, FPMatrix(), ShadowItem, (unsigned int)ShadowIndex);
+			}
 		}
 
 		Device.ResolveRenderTarget(RTInfo.RenderTragetFormat, RTData.Texture, RTData.ResolveTexture);
@@ -1127,7 +1133,7 @@ HRESULT Renderer::InitializeRenderer(HWND hwnd)
 	return hr;
 }
 
-void Renderer::DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::SceneCaptureItem& CaptureItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, const FPMatrix& ReflectionViewProj)
+void Renderer::DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::SceneCaptureItem& CaptureItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, const FPMatrix& ReflectionViewProj, const RenderingData::CascadeShadowConstBuffer& ShadowItem, unsigned int ShadowIndex)
 {
 	RenderingData::MVPConstBuffer MVPCB;
 
@@ -1215,6 +1221,18 @@ void Renderer::DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& Ren
 	}
 	Device.PSSetShaderResources(127, 1, EnvTextureData);
 	Device.PSSetSamplers(15, 1, AssetManager->GetSamplerStateData("Filter_Tri_Linear_Sampler_CLAMP").SamplerStateData);
+
+	//CSM 상수버퍼/그림자맵/샘플러 Set (b13, CascadeShadowMap : t126, ShadowSampler : s14)
+	//Material의 Resources/Samplers 리플렉션 목록에는 CascadeShadowMap/ShadowSampler도 선언돼 있지만 AssetName이 비어 있어,
+	//위 Texture/Sampler 바인딩 루프가 null로 덮어씀. EnvTex/EnvSampler와 동일하게 마지막에 다시 Set
+	void* CSMTextureData = nullptr;
+	if (ShadowIndex < CascadeShadowList.size() && AssetManager->HasDepthStencilArrayData(CascadeShadowList[ShadowIndex].CascadeShadowMapName))
+	{
+		CSMTextureData = AssetManager->GetDepthStencilArrayData(CascadeShadowList[ShadowIndex].CascadeShadowMapName).ShaderResourceView;
+	}
+	Device.UpdatePixelShaderSubresource(13, reinterpret_cast<const uint8_t*>(&ShadowItem), 0, sizeof(RenderingData::CascadeShadowConstBuffer));
+	Device.PSSetShaderResources(126, 1, CSMTextureData);
+	Device.PSSetSamplers(14, 1, AssetManager->GetSamplerStateData("Filter_Shadow_Comparison_Sampler").SamplerStateData);
 	FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
 	FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.MeshPath);
 	FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);
@@ -1390,7 +1408,7 @@ void Renderer::CalculateViewPortSize(float Width, float Height, float& OutTopLef
 	OutTopLeftY = (Height - OutHeight) * 0.5f;
 }
 
-void Renderer::DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, UINT StencilRef, bool bDisablePixelShader, bool bFlipCull, bool bClipPlaneEnabled, const FPVector4& ClipPlane, const FPMatrix& ReflectionViewProj)
+void Renderer::DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, UINT StencilRef, bool bDisablePixelShader, bool bFlipCull, bool bClipPlaneEnabled, const FPVector4& ClipPlane, const FPMatrix& ReflectionViewProj, const RenderingData::CascadeShadowConstBuffer& ShadowItem, unsigned int ShadowIndex)
 {
 	RenderingData::MVPConstBuffer MVPCB;
 
@@ -1486,6 +1504,17 @@ void Renderer::DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderIte
 	}
 	Device.PSSetShaderResources(127, 1, EnvTextureData);
 	Device.PSSetSamplers(15, 1, AssetManager->GetSamplerStateData("Filter_Tri_Linear_Sampler_CLAMP").SamplerStateData);
+
+	//CSM 상수버퍼/그림자맵/샘플러 Set (b13, CascadeShadowMap : t126, ShadowSampler : s14)
+	void* CSMTextureData = nullptr;
+	if (ShadowIndex < CascadeShadowList.size() && AssetManager->HasDepthStencilArrayData(CascadeShadowList[ShadowIndex].CascadeShadowMapName))
+	{
+		CSMTextureData = AssetManager->GetDepthStencilArrayData(CascadeShadowList[ShadowIndex].CascadeShadowMapName).ShaderResourceView;
+	}
+	Device.UpdatePixelShaderSubresource(13, reinterpret_cast<const uint8_t*>(&ShadowItem), 0, sizeof(RenderingData::CascadeShadowConstBuffer));
+	Device.PSSetShaderResources(126, 1, CSMTextureData);
+	Device.PSSetSamplers(14, 1, AssetManager->GetSamplerStateData("Filter_Shadow_Comparison_Sampler").SamplerStateData);
+
 	FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
 	FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.MeshPath);
 	FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);
@@ -1546,6 +1575,7 @@ void Renderer::DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderIte
 
 	Device.DrawIndexed(IndexB.Index_Cnt, 0, 0);																//Draw Call
 }
+
 
 void Renderer::PreDepthStencilRenderPass()
 {
@@ -1619,34 +1649,34 @@ void Renderer::SkyBoxRenderPass(const RenderingData::CameraItem& CamItem, FPAsse
 	}
 }
 
-void Renderer::OpaqueRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager)
+void Renderer::OpaqueRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const RenderingData::CascadeShadowConstBuffer& ShadowItem, unsigned int ShadowIndex)
 {
 	for (const RenderingData::MeshRenderItem& RenderItem : OpaqueRenderList)
 	{
 		if (RenderItem.bCustomDepthStencil)
 		{
-			DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON_STENCIL_ON", (UINT)RenderItem.StencilRefValue);
+			DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON_STENCIL_ON", (UINT)RenderItem.StencilRefValue, false, false, false, FPVector4(), FPMatrix(), ShadowItem, ShadowIndex);
 		}
 		else
 		{
-			DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON");
+			DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON", 0, false, false, false, FPVector4(), FPMatrix(), ShadowItem, ShadowIndex);
 		}
 	}
 }
 
-void Renderer::MaskedRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager)
+void Renderer::MaskedRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const RenderingData::CascadeShadowConstBuffer& ShadowItem, unsigned int ShadowIndex)
 {
 	for (const RenderingData::MeshRenderItem& RenderItem : MaskedRenderList)
 	{
-		DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON");
+		DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON", 0, false, false, false, FPVector4(), FPMatrix(), ShadowItem, ShadowIndex);
 	}
 }
 
-void Renderer::TranslucentRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager)
+void Renderer::TranslucentRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const RenderingData::CascadeShadowConstBuffer& ShadowItem, unsigned int ShadowIndex)
 {
 	for (const RenderingData::MeshRenderItem& RenderItem : TranslucentRenderList)
 	{
-		DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_WRITE_OFF");
+		DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_WRITE_OFF", 0, false, false, false, FPVector4(), FPMatrix(), ShadowItem, ShadowIndex);
 	}
 }
 
@@ -1676,7 +1706,7 @@ FPMatrix Renderer::ComputePlanarReflectionViewProj(const RenderingData::MeshRend
 	return FPMatrix();
 }
 
-void Renderer::PlanarReflectionOpaqueRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager)
+void Renderer::PlanarReflectionOpaqueRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const RenderingData::CascadeShadowConstBuffer& ShadowItem, unsigned int ShadowIndex)
 {
 	for (const RenderingData::MeshRenderItem& RenderItem : PlanarReflectionOpaqueRenderList)
 	{
@@ -1684,30 +1714,30 @@ void Renderer::PlanarReflectionOpaqueRenderPass(const RenderingData::CameraItem&
 
 		if (RenderItem.bCustomDepthStencil)
 		{
-			DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON_STENCIL_ON", (UINT)RenderItem.StencilRefValue, false, false, false, FPVector4(), ReflectionViewProj);
+			DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON_STENCIL_ON", (UINT)RenderItem.StencilRefValue, false, false, false, FPVector4(), ReflectionViewProj, ShadowItem, ShadowIndex);
 		}
 		else
 		{
-			DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON", 0, false, false, false, FPVector4(), ReflectionViewProj);
+			DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON", 0, false, false, false, FPVector4(), ReflectionViewProj, ShadowItem, ShadowIndex);
 		}
 	}
 }
 
-void Renderer::PlanarReflectionMaskedRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager)
+void Renderer::PlanarReflectionMaskedRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const RenderingData::CascadeShadowConstBuffer& ShadowItem, unsigned int ShadowIndex)
 {
 	for (const RenderingData::MeshRenderItem& RenderItem : PlanarReflectionMaskedRenderList)
 	{
 		FPMatrix ReflectionViewProj = ComputePlanarReflectionViewProj(RenderItem, CamItem, AssetManager);
-		DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON", 0, false, false, false, FPVector4(), ReflectionViewProj);
+		DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_ON", 0, false, false, false, FPVector4(), ReflectionViewProj, ShadowItem, ShadowIndex);
 	}
 }
 
-void Renderer::PlanarReflectionmTranslucentRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager)
+void Renderer::PlanarReflectionmTranslucentRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const RenderingData::CascadeShadowConstBuffer& ShadowItem, unsigned int ShadowIndex)
 {
 	for (const RenderingData::MeshRenderItem& RenderItem : PlanarReflectionmTranslucentRenderList)
 	{
 		FPMatrix ReflectionViewProj = ComputePlanarReflectionViewProj(RenderItem, CamItem, AssetManager);
-		DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_WRITE_OFF", 0, false, false, false, FPVector4(), ReflectionViewProj);
+		DrawMeshRenderItem(RenderItem, CamItem, AssetManager, "DS_DEPTH_WRITE_OFF", 0, false, false, false, FPVector4(), ReflectionViewProj, ShadowItem, ShadowIndex);
 	}
 }
 
@@ -1782,7 +1812,7 @@ void Renderer::MeshRenderPass()
 		PlanarReflectionRenderPass(CamItem);
 
 		//Cascade Shadow Map 계산 및 Cascade별 RenderPass 호출
-		UpdateCascadeShadowMaps(CamItem);
+		std::vector<RenderingData::CascadeShadowConstBuffer> ShadowList = UpdateCascadeShadowMaps(CamItem);
 
 		Device.OMSetRenderTargets(1, RTData.RenderTargetView, BackBufferDepthStencilData.DepthStencilView);
 
@@ -1797,14 +1827,19 @@ void Renderer::MeshRenderPass()
 
 		SkyBoxRenderPass(CamItem, AssetManager);
 
-		PlanarReflectionOpaqueRenderPass(CamItem, AssetManager);
-		OpaqueRenderPass(CamItem, AssetManager);
+		for (size_t ShadowIndex = 0; ShadowIndex < ShadowList.size(); ++ShadowIndex)
+		{
+			const RenderingData::CascadeShadowConstBuffer& ShadowItem = ShadowList[ShadowIndex];
 
-		PlanarReflectionMaskedRenderPass(CamItem, AssetManager);
-		MaskedRenderPass(CamItem, AssetManager);
+			PlanarReflectionOpaqueRenderPass(CamItem, AssetManager, ShadowItem, (unsigned int)ShadowIndex);
+			OpaqueRenderPass(CamItem, AssetManager, ShadowItem, (unsigned int)ShadowIndex);
 
-		PlanarReflectionmTranslucentRenderPass(CamItem, AssetManager);
-		TranslucentRenderPass(CamItem, AssetManager);
+			PlanarReflectionMaskedRenderPass(CamItem, AssetManager, ShadowItem, (unsigned int)ShadowIndex);
+			MaskedRenderPass(CamItem, AssetManager, ShadowItem, (unsigned int)ShadowIndex);
+
+			PlanarReflectionmTranslucentRenderPass(CamItem, AssetManager, ShadowItem, (unsigned int)ShadowIndex);
+			TranslucentRenderPass(CamItem, AssetManager, ShadowItem, (unsigned int)ShadowIndex);
+		}
 
 		Device.ResolveRenderTarget(RTInfo.RenderTragetFormat, RTData.Texture, RTData.ResolveTexture);
 

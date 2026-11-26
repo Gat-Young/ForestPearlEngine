@@ -12,8 +12,8 @@ class FPDirectionalLightComponent : public FPLightComponent
 
         float CascadeTransitionFraction = 0.1f;     // Cascade 사이 보간 영역
         float ShadowDistanceFadeoutFraction = 0.1f; // 최대 그림자 거리에서 Fade Out
-        float ShadowBias = 0.0005f;                 // Depth 오차 보정
-        float ShadowSlopeBias = 0.0005f;            // Slope-Scaled Depth Bias
+        float ShadowBias = 0.3f;                    // 깊이 비교 보정 (CascadeDepthRange로 나눠 정규화되므로 월드 단위 값을 크게 잡아야 함)
+        float ShadowSlopeBias = 0.15f;               // Slope-Scaled Depth Bias (경사면 Bias 가중치, ShadowBias와 같은 월드 단위 스케일)
         float DistanceMargin = 200.0f;                 // Cascade Far 평면 거리 여유값
        
         std::string CascadeShadowMapName = "";

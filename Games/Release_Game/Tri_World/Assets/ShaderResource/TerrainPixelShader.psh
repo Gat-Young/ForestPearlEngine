@@ -4,6 +4,9 @@
 // b2 : Light,  b3 : Material
 #include "PixelLight.hlsli"
 
+//Shadow 운용
+#include "CascadeShadow.hlsli"
+
 ////////////////////////////////////////////////////////////////////////////// 
 //
 //! Pixel Shader Main : 픽셀 셰이더 메인 함수.
@@ -89,6 +92,12 @@ float4 PS_Main(
     
     CalculateLight(posv, N, mView, mInverseView, DiffuseLit, SpecularLit, EmissiveLit, AmbientLit);
     
+    float Shadow = CalculateShadow(mul(mInverseView, posv), posv.z, N.xyz);
+    
+    
+    DiffuseLit = DiffuseLit * Shadow;
+    SpecularLit = SpecularLit * Shadow;
+    
     float4 tex = TexDiff.Sample(Smpler, uv);
     float4 texSnowMask = TexSnowMask.Sample(Smpler, uv);
     
@@ -111,6 +120,7 @@ float4 PS_Main(
         col = BaseCol + texSnowMask * WinterColor * DiffuseLit * col + SpecularLit + EmissiveLit + col * AmbientLit * tex;
     }
     col.a = tex.a;
+    
     
     return col;
 }

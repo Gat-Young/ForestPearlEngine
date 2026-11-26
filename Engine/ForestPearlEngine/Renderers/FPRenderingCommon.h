@@ -1093,14 +1093,16 @@ namespace RenderingData
 		FPVector4 CascadeDepthRange[Cascade_MAX];       //Light Projection의 Far-Near, Bias 정규화
 
 		unsigned int CascadeCount;                      //Cascade 개수
-		unsigned int ShadowResolution;                  //PCF의 Texel 크기 계산
 		float DynamicShadowDistance;                    //최대 그림자 적용 거리
 		float CascadeTransitionFraction;                //Cascade Blending
 
 		float ShadowDistanceFadeoutFraction;            //거리 기반 Shadow Fade Out
 		float ShadowBias;                               //깊이 비교 보정
+		float ShadowSlopeBias;                          //Slope-Scaled Bias 계수
 		unsigned int CastShadow;                        //그림자 적용 여부
-		float Padding;                               //16B 정렬용 Padding (CascadeShadowConstBuffer 전체 크기를 16의 배수로 맞춤)
+		float Padding;                                  //16B 배수 유지용 Padding
+
+		FPVector4 LightDirectionView;                   //Slope-Scaled Bias 계산용 View Space 빛 방향 (xyz만 사용)
 	};
 
 	constexpr unsigned int Light_MAX = 64;

@@ -69,3 +69,21 @@ bool FPStaticMesh::GetCustomDepthStencil()
 {
 	return this->bCustomDepthStencil;
 }
+
+void FPStaticMesh::SetBoundingBox(FPAABB BoundingBox)
+{
+	this->BoundingBox = BoundingBox;
+
+	//BoundingBox(AABB)로부터 BoxSphereBounds도 함께 계산
+	this->Bounds = BoundsFromAABB(BoundingBox);
+}
+
+FPAABB FPStaticMesh::GetBoundingBox()
+{
+	return this->BoundingBox;
+}
+
+FPBoxSphereBounds FPStaticMesh::GetBounds()
+{
+	return this->Bounds;
+}

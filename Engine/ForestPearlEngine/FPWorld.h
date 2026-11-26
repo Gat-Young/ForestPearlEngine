@@ -2,6 +2,7 @@
 #include "./Object/Object.h"
 #include "FPGameProjectClassRegistry.h"
 #include "FPGameInstance.h"
+#include "Define/FPMath.h"
 #include <memory>
 #include <vector>
 #include <unordered_map>
@@ -17,6 +18,11 @@ class FPWorld : public FPObject
 		std::vector<FPActor*> GameActorList;
 		std::unique_ptr<FPAGameMode> GameMode;
 		std::unordered_map<std::string, int> ActorNameCounterMap;
+
+		//World Bounds (모든 Actor Bound를 합침)
+		FPBoxSphereBounds Bounds{};
+
+		void UpdateBounds();
 
 		//ClassName 기준 유일한 Actor 이름 생성
 		std::string GenerateUniqueActorName(const std::string& ClassName);
@@ -54,6 +60,9 @@ class FPWorld : public FPObject
 
 		//ActorList 참조 전달
 		std::vector<FPActor*>& GetGameActorList();
+
+		//가장 최신의 World Bounds 정보를 가져옴 (즉시 재계산)
+		FPBoxSphereBounds GetBounds();
 
 		//Class Instance 생성 템플릿 함수
 		template <typename T>

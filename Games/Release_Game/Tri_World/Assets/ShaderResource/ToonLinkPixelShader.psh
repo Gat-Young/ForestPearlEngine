@@ -4,6 +4,9 @@
 // b2 : Light,  b3 : Material
 #include "PixelLight.hlsli"
 
+//Shadow 운용
+#include "CascadeShadow.hlsli"
+
 //Tangent Space 운용 Shader
 #include "BumpMapping.hlsli"
 
@@ -75,7 +78,7 @@ float4 PS_Main(
     
     //NormalMap 변환
     float3 BumpNormal = normalize(N.xyz);
-    CalculateBumpNormal(BumpMap, T, N, BumpNormal);
+    CalculateBumpNormal(BumpMap, T, N, mWV, BumpNormal);
     
     float4 DiffuseLit;
     float4 SpecularLit;
@@ -83,6 +86,11 @@ float4 PS_Main(
     float4 AmbientLit;
     
     CalculateLight(posv, float4(BumpNormal, 0.0f), mView, mInverseView, DiffuseLit, SpecularLit, EmissiveLit, AmbientLit);
+    
+    float Shadow = CalculateShadow(mul(mInverseView, posv), posv.z, N.xyz);
+    
+    DiffuseLit = DiffuseLit * Shadow;
+    SpecularLit = SpecularLit * Shadow;
     
     float4 BaseCol = DiffuseLit * col * DiffMap;
     float4 SpecularCol = SpecularLit;

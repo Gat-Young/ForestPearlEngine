@@ -44,4 +44,7 @@ class GameController : public FPAController
 		void ChangeSeason(FInputValue Value);
 
 		void SetEnvironmentMap(FInputValue Value);
+
+		void ToggleMainCameraProjection(FInputValue Value);
+		void ToggleSceneCaptureProjection(FInputValue Value);
 };

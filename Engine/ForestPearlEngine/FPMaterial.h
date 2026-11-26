@@ -47,7 +47,7 @@ class FPMaterial : public FPMaterialInterface
 		bool GetParameter(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, float& Out) const override;
 
 		bool SetNamedTexture(FPShaderType ShaderType, const std::string& HLSLTexture, std::string AssetName, FPTextureType TextureType, unsigned int ArrayIndex) override;
-		bool SetNamedSampler(FPShaderType ShaderType, const std::string& HLSLSampler, FPSamplerType SamplerType, unsigned int ArrayIndex) override;
+		bool SetNamedSampler(FPShaderType ShaderType, const std::string& HLSLSampler, const std::string& SamplerType, unsigned int ArrayIndex) override;
 
 		bool SetParameterElement(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, unsigned int ArrayIndex, const std::vector<float>& Values) override;
 		bool GetParameterElement(FPShaderType Type, const std::string& ConstantBufferName, const std::string& ParameterName, unsigned int ArrayIndex, std::vector<float>& OutValues) const override;

@@ -6,7 +6,7 @@ ADirectionalLight::ADirectionalLight()
 {
 	LightComponent = new FPDirectionalLightComponent(this);
 	FPVector3 Dir{ 0.43f, -0.64f, 0.64f };
-	//Dir = -Dir;
+
 	LightComponent->SetDirection(Dir);
 }
 

@@ -37,6 +37,13 @@ void FPCameraComponent::RegistCamera()
 
 	CamItem->Active = &(this->Active);
 	CamItem->PostProcessMaterial = &(this->PostProcessMaterial);
+
+	CamItem->Fov = &(this->Fov);
+	CamItem->Aspect = &(this->Aspect);
+	CamItem->Zn = &(this->Zn);
+	CamItem->Zf = &(this->Zf);
+	CamItem->ProjectionMode = &(this->ProjectionMode);
+	CamItem->OrthoWidth = &(this->OrthoWidth);
 }
 
 void FPCameraComponent::Tick()
@@ -46,7 +53,7 @@ void FPCameraComponent::Tick()
 	//ViewMatrix = MatrixLookAtLH(WorldTransform.Location, LookAt, Up);
 
 	ViewMatrix = MatrtixTranslation(-WorldTransform.Location) * Transpose(WorldTransform.RotationMatrix);
-	ProjectionMatrix = MatrixPerspectiveFovLH(Fov, Aspect, Zn, Zf);
+	RecalculateProjectionMatrix();
 	
 }
 
@@ -74,4 +81,24 @@ void FPCameraComponent::SetPostProcessMaterial(std::string MaterialName)
 FPMaterialInterface* FPCameraComponent::GetPostProcessMaterial() const
 {
 	return this->PostProcessMaterial;
+}
+
+void FPCameraComponent::RecalculateProjectionMatrix()
+{
+	if (ProjectionMode == Perspective)
+	{
+		ProjectionMatrix = MatrixPerspectiveFovLH(Fov, Aspect, Zn, Zf);
+	}
+	else
+	{
+		float HalfWidth = OrthoWidth * 0.5f;
+		float HalfHeight = HalfWidth / Aspect;
+		ProjectionMatrix = MatrixOrthographicOffCenterLH(-HalfWidth, HalfWidth, -HalfHeight, HalfHeight, Zn, Zf);
+	}
+}
+
+void FPCameraComponent::SetProjectionMode(FPProjectionMode Mode)
+{
+	this->ProjectionMode = Mode;
+	RecalculateProjectionMatrix();
 }

@@ -23,6 +23,9 @@
 #include "Terrain.h"
 #include "ABox.h"
 #include "AMirror.h"
+#include "Player.h"
+#include "ForestPearlEngine/FPCameraComponent.h"
+#include "ForestPearlEngine/FPSceneCaptureComponent2D.h"
 #include "ASkyLight.h"
 #include "ASkyBox.h"
 
@@ -59,6 +62,9 @@ void GameController::Initialize()
 
 	GetInputComponent().AddMappingKey("IA_SetScaleWing", VK_OEM_COMMA, ModifyInfoA);
 	GetInputComponent().AddMappingKey("IA_SetScaleWing", VK_OEM_PERIOD, ModifyInfoD);
+
+	GetInputComponent().AddMappingKey("IA_ToggleMainCameraProjection", VK_OEM_6, ModifyInfoTriger); // ']' key
+	GetInputComponent().AddMappingKey("IA_ToggleSceneCaptureProjection", VK_OEM_4, ModifyInfoTriger); // '[' key
 
 	GetInputComponent().AddMappingKey("IA_ZoomCamera", static_cast<USHORT>(CUSTOM_MOUSE_INPUT::MOUSE_WHEEL), ModifyInfoA);
 
@@ -130,6 +136,10 @@ void GameController::Initialize()
 	//계절 변경 바인딩
 	GetInputComponent().BindMethod("IA_SetSeason", this, EKeyState::Down, &GameController::ChangeSeason);
 	GetInputComponent().BindMethod("IA_SetEnvironmentMap", this, EKeyState::Down, &GameController::SetEnvironmentMap);
+
+	//Camera / SceneCapture Projection Mode 전환 바인딩
+	GetInputComponent().BindMethod("IA_ToggleMainCameraProjection", this, EKeyState::Down, &GameController::ToggleMainCameraProjection);
+	GetInputComponent().BindMethod("IA_ToggleSceneCaptureProjection", this, EKeyState::Down, &GameController::ToggleSceneCaptureProjection);
 
 	__super::Initialize();
 }
@@ -406,4 +416,28 @@ void GameController::SetEnvironmentMap(FInputValue Value)
 		SkyBox->SetEnvironmentMap(NewEnvironmentMap);
 	}
 	ActorList.clear();
+}
+
+void GameController::ToggleMainCameraProjection(FInputValue Value)
+{
+	Player* GamePlayer = static_cast<Player*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "Player"));
+	if (GamePlayer == nullptr) return;
+
+	FPCameraComponent* MainCamera = GamePlayer->GetPlayerCamera();
+	if (MainCamera == nullptr) return;
+
+	FPProjectionMode NewMode = (MainCamera->ProjectionMode == Perspective) ? Orthographic : Perspective;
+	MainCamera->SetProjectionMode(NewMode);
+}
+
+void GameController::ToggleSceneCaptureProjection(FInputValue Value)
+{
+	AMirror* Mirror = static_cast<AMirror*>(FPGameplayStatics::GetActorOfClass(GetWorld(), "AMirror"));
+	if (Mirror == nullptr) return;
+
+	FPSceneCaptureComponent2D* Capture = Mirror->GetScreenCaptureComponent();
+	if (Capture == nullptr) return;
+
+	FPProjectionMode NewMode = (Capture->GetProjectionMode() == Perspective) ? Orthographic : Perspective;
+	Capture->SetProjectionMode(NewMode);
 }

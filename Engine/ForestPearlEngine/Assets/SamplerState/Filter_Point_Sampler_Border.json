@@ -1,0 +1,11 @@
+{
+  "Name": "Filter_Point_Sampler_Border",
+  "Filter": "Point",
+  "AddressU": "BORDER",
+  "AddressV": "BORDER",
+  "AddressW": "BORDER",
+  "BorderColor": [1.0, 1.0, 1.0, 1.0],
+  "MaxAnisotropy": 1,
+  "MinLOD": 0.0,
+  "MipLODBias": 0.0
+}

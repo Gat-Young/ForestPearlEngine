@@ -23,6 +23,12 @@ class FPStaticMesh : public FPStreamableRenderAsset
 		int StencilRefValue = 0;
 		bool bCustomDepthStencil = false;
 
+		//Mesh BoundingBox(AABB)
+		FPAABB BoundingBox;
+
+		//Mesh BoxSphereBounds (BoundingBox로부터 계산)
+		FPBoxSphereBounds Bounds;
+
 	public:
 		FPStaticMesh(std::string StaticMeshPath);
 
@@ -37,4 +43,9 @@ class FPStaticMesh : public FPStreamableRenderAsset
 
 		std::string* GetMeshPath();
 		bool GetSocketTransform(std::string SocketName, FTransform& OutSocketTransform);
+
+		void SetBoundingBox(FPAABB BoundingBox);
+		FPAABB GetBoundingBox();
+
+		FPBoxSphereBounds GetBounds();
 };

@@ -1,5 +1,6 @@
 #pragma once
 #include "Object.h"
+#include "../Define/FPMath.h"
 #include <string>
 
 class FPSceneComponent;
@@ -9,6 +10,12 @@ class FPActor : public FPObject
 	protected:
 		std::string ActorName = "";
 		FPSceneComponent* RootComponent = nullptr;
+
+		//Actor Bounds (RootComponent + 하위 모든 SceneComponent Bound를 합침)
+		FPBoxSphereBounds Bounds{};
+
+		void UpdateBounds();
+		void CombineChildBounds(FPSceneComponent* Component);
 
 	public :
 		FPActor();
@@ -42,6 +49,9 @@ class FPActor : public FPObject
 		struct FPVector3 GetActorForwardVector();
 		struct FPVector3 GetActorRightVector();
 		struct FPVector3 GetActorUpVector();
+
+		//가장 최신의 Bounds 정보를 가져옴 (즉시 재계산)
+		FPBoxSphereBounds GetBounds();
 
 		//생성된 FPActor의 이름을 설정
 		void SetActorName(std::string Name) { ActorName = Name; }

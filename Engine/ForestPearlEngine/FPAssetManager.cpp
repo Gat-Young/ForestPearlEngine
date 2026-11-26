@@ -174,6 +174,12 @@ void FPAssetManager::AllAssetDataCreate()
 		MakeDepthStencil(Asset);
 	}
 
+	//DepthStencil Array 생성
+	for (auto& [AssetName, Asset] : LoadedDepthStencilArrayData)
+	{
+		MakeDepthStencilArray(Asset);
+	}
+
 	//DepthStencilState 생성
 	for (auto& [AssetName, Asset] : LoadedDepthStencilStateData)
 	{
@@ -189,6 +195,11 @@ void FPAssetManager::AllAssetDataCreate()
 	for (auto& [AssetName, Asset] : LoadedRasterizerStateData)
 	{
 		MakeRasterizerState(Asset);
+	}
+
+	for (auto& [AssetName, Asset] : LoadedSamplerStateData)
+	{
+		MakeSamplerState(Asset);
 	}
 
 	//Fbx Load
@@ -1191,6 +1202,29 @@ FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_nod
 		Result.Index.push_back(Index);
 	}
 
+	// --------------------------------------------------------
+	// 5. BoundingBox(AABB) 계산
+	// --------------------------------------------------------
+	if (!Result.Position_Vertices.empty())
+	{
+		FPVector3 Min(Result.Position_Vertices[0].x, Result.Position_Vertices[0].y, Result.Position_Vertices[0].z);
+		FPVector3 Max = Min;
+
+		for (const POSITION_VERTEX& PositionVertex : Result.Position_Vertices)
+		{
+			Min.x = (PositionVertex.x < Min.x) ? PositionVertex.x : Min.x;
+			Min.y = (PositionVertex.y < Min.y) ? PositionVertex.y : Min.y;
+			Min.z = (PositionVertex.z < Min.z) ? PositionVertex.z : Min.z;
+
+			Max.x = (PositionVertex.x > Max.x) ? PositionVertex.x : Max.x;
+			Max.y = (PositionVertex.y > Max.y) ? PositionVertex.y : Max.y;
+			Max.z = (PositionVertex.z > Max.z) ? PositionVertex.z : Max.z;
+		}
+
+		Result.BoundingBox.Min = Min;
+		Result.BoundingBox.Max = Max;
+	}
+
 	return Result;
 
 }
@@ -1226,6 +1260,10 @@ FPStaticMesh* FPAssetManager::GetStaticMeshData(std::string StaticMeshName)
 	StaticMesh->SetMaterial(Material);
 	StaticMesh->SetStencilRefValue(StaticMeshData.StencilRefValue);
 	StaticMesh->SetCustomDepthStencil(StaticMeshData.bCustomDepthStencil);
+
+	//Mesh의 BoundingBox(AABB)를 StaticMesh에 반영
+	FPMeshData& MeshData = GetMeshData(StaticMeshData.Name);
+	StaticMesh->SetBoundingBox(MeshData.BoundingBox);
 
 	return StaticMesh;
 }
@@ -1637,6 +1675,112 @@ std::unordered_map<std::string, FPDepthStencilData>& FPAssetManager::GetDepthSte
 	return DepthStencilData;
 }
 
+FPDepthStencilArrayInfo& FPAssetManager::GetDepthStencilArrayInfoData(std::string DepthStencilArrayName)
+{
+	return LoadedDepthStencilArrayData[DepthStencilArrayName];
+}
+
+void FPAssetManager::AddDepthStencilArrayInfoData(std::string DepthStencilArrayName, FPDepthStencilArrayInfo& DepthStencilArrayInfo)
+{
+	this->LoadedDepthStencilArrayData[DepthStencilArrayName] = DepthStencilArrayInfo;
+}
+
+bool FPAssetManager::HasDepthStencilArrayInfoData(std::string DepthStencilArrayName)
+{
+	if (LoadedDepthStencilArrayData.count(DepthStencilArrayName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+FPDepthStencilArrayData& FPAssetManager::GetDepthStencilArrayData(std::string DepthStencilArrayName)
+{
+	return DepthStencilArrayData[DepthStencilArrayName];
+}
+
+void FPAssetManager::AddDepthStencilArrayData(std::string DepthStencilArrayName, FPDepthStencilArrayData& DepthStencilArrayData)
+{
+	this->DepthStencilArrayData[DepthStencilArrayName] = DepthStencilArrayData;
+}
+
+bool FPAssetManager::HasDepthStencilArrayData(std::string DepthStencilArrayName)
+{
+	if (DepthStencilArrayData.count(DepthStencilArrayName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void FPAssetManager::MakeDepthStencilArray(FPDepthStencilArrayInfo& DepthStencilArrayInfo)
+{
+	if (HasDepthStencilArrayData(DepthStencilArrayInfo.Name))
+	{
+		FPDepthStencilArrayData& OldDepthStencilResource = DepthStencilArrayData[DepthStencilArrayInfo.Name];
+		if (OldDepthStencilResource.ShaderResourceView) static_cast<ID3D11ShaderResourceView*>(OldDepthStencilResource.ShaderResourceView)->Release();
+		if (OldDepthStencilResource.StencilShaderResourceView) static_cast<ID3D11ShaderResourceView*>(OldDepthStencilResource.StencilShaderResourceView)->Release();
+		for (void* DSView : OldDepthStencilResource.DepthStencilView)
+		{
+			if (DSView) static_cast<ID3D11DepthStencilView*>(DSView)->Release();
+		}
+		if (OldDepthStencilResource.Texture) static_cast<ID3D11Texture2D*>(OldDepthStencilResource.Texture)->Release();
+	}
+
+	FPDepthStencilArrayData DepthStencilResource;
+	RenderingDevice::GetRenderingDevice().CreateDepthStencilArrayTexture(DepthStencilArrayInfo.SizeX, DepthStencilArrayInfo.SizeY, DepthStencilArrayInfo.ArraySize, DepthStencilArrayInfo.MSAA, DepthStencilArrayInfo.ShaderResource, DepthStencilArrayInfo.DepthStencilFormat, &DepthStencilResource.Texture);
+	RenderingDevice::GetRenderingDevice().CreateDepthStencilArrayViews(DepthStencilArrayInfo.DepthStencilFormat, DepthStencilArrayInfo.MSAA, DepthStencilArrayInfo.ArraySize, DepthStencilResource.Texture, &DepthStencilResource.DepthStencilView);
+	RenderingDevice::GetRenderingDevice().CreateDepthStencilArraySRView(DepthStencilArrayInfo.DepthStencilFormat, DepthStencilArrayInfo.ShaderResource, DepthStencilArrayInfo.MSAA, DepthStencilArrayInfo.ArraySize, DepthStencilResource.Texture, &DepthStencilResource.ShaderResourceView);
+	RenderingDevice::GetRenderingDevice().CreateDepthStencilArrayStencilSRView(DepthStencilArrayInfo.DepthStencilFormat, DepthStencilArrayInfo.ShaderResource, DepthStencilArrayInfo.MSAA, DepthStencilArrayInfo.ArraySize, DepthStencilResource.Texture, &DepthStencilResource.StencilShaderResourceView);
+	DepthStencilArrayData[DepthStencilArrayInfo.Name] = DepthStencilResource;
+}
+
+std::unordered_map<std::string, FPDepthStencilArrayData>& FPAssetManager::GetDepthStencilArrayDataMap()
+{
+	return DepthStencilArrayData;
+}
+
+std::string FPAssetManager::CreateCascadeShadowMap(unsigned int CascadeCount, unsigned int ShadowResolution)
+{
+	FPDepthStencilArrayInfo DepthStencilArrayInfo;
+	DepthStencilArrayInfo.Name = "CascadeShadowMap_" + std::to_string(CascadeShadowMapCount);
+	CascadeShadowMapCount++;
+
+	DepthStencilArrayInfo.SizeX = ShadowResolution;
+	DepthStencilArrayInfo.SizeY = ShadowResolution;
+	DepthStencilArrayInfo.DepthStencilFormat = FPDepthStencilFormat::D32F;
+	DepthStencilArrayInfo.ArraySize = static_cast<int>(CascadeCount);
+	DepthStencilArrayInfo.ClearDepth = 1.0f;
+	DepthStencilArrayInfo.ClearStencil = 0;
+	DepthStencilArrayInfo.MSAA = 1;
+	DepthStencilArrayInfo.ShaderResource = true;
+	DepthStencilArrayInfo.Owner = AssetOwner::Engine;
+
+	AddDepthStencilArrayInfoData(DepthStencilArrayInfo.Name, DepthStencilArrayInfo);
+	MakeDepthStencilArray(DepthStencilArrayInfo);
+
+	return DepthStencilArrayInfo.Name;
+}
+
+void FPAssetManager::UpdateCascadeShadowMap(std::string CascadeShadowMapName, unsigned int CascadeCount, unsigned int ShadowResolution)
+{
+	if (!HasDepthStencilArrayInfoData(CascadeShadowMapName))
+	{
+		std::cout << "존재하지 않는 CascadeShadowMap입니다: " << CascadeShadowMapName << "\n";
+		return;
+	}
+
+	//기존 Info 정보 갱신
+	FPDepthStencilArrayInfo& DepthStencilArrayInfo = GetDepthStencilArrayInfoData(CascadeShadowMapName);
+	DepthStencilArrayInfo.SizeX = ShadowResolution;
+	DepthStencilArrayInfo.SizeY = ShadowResolution;
+	DepthStencilArrayInfo.ArraySize = static_cast<int>(CascadeCount);
+
+	//기존 Data는 MakeDepthStencilArray 내부에서 Release 후 재생성
+	MakeDepthStencilArray(DepthStencilArrayInfo);
+}
 FPDepthStencilStateInfo& FPAssetManager::GetDepthStencilStateInfoData(std::string DepthStencilStateName)
 {
 	return LoadedDepthStencilStateData[DepthStencilStateName];
@@ -1780,6 +1924,56 @@ void FPAssetManager::MakeRasterizerState(FPRasterizerStateInfo& RasterizerStateI
 	RenderingDevice::GetRenderingDevice().CreateRasterizerState(RasterizerStateInfo, &RSStateData.RasterizerStateData);
 	RasterizerStateData[RasterizerStateInfo.Name] = RSStateData;
 }
+
+FPSamplerStateInfo& FPAssetManager::GetSamplerStateInfoData(std::string SamplerStateName)
+{
+	return LoadedSamplerStateData[SamplerStateName];
+}
+
+void FPAssetManager::AddSamplerStateInfoData(std::string SamplerStateName, FPSamplerStateInfo& SamplerStateInfoData)
+{
+	this->LoadedSamplerStateData[SamplerStateName] = SamplerStateInfoData;
+}
+
+bool FPAssetManager::HasSamplerStateInfoData(std::string SamplerStateName)
+{
+	if (LoadedSamplerStateData.count(SamplerStateName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+FPSamplerStateData& FPAssetManager::GetSamplerStateData(std::string SamplerStateName)
+{
+	return SamplerStateData[SamplerStateName];
+}
+
+void FPAssetManager::AddSamplerStateData(std::string SamplerStateName, FPSamplerStateData& SamplerStateData)
+{
+	this->SamplerStateData[SamplerStateName] = SamplerStateData;
+}
+
+bool FPAssetManager::HasSamplerStateData(std::string SamplerStateName)
+{
+	if (SamplerStateData.count(SamplerStateName) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void FPAssetManager::MakeSamplerState(FPSamplerStateInfo& SamplerStateInfo)
+{
+	FPSamplerStateData SSData;
+
+	RenderingDevice::GetRenderingDevice().CreateSamplerState(SamplerStateInfo, &SSData.SamplerStateData);
+	SamplerStateData[SamplerStateInfo.Name] = SSData;
+}
+
+
 
 FPMaterialData& FPAssetManager::GetMaterialData(std::string MaterialName)
 {

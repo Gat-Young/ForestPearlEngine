@@ -95,6 +95,9 @@ class Renderer
 		//Planar Reflection Item
 		std::vector<RenderingData::PlanarReflectionItem> PlanarReflectionList;
 
+		//Cascade Shadow Render Item
+		std::vector<RenderingData::FPCascadeShadowRenderItem> CascadeShadowList;
+
 		//Material이 샘플링하는 RenderTarget 텍스처 이름으로 조회하는, RenderTarget별 캐싱된 ReflectionMatrix/Plane
 		std::unordered_map<std::string, RenderingData::PlanarReflectionCacheData> PlanarReflectionCache;
 
@@ -110,7 +113,7 @@ class Renderer
 		void CalculateViewPortSize(float Width, float Height, float& OutTopLeftX, float& OutTopLeftY, float& OutWidth, float& OutHeight);
 
 		//MeshRenderPass 서브 패스: Opaque/Masked/Translucent가 공유하는 단일 RenderItem Draw 함수
-		void DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, UINT StencilRef = 0, bool bDisablePixelShader = false, bool bFlipCull = false, bool bClipPlaneEnabled = false, const FPVector4& ClipPlane = FPVector4(), const FPMatrix& ReflectionViewProj = FPMatrix());
+		void DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, UINT StencilRef = 0, bool bDisablePixelShader = false, bool bFlipCull = false, bool bClipPlaneEnabled = false, const FPVector4& ClipPlane = FPVector4(), const FPMatrix& ReflectionViewProj = FPMatrix(), const RenderingData::CascadeShadowConstBuffer& ShadowItem = RenderingData::CascadeShadowConstBuffer(), unsigned int ShadowIndex = (unsigned int)-1);
 
 		//RenderItem이 샘플링하는 RenderTarget을 찾아 ReflectionMatrix * CamItem.View * (RT 화면비 보정) Projection을 반환. 없으면 Identity 반환
 		FPMatrix ComputePlanarReflectionViewProj(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
@@ -118,15 +121,15 @@ class Renderer
 		void PreDepthStencilPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 		void CustomDepthStencilPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
 		void SkyBoxRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
-		void OpaqueRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
-		void MaskedRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
-		void TranslucentRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
+		void OpaqueRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const RenderingData::CascadeShadowConstBuffer& ShadowItem, unsigned int ShadowIndex);
+		void MaskedRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const RenderingData::CascadeShadowConstBuffer& ShadowItem, unsigned int ShadowIndex);
+		void TranslucentRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const RenderingData::CascadeShadowConstBuffer& ShadowItem, unsigned int ShadowIndex);
 
 		//CamItem 기준으로 Planar Reflection RT를 렌더링. SceneCaptureItem도 CameraItem으로 변환해 전달 가능
 		void PlanarReflectionRenderPass(const RenderingData::CameraItem& CamItem);
-		void PlanarReflectionOpaqueRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
-		void PlanarReflectionMaskedRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
-		void PlanarReflectionmTranslucentRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
+		void PlanarReflectionOpaqueRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const RenderingData::CascadeShadowConstBuffer& ShadowItem, unsigned int ShadowIndex);
+		void PlanarReflectionMaskedRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const RenderingData::CascadeShadowConstBuffer& ShadowItem, unsigned int ShadowIndex);
+		void PlanarReflectionmTranslucentRenderPass(const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager, const RenderingData::CascadeShadowConstBuffer& ShadowItem, unsigned int ShadowIndex);
 
 		//SceneCaptureRenderPass에서 사용하는 Planar Reflection Mesh Pass (MeshRenderPass와 동일한 구조)
 		void PlanarReflectionOpaqueSceneCaptureRenderPass(const RenderingData::SceneCaptureItem& CaptureItem, const RenderingData::CameraItem& CamItem, FPAssetManager* AssetManager);
@@ -137,7 +140,25 @@ class Renderer
 		void MakeQuad2DMVP(RenderingData::MVPConstBuffer& MVPCB, float DisplayWidth, float DisplayHeight);
 
 		//SceneCaptureRenderPass sub-pass: single RenderItem draw
-		void DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::SceneCaptureItem& CaptureItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, const FPMatrix& ReflectionViewProj = FPMatrix());
+		void DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& RenderItem, const RenderingData::SceneCaptureItem& CaptureItem, FPAssetManager* AssetManager, const std::string& DepthStencilState, const FPMatrix& ReflectionViewProj = FPMatrix(), const RenderingData::CascadeShadowConstBuffer& ShadowItem = RenderingData::CascadeShadowConstBuffer(), unsigned int ShadowIndex = (unsigned int)-1);
+
+
+		//카메라 Near/Far, Light의 CascadeCount/DynamicShadowDistance/CascadeSplitLambda로 Cascade별 Near/Far 계산
+		//TODO: 각 카메라가 사용되기 전에 호출될 예정 (현재는 호출하지 않음)
+		std::vector<RenderingData::FPCascadeNearFar> CalculateCascadeNearFar(float CameraNear, float CameraFar, unsigned int CascadeCount, float DynamicShadowDistance, float CascadeSplitLambda);
+
+		//CalculateCascadeNearFar() 호출 이후 사용. 매 카메라 사용 시(카메라별로) 호출되어야 함
+		std::vector<RenderingData::FPCascadeFrustum> CalculateFrustumCascade(const RenderingData::CameraItem& CamItem, std::vector<RenderingData::FPCascadeNearFar> CascadeNearFarList);
+
+		//Near/Far, Frustum, Light Shadow 설정을 받아 하나의 Cascade에 대한 Light View/Projection(LightVP) 계산
+		FPMatrix CalculateCascadeLightViewProj(const RenderingData::FPCascadeNearFar& CascadeNearFar, const RenderingData::FPCascadeFrustum& CascadeFrustum, const RenderingData::FPCascadeShadowRenderItem& CascadeShadowItem, float& OutLightDepthRange);
+
+		//카메라(또는 그에 대응하는 시점) 사용 시 Cascade별 LightVP를 계산해 CascadeShadowMapRenderPass()를 호출하고, 사용이 끝난 CSM(DepthStencilArray)은 Clear
+		std::vector<RenderingData::CascadeShadowConstBuffer> UpdateCascadeShadowMaps(const RenderingData::CameraItem& CamItem);
+
+		void ClearCascadeShadowMaps();
+
+		void CascadeShadowMapMeshRenderPass(const RenderingData::CameraItem& ShadowCamItem, FPAssetManager* AssetManager);
 
 	public:
 		Renderer(RenderingDevice& Device);
@@ -149,6 +170,8 @@ class Renderer
 		void CreateUIRenderList();
 		void CreateLightRenderList();
 		void CreateSkyLightRenderList();
+		void CreateCascadeShadowRenderList();
+
 		void CreateNormalRenderList();
 		void CreateSceneCaptureList();
 		void CreatePlanarReflectionList();
@@ -166,6 +189,8 @@ class Renderer
 		void SceneCaptureRenderPass();
 
 		void MeshRenderPass();
+
+		void CascadeShadowMapRenderPass(const RenderingData::FPCascadeShadowRenderItem& CascadeShadowItem, unsigned int CascadeIndex, const FPMatrix& LightVP);
 
 		void PostProcessRenderPass();
 

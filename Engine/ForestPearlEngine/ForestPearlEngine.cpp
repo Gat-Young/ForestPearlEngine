@@ -61,7 +61,6 @@ bool ForestPearlEngine::PreInitialize()
     //Render µî·Ï
     Render = new Renderer(*RenderDevice);
     Render->InitializeRenderer(Hwnd);
-    RenderDevice->CreateSamplers();
 
     LoadEngineAssets();
 
@@ -118,6 +117,7 @@ void ForestPearlEngine::GameLoop()
         Render->CreateUIRenderList();
         Render->CreateSceneCaptureList();
         Render->CreatePlanarReflectionList();
+        Render->CreateCascadeShadowRenderList();
 
         ///////////////////
         // Rendering

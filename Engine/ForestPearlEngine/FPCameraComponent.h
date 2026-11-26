@@ -18,6 +18,9 @@ class FPCameraComponent : public FPSceneComponent
 		float Zn = 1.0f;							//근평면 거리
 		float Zf = 300.0f;							//원평면 거리
 
+		FPProjectionMode ProjectionMode = Perspective;	
+		float OrthoWidth = 100.0f;						
+
 		FPMatrix ViewMatrix;
 		FPMatrix ProjectionMatrix;
 
@@ -34,10 +37,16 @@ class FPCameraComponent : public FPSceneComponent
 		void RegistCamera();
 		void Tick() override;
 
+		//Set projection mode and immediately recalculate the Projection matrix
+		void SetProjectionMode(FPProjectionMode Mode);
+
 		//PostProcess (MeshRenderPass 이후 호출되는 PostProcessRenderPass가 이 Material을 사용)
 		//Material 이름으로 PostProcess Material을 생성해 설정 (기존 Material은 해제, 빈 문자열이나 없는 이름이면 해제만 함)
 		void SetPostProcessMaterial(std::string MaterialName);
 
 		//PostProcess Material (런타임에 SetParameter 등으로 값 변경 가능, 없으면 nullptr)
 		FPMaterialInterface* GetPostProcessMaterial() const;
+
+	private:
+		void RecalculateProjectionMatrix();
 };

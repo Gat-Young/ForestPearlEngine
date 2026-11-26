@@ -127,6 +127,9 @@
     <Filter Include="Assets\ShaderResource\BuilIn\VS">
       <UniqueIdentifier>{01276d28-62a7-4140-8cb4-9a70b9150883}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets\ShaderResource\Common\Shadow">
+      <UniqueIdentifier>{8ab40d71-c7c9-42be-bba5-e629344cc211}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -315,6 +318,9 @@
     <ClInclude Include="FPLightRenderList.h">
       <Filter>FPGameInstance\RenderList\Header</Filter>
     </ClInclude>
+    <ClInclude Include="FPCascadeShadowRenderList.h">
+      <Filter>FPGameInstance\RenderList\Header</Filter>
+    </ClInclude>
     <ClInclude Include="FPSkyLightRenderList.h">
       <Filter>FPGameInstance\RenderList\Header</Filter>
     </ClInclude>
@@ -491,6 +497,9 @@
     <ClCompile Include="FPLightRenderList.cpp">
       <Filter>FPGameInstance\RenderList\Source</Filter>
     </ClCompile>
+    <ClCompile Include="FPCascadeShadowRenderList.cpp">
+      <Filter>FPGameInstance\RenderList\Source</Filter>
+    </ClCompile>
     <ClCompile Include="FPSkyLightRenderList.cpp">
       <Filter>FPGameInstance\RenderList\Source</Filter>
     </ClCompile>
@@ -603,6 +612,9 @@
     </None>
     <None Include="Assets\ShaderResource\BumpMapping.hlsli">
       <Filter>Assets\ShaderResource\Common\Bump</Filter>
+    </None>
+    <None Include="Assets\ShaderResource\CascadeShadow.hlsli">
+      <Filter>Assets\ShaderResource\Common\Shadow</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

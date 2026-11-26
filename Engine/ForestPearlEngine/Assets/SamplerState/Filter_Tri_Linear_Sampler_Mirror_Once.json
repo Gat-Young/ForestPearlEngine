@@ -1,0 +1,10 @@
+{
+  "Name": "Filter_Tri_Linear_Sampler_Mirror_Once",
+  "Filter": "TriLinear",
+  "AddressU": "MIRROR_ONCE",
+  "AddressV": "MIRROR_ONCE",
+  "AddressW": "MIRROR_ONCE",
+  "MaxAnisotropy": 1,
+  "MinLOD": 0.0,
+  "MipLODBias": 0.0
+}

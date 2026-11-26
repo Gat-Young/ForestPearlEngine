@@ -215,10 +215,10 @@ bool FPMaterial::SetNamedTexture(FPShaderType ShaderType, const std::string& HLS
     return false;
 }
 
-bool FPMaterial::SetNamedSampler(FPShaderType ShaderType, const std::string& HLSLSampler, FPSamplerType SamplerType, unsigned int ArrayIndex)
+bool FPMaterial::SetNamedSampler(FPShaderType ShaderType, const std::string& HLSLSampler, const std::string& SamplerType, unsigned int ArrayIndex)
 {
 
-    if (ShaderType != FPShaderType::PS || static_cast<int>(SamplerType) < 0 || SamplerType >= Sampler_MAX_)
+    if (ShaderType != FPShaderType::PS || SamplerType.empty())
     {
         std::cout << "Sampler 셰이더 단계 또는 타입이 유효하지 않음" << "\n";
         return false;

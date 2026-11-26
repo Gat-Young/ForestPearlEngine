@@ -32,6 +32,13 @@ enum AssetOwner
 	User
 };
 
+//Camera / SceneCapture components Projection mode
+enum FPProjectionMode
+{
+	Perspective,
+	Orthographic
+};
+
 //정점 구조체 분리 
 //Position
 struct POSITION_VERTEX
@@ -97,6 +104,8 @@ struct FPMeshData
 	std::vector<TANGENT_VERTEX> Tangent_Vertices;
 	std::vector<INDEX_32BIT> Index;
 	std::vector<std::vector<uint32_t>> VertexAdjacency;
+
+	FPAABB BoundingBox;
 };
 
 //소켓용 트랜스폼
@@ -135,56 +144,31 @@ struct FPStaticMeshData
 };
 
 
-enum FPSamplerType
+enum class FPSamplerFilterType
 {
-	//Point
-	Filter_Point_Sampler_CLAMP,
-	Filter_Point_Sampler_Wrap,
-	Filter_Point_Sampler_Mirror,
-	Filter_Point_Sampler_Mirror_Once,
-	Filter_Point_Sampler_Border,
-	Filter_Point_Sampler_BorderColor_RED,
-	Filter_Point_Sampler_BorderColor_BLUE,
-	Filter_Point_Sampler_BorderColor_GREEN,
-	Filter_Point_Sampler_BorderColor_MAGENTA,
+	Point,
+	BiLinear,
+	TriLinear,
+	Anisotropic,
+	ComparisonBiLinear,
 
-	//Bi-Linear
-	Filter_Bi_Linear_Sampler_CLAMP,
-	Filter_Bi_Linear_Sampler_Wrap,
-	Filter_Bi_Linear_Sampler_Mirror,
-	Filter_Bi_Linear_Sampler_Mirror_Once,
-	Filter_Bi_Linear_Sampler_Border,
-	Filter_Bi_Linear_Sampler_BorderColor_RED,
-	Filter_Bi_Linear_Sampler_BorderColor_BLUE,
-	Filter_Bi_Linear_Sampler_BorderColor_GREEN,
-	Filter_Bi_Linear_Sampler_BorderColor_MAGENTA,
-
-	//Tri-Linear (Mip-Map On)
-	Filter_Tri_Linear_Sampler_CLAMP,
-	Filter_Tri_Linear_Sampler_Wrap,
-	Filter_Tri_Linear_Sampler_Mirror,
-	Filter_Tri_Linear_Sampler_Mirror_Once,
-	Filter_Tri_Linear_Sampler_Border,
-	Filter_Tri_Linear_Sampler_BorderColor_RED,
-	Filter_Tri_Linear_Sampler_BorderColor_BLUE,
-	Filter_Tri_Linear_Sampler_BorderColor_GREEN,
-	Filter_Tri_Linear_Sampler_BorderColor_MAGENTA,
-
-	//Anistropy
-	Filter_Anistropy_Linear_Sampler_CLAMP,
-	Filter_Anistropy_Linear_Sampler_Wrap,
-	Filter_Anistropy_Linear_Sampler_Mirror,
-	Filter_Anistropy_Linear_Sampler_Mirror_Once,
-	Filter_Anistropy_Linear_Sampler_Border,
-	Filter_Anistropy_Linear_Sampler_BorderColor_RED,
-	Filter_Anistropy_Linear_Sampler_BorderColor_BLUE,
-	Filter_Anistropy_Linear_Sampler_BorderColor_GREEN,
-	Filter_Anistropy_Linear_Sampler_BorderColor_MAGENTA,
-
-	Sampler_MAX_
+	FPSamplerFilterType_MAX_
 };
 
-FPSamplerType StringToSamplerType(const std::string& Name);
+FPSamplerFilterType StringToFPSamplerFilterType(const std::string& Name);
+
+enum class FPTextureAddressMode
+{
+	CLAMP,
+	WRAP,
+	MIRROR,
+	MIRROR_ONCE,
+	BORDER,
+
+	FPTextureAddressMode_MAX_
+};
+
+FPTextureAddressMode StringToFPTextureAddressMode(const std::string& Name);
 
 enum class FPBlend
 {
@@ -340,6 +324,33 @@ struct FPDepthStencilData
 	void* StencilShaderResourceView = nullptr;
 };
 
+//DepthStencil Array
+struct FPDepthStencilArrayInfo
+{
+	std::string Name;
+	unsigned int SizeX;
+	unsigned int SizeY;
+	float ScaleX;
+	float ScaleY;
+	FPDepthStencilFormat DepthStencilFormat = FPDepthStencilFormat::D24_S8_UINT;
+	int ArraySize = 1;
+	float ClearDepth = 1.0;
+	unsigned int ClearStencil = 0;
+	unsigned int MSAA = 1;
+	bool ShaderResource = false;
+
+
+	AssetOwner Owner;
+};
+
+struct FPDepthStencilArrayData
+{
+	void* Texture = nullptr;
+	std::vector<void*> DepthStencilView;
+	void* ShaderResourceView = nullptr;
+	void* StencilShaderResourceView = nullptr;
+};
+
 
 //DepthStencilState
 enum class FPDepthWriteMask
@@ -461,6 +472,32 @@ struct FPRasterizerStateData
 	void* RasterizerStateData;
 };
 
+struct FPSamplerStateInfo
+{
+	std::string Name;
+
+	FPSamplerFilterType Filter;
+	FPTextureAddressMode AddressU;
+	FPTextureAddressMode AddressV;
+	FPTextureAddressMode AddressW;
+
+	//ComparisonBiLinear(PCF) Filter에서만 사용
+	FPCompraisonFunc ComparisonFunc;
+	FPVector4 BorderColor;
+
+	unsigned int MaxAnisotropy;
+	float MinLOD;
+	float MaxLOD;
+	float MipLODBias;
+
+	AssetOwner Owner;
+};
+
+struct FPSamplerStateData
+{
+	void* SamplerStateData = nullptr;
+};
+
 
 //BlendState
 struct FPRenderTargetBlendDesc
@@ -573,7 +610,7 @@ struct FPReflectionResourceInfo
 struct FPReflectionSamplerInfo
 {
 	std::string Name;
-	FPSamplerType SamplerType = Filter_Tri_Linear_Sampler_CLAMP;
+	std::string SamplerType = "Filter_Tri_Linear_Sampler_CLAMP";
 	unsigned int Slot = 0;
 	unsigned int BindCount = 1;
 };
@@ -610,7 +647,7 @@ struct FPSamplerParameterData
 {
 	FPShaderType Type = FPShaderType::PS;
 	std::string Parameter;							// HLSL 샘플러 변수 이름
-	FPSamplerType SamplerType = Filter_Tri_Linear_Sampler_Wrap;
+	std::string SamplerType = "Filter_Tri_Linear_Sampler_Wrap";
 	unsigned int ArrayIndex = 0;					// HLSL SamplerState 배열 원소 번호
 };
 
@@ -700,6 +737,7 @@ struct RenderItem
 	bool* bUsePlanarForwardReflections = nullptr;
 	int* StencilRefValue = nullptr;
 	bool* bCustomDepthStencil = nullptr;
+	bool* bCastShadow = nullptr;
 
 	FPMatrix* Location = nullptr;
 	FPMatrix* Rotation = nullptr;
@@ -768,6 +806,14 @@ struct CameraItem
 
 	//PostProcess Material (nullptr = 없음). PostProcess Material을 가진 Camera는 PostProcessList에 등록됨
 	FPMaterialInterface** PostProcessMaterial = nullptr;
+
+	//Projection 설정
+	float* Fov = nullptr;
+	float* Aspect = nullptr;
+	float* Zn = nullptr;
+	float* Zf = nullptr;
+	FPProjectionMode* ProjectionMode = nullptr;
+	float* OrthoWidth = nullptr;
 };
 
 //SceneCapture Component
@@ -790,6 +836,14 @@ struct SceneCaptureItem
 	bool* CaptureThisFrame = nullptr;
 
 	std::vector<std::string>* HiddenActors = nullptr;
+
+	//Projection 설정
+	float* Fov = nullptr;
+	float* Aspect = nullptr;
+	float* Zn = nullptr;
+	float* Zf = nullptr;
+	FPProjectionMode* ProjectionMode = nullptr;
+	float* OrthoWidth = nullptr;
 };
 
 //Planar Reflection Component
@@ -876,6 +930,26 @@ struct FPSkyLightRenderItem
 	std::string* CubeMap = nullptr;
 };
 
+struct FPCascadeShadowRenderItem
+{
+	bool* CastShadow = nullptr;
+
+	FPVector3* Direction = nullptr;
+
+	unsigned int* CascadeCount = nullptr;
+	unsigned int* ShadowResolution = nullptr;
+
+	float* DynamicShadowDistance = nullptr;
+	float* CascadeSplitLambda = nullptr;
+	float* CascadeTransitionFraction = nullptr;
+	float* ShadowDistanceFadeoutFraction = nullptr;
+	float* ShadowBias = nullptr;
+	float* ShadowSlopeBias = nullptr;
+	float* DistanceMargin = nullptr;
+
+	std::string* CascadeShadowMapName = nullptr;
+};
+
 namespace RenderingData
 {
 
@@ -933,6 +1007,14 @@ namespace RenderingData
 
 		FPMatrix View;
 		FPMatrix Projection;
+
+		//Projection 설정
+		float Fov;
+		float Aspect;
+		float Zn;
+		float Zf;
+		FPProjectionMode ProjectionMode;
+		float OrthoWidth;
 	};
 
 	//PostProcess 목록 항목 (PostProcess Material을 가진 Camera)
@@ -962,6 +1044,65 @@ namespace RenderingData
 		FPSkyLightDataItem SkyLightDataItem;
 
 		std::string CubeMap;
+	};
+
+	struct FPCascadeShadowRenderItem
+	{
+		bool CastShadow;
+
+		FPVector3 Direction;
+
+		unsigned int CascadeCount;
+		unsigned int ShadowResolution;
+
+		float DynamicShadowDistance;
+		float CascadeSplitLambda;
+		float CascadeTransitionFraction;
+		float ShadowDistanceFadeoutFraction;
+		float ShadowBias;
+		float ShadowSlopeBias;
+		float DistanceMargin;
+
+		std::string CascadeShadowMapName;
+	};
+
+	struct FPCascadeNearFar
+	{
+		float Near;
+		float Far;
+	};
+
+	struct FPCascadeFrustum
+	{
+		std::vector<FPVector3> NDCVertex;
+		FPVector3 Center;
+		FPMatrix InvCascadeVP;
+	};
+
+	//한 Light가 가질 수 있는 최대 Cascade 개수 (CascadeShadow.hlsli의 MAX_CASCADE와 일치해야 함)
+	constexpr unsigned int Cascade_MAX = 8;
+
+	//CascadeShadow.hlsli의 CascadeShadowConstBuffer(register b13)와 1:1 대응되는 구조체
+	struct alignas(16) CascadeShadowConstBuffer
+	{
+		FPMatrix mLightViewProj[Cascade_MAX];           //Shadow Map 투영 좌표 계산
+
+		//HLSL에서 float 배열의 각 원소는 16B 단위로 패킹되므로 x만 사용
+		FPVector4 CascadeNear[Cascade_MAX];             //Cascade 시작 깊이
+		FPVector4 CascadeFar[Cascade_MAX];              //Cascade 종료 깊이 및 선택
+		FPVector4 CascadeDepthRange[Cascade_MAX];       //Light Projection의 Far-Near, Bias 정규화
+
+		unsigned int CascadeCount;                      //Cascade 개수
+		float DynamicShadowDistance;                    //최대 그림자 적용 거리
+		float CascadeTransitionFraction;                //Cascade Blending
+
+		float ShadowDistanceFadeoutFraction;            //거리 기반 Shadow Fade Out
+		float ShadowBias;                               //깊이 비교 보정
+		float ShadowSlopeBias;                          //Slope-Scaled Bias 계수
+		unsigned int CastShadow;                        //그림자 적용 여부
+		float Padding;                                  //16B 배수 유지용 Padding
+
+		FPVector4 LightDirectionView;                   //Slope-Scaled Bias 계산용 View Space 빛 방향 (xyz만 사용)
 	};
 
 	constexpr unsigned int Light_MAX = 64;
@@ -1057,14 +1198,14 @@ namespace RenderingData
 	{
 		int Slot;
 		std::string TexturePath;
-		FPSamplerType SamplerType;
+		std::string SamplerType;
 		FPTextureType TextureType;
 	};
 
 	struct FPSamplerItem
 	{
 		int Slot;
-		FPSamplerType SamplerType;
+		std::string SamplerType;
 	};
 
 	struct MeshRenderItem
@@ -1083,6 +1224,7 @@ namespace RenderingData
 		bool bUsePlanarForwardReflections;
 		int StencilRefValue;
 		bool bCustomDepthStencil;
+		bool bCastShadow;
 
 		FPMatrix Location;
 		FPMatrix Rotation;
@@ -1113,6 +1255,14 @@ namespace RenderingData
 		std::string DepthStencil;
 
 		std::vector<std::string> HiddenActors;
+
+		//Projection 설정
+		float Fov;
+		float Aspect;
+		float Zn;
+		float Zf;
+		FPProjectionMode ProjectionMode;
+		float OrthoWidth;
 	};
 
 	struct PlanarReflectionItem

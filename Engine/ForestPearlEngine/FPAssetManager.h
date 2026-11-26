@@ -63,6 +63,13 @@ private:
 	std::unordered_map<std::string, FPDepthStencilInfo> LoadedDepthStencilData;
 	std::unordered_map<std::string, FPDepthStencilData> DepthStencilData;
 
+	//DepthStencil Array
+	std::unordered_map<std::string, FPDepthStencilArrayInfo> LoadedDepthStencilArrayData;
+	std::unordered_map<std::string, FPDepthStencilArrayData> DepthStencilArrayData;
+
+	//Cascade Shadow Map 이름 자동 생성용 Counter
+	unsigned int CascadeShadowMapCount = 0;
+
 	//DepthStencill State
 	std::unordered_map<std::string, FPDepthStencilStateInfo> LoadedDepthStencilStateData;
 	std::unordered_map<std::string, FPDepthStencilStateData> DepthStencilStateData;
@@ -74,6 +81,10 @@ private:
 	//RasterizerState
 	std::unordered_map<std::string, FPRasterizerStateInfo> LoadedRasterizerStateData;
 	std::unordered_map<std::string, FPRasterizerStateData> RasterizerStateData;
+
+	//SamplerState
+	std::unordered_map<std::string, FPSamplerStateInfo> LoadedSamplerStateData;
+	std::unordered_map<std::string, FPSamplerStateData> SamplerStateData;
 
 	bool CalculateTriangleTangent(const POSITION_VERTEX& P0, const POSITION_VERTEX& P1, const POSITION_VERTEX& P2,
 									const UV_VERTEX& UV0, const UV_VERTEX& UV1, const UV_VERTEX& UV2,
@@ -244,6 +255,22 @@ public:
 	void MakeBuiltInDepthStencil(FPDepthStencilInfo& DepthStecilInfo);
 	std::unordered_map<std::string, FPDepthStencilData>& GetDepthStencilDataMap(); //살짝 아쉬움
 
+	//DepthStencil Array Info
+	FPDepthStencilArrayInfo& GetDepthStencilArrayInfoData(std::string DepthStencilArrayName);
+	void AddDepthStencilArrayInfoData(std::string DepthStencilArrayName, FPDepthStencilArrayInfo& DepthStencilArrayInfo);
+	bool HasDepthStencilArrayInfoData(std::string DepthStencilArrayName);
+
+	//DepthStencil Array Data
+	FPDepthStencilArrayData& GetDepthStencilArrayData(std::string DepthStencilArrayName);
+	void AddDepthStencilArrayData(std::string DepthStencilArrayName, FPDepthStencilArrayData& DepthStencilArrayData);
+	bool HasDepthStencilArrayData(std::string DepthStencilArrayName);
+	void MakeDepthStencilArray(FPDepthStencilArrayInfo& DepthStencilArrayInfo);
+	std::unordered_map<std::string, FPDepthStencilArrayData>& GetDepthStencilArrayDataMap();
+
+	//Cascade Shadow Map 생성/갱신 (자동 할당된 Name을 반환)
+	std::string CreateCascadeShadowMap(unsigned int CascadeCount, unsigned int ShadowResolution);
+	void UpdateCascadeShadowMap(std::string CascadeShadowMapName, unsigned int CascadeCount, unsigned int ShadowResolution);
+
 
 	//DepthStencilState Info
 	FPDepthStencilStateInfo& GetDepthStencilStateInfoData(std::string DepthStencilStateName);
@@ -277,6 +304,17 @@ public:
 	void AddRasterizerStateData(std::string RasterizerStateName, FPRasterizerStateData& RasterizerStateData);
 	bool HasRasterizerStateData(std::string RasterizerStateName);
 	void MakeRasterizerState(FPRasterizerStateInfo& RasterizerStateInfo);
+
+	//SamplerState Info
+	FPSamplerStateInfo& GetSamplerStateInfoData(std::string SamplerStateName);
+	void AddSamplerStateInfoData(std::string SamplerStateName, FPSamplerStateInfo& SamplerStateInfoData);
+	bool HasSamplerStateInfoData(std::string SamplerStateName);
+
+	//SamplerState Data
+	FPSamplerStateData& GetSamplerStateData(std::string SamplerStateName);
+	void AddSamplerStateData(std::string SamplerStateName, FPSamplerStateData& SamplerStateData);
+	bool HasSamplerStateData(std::string SamplerStateName);
+	void MakeSamplerState(FPSamplerStateInfo& SamplerStateInfo);
 
 	//Material Info
 	FPMaterialData& GetMaterialData(std::string MaterialName);

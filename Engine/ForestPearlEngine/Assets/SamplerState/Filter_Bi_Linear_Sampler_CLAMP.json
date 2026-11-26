@@ -1,0 +1,10 @@
+{
+  "Name": "Filter_Bi_Linear_Sampler_CLAMP",
+  "Filter": "BiLinear",
+  "AddressU": "CLAMP",
+  "AddressV": "CLAMP",
+  "AddressW": "CLAMP",
+  "MaxAnisotropy": 1,
+  "MinLOD": 0.0,
+  "MipLODBias": 0.0
+}

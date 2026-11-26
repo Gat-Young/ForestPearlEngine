@@ -16,6 +16,7 @@
 #include "FPMeshNormalRenderList.h"
 #include "FPSceneCaptureList.h"
 #include "FPPlanarReflectionList.h"
+#include "FPCascadeShadowRenderList.h"
 
 auto Cast_SizeT = [](GameInstanceSubSystemName Name) -> size_t {return static_cast<size_t>(Name); };
 
@@ -37,6 +38,7 @@ FPGameInstance::FPGameInstance()
 	//GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::ViewPortClient)] = new FPViewPortClient();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::SceneCaptureList)] = new FPSceneCaptureList();
 	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::PlanarReflectionList)] = new FPPlanarReflectionList();
+	GameInstanceSubSystem[Cast_SizeT(GameInstanceSubSystemName::CascadeShadowRenderList)] = new FPCascadeShadowRenderList();
 
 }
 
@@ -171,4 +173,9 @@ FPGameInstanceSubSystem* FPGameInstance::GetSceneCaptureList()
 FPGameInstanceSubSystem* FPGameInstance::GetPlanarReflectionList()
 {
 	return GetInstanceSubSystem(GameInstanceSubSystemName::PlanarReflectionList);
+}
+
+FPGameInstanceSubSystem* FPGameInstance::GetCascadeShadowRenderList()
+{
+	return GetInstanceSubSystem(GameInstanceSubSystemName::CascadeShadowRenderList);
 }

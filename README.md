@@ -51,7 +51,7 @@
 | 🌌 | **[SkyBox](#skybox)** | 배경에 **큐브맵을 화면 전체로** 그리는 엔진 기본 에셋(`SkyBoxQuad_StaticMesh` · `DefaultSkyBoxMaterial` · `DefaultSkyBoxQuadVertex/PixelShader` · `rustig_koppie_puresky_2k`, `LoadEngineAssets()`가 `AssetOwner::Engine`으로 로드). 전용 컴포넌트 없이 **일반 StaticMesh**로 `MeshRenderPass`의 **Sky 서브 패스**에서 가장 먼저 그려지며, VS가 클립 공간 Quad를 변환 없이 출력하면서 `mInverseProj` · `mInverseView`로 **픽셀별 월드 방향**을 만들고 PS가 `TextureCube`를 샘플. Material은 `"bIsSky": true` · `BS_DEFAULT`(`bIsSky`가 `SkyBoxRenderList`로 분류하는 기준). 환경맵은 `SetNamedTexture(PS, "EnvTex", 이름, CubeMap)`으로 교체. 데모: `ASkyBox`(Tri_World) |
 | 🪞 | **SceneCapture · RenderTarget (Mirror)** | `RenderTarget` · `DepthStencil` · `DepthStencilState`가 Material처럼 **JSON 에셋**이 됐습니다(예전엔 하드코딩이던 `DS_DEPTH_ON/OFF/WRITE_OFF`도 이제 JSON 3개이며, 스텐실용 6개가 더 추가돼 엔진 기본 9종. Mesh · SceneCapture Pass는 **서브 패스마다 정해진 State**를 쓰고 Material은 더 이상 `DepthStencilState`를 지정하지 않습니다. 스텐실 State 6종은 로드만 되고 아직 어떤 Pass도 쓰지 않습니다). `FPSceneCaptureComponent2D`가 매 프레임 **Mesh Pass보다 먼저** `SceneCaptureRenderPass`로 전체 씬을 자기 RenderTarget에 그린 뒤 `ResolveSubresource`로 샘플 가능한 텍스처로 만들어 두면, 같은 프레임의 `MeshRenderPass`가 `TextureType: "RenderTargetTexture2D"`로 그 텍스처를 **보통 `Texture2D`처럼** Material에서 그대로 샘플링. 거울 데모 `AMirror` |
 | 🖥️ | **RenderTarget 합성 (Quad2D) · Built-In 에셋** | `MeshRenderPass` · `GizmoRenderPass`가 백버퍼 대신 **Built-In RenderTarget**(`MeshRenderPass-RT-BuiltIn`, 크기 = GameSetting 해상도 × Scale)에 Letterbox 뷰포트로 그리고 MSAA Resolve 후, `Quad2DRenderPass`가 `Quad2D_Mesh` + `DefaultQuad2D` 셰이더로 전체 화면에 출력. 이를 위해 `Assets/BuiltIn/`(StaticMesh · Shader · RenderTarget · DepthStencil)과 `LoadBuiltIn*` 로더가 추가되고, **`FPViewPortClient`(뷰포트 · 3분할)와 카메라의 RenderTarget 지정 기능은 제거** |
-| 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 샘플러 36종(AF 단계는 `GameSetting.json`). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환. 슬롯마다 `FPTextureType`(`Texture2D` / `Texture2DArray` / `RenderTargetTexture2D` / `DepthStencilTexture2D` / `StencilTexture2D` / `CubeMap`)을 함께 지정. 큐브맵은 Texture JSON에 `"CubeMap": true`(DDS)를 적어 로드 |
+| 🖼️ | **Texture** | `LoadTexture`(JSON → WIC / DDS, **Mipmap 자동 생성**) → Material **텍스처 슬롯**(PS `t#`) + 필터(Point/Bi-Linear/Tri-Linear/Anisotropic) × 주소모드 **SamplerState JSON 에셋** 37종([SamplerState JSON 에셋](#samplerstate-json-에셋) — 이름은 예전 36개 열거형 이름 그대로 + 그림자용 비교 샘플러 1개). 기본 PS가 정점 색 × 텍스처를 출력. `Tool/DXTexViewer`로 DDS 변환. 슬롯마다 `FPTextureType`(`Texture2D` / `Texture2DArray` / `RenderTargetTexture2D` / `DepthStencilTexture2D` / `StencilTexture2D` / `CubeMap`)을 함께 지정. 큐브맵은 Texture JSON에 `"CubeMap": true`(DDS)를 적어 로드 |
 | 🗂️ | **Texture2DArray** *(실험적)* | `LoadTexture2DArray`가 JSON(`Width/Height/ArraySize/SourceTextures[]`)을 읽어 이미 로드된 Texture2D들을 **`RenderingDevice::CheckTextureArrayData`로 포맷·해상도 검증 후 `CreateTextureArray2D`로 한 장의 `Texture2DArray` SRV로 합침**. `MeshRenderPass`는 Material 텍스처 슬롯의 `FPTextureType`에 따라 `GetTextureData`(Texture2D) 또는 `GetTextureArrayData`(Texture2DArray)에서 바인딩할 SRV를 고름. 아직 어떤 게임의 `LoadAssets()`에서도 호출되지 않는 템플릿 단계 |
 | ⚙️ | **GameSetting** | `Assets/GameSetting/GameSetting.json` → `FPAssetLoader::LoadGameSetting`이 읽어 `FPGameSettingData`로 저장 → `FPGameProjectSetting::ProjectSetting()`이 창 크기 · MSAA · AF · 전체화면 값을 반영, `RenderingDevice::SetMSAA/SetAF`로 렌더러에 전달 |
 | 🎭 | **데이터 기반 Material (Shader Reflection)** | Material JSON(`LoadMaterial`)이 셰이더의 **cbuffer 변수 · 텍스처 · 샘플러를 이름으로** 지정. `MakeMaterial`이 컴파일된 셰이더를 `D3DReflect`로 읽어 오프셋 · 슬롯(`b#` / `t#` / `s#`)을 자동 계산하고, 런타임에는 `SetParameter` / `SetNamedTexture` / `SetNamedSampler`로 이름을 통해 값을 바꿈. 재질 1개당 **기본 Material** + 메시마다 **Material Instance** 두 단계로 저장 (없으면 `DefaultMaterial` 사용). 계절 전환 예제(`Terrain`/`Tree`/`Windmill`/`ABox`, [F8](#계절-전환-season)) |
@@ -65,6 +65,9 @@
 | 🧱 | **[Rasterizer State JSON 에셋](#rasterizer-state-json-에셋)** | Rasterizer State가 **JSON 에셋**(`Assets/RasterizerState/`, 엔진 기본 12종)이 됐습니다. 하드코딩이던 `RenderingDevice::RasterStateCreate()` · `SetRasterizerState(bool, bool)` · `RS_*` / `RM_*` 열거형이 삭제되고, `Renderer::SetRasterizerState(AssetManager, bFillSolid, bCullBack, bFlipCull)`가 이름(`RS_SOLID` · `RS_CULLBACK` · `RS_WIREFRM` · `RS_WIRECULLBACK`, 뒤집힘이면 `_FCCW` 접미사)을 골라 `RSSetState`합니다 |
 | 🎞️ | **[PostProcess](#postprocess-camera-단위) · Stencil 텍스처 읽기** | `FPCameraComponent::SetPostProcessMaterial(이름)`으로 카메라에 PostProcess Material을 걸면, `MeshRenderPass` 바로 뒤 새 `PostProcessRenderPass()`가 Mesh RT를 그 Material의 Pixel Shader로 다시 그려 `PostProcessRenderPass-RT-BuiltIn`에 담고 `Quad2DRenderPass`로 합성합니다(`GizmoRenderPass`는 `SceneRenderTarget`을 따라 이어 그림). `BackBufferDepthStencil` · `CustomDepthStencil`이 `D24_S8_UINT` + `ShaderResource: true`로 바뀌어 **스텐실 채널만 읽는 SRV**가 생겼고, Material JSON `Textures[].TextureType`에 새 값 `"StencilTexture2D"`로 연결할 수 있습니다. `OpaqueRenderPass`도 이제 `bCustomDepthStencil` 메시를 `DS_DEPTH_ON_STENCIL_ON`으로 그려 **백버퍼 자신의 스텐실**에 값을 남기고(`DS_DEPTH_ON_STENCIL_ON`의 `DepthFunc`도 `LESS_EQUAL`), `StencilRefValue == 1`(Wall 전용)인 메시는 `CustomDepthStencilPass`에서 건너뜁니다. 데모: Tri_World `AWall` + `PostProcessMaterial`(ToonLink가 Wall에 가려지면 주황색으로 투과 표시) |
 | 📐 | **[투영 모드 전환 (Perspective ↔ Orthographic)](#투영-모드-perspective--orthographic)** | `FPCameraComponent` · `FPSceneCaptureComponent2D`가 `ProjectionMode`(`Perspective` / `Orthographic`)와 `OrthoWidth`를 가지며, `SetProjectionMode(Mode)`로 바꾸면 Projection 행렬을 **즉시 다시 계산**합니다(Tick에서도 매 프레임 다시 계산). Tri_World는 <kbd>]</kbd>로 메인 카메라, <kbd>[</kbd>로 거울(`AMirror`)의 캡처 카메라를 토글 |
+| 🌑 | **[Cascade Shadow Map (CSM)](#cascade-shadow-map-csm)** | `FPDirectionalLightComponent`가 생성 시 `CascadeShadowMap_N`(`D32F` **DepthStencil Array**, 기본 4장 × 2048²)을 만들고 새 SubSystem `FPCascadeShadowRenderList`에 그림자 설정을 등록합니다. Renderer는 **카메라 · 평면 반사 · SceneCapture마다** 시야 절두체를 Cascade로 나눠(Log/Uniform 보간) Cascade별 Light 직교 View/Projection을 계산하고(Bounding Sphere + Texel Snapping) `bCastShadow` 메시를 깊이만 그립니다. PS는 `CascadeShadow.hlsli::CalculateShadow`(`b13` · `t126` · `s14`, 3×3 PCF · Cascade Blending · 거리 Fade Out · Slope-Scaled Bias)로 Diffuse · Specular를 어둡게 합니다. 엔진 `DefaultPixelShader` · `DefaultPlanarReflectionPixelShader`와 Tri_World PS 6종이 적용됨 |
+| 🎚️ | **[SamplerState JSON 에셋](#samplerstate-json-에셋)** | 하드코딩이던 `FPSamplerType` 열거형(36종)과 `RenderingDevice::CreateSamplers()`가 사라지고, Sampler가 **JSON 에셋**(`Assets/SamplerState/`, 엔진 기본 37종)이 됐습니다. Material JSON의 `SamplerType`은 이제 **SamplerState 에셋 이름**(문자열)이며, 기존 이름(`Filter_Tri_Linear_Sampler_Wrap` 등)은 같은 이름의 JSON이 있어 그대로 동작합니다 |
+| 📦 | **[Bounds (AABB · BoxSphereBounds)](#bounds-aabb--boxspherebounds)** | FBX 로딩 때 메시 정점으로 **AABB**를 계산해 `FPStaticMesh`에 넣고, `FPSceneComponent` · `FPActor` · `FPWorld`에 `GetBounds()`(호출 시 즉시 재계산한 월드 `FPBoxSphereBounds`)가 생겼습니다. 현재 엔진 안에서 이 값을 쓰는 곳(컬링 등)은 아직 없습니다 |
 | 🧭 | **Normal Line 디버그** | 별도 `NormalRenderPass`. 정점 1개를 인스턴스 1개로 `DrawInstanced`해 노멀 선(초록)을 그림 (`F6`) |
 | 🎮 | **Input 시스템** | Raw Input(키보드·마우스 버튼 · **휠 · 이동**) + XInput(게임패드) → Input Mapping Context → Input Action → 멤버 함수 바인딩 |
 | 🕹️ | **Possess** | 컨트롤러가 Pawn을 빙의(Possess)하며, 빙의된 Pawn의 바인딩만 입력을 받음 |
@@ -158,13 +161,14 @@ Engine/ForestPearlEngine/
 ├── FPSceneCaptureComponentCube.h/.cpp# 큐브맵 캡처용 (빈 스텁)
 ├── FPPlanarReflectionComponent.h/.cpp# 평면 반사 캡처 (`FPSceneCaptureComponent` 상속, **구현됨** — Plane · ReflectionMatrix 계산, [Planar Reflection](#planar-reflection-평면-반사))
 ├── FPPlanarReflectionList.h / .cpp   # [SubSystem] `PlanarReflectionItem` 목록 (`GetPlanarReflectionList()`)
+├── FPCascadeShadowRenderList.h / .cpp # [SubSystem] `FPCascadeShadowRenderItem` 목록 (`GetCascadeShadowRenderList()`) — Directional Light의 그림자 설정 포인터
 ├── FPGizmoComponent.h / .cpp         # 기즈모 베이스 (GizmoRenderItem 등록, Priority / Active)
 ├── FPGizmoGridComponent.h / .cpp     # Grid 라인 메시
 ├── FPGizmoAxisComponent.h / .cpp     # Axis 라인 메시
 ├── FPGizmoNormalLineComponent.h/.cpp # StaticMesh의 Normal Line (NormalRenderItem 등록). StaticMeshComponent가 자동 생성
 ├── FPLightComponentBase.h / .cpp     # 라이트 공통 조상. 빈 뼈대(생성자/소멸자뿐) — FPLightComponent와 FPSkyLightComponent가 여기서 갈라짐
 ├── FPLightComponent.h / .cpp         # Directional/Point/Spot/Rect 공통 상수(FPLightConstantBuffer) · FPLightRenderItem 등록 · Set* 함수
-├── FPDirectionalLightComponent.h/.cpp# Directional Light
+├── FPDirectionalLightComponent.h/.cpp# Directional Light (+ Cascade Shadow 설정 · `CascadeShadowMap_N` 생성)
 ├── FPLocalLightComponent.h / .cpp    # 위치가 있는 라이트의 베이스
 ├── FPPointLightComponent.h / .cpp    # Point Light (Range / Attenuation)
 ├── FP{Spot,Rect}LightComponent.h     # 선언만 있는 골격
@@ -175,7 +179,7 @@ Engine/ForestPearlEngine/
 ├── InputValue.h                      # FInputValue
 │
 ├── FPStreamableRenderAssetr.h        # 렌더 에셋 베이스
-├── FPTexture.h                       # 텍스처 값(이름 + SamplerType + FPTextureType)
+├── FPTexture.h                       # 텍스처 값(이름 + SamplerType(문자열, SamplerState 에셋 이름) + FPTextureType)
 ├── FPTexture2D.h / .cpp              # Texture2D (기본 Default_Texture512 + Clamp)
 ├── FPTexture2DArray.h / .cpp         # Texture2DArray (FPTexture 서브클래스, 골격만 존재)
 ├── FPStaticMesh.h / .cpp             # StaticMesh 에셋 (VB, Socket, Material)
@@ -217,6 +221,8 @@ Engine/ForestPearlEngine/
 │   ├── DepthStencilState/            # DepthStencilState JSON — DS_DEPTH_ON / DS_DEPTH_OFF / DS_DEPTH_WRITE_OFF + 스텐실 6종(DS_DEPTH_ON_STENCIL_ON · DS_DEPTH_OFF_STENCIL_ON · DS_DEPTH_WRITE_OFF_STENCIL_ON · DS_DEPTH_ON_STENCIL_EQUAL_KEEP · DS_DEPTH_ON_STENCIL_EQUAL_INCR · DS_DEPTH_ON_STENCIL_NOTEQUAL_KEEP) (엔진 기본, `LoadEngineAssets()`가 로드) + EX)DepthStencilState.json
 │   ├── BlendState/                   # BlendState JSON — BS_DEFAULT / BS_ADD (엔진 기본, `LoadEngineAssets()`가 로드) + EX)BlendState.json
 │   ├── RasterizerState/              # RasterizerState JSON — RS_SOLID · RS_WIREFRM · RS_CULLBACK · RS_CULLFRONT · RS_WIRECULLBACK · RS_WIRECULLFRONT + 각각의 `_FCCW` 12종 (엔진 기본, `LoadEngineAssets()`가 로드)
+│   ├── SamplerState/                 # SamplerState JSON 37종 — `Filter_<Point|Bi_Linear|Tri_Linear|Anistropy_Linear>_Sampler_<주소모드>` 36종 + `Filter_Shadow_Comparison_Sampler` (엔진 기본, `LoadEngineAssets()`가 로드)
+│   ├── DepthStencilArray/            # DepthStencil Array JSON 예시(EX)DepthStencilArray.json) — 현재 로드하는 코드 없음. CSM은 코드에서 생성
 │   ├── BuiltIn/                      # 엔진 소유 Built-In 에셋 (`LoadBuiltIn*`, 엔진 에셋 루트 고정)
 │   │   ├── StaticMesh/               #   Quad2D_Mesh.json (정점 배열이 JSON에 직접 들어 있음)
 │   │   ├── Shader/ · ShaderResource/ #   DefaultQuad2D Vertex/Pixel Shader (JSON + HLSL 소스)
@@ -232,6 +238,7 @@ Engine/ForestPearlEngine/
 │       ├── LambertLight.hlsli        # LambertLight() 계산 함수 (Lambert, max(dot(N,L),0))
 │       ├── SpecularBlinPhong.hlsli   # SpecularBlinPhongLight() 계산 함수
 │       ├── BumpMapping.hlsli         # CalculateBumpNormal() — Tangent Space 노멀 맵을 View 공간 노멀로 변환
+│       ├── CascadeShadow.hlsli       # CalculateShadow() — Cascade Shadow Map 샘플링 (PS `b13` · `t126` · `s14`)
 │       ├── DefaultGizmoVertexShader.vsh / DefaultGizmoPixelShader.psh  # Grid / Axis 기즈모용 (라이트 없음)
 │       ├── NormalDebugVertexShader.vsh / NormalDebugPixelShader.psh    # Normal Line용
 │       ├── DefaultSkyBoxQuadVertexShader.vsh / DefaultSkyBoxQuadPixelShader.psh  # SkyBox용 (클립 공간 Quad → 월드 방향 uvw → TextureCube 샘플, [SkyBox](#skybox))
@@ -367,7 +374,7 @@ classDiagram
 
 ### GameInstance SubSystem
 
-`FPGameInstance`는 싱글톤이며, 게임 실행 중 하나만 존재해야 하는 시스템 15개를 배열로 보관합니다.
+`FPGameInstance`는 싱글톤이며, 게임 실행 중 하나만 존재해야 하는 시스템 16개를 배열로 보관합니다.
 접근 방법은 모두 같습니다.
 
 ```cpp
@@ -390,6 +397,7 @@ FPAssetLoader* AssetLoader =
 | `FPCameraList` | `GetCameraList()` | `CameraItem` 등록/해제 |
 | `FPSceneCaptureList` | `GetSceneCaptureList()` | `SceneCaptureItem` 등록/해제. `FPSceneCaptureComponent2D` 등이 `RegistRenderList()`로 등록하며, `Renderer::CreateSceneCaptureList()`가 매 프레임 이 목록을 복사해 [SceneCapture 렌더 패스](#scenecapture--rendertarget-mirror-데모)를 돈다 |
 | `FPSkyLightRenderList` | `GetSkyLightRenderList()` | `FPSkyLightRenderItem` 등록/해제. `FPSkyLightComponent`가 등록하며, `Renderer::CreateSkyLightRenderList()`가 매 프레임 복사해 [Environment Mapping](#environment-mapping-sky-light--cube-map)에 쓴다. 여러 개가 등록돼도 매 프레임 첫 번째 항목만 실제로 적용됨 |
+| `FPCascadeShadowRenderList` | `GetCascadeShadowRenderList()` | `FPCascadeShadowRenderItem` 등록/해제. `FPDirectionalLightComponent`가 생성자에서 등록하며, `Renderer::CreateCascadeShadowRenderList()`가 매 프레임 `CastShadow`인 항목만 복사해 [Cascade Shadow Map](#cascade-shadow-map-csm)에 씀 |
 | `FPGameProjectSetting` | `GetGameProjectSetting()` | 윈도우 클래스/타이틀, 창 크기(기본 960×600), 클라이언트 영역 크기, Aspect, **MSAA / AF / FullScreen**(`GameSetting.json`에서 `ProjectSetting()`이 읽어 채움) |
 
 ### 엔진 구성 요소 전체 목록
@@ -421,7 +429,8 @@ FPAssetLoader* AssetLoader =
 | `FPVector2/3/4` | `Define/FPMath.h` | 벡터. `FPVector3`는 `+ - *`, `Length`, `Normalize` |
 | `FPQuaternion` | `Define/FPMath.h` | 사원수 곱, `ToEuler`, `Normalize` |
 | `FPMatrix` | `Define/FPMath.h` | `DirectX::XMMATRIX` 래퍼. `*` 연산자. **행렬 함수는 자유 함수로 이동**: `MatrixInverse(M)` · `Transpose(M)` · `MatrixIdentity()` · `MatrixScaling(x,y,z)` · `MatrixTranslation(x,y,z)` · `MatrixOrthographicOffCenterLH(...)` · `MatrixReflect(Plane)`. 예전의 `FPMatrix::MatrixIdentity()` 같은 **멤버 · static 함수와 `M.Transpose()` · `M.MatrixInverse()`는 삭제**돼 `Transpose(M)`처럼 불러야 합니다 |
-| 함수 | `Define/FPMath.h` | `DegToRad / RadToDeg / Clamp`, `Rotate / Conjugate / Inverse / FromEuler / AngleAxis`, `NormalizeAxis`, `MatrtixTranslation / MatrixRotationQuaternion / MatrixScaling`, `PlaneFromPointNormal(Point, Normal)`(`FPVector4` 평면) · `MatrixReflect(Plane)`(반사 행렬), `MatrixLookAtLH / MatrixLookToLH / MatrixPerspectiveFovLH / MatrixOrthographicOffCenterLH` (카메라 투영 모드 전환에 사용) |
+| `FPAABB` · `FPBoxSphereBounds` | `Define/FPMath.h` | `FPAABB{ Min, Max }`, `FPBoxSphereBounds{ Origin, BoxExtent(각 축 절반 길이), SphereRadius }` ([Bounds](#bounds-aabb--boxspherebounds)) |
+| 함수 | `Define/FPMath.h` | `DegToRad / RadToDeg / Clamp`, `Rotate / Conjugate / Inverse / FromEuler / AngleAxis`, `NormalizeAxis`, `MatrtixTranslation / MatrixRotationQuaternion / MatrixScaling`, `PlaneFromPointNormal(Point, Normal)`(`FPVector4` 평면) · `MatrixReflect(Plane)`(반사 행렬), `MatrixLookAtLH / MatrixLookToLH / MatrixPerspectiveFovLH / MatrixOrthographicOffCenterLH` (카메라 투영 모드 전환에 사용) · Bounds: `TransformCoord(Point, M)`(w 나누기 포함) · `TransformBounds(Bounds, M)`(Box 8개 코너를 변환해 다시 감쌈) · `BoundsFromAABB(AABB)` · `CombineBounds(A, B)`(두 Box의 합집합) |
 | `FTransform` | `FTransform.h` | Location, Rotation(Euler, Degree), QuaternionRotation, Scale + 각 행렬, `Right / Up / Forward`(예전 오타 `Foraward`가 **`Forward`로 수정됨**) |
 | 정점 스트림 | `Define/FPDataDefine.h` | `POSITION_VERTEX`(12 byte) · `NORMAL_VERTEX`(12) · `COLOR_VERTEX`(16) · `UV_VERTEX`(8), 인덱스 `INDEX_16BIT` · `INDEX_32BIT`(삼각형 1개). `VERTEX`는 이들을 묶은 조립용 구조체 ([정점 스트림 분리와 Index Buffer](#정점-스트림-분리와-index-buffer)) |
 | `Topology` | `Define/FPDataDefine.h` | `TRIANGLELIST`, `TRIANGLESTRIP`, `LINELIST` |
@@ -466,8 +475,7 @@ sequenceDiagram
     Eng->>Game: RegistProjectName()
     Note over Eng: CreateFPEWindow()<br/>Raw Input 등록
     Eng->>Ren: InitializeRenderer(hwnd)
-    Note over Eng: RenderingDevice::CreateSamplers()
-    Note over Eng: LoadEngineAssets() - Default Shader / Texture / Material(SkyBox 포함) / DepthStencilState / BlendState / RasterizerState / Built-In(Quad2D · RenderTarget · BackBufferDepthStencil)
+    Note over Eng: LoadEngineAssets() - Default Shader / Texture / Material(SkyBox 포함) / DepthStencilState / BlendState / RasterizerState / SamplerState(37종) / Built-In(Quad2D · RenderTarget · BackBufferDepthStencil)
     Eng->>Game: LoadLevel()
     Eng->>Game: LoadClassRegist()
     Eng->>Game: LoadAssets()
@@ -485,7 +493,7 @@ sequenceDiagram
 
 | 단계 | 함수 | 내용 |
 |:-:|---|---|
-| 1 | `PreInitialize()` | GameInstance 생성 → `RegistProjectName()`(`LoadGameSetting("GameSetting.json")`) → `GameProjectSetting->ProjectSetting()`(창 크기/MSAA/AF/전체화면 반영) → 윈도우 생성 → Raw Input 등록 → `RenderDevice->SetMSAA/SetAF()` → Renderer 초기화(스왑체인·깊이버퍼가 이 MSAA 값으로 생성) → `CreateSamplers()`(AF 값으로 Anisotropic 샘플러 생성) → 엔진 에셋 로드(`BlendState` JSON 포함 — Blend State 객체는 `AllAssetDataCreate()`가 만듦) → `LoadLevel()` → `LoadClassRegist()` → `LoadAssets()` → `AssetManager->AllAssetDataCreate()` |
+| 1 | `PreInitialize()` | GameInstance 생성 → `RegistProjectName()`(`LoadGameSetting("GameSetting.json")`) → `GameProjectSetting->ProjectSetting()`(창 크기/MSAA/AF/전체화면 반영) → 윈도우 생성 → Raw Input 등록 → `RenderDevice->SetMSAA/SetAF()` → Renderer 초기화(스왑체인·깊이버퍼가 이 MSAA 값으로 생성) → 엔진 에셋 로드(`BlendState` JSON 포함 — Blend State 객체는 `AllAssetDataCreate()`가 만듦) → `LoadLevel()` → `LoadClassRegist()` → `LoadAssets()` → `AssetManager->AllAssetDataCreate()` |
 | 2 | `Initialize()` | `OpenLevel(ReturnStartLevel())` → `World::Initialize()` → `World::BeginPlay()` |
 | 3 | `GameLoop()` | 아래 프레임 루프 |
 | 4 | `Finalize()` | `World::Finalize()`(Actor 삭제) → `Renderer::Finalize()` |
@@ -510,11 +518,14 @@ void ForestPearlEngine::GameLoop()
         Render->CreateCamList();        // ③ Render List 생성
         Render->CreatePostProcessList();   // 활성 카메라 중 PostProcess Material이 걸린 것만
         Render->CreateLightRenderList();   // CreateMeshRenderList보다 먼저
+        Render->CreateSkyLightRenderList();
         Render->CreateMeshRenderList();
         Render->CreateGizmoRenderList();
         Render->CreateNormalRenderList();
         Render->CreateUIRenderList();
         Render->CreateSceneCaptureList();  // RenderTarget에 비추는 가상 카메라 목록
+        Render->CreatePlanarReflectionList();
+        Render->CreateCascadeShadowRenderList();  // CastShadow인 Directional Light의 그림자 설정
 
         Render->ClearDepthStencil();    // ④ Render Pass — 백버퍼 + 등록된 모든 DepthStencil을 미리 Clear
         Render->PreDepthStencilRenderPass();  // Opaque 메시만 깊이 선기록(PS 없음) + CustomDepthStencil — SceneCapture보다 먼저
@@ -538,11 +549,11 @@ flowchart TD
     B2 --> B3["World::Tick"]
     B3 --> B4["GameMode::Tick → Controller::Tick<br/>입력 큐 처리, ControlRotation 적용"]
     B4 --> B5["모든 Actor::Tick<br/>RootComponent::Tick 재귀 - 행렬 갱신"]
-    B5 --> R["③ Render List 생성<br/>Cam · PostProcess · Light · Mesh · Gizmo · Normal · UI · SceneCapture"]
+    B5 --> R["③ Render List 생성<br/>Cam · PostProcess · Light · SkyLight · Mesh · Gizmo · Normal · UI · SceneCapture · PlanarReflection · CascadeShadow"]
     R --> C["④ ClearDepthStencil<br/>백버퍼 + 모든 DepthStencil Clear"]
     C --> PD["PreDepthStencilRenderPass<br/>Opaque 메시 깊이 선기록 + CustomDepthStencil"]
     PD --> SC["SceneCaptureRenderPass<br/>RenderTarget에 씬을 미리 그려 둠(거울 등)"]
-    SC --> D["MeshRenderPass<br/>Mesh RT에 그림 → Quad2D로 백버퍼 합성"]
+    SC --> D["MeshRenderPass<br/>카메라마다 CSM 갱신 → Mesh RT에 그림 → Quad2D로 백버퍼 합성"]
     D --> PP["PostProcessRenderPass<br/>PostProcess Material이 있으면 Mesh RT → PostProcess RT → Quad2D 합성"]
     PP --> G["GizmoRenderPass<br/>SceneRenderTarget(Mesh RT 또는 PostProcess RT)에 이어 그림 → Quad2D 합성"]
     G --> N["NormalRenderPass"]
@@ -646,11 +657,14 @@ void ForestPearlEngine::GameLoop()
         Render->CreateCamList();            // ③ Render List 생성 (게임 로직이 끝난 뒤의 스냅샷)
         Render->CreatePostProcessList();    // PostProcess Material이 걸린 활성 카메라만
         Render->CreateLightRenderList();    // Mesh 목록이 Light 목록을 사용하므로 먼저 생성
+        Render->CreateSkyLightRenderList();
         Render->CreateMeshRenderList();
         Render->CreateGizmoRenderList();
         Render->CreateNormalRenderList();
         Render->CreateUIRenderList();
         Render->CreateSceneCaptureList();   // RenderTarget에 비추는 가상 카메라 목록
+        Render->CreatePlanarReflectionList();
+        Render->CreateCascadeShadowRenderList();  // CastShadow인 Directional Light의 그림자 설정
 
         Render->ClearDepthStencil();        // ④ Render Pass — 백버퍼 + 등록된 모든 DepthStencil Clear
         Render->PreDepthStencilRenderPass();  // Opaque 깊이 Pre-Pass + CustomDepthStencil
@@ -667,7 +681,7 @@ void ForestPearlEngine::GameLoop()
 
 ```mermaid
 flowchart LR
-    T["Tick<br/>게임 로직"] --> L["Render List 생성<br/>Cam · PostProcess · Light · Mesh · Gizmo · Normal · UI · SceneCapture"]
+    T["Tick<br/>게임 로직"] --> L["Render List 생성<br/>Cam · PostProcess · Light · SkyLight · Mesh · Gizmo · Normal · UI · SceneCapture · PlanarReflection · CascadeShadow"]
     L --> C["ClearDepthStencil"]
     C --> PD["PreDepthStencilRenderPass"]
     PD --> SC["SceneCaptureRenderPass"]
@@ -683,8 +697,9 @@ flowchart LR
 |---|---|---|---|---|---|
 | `PreDepthStencilRenderPass` | `OpaqueRenderList` | `TRIANGLELIST`(이 Pass가 직접 설정) | 카메라 → ① Pre-Depth(전체 Opaque) → ② CustomDepthStencil(`bCustomDepthStencil`인 것만) | VS 쪽 Object · Material 상수 버퍼 (**렌더 타깃 없음, PS 해제**, 시작 시 14개 슬롯 바인딩 + Letterbox 뷰포트 설정) | 목록의 `Priority` 오름차순. 자세한 내용은 [Depth Pre-Pass](#depth-pre-pass) |
 | `SceneCaptureRenderPass` | `SceneCaptureList` (스냅샷) × Sky · Opaque · Masked · Translucent 목록 | `TRIANGLELIST` | 캡처 항목 → 메시(전체, `HiddenActors`는 건너뜀) → 서브 메시 | Object(캡처의 View/Proj로 재계산) · Light · Material — `MeshRenderPass`와 동일한 바인딩 코드 재사용 | 없음. 각 캡처 항목을 순서대로 자신의 RenderTarget에 그리고 끝나면 바로 `Resolve` ([SceneCapture](#scenecapture--rendertarget-mirror-데모) 참고) |
-| `MeshRenderPass` | Sky · Opaque · Masked · Translucent 목록 | `TRIANGLELIST` | 카메라 → 메시 → 서브 메시 (RenderTarget **하나**에 그림, 카메라마다 Resolve) | Object · **Light · Material** (Renderer가 구성, [Light · Normal](#per-pixel-light--normal-line)) | **서브 패스 순서(Sky → Opaque → Masked → Translucent)** 안에서 `Priority` 오름차순 ([Mesh 서브 패스](#mesh-서브-패스)). Blend는 메시마다 Material의 [BlendState](#alpha-blend--blendstate), 끝에서 `BS_DEFAULT`로 복원. Rasterizer는 **메시마다** `SetRasterizerState(true, !TwoSided)` ([Two Sided](#two-sided-material)). 끝에서 `Quad2DRenderPass` 호출 ([RenderTarget 합성](#rendertarget-합성-quad2d--letterbox)) |
+| `MeshRenderPass` | Sky · Opaque · Masked · Translucent 목록 | `TRIANGLELIST` | 카메라 → 메시 → 서브 메시 (RenderTarget **하나**에 그림, 카메라마다 Resolve) | Object · **Light · Material** (Renderer가 구성, [Light · Normal](#per-pixel-light--normal-line)) | **서브 패스 순서(Sky → Opaque → Masked → Translucent)** 안에서 `Priority` 오름차순 ([Mesh 서브 패스](#mesh-서브-패스)). Blend는 메시마다 Material의 [BlendState](#alpha-blend--blendstate), 끝에서 `BS_DEFAULT`로 복원. Rasterizer는 **메시마다** `SetRasterizerState(true, !TwoSided)` ([Two Sided](#two-sided-material)). 끝에서 `Quad2DRenderPass` 호출 ([RenderTarget 합성](#rendertarget-합성-quad2d--letterbox)) 카메라마다 `PlanarReflectionRenderPass` → **`UpdateCascadeShadowMaps`** 다음, Sky 뒤의 Opaque ~ Translucent를 **그림자를 지는 Directional Light 수만큼 반복**합니다([Cascade Shadow Map](#cascade-shadow-map-csm)) |
 | `PlanarReflectionRenderPass(CamItem)` | `PlanarReflectionList` × Sky · Opaque · Masked · Translucent 목록(**`bUsePlanarForwardReflections`가 아닌** 메시) | `TRIANGLELIST` | 반사 항목 → 메시 → 서브 메시. `MeshRenderPass`의 **카메라마다 맨 앞**과 `SceneCaptureRenderPass`의 **캡처마다 맨 앞**에서 호출 | Object(반사 카메라 View로 재계산) · Light · Material, **VS `b13`에 Clip Plane 활성** | Sky → Opaque → Masked → Translucent (목록마다 `Priority` 오름차순). 끝에서 `Resolve`. [Planar Reflection](#planar-reflection-평면-반사) |
+| `CascadeShadowMapRenderPass` (`UpdateCascadeShadowMaps`가 호출) | Opaque · Masked · Translucent 목록 중 `bCastShadow` 메시 | `TRIANGLELIST` | Light → Cascade → 메시 (`CascadeShadowMap_N`의 Cascade 슬라이스 DSV에, 컬러 RT 없이 · PS 해제 · `DS_DEPTH_ON`, 뷰포트 = `ShadowResolution`²) | Object(`View = LightVP`, `Projection = 단위 행렬`) | 없음. `MeshRenderPass`(카메라마다) · `PlanarReflectionRenderPass`(반사 항목마다) · `SceneCaptureRenderPass`(캡처마다)에서 매번 다시 그리고, 그 시점의 그리기가 끝나면 `ClearCascadeShadowMaps()`로 비움 |
 | `PostProcessRenderPass` | `PostProcessList` (PostProcess Material이 걸린 활성 카메라) | `TRIANGLESTRIP` | PostProcess 항목 → Quad 1개(Material의 PS로 Mesh RT를 다시 그림) | Object(Quad2D MVP, VS · PS `b0`) · Material의 VS/PS 상수 버퍼 | 없음. 목록이 비어 있으면 **즉시 return**(Quad2D 호출도 안 함). 끝에서 `Quad2DRenderPass` 호출 — 자세한 내용은 [PostProcess](#postprocess-camera-단위) |
 | `GizmoRenderPass` | `GizmoRenderList` | `LINELIST` | 카메라 → 기즈모 → 서브 메시 (`SceneRenderTarget`에 Clear 없이) | Object · Material | `Priority` 오름차순. 끝에서 `Quad2DRenderPass` 호출 |
 | `NormalRenderPass` | `NormalRenderList` | `LINELIST` (`DrawInstanced`) | 카메라 → 메시 → 서브 메시 (**백버퍼에 직접**, Letterbox 뷰포트) | Object · **Normal Matrix** | 없음 (`bNormal`이 `true`일 때만 실행) |
@@ -698,14 +713,15 @@ flowchart LR
 
 | Render List 생성 함수 | 하는 일 |
 |---|---|
-| `CreateCamList` | `Active`인 카메라만 복사 (Location · Rotation · Scale · View · Projection). 이전의 ViewPort 첨부 · `TripleCam` 분기는 삭제됨 |
+| `CreateCamList` | `Active`인 카메라만 복사 (Location · Rotation · Scale · View · Projection). 이전의 ViewPort 첨부 · `TripleCam` 분기는 삭제됨 · Projection 설정(`Fov` · `Aspect` · `Zn` · `Zf` · `ProjectionMode` · `OrthoWidth`)도 복사 — CSM의 Cascade 절두체 계산용 |
 | `CreatePostProcessList` | 카메라 목록을 다시 순회해 `Active`이고 `PostProcessMaterial`(포인터)이 `nullptr`이 아닌 것만 `PostProcessItem{Material}`로 복사. `FPCameraComponent::SetPostProcessMaterial`을 부르지 않은 카메라는 대상에서 빠짐 |
 | `CreateMeshRenderList` | `Active`인 `RenderItem`을 값으로 복사(Transform · 셰이더 이름)하고, **활성 라이트 최대 64개를 `LightItem` 하나로 묶어** **Material의 VS · PS 상수 버퍼 데이터(리플렉션으로 만들어진 `MaterialConstBuffer` 등)와 텍스처 · 샘플러 목록(`Resources` / `Samplers`)을 값으로 복사**한 뒤 Light 블록을 슬롯 2(`b2`)에 추가 등록. Directional은 메시의 Local 방향으로 변환하고, Point는 월드 위치를 함께 전달. 각 항목을 `bIsSky`(→ `SkyBoxRenderList`) 또는 `Detail`(`Opaque` / `Masked` / `Translucent`)에 따라 **4개 목록 중 하나**에 넣고, **목록마다** `Priority` 오름차순 정렬 |
 | `CreateLightRenderList` | `Active`인 라이트를 값으로 복사 (LightType · Direction · Range · Diffuse · Ambient · Specular · Attenuation · LightColor · Transform) |
 | `CreateGizmoRenderList` | `GizmoRenderItem`에 대해 동일 |
 | `CreateNormalRenderList` | `Active`인 `NormalRenderItem`을 복사하고, 오브젝트마다 **Normal Matrix**(`transpose(inverse(World))`)와 `NormalLength`를 VS 상수 버퍼 슬롯 2(`b2`)로 등록. World 행렬식이 0이거나 비정상이면 해당 항목 제외 |
 | `CreateUIRenderList` | `active`인 텍스트만 복사하고 `Priority` 오름차순 정렬 |
-| `CreateSceneCaptureList` | `Active`이고 `CaptureThisFrame`인 `SceneCaptureItem`만 값으로 복사(Location · Rotation · Scale · View · Projection · RenderTarget · DepthStencil · HiddenActors). 복사한 뒤 `CaptureThisFrame`을 `CaptureEveryFrame` 값으로 되돌려, 1회성 `CaptureScene()` 호출은 그 프레임에만 캡처되게 함 |
+| `CreateSceneCaptureList` | `Active`이고 `CaptureThisFrame`인 `SceneCaptureItem`만 값으로 복사(Location · Rotation · Scale · View · Projection · RenderTarget · DepthStencil · HiddenActors). 복사한 뒤 `CaptureThisFrame`을 `CaptureEveryFrame` 값으로 되돌려, 1회성 `CaptureScene()` 호출은 그 프레임에만 캡처되게 함 Projection 설정(`Fov` · `Aspect` · `Zn` · `Zf` · `ProjectionMode` · `OrthoWidth`)도 함께 복사 |
+| `CreateCascadeShadowRenderList` | `FPCascadeShadowRenderList`를 순회해 **`CastShadow`가 `true`인 항목만** `RenderingData::FPCascadeShadowRenderItem`(Direction · CascadeCount · ShadowResolution · DynamicShadowDistance · CascadeSplitLambda · CascadeTransitionFraction · ShadowDistanceFadeoutFraction · ShadowBias · ShadowSlopeBias · DistanceMargin · CascadeShadowMapName)으로 복사 |
 
 #### ⚠️ Render Pass 초기화가 불안정합니다
 
@@ -905,7 +921,7 @@ struct UIContextItem         // 텍스트 1줄
 | 9 | `CreateVertexShaderConstBuffer(9232)`<br/>`CreatePixelShaderConstBuffer(9232)` | **9232 byte** 상수 버퍼를 **VS 14개 · PS 14개** 생성만 합니다(Light 블록 `16 + 64 × 144` byte를 담기 위해 320 byte에서 확장). `b0 ~ b13`으로의 바인딩은 각 Render Pass가 시작할 때 `VSSetConstantBuffers` / `PSSetConstantBuffers`로 직접 합니다([불안정 요소](#️-render-pass-초기화가-불안정합니다)) |
 
 > [!NOTE]
-> 깊이 버퍼(백버퍼 `DepthStencil`)와 Depth Stencil State(`DS_DEPTH_ON/OFF/WRITE_OFF` 등)는 더 이상 `InitializeRenderer`가 C++로 만들지 않습니다. 둘 다 **Built-In / 엔진 JSON 에셋**이 되어 `LoadEngineAssets()` → `AllAssetDataCreate()` 단계에서 생성됩니다([Built-In 에셋](#built-in-에셋), [DepthStencil · DepthStencilState 에셋](#depthstencil--depthstencilstate-에셋)). 샘플러(`CreateSamplers()`)도 `InitializeRenderer` 안이 아니라 `ForestPearlEngine::PreInitialize()`에서 `InitializeRenderer` **직후** 별도로 호출됩니다([부팅 순서](#부팅-순서)).
+> 깊이 버퍼(백버퍼 `DepthStencil`)와 Depth Stencil State(`DS_DEPTH_ON/OFF/WRITE_OFF` 등)는 더 이상 `InitializeRenderer`가 C++로 만들지 않습니다. 둘 다 **Built-In / 엔진 JSON 에셋**이 되어 `LoadEngineAssets()` → `AllAssetDataCreate()` 단계에서 생성됩니다([Built-In 에셋](#built-in-에셋), [DepthStencil · DepthStencilState 에셋](#depthstencil--depthstencilstate-에셋)). 샘플러도 더 이상 C++로 만들지 않습니다 — 예전의 `CreateSamplers()`가 삭제되고 [SamplerState JSON 에셋](#samplerstate-json-에셋)이 됐습니다(`AllAssetDataCreate()`가 생성).
 
 ### 상수 버퍼
 
@@ -946,7 +962,8 @@ namespace FPConstantBufferRenderDataUtil
 | VS | `b13` | **엔진 예약** (Renderer) | `ClipPlanarReflectionConstBuffer`: `float4 GlobalClipPlane` · `uint ClipPlaneEnabled` · `float3 Padding` · `matrix ReflectionViewProj`(16바이트 정렬). **모든 Mesh · SceneCapture · Gizmo · Normal · Quad2D · PostProcess 그리기 직전에 엔진이 채웁니다**(평소엔 `ClipPlaneEnabled = 0`, 평면 반사 캡처 중에만 평면 활성). 엔진 VS(`DefaultVertexShader` · `DefaultGizmoVertexShader` · `NormalDebugVertexShader` · `DefaultSkyBoxQuadVertexShader` · `DefaultQuad2DVertexShader` · `DefaultPlanarReflectionVertexShader`)가 이 cbuffer와 `SV_ClipDistance0`을 선언합니다. **커스텀 VS cbuffer는 VS `b13`을 쓰지 마세요**([Planar Reflection](#planar-reflection-평면-반사)) | 그리기 호출 |
 | PS | `b0` | **엔진 예약** (Object) | `CreateMeshRenderList`가 VS `b0`과 **같은 `MVPConstBuffer`(1280 byte)** 를 `Device.UpdatePixelShaderSubresource(0, …)`로 PS `b0`에도 그대로 복사. **Per-Pixel Light 경로**(`PixelLight.hlsli`)가 `mView`를 여기서 읽음. 뷰포트 Pixel 상수는 현재 사용하지 않아 이 슬롯과 겹치지 않음 | 오브젝트 |
 | PS | `b2` | **엔진 예약** (Renderer) | Mesh: **Light 블록**(VS `b2`와 같은 구조) — **Per-Pixel Light 경로**(현재 기본 활성 경로)가 여기로 바인딩됨. `CreateMeshRenderList`는 `MeshRenderData.PixelConstBuffer`에 등록(VS 쪽 등록은 주석 처리됨) | 오브젝트 |
-| PS | `b1, b3 ~ b13` | **Material** (Mesh) | Material JSON `Parameters`에 `"Type": "PS"`로 적은 cbuffer. `register(b#)` 번호 그대로. 기본 `MaterialConstBuffer`(`b3`)가 여기 포함 — `PixelLight.hlsli`가 PS에 포함되므로 | 오브젝트 |
+| PS | `b1, b3 ~ b12` | **Material** (Mesh) | Material JSON `Parameters`에 `"Type": "PS"`로 적은 cbuffer. `register(b#)` 번호 그대로. 기본 `MaterialConstBuffer`(`b3`)가 여기 포함 — `PixelLight.hlsli`가 PS에 포함되므로 | 오브젝트 |
+| PS | `b13` | **엔진 예약** (Renderer) | `CascadeShadowConstBuffer`(`CascadeShadow.hlsli`) — Cascade별 `mLightViewProj[8]` · `CascadeNear/Far/DepthRange[8]` · `CascadeCount` · `DynamicShadowDistance` · `CascadeTransitionFraction` · `ShadowDistanceFadeoutFraction` · `ShadowBias` · `ShadowSlopeBias` · `CastShadow` · `LightDirectionView`. `DrawMeshRenderItem` · `DrawSceneCaptureMeshItem`이 **매 그리기마다** 덮어씀(그림자가 없으면 0으로 채운 값 → `CalculateShadow`가 1 반환). 함께 PS **`t126`**(`CascadeShadowMap`, `Texture2DArray<float>`)과 **`s14`**(`Filter_Shadow_Comparison_Sampler`)도 엔진이 바인딩하므로 Material이 쓰면 안 됩니다 ([Cascade Shadow Map](#cascade-shadow-map-csm)) | 오브젝트마다 |
 
 **Mesh Pass의 슬롯은 "절대 번호"입니다.** `FPConstantBufferInfo::Slot`이 곧 셰이더 레지스터 번호이며, 리플렉션이 cbuffer의 `BindPoint`를 그대로 슬롯으로 기록합니다. 따라서 Material cbuffer를 `register(b4)`로 선언하면 해당 스테이지의 `b4`로 갱신됩니다. 뷰포트 상수는 슬롯 `1`, Light 블록은 슬롯 `2`로 등록되어 있습니다.
 
@@ -1281,7 +1298,7 @@ Light는 **컴포넌트 → `FPLightRenderList` → `CreateLightRenderList`(값 
 |---|---|
 | `FPLightComponentBase` | `FPSceneComponent`를 상속만 하는 **빈 뼈대**(생성자/소멸자뿐). 예전엔 여기 있던 `FPLightConstantBuffer`·`RegistLightRenderList` 등이 모두 아래 `FPLightComponent`로 옮겨졌습니다 — Directional/Point류와 전혀 다른 데이터를 갖는 `FPSkyLightComponent`가 같은 조상을 공유하면서도 불필요한 필드를 물려받지 않도록 분리한 것입니다 |
 | `FPLightComponent` (`FPLightComponentBase` 상속) | Directional/Point/Spot/Rect 라이트의 공통 베이스. `FPLightConstantBuffer`(Direction · Range · Diffuse · Ambient · Specular · Attenuation · LightColor · LightType)를 들고 `FPLightRenderList`에 등록(`RegistLightRenderList`)합니다. `SetActive` · `SetDirection` · `SetRange` · `SetDiffuse` · `SetAmbient` · `SetSpecular` · `SetAttenuation` · `SetLightColor` |
-| `FPLightComponent` → `FPDirectionalLightComponent` | `LightType_Direction`. 생성자에서 기본값을 채우고 렌더 목록에 등록 |
+| `FPLightComponent` → `FPDirectionalLightComponent` | `LightType_Direction`. 생성자에서 기본값을 채우고 렌더 목록에 등록 생성자에서 `AssetManager->CreateCascadeShadowMap(CascadeCount, ShadowResolution)`으로 **Cascade Shadow Map을 만들고** `FPCascadeShadowRenderList`에도 등록합니다. 그림자 설정 Setter는 [Cascade Shadow Map](#cascade-shadow-map-csm) 참고 |
 | `FPLightComponent` → `FPLocalLightComponent` → `FPPointLightComponent` | `LightType_Point`. 위치(컴포넌트의 월드 위치)와 `Range` · `Attenuation`을 사용 |
 | `FPSpotLightComponent` · `FPRectLightComponent` | 헤더만 있는 골격. `FPLightType`에는 `LightType_Spot` · `LightType_Rect`가 정의되어 있지만 셰이더는 아직 계산하지 않음(결과 0) |
 | `FPSkyLightComponent` (`FPLightComponentBase` 직접 상속, `FPLightComponent`는 거치지 않음) | **더 이상 골격이 아니라 실제로 동작합니다.** `FPLightRenderList`가 아니라 별도의 `FPSkyLightRenderList`에 등록됩니다 — 아래 [Environment Mapping](#environment-mapping-sky-light--cube-map) 참고 |
@@ -1574,7 +1591,7 @@ void ASkyBox::SetEnvironmentMap(std::string TextureName)
 ADirectionalLight::ADirectionalLight()
 {
     LightComponent = new FPDirectionalLightComponent(this);
-    FPVector3 Dir{ 1.0f, -1.0f, 1.0f };               // 빛이 나아가는 방향 (SetDirection이 정규화)
+    FPVector3 Dir{ 0.43f, -0.64f, 0.64f };            // 빛이 나아가는 방향 (SetDirection이 정규화)
     LightComponent->SetDirection(Dir);
 }
 
@@ -1859,6 +1876,109 @@ Capture->SetOrthoWidth(40.0f);
 > - **줌**: 마우스 휠은 SpringArm 길이(`TargetArmLength`)만 바꿉니다. 직교 투영은 거리와 무관하게 크기가 같으므로 **휠 줌으로는 화면 크기가 변하지 않고**, 크기를 바꾸려면 `OrthoWidth`를 바꿔야 합니다. 거리는 `Zn ~ Zf` 클리핑에만 영향을 줍니다.
 > - **Planar Reflection**과 직교 투영의 조합도 확인하지 않았습니다.
 
+### Cascade Shadow Map (CSM)
+
+Directional Light가 **Cascade Shadow Map**으로 그림자를 만듭니다. 카메라 시야를 거리별 구간(Cascade)으로 나눠 구간마다 Shadow Map 한 장을 그리고, PS가 픽셀의 깊이에 맞는 Cascade를 골라 그림자를 판정합니다.
+
+```mermaid
+flowchart TD
+    DL["FPDirectionalLightComponent 생성자<br/>CreateCascadeShadowMap(4, 2048) → CascadeShadowMap_N<br/>FPCascadeShadowRenderList에 설정 포인터 등록"] --> CL["Renderer::CreateCascadeShadowRenderList<br/>CastShadow인 Light만 복사"]
+    CL --> U["UpdateCascadeShadowMaps(CamItem)<br/>MeshRenderPass(카메라마다) · PlanarReflectionRenderPass(반사 항목마다) · SceneCaptureRenderPass(캡처마다)"]
+    U --> NF["CalculateCascadeNearFar<br/>Log / Uniform Split을 CascadeSplitLambda로 보간"]
+    NF --> FR["CalculateFrustumCascade<br/>Cascade별 절두체 8점 · 중심"]
+    FR --> LVP["CalculateCascadeLightViewProj<br/>Bounding Sphere 직교 투영 + Texel Snapping"]
+    LVP --> SM["CascadeShadowMapRenderPass<br/>슬라이스 DSV에 bCastShadow 메시 깊이만"]
+    SM --> CB["CascadeShadowConstBuffer → PS b13<br/>CascadeShadowMap → t126, 비교 샘플러 → s14"]
+    CB --> PS["PS: CalculateShadow(WorldPos, ViewDepth, N)<br/>Diffuse · Specular × Shadow"]
+    PS --> CLR["그 시점의 그리기가 끝나면 ClearCascadeShadowMaps()"]
+```
+
+#### 설정 — `FPDirectionalLightComponent`
+
+| 멤버 (`protected`) | 기본값 | Setter | 설명 |
+|---|---|---|---|
+| `CastShadow` | `true` | **없음** | 이 Light가 그림자를 만드는지. `false`면 `CreateCascadeShadowRenderList`가 건너뜀 (아래 WARNING 참고) |
+| `CascadeCount` | `4` | `SetCascadeCount(n)` | Cascade 수. **8보다 크면 8로 잘림**(`MAX_CASCADE`), 0은 막지 않음. 바꾸면 `UpdateCascadeShadowMap`이 Shadow Map을 다시 만듦 |
+| `ShadowResolution` | `2048` | `SetShadowResolution(n)` | Cascade 한 장의 해상도(정사각). 바꾸면 Shadow Map을 다시 만듦 |
+| `DynamicShadowDistance` | `150.0` | `SetDynamicShadowDistance(f)` | 그림자를 그리는 최대 거리. Cascade 분할은 `min(카메라 Zf, 이 값)`까지 |
+| `CascadeSplitLambda` | `0.75` | `SetCascadeSplitLambda(f)` | `0` = 균등 분할, `1` = 로그 분할. 그 사이는 보간 |
+| `CascadeTransitionFraction` | `0.1` | `SetCascadeTransitionFraction(f)` | Cascade 끝부분에서 다음 Cascade와 섞는 구간의 비율 |
+| `ShadowDistanceFadeoutFraction` | `0.1` | `SetShadowDistanceFadeoutFraction(f)` | `DynamicShadowDistance` 앞에서 그림자를 서서히 없애는 구간의 비율 |
+| `ShadowBias` | `0.3` | `SetShadowBias(f)` | 고정 깊이 Bias(월드 단위 — 셰이더에서 Cascade의 Light 깊이 범위로 나눠 정규화) |
+| `ShadowSlopeBias` | `0.15` | `SetShadowSlopeBias(f)` | Slope-Scaled Bias 가중치 |
+| `DistanceMargin` | `200.0` | `SetDistanceMargin(f)` | Light 카메라를 Cascade 중심에서 빛의 반대 방향으로 `반지름 + 이 값`만큼 물려 둠. 화면 밖의 그림자 캐스터도 Shadow Map에 들어오게 함 |
+| `CascadeShadowMapName` | `"CascadeShadowMap_<번호>"` | — | `FPAssetManager::CreateCascadeShadowMap`이 자동으로 붙인 DepthStencilArray 이름(번호는 생성 순서) |
+
+메시 쪽은 `FPMeshComponent::SetCastShadow(bool)`(기본 `true`)로 Shadow Map에 그릴지 정합니다. Tri_World의 `Terrain`은 `SetCastShadow(false)`입니다.
+
+#### 리소스 — DepthStencil Array
+
+| 항목 | 내용 |
+|---|---|
+| 구조체 | `FPDepthStencilArrayInfo`(Name · SizeX/Y · Format · `ArraySize` · ClearDepth/Stencil · MSAA · ShaderResource) / `FPDepthStencilArrayData`(Texture · **`std::vector<void*> DepthStencilView`**(슬라이스마다 1개) · SRV · Stencil SRV) |
+| 생성 | `CreateCascadeShadowMap(CascadeCount, ShadowResolution)` → `D32F` · MSAA 1 · `ShaderResource: true` · `ArraySize = CascadeCount`로 Info를 등록하고 즉시 `MakeDepthStencilArray` → `RenderingDevice::CreateDepthStencilArrayTexture` / `…ArrayViews` / `…ArraySRView`(`Texture2DArray` SRV) / `…ArrayStencilSRView`(`D32F`는 스텐실이 없어 만들지 않음) |
+| 갱신 | `UpdateCascadeShadowMap(이름, Count, Resolution)` — Info를 고치고 `MakeDepthStencilArray`가 기존 리소스를 `Release`한 뒤 다시 만듦 |
+| Clear | `ClearDepthStencil()`(프레임 시작)이 모든 DepthStencilArray를 Clear하고, 각 시점의 그리기가 끝날 때 `ClearCascadeShadowMaps()`가 다시 Clear |
+
+#### 계산 — `Renderer`
+
+| 단계 | 함수 | 내용 |
+|---|---|---|
+| ① 구간 | `CalculateCascadeNearFar(Zn, Zf, Count, Distance, Lambda)` | `EffectiveFar = min(Zf, DynamicShadowDistance)`. `i`번째 경계 = `Lambda × (Zn × (Far/Zn)^(i/N)) + (1 − Lambda) × (Zn + (Far − Zn) × i/N)` |
+| ② 절두체 | `CalculateFrustumCascade(CamItem, NearFarList)` | 카메라의 `Fov` · `Aspect`(직교면 `OrthoWidth`)와 Cascade Near/Far로 투영을 다시 만들고, `View × CascadeProj`의 역행렬로 NDC 8점을 월드로 옮겨 중심을 구함. 그래서 `CameraItem` · `SceneCaptureItem`이 Projection 설정을 함께 들고 다니게 됐습니다 |
+| ③ Light 행렬 | `CalculateCascadeLightViewProj(...)` | 중심에서 가장 먼 꼭짓점까지를 반지름 `R`로 삼아 **크기가 고정된** 직교 투영 `[-R, R]²`, Near `0` · Far `R + DistanceMargin + R`. Light 위치 = 중심 − 방향 × (`R + DistanceMargin`), `MatrixLookToLH`(방향이 거의 수직이면 Up을 `+Z`로). **Texel Snapping**: Light View 공간의 중심을 텍셀 크기(`2R / ShadowResolution`) 단위로 내림해 카메라가 움직여도 그림자 가장자리가 떨리지 않게 함 |
+| ④ 그리기 | `CascadeShadowMapRenderPass(Light, Index, LightVP)` → `CascadeShadowMapMeshRenderPass` | PS `t126`을 먼저 비우고(같은 리소스 읽기/쓰기 충돌 방지) 슬라이스 DSV만 바인딩, 뷰포트 = `ShadowResolution`². Opaque · Masked · Translucent 목록의 `bCastShadow` 메시를 `DrawMeshRenderItem(..., "DS_DEPTH_ON", 0, bDisablePixelShader = true)`로 그림(`View = LightVP`, `Projection = 단위 행렬`) |
+| ⑤ 상수 | `UpdateCascadeShadowMaps(CamItem)`의 반환값 | Light마다 `CascadeShadowConstBuffer` 1개: Cascade별 `mLightViewProj` · `CascadeNear/Far` · `CascadeDepthRange`(= Light 투영 `Far − Near`) + Light 설정 + `LightDirectionView`(빛 방향을 카메라 View 공간으로 변환) |
+
+#### 셰이더 — `CascadeShadow.hlsli`
+
+| 항목 | 내용 |
+|---|---|
+| 리소스 | `Texture2DArray<float> CascadeShadowMap : register(t126)`, `SamplerComparisonState ShadowSampler : register(s14)`, `cbuffer CascadeShadowConstBuffer : register(b13)` — 모두 **PS 쪽 엔진 예약**([상수 버퍼](#상수-버퍼)) |
+| `CalculateShadow(WorldPos, ViewDepth, ViewNormal)` | `CastShadow == 0` · `CascadeCount == 0`이면 `1`(그림자 없음). `ViewDepth`로 `CascadeFar[i]`를 넘지 않는 첫 Cascade를 고르고, `NdotL`로 Slope-Scaled Bias를 더해(최대 3배, Peter-Panning 방지) 샘플합니다. Cascade 끝의 `CascadeTransitionFraction` 구간에서는 다음 Cascade와 `lerp`, `DynamicShadowDistance` 이후는 `1`, 그 앞의 `ShadowDistanceFadeoutFraction` 구간은 서서히 `1`로 |
+| `SampleCascadeShadow` | `mLightViewProj[i]`로 UV · 깊이를 구해 범위 밖이면 `1`. Bias를 `CascadeDepthRange`로 나눠 깊이에서 빼고, **3×3 PCF**(`SampleCmpLevelZero` 9탭 평균, 텍셀 크기는 `GetDimensions`로 조회) |
+| 호출 방법 | `CalculateLight(...)` 다음에 `float Shadow = CalculateShadow(mul(mInverseView, posv), posv.z, N.xyz);` → `DiffuseLit *= Shadow; SpecularLit *= Shadow;`(Ambient · Emissive는 그대로) |
+| 적용된 셰이더 | 엔진 `DefaultPixelShader` · `DefaultPlanarReflectionPixelShader`(반사 색에 곱함, 이를 위해 `b0` cbuffer 선언 추가), Tri_World `BoxPixelShader` · `DwarfPixelShader` · `TerrainPixelShader` · `ToonLinkPixelShader` · `TreePixelShader` · `WindmillWingBody`. Bump 셰이더(Dwarf · ToonLink)도 노멀 맵이 아니라 **정점 노멀 `N`**으로 Bias를 계산 |
+| 커스텀 PS | 그림자를 받으려면 `#include "CascadeShadow.hlsli"`와 위 호출을 직접 넣어야 합니다. PS의 `b13` · `t126` · `s14`는 Material용으로 쓰지 마세요. 리플렉션이 `CascadeShadowMap` · `ShadowSampler`를 Material 리소스로 잡아 빈 이름으로 먼저 덮어쓰지만, 엔진이 그 뒤에 다시 바인딩합니다 |
+
+`RenderingData::CascadeShadowConstBuffer`(C++)는 HLSL의 `float` 배열이 원소마다 16바이트를 차지하는 규칙에 맞춰 `CascadeNear/Far/DepthRange`를 `FPVector4[8]`(x만 사용)로 두고, HLSL 쪽에는 `CascadeCount`가 C++와 같은 오프셋(896)에 오도록 `float3 PaddingCascadeDepthRangeAlign`을 넣었습니다. 한쪽을 고치면 다른 쪽도 함께 고쳐야 합니다(`MAX_CASCADE` = `Cascade_MAX` = 8).
+
+#### Pass에서의 사용
+
+| Pass | 동작 |
+|---|---|
+| `MeshRenderPass` | 카메라마다 `PlanarReflectionRenderPass` → `UpdateCascadeShadowMaps(CamItem)` → RT · 뷰포트 복원 → Sky → **`ShadowList`(그림자를 지는 Light) 하나마다** PlanarReflection Opaque → Opaque → … → Translucent를 그림 → Resolve → `ClearCascadeShadowMaps()` |
+| `PlanarReflectionRenderPass` | 반사 카메라(`ReflectedCamera`, 반사 RT의 Aspect)로 `UpdateCascadeShadowMaps` → Sky 다음 메시 목록을 `ShadowList`마다 그림 → Resolve → Clear. 반사 화면에도 그림자가 생김 |
+| `SceneCaptureRenderPass` | 캡처마다 `UpdateCascadeShadowMaps(CaptureCamItem)`으로 **Shadow Map은 그리지만 반환값을 버리고**, `DrawSceneCaptureMeshItem`은 기본값(빈 상수 → `CastShadow = 0`)으로 그립니다. 그래서 **거울(`AMirror`) 등 SceneCapture 화면에는 그림자가 없습니다**(코드로 확인) |
+
+> [!WARNING]
+> **코드를 읽어 정리한 것이며 실행으로 확인하지는 않았습니다.** 다음은 현재 구조에서 생기는 동작입니다.
+> - **그림자를 지는 Directional Light가 하나도 없으면 Opaque · Masked · Translucent 메시가 전혀 그려지지 않습니다.** `MeshRenderPass`와 `PlanarReflectionRenderPass`가 메시 서브 패스를 `ShadowList` 개수만큼 반복하기 때문입니다(Sky만 남음). `ADirectionalLight`가 없는 레벨이나 `CastShadow`를 `false`로 둔 Light(Setter는 없지만 파생 클래스에서 가능)만 있는 레벨이 여기에 해당합니다.
+> - **Light가 2개 이상이면 메시를 Light 수만큼 다시 그립니다.** Opaque는 `LESS_EQUAL` 깊이로 덮어써 **마지막 Light의 그림자만** 남고, Translucent는 여러 번 블렌딩돼 진해집니다. Light 블록(`b2`)은 매번 모든 Light를 비추므로 조명 자체는 바뀌지 않습니다.
+> - **Shadow Map을 한 프레임에 여러 번 그립니다**: 카메라 · 평면 반사 항목 · SceneCapture(+ 그 캡처의 평면 반사)마다 `Cascade 수 × 그림자 캐스터 전체`를 다시 그립니다. Tri_World처럼 카메라 1 · 호수 반사 1 · 거울 캡처 1이면 Light 1개에 4번 × 4 Cascade입니다.
+> - 그림자 캐스터는 PS 없이 깊이만 쓰므로 **Masked 메시의 알파 테스트가 반영되지 않습니다**(잎사귀 등이 사각형 그림자로 나옴). Translucent 메시도 그림자를 드리웁니다.
+> - `FPDirectionalLightComponent`의 소멸자는 비어 있어 **`FPCascadeShadowRenderList` 등록을 해제하지 않고 Shadow Map도 남깁니다**([알려진 문제](#-알려진-문제--소멸-처리)). 목록이 `std::vector`라 Light를 더 만들면 이전 항목의 주소가 바뀔 수 있는 것도 다른 Render List와 같습니다.
+> - `Renderer.h`의 `CalculateCascadeNearFar` 주석에는 *"현재는 호출하지 않음"*이 남아 있지만 실제로는 `UpdateCascadeShadowMaps`가 호출합니다.
+
+> [!NOTE]
+> 이번 변경에서 엔진 `DefaultPixelShader.psh`의 **한글 주석이 깨졌습니다**(UTF-8 한글 일부가 `?`로 바뀌어 저장됨, 예: 첫 줄 `//기본 Pixel ?…`). 주석만 깨졌고 코드 줄은 정상이지만, 원래 주석을 복구하려면 이전 커밋의 파일을 참고해야 합니다.
+
+### Bounds (AABB · BoxSphereBounds)
+
+메시 · 컴포넌트 · 액터 · 월드의 경계 상자를 구하는 API가 생겼습니다. **아직 엔진 안에서 이 값을 쓰는 곳(절두체 컬링, CSM 범위 등)은 없습니다** — 필요할 때 게임 코드에서 `GetBounds()`를 불러 쓰는 단계입니다.
+
+| 대상 | 동작 |
+|---|---|
+| FBX | `FPAssetManager::ConvertUfbxMesh`가 `Position_Vertices`의 최소 · 최대로 **`FPMeshData::BoundingBox`(`FPAABB`, 메시 로컬 공간)**를 계산 |
+| `FPStaticMesh` | `GetStaticMeshData`가 같은 이름의 `FPMeshData` AABB를 `SetBoundingBox(AABB)`로 넣고, `BoundsFromAABB`로 `Bounds`도 함께 만듦. `GetBoundingBox()` · `GetBounds()` |
+| `FPSceneComponent` | `GetBounds()` = `UpdateBounds()` 후 반환. `UpdateBounds()`는 `CalculateBounds()`(로컬, 가상 함수)를 `Scale × Rotation × Location` 행렬로 `TransformBounds`. 기본 `CalculateBounds()`는 **원점 · 반지름 1 상자** |
+| `FPStaticMeshComponent` | `CalculateBounds()`를 재정의해 `StaticMesh->GetBounds()` 사용 |
+| `FPActor` | `GetBounds()` = RootComponent의 Bounds에 **모든 하위 SceneComponent**(`GetChildComponents()`, 새로 추가된 공개 함수)를 재귀로 `CombineBounds` |
+| `FPWorld` | `GetBounds()` = `GameActorList`의 모든 액터 Bounds를 합침 |
+
+> [!NOTE]
+> 메시가 없는 컴포넌트(SpringArm · Camera · Light 등)도 기본 Bounds(반지름 1 상자)를 가지므로 `FPActor::GetBounds()`에 **그 위치의 1×2 크기 상자가 함께 합쳐집니다.** RootComponent가 없는 액터는 `Bounds`를 갱신하지 않아 0으로 초기화된 값(원점)을 돌려주고, `FPWorld::GetBounds()`는 액터가 없으면 갱신하지 않습니다. 모든 `GetBounds()`는 호출할 때마다 다시 계산하므로 매 프레임 많이 부르면 비용이 듭니다.
+
 ### Planar Reflection (평면 반사)
 
 `FPPlanarReflectionComponent`(이전에는 `FPSceneCaptureComponent`만 상속한 빈 스텁)가 구현되어, 호수 같은 **평평한 면에 비치는 반사**를 만들 수 있습니다. 거울(SceneCapture)이 "다른 카메라로 찍은 장면"을 붙이는 것과 달리, 평면 반사는 **보는 카메라를 반사 평면에 대해 뒤집은 카메라**로 장면을 다시 그린 뒤 그 결과를 반사면에 투영합니다.
@@ -2092,10 +2212,10 @@ flowchart LR
 | `FPTextureInfo` | `FPAssetManager.h` | `LoadTexture`가 JSON에서 읽은 **설명 데이터**(`Name` / `Path` / `Type` / `Owner`). 이 시점에는 아직 GPU 리소스가 없음 |
 | `FPTextureData` | `Define/FPDataDefine.h` | `MakeTexture`가 만든 실제 텍스처. `TextureResource`(`ID3D11ShaderResourceView*`), `TextureDESC`(`D3D11_TEXTURE2D_DESC*`) |
 | `FPReflectionResourceInfo` | `Renderers/FPRenderingCommon.h` | 셰이더의 텍스처 변수 하나(배열이면 요소마다 하나). `{ Name, AssetName, TextureType, Slot(t#), BindCount }`. `AssetName`은 JSON `Textures[].Asset` 또는 `SetNamedTexture`가 채움 |
-| `FPReflectionSamplerInfo` | `Renderers/FPRenderingCommon.h` | 셰이더의 `SamplerState` 하나. `{ Name, SamplerType, Slot(s#), BindCount }`. `SamplerType`은 `SetNamedSampler`가 채우며 기본값 `Filter_Tri_Linear_Sampler_CLAMP` |
+| `FPReflectionSamplerInfo` | `Renderers/FPRenderingCommon.h` | 셰이더의 `SamplerState` 하나. `{ Name, SamplerType, Slot(s#), BindCount }`. `SamplerType`(**`std::string`**, SamplerState 에셋 이름)은 `SetNamedSampler`가 채우며 기본값 `"Filter_Tri_Linear_Sampler_CLAMP"` |
 | `FPAssetManager` | `FPAssetManager.h/.cpp` | `AddTextureInfoData` · `GetTextureInfoData` · `HasTextureInfoData`(설명 데이터), `MakeTexture`(GPU 리소스 생성), `AddTextureData` · `GetTextureData` · `HasTextureData`(생성된 텍스처) |
 | `FPAssetLoader::LoadTexture` | `AssetLoader.cpp` | Texture JSON을 읽어 `FPTextureInfo`로 등록 (실제 `WIC` / `DDS` 로드는 `AllAssetDataCreate()`가 나중에 수행) |
-| `RenderingDevice` | `RenderingDevice.h/.cpp` | `CreateWICTextureFromFile` · `CreateDDSTextureFromFile`(DirectXTK, **Mipmap 자동 생성**), `GetTextureDesc`, `PSSetShaderResources`, `CreateSamplers`, `PSSetSamplers` |
+| `RenderingDevice` | `RenderingDevice.h/.cpp` | `CreateWICTextureFromFile` · `CreateDDSTextureFromFile`(DirectXTK, **Mipmap 자동 생성**), `GetTextureDesc`, `PSSetShaderResources`, `CreateSamplerState`(SamplerState 에셋 1개), `PSSetSamplers(Slot, Num, void*)` |
 
 #### Texture2DArray *(실험적)*
 
@@ -2131,37 +2251,35 @@ flowchart LR
 | 샘플러 슬롯 | 셰이더의 **`register(s#)` 번호 그대로**(`0 ~ 15`). 이전처럼 사용 중인 샘플러 종류를 모아 `s0, s1…`로 다시 배정하지 않음 |
 | 텍스처 연결 | Material JSON `Textures[]`(`Parameter` = HLSL 변수 이름) 또는 `SetNamedTexture`. 배열 변수는 `ArrayIndex`로 요소를 지정 |
 | 기본 텍스처 | `FPMaterial`은 슬롯을 자동으로 만들지 않습니다. 기본 PS의 `TexDiff`에 `Default_Texture512`가 연결되는 것은 `DefaultMaterial.json`의 `Textures[]` 때문입니다 |
-| 갱신 시점 | `CreateMeshRenderList`가 `Resources` · `Samplers`를 복사하고, `MeshRenderPass`가 **메시마다** `PSSetShaderResources(Slot, 1, SRV)` / `PSSetSamplers(Slot, 1, SamplerType)`를 호출. `TextureType`에 따라 SRV는 `GetTextureData` 또는 `GetTextureArrayData`에서 가져옴 |
+| 갱신 시점 | `CreateMeshRenderList`가 `Resources` · `Samplers`를 복사하고, `MeshRenderPass`가 **메시마다** `PSSetShaderResources(Slot, 1, SRV)` / `PSSetSamplers(Slot, 1, GetSamplerStateData(SamplerType).SamplerStateData)`를 호출. `TextureType`에 따라 SRV는 `GetTextureData` 또는 `GetTextureArrayData`에서 가져옴 |
 
-> [!NOTE]
-> Material JSON의 `Samplers[].SamplerType`은 `LoadMaterial`이 `StringToSamplerType`으로 `FPSamplerType`으로 변환해 `FPSamplerParameterData`에 담고, `MakeMaterial`이 `SetNamedSampler`로 해당 샘플러 변수에 적용합니다. **열거형에 없는 이름(오타 포함)이면 오류 없이 `Filter_Tri_Linear_Sampler_CLAMP`로 대체**되므로 이름을 정확히 적어야 합니다 (예: 필터 이름은 `Filter_Anistropy_Linear_…`로 철자가 `Anisotropy`가 아님에 주의).
-> 샘플러 변수의 값이 JSON에도 코드(`SetNamedSampler`)에도 지정되지 않으면 리플렉션 기본값 `Filter_Tri_Linear_Sampler_CLAMP`가 쓰입니다.
+#### SamplerState JSON 에셋
 
-`FPSamplerType`은 **필터 4단계 × 주소 모드 9종 = 36개** 값입니다 (`Sampler_MAX_`가 전체 개수). Material JSON에는 `"SamplerType": "Filter_Tri_Linear_Sampler_Wrap"`처럼 **열거형 이름 전체**를 적습니다 (`LoadMaterial`이 `StringToSamplerType`으로 변환하며, 알 수 없는 이름은 `Filter_Tri_Linear_Sampler_CLAMP`로 떨어집니다).
+샘플러는 이제 **JSON 에셋**입니다. 하드코딩이던 `enum FPSamplerType`(36종) · `StringToSamplerType` · `RenderingDevice::SamplerState[]` 배열 · `CreateSamplers()`가 **삭제**됐고, Rasterizer State · BlendState와 같은 방식으로 이름으로 고릅니다.
 
-| 필터(열거형 이름 앞부분) | D3D11 필터 | 비고 |
-|---|---|---|
-| `Filter_Point` | `MIN_MAG_MIP_POINT` | |
-| `Filter_Bi_Linear` | `MIN_MAG_LINEAR_MIP_POINT` | |
-| `Filter_Tri_Linear` | `MIN_MAG_MIP_LINEAR` | **기본값**. Mipmap 보간까지 사용 |
-| `Filter_Anistropy_Linear` | `ANISOTROPIC`, `MaxAnisotropy = dwAF` | `dwAF`는 `GameSetting.json`의 `AnisotropicFiltering` 값 |
+```mermaid
+flowchart LR
+    J["Assets/SamplerState/*.json<br/>(엔진 기본 37종)"] -->|"LoadEngineAssets → LoadSamplerState(file, Engine)"| I["FPSamplerStateInfo<br/>(AssetManager::LoadedSamplerStateData)"]
+    I -->|"AllAssetDataCreate → MakeSamplerState"| D["RenderingDevice::CreateSamplerState<br/>→ FPSamplerStateData{ void* SamplerStateData }"]
+    M["Material JSON Samplers[].SamplerType<br/>(= SamplerState 이름 문자열)"] --> R["FPReflectionSamplerInfo.SamplerType"]
+    R -->|"그리기 때"| P["PSSetSamplers(Slot, 1,<br/>GetSamplerStateData(이름).SamplerStateData)"]
+    D --> P
+```
 
-| 주소 모드(`SamplerType`) | D3D11 주소 모드 | 비고 |
-|---|---|---|
-| `Sampler_CLAMP` | Clamp | 기본값 |
-| `Sampler_Wrap` | Wrap | 타일링 |
-| `Sampler_Mirror` | Mirror | |
-| `Sampler_Mirror_Once` | Mirror Once | |
-| `Sampler_Border` | Border(흰색) | |
-| `Sampler_BorderColor_RED` / `BLUE` / `GREEN` / `MAGENTA` | Border | 범위 밖 UV는 해당 색 |
+| 항목 | 내용 |
+|---|---|
+| 에셋 | 엔진 `Assets/SamplerState/` 37개. 예전 열거형 이름과 **같은 이름**의 36개(`Filter_<Point\|Bi_Linear\|Tri_Linear\|Anistropy_Linear>_Sampler_<CLAMP\|Wrap\|Mirror\|Mirror_Once\|Border\|BorderColor_RED\|BLUE\|GREEN\|MAGENTA>`) + 그림자용 `Filter_Shadow_Comparison_Sampler`. `LoadEngineAssets()`가 모두 로드 |
+| 로드 | `FPAssetLoader::LoadSamplerState(file, owner)` → `FPSamplerStateInfo`(Filter · AddressU/V/W · ComparisonFunc · BorderColor · MaxAnisotropy · MinLOD · MaxLOD · MipLODBias) 등록. 같은 이름이면 `Duplicate SamplerState name.` 출력 후 무시 |
+| 생성 | `AllAssetDataCreate()`가 `MakeSamplerState` → `RenderingDevice::CreateSamplerState(Info, &Data)` |
+| Material 연결 | `Samplers[].SamplerType`(JSON) · `FPSamplerParameterData::SamplerType` · `FPReflectionSamplerInfo::SamplerType` · `FPTexture::SamplerType`이 모두 **`std::string`**(SamplerState 에셋 이름)으로 바뀌었습니다. `SetNamedSampler(Type, HLSL이름, const std::string& SamplerType, ArrayIndex)`도 문자열을 받습니다 |
+| 바인딩 | Mesh · SceneCapture · PostProcess Pass가 `PSSetSamplers(Slot, 1, AssetManager->GetSamplerStateData(이름).SamplerStateData)`. `RenderingDevice::PSSetSamplers`는 이제 `void*`(샘플러 객체)를 받습니다. Quad2D와 환경맵 `s15`는 `"Filter_Tri_Linear_Sampler_CLAMP"`, 그림자 `s14`는 `"Filter_Shadow_Comparison_Sampler"`를 이름으로 꺼내 씁니다 |
+| 커스텀 샘플러 | 게임 `Assets/SamplerState/`에 JSON을 만들고 `LoadAssets()`에서 `LoadSamplerState("내샘플러.json", AssetOwner::User)`를 부르면 Material에서 그 `Name`을 쓸 수 있습니다 ([10. SamplerState JSON](#10-samplerstate-json)) |
 
-실제 enum 값은 두 이름을 이어붙인 `Filter_Tri_Linear_Sampler_CLAMP`, `Filter_Anistropy_Linear_Sampler_Wrap` 같은 형태입니다 (`Renderers/FPRenderingCommon.h`).
+> [!WARNING]
+> **이름 검사가 약해졌습니다.** `SetNamedSampler`는 이제 `SamplerType`이 **빈 문자열인지만** 확인하고, 그리기 때 `GetSamplerStateData(이름)`은 `unordered_map::operator[]`라 **없는 이름이면 빈 항목(`nullptr`)을 만들어** 그대로 `PSSetSamplers`에 넘깁니다. 예전처럼 `Filter_Tri_Linear_Sampler_CLAMP`로 대체한다는 메시지도 없습니다. D3D11은 `nullptr` 샘플러를 기본 샘플러 상태(Linear · Clamp)로 처리하므로 화면이 깨지지는 않겠지만, **오타를 알아차리기 어렵습니다**(코드로만 확인, 실행해 보지 않음). 필터 이름의 철자 `Anistropy`(Anisotropy 아님)도 그대로입니다.
 
 > [!IMPORTANT]
-> 샘플러 상태 객체 36개는 `RenderingDevice::CreateSamplers()`가 만들며, `ForestPearlEngine::PreInitialize()`에서 `Renderer::InitializeRenderer()` **직후**, 엔진 에셋 로드(`LoadEngineAssets`) 전에 호출합니다.
-> 이 함수는 `ID3D11Device`로 `CreateSamplerState`를 호출하므로 **D3D 디바이스가 만들어진 뒤**(`InitializeRenderer`의 `CreateHighSpecDevice` 이후)여야 합니다. 앞으로 부팅 순서를 바꿀 때도 이 순서를 지켜야 합니다.
-> Anisotropic 샘플러의 `MaxAnisotropy`는 `RenderingDevice::SetAF()`로 미리 설정해 둔 `dwAF` 값을 쓰므로, **`SetAF()` → `CreateSamplers()`** 순서를 지켜야 합니다 (`ForestPearlEngine::PreInitialize()`가 이 순서로 호출).
-> 호출되지 않으면 `PSSetSamplers`가 `nullptr`을 바인딩해, JSON이나 `SetNamedSampler`로 고른 샘플러가 반영되지 않습니다.
+> **`GameSetting.json`의 `AnisotropicFiltering`은 더 이상 샘플러에 반영되지 않습니다.** `RenderingDevice::SetAF()`가 `dwAF`에 값을 저장하는 코드는 남아 있지만, `dwAF`를 읽던 `CreateSamplers()`가 사라져 **아무도 읽지 않습니다**. 이방성 샘플러 9종의 `MaxAnisotropy`는 각 JSON에 적힌 **`8`** 고정입니다(나머지 28종은 `1`). 값을 바꾸려면 SamplerState JSON을 고치세요.
 
 > [!NOTE]
 > **Mipmap** — `CreateWICTextureFromFile` / `CreateDDSTextureFromFile`은 이제 `ID3D11DeviceContext`를 함께 넘겨 `D3D11_RESOURCE_MISC_GENERATE_MIPS`로 로드하므로, 텍스처를 로드할 때 Mip 체인이 자동 생성됩니다. `Filter_Tri_Linear_*` / `Filter_Anistropy_Linear_*` 샘플러가 실제로 Mip 보간 효과를 받습니다.
@@ -2308,7 +2426,7 @@ flowchart TD
 | `Textures[].Asset` | ✔ | `LoadTexture` / `LoadTexture2DArray`로 등록한 이름 |
 | `Textures[].TextureType` | ✔ | `"Texture2D"` · `"Texture2DArray"` · `"CubeMap"`(`TextureCube` 변수) · `"RenderTargetTexture2D"` · `"DepthStencilTexture2D"` · `"StencilTexture2D"`([TextureType 확장](#texturetype-확장과-material-연동)) — 셰이더 변수 타입과 같아야 함 |
 | `ArrayIndex` | | HLSL 텍스처 **배열**(`Texture2D Tex[4]`)의 요소 번호. 생략하면 `0` |
-| `Material.Samplers[]` | | 샘플러 바인딩. `{ Type, Parameter, SamplerType, ArrayIndex? }`. `Parameter`는 `SamplerState` 변수 이름, `SamplerType`은 `FPSamplerType` 열거형 이름 ([Texture](#texture)) |
+| `Material.Samplers[]` | | 샘플러 바인딩. `{ Type, Parameter, SamplerType, ArrayIndex? }`. `Parameter`는 `SamplerState` 변수 이름, `SamplerType`은 **SamplerState 에셋 이름** ([SamplerState JSON 에셋](#samplerstate-json-에셋)) |
 
 > [!IMPORTANT]
 > 이전 버전의 `BaseColor` · `Diffuse` · `Ambient` · `Emissive` · `Texture[]`(`Slot` · `TextureFilter`) 키는 **더 이상 읽지 않습니다.** 색은 `Parameters`의 `MaterialConstBuffer` 값으로, 텍스처 슬롯은 `Textures[]`의 `Parameter` 이름으로 바뀌었습니다. 기존 JSON은 변환해야 하며, `Parameters` 키가 없으면 로드 중 예외가 발생합니다.
@@ -2367,7 +2485,7 @@ struct FPReflectionResourceInfo       // 텍스처 변수 1개 (배열이면 요
 struct FPReflectionSamplerInfo        // 샘플러 변수 1개 (배열이면 요소마다 1개)
 {
     std::string  Name;                // "Smpler" 또는 "Smp[1]"
-    FPSamplerType SamplerType;        // 기본값 Filter_Tri_Linear_Sampler_CLAMP
+    std::string SamplerType;          // SamplerState 에셋 이름. 기본값 "Filter_Tri_Linear_Sampler_CLAMP"
     unsigned int Slot;                // register(s#)
     unsigned int BindCount;
 };
@@ -2487,7 +2605,7 @@ cbuffer PulseConstBuffer : register(b4)
 | `SetParameterElement(…, ArrayIndex, 값들)` | 배열 변수의 한 요소만 쓰기. 값 개수는 `Components`와 같아야 하고 `ArrayStride`가 0(배열 아님)이면 `false` |
 | `GetParameter` / `GetParameterElement` | 같은 방식으로 읽어서 패딩을 뺀 `float` 목록으로 돌려줌 |
 | `SetNamedTexture(…, HLSL이름, 에셋, TextureType, ArrayIndex)` | `Resources`에서 이름이 `HLSL이름[ArrayIndex]`이거나(ArrayIndex == 0이면 `HLSL이름`) 인 항목을 찾아 `TextureType`이 같고 슬롯이 128 미만이면 `AssetName`을 저장 |
-| `SetNamedSampler(…, HLSL이름, SamplerType, ArrayIndex)` | PS이고 `SamplerType`이 유효 범위일 때, `Samplers`에서 같은 방식으로 이름을 찾아 `SamplerType` 저장 |
+| `SetNamedSampler(…, HLSL이름, SamplerType, ArrayIndex)` | PS이고 `SamplerType`(문자열)이 비어 있지 않을 때(존재하는 에셋인지는 확인하지 않음), `Samplers`에서 같은 방식으로 이름을 찾아 `SamplerType` 저장 |
 
 값은 **Material의 CPU 버퍼**에만 기록됩니다. `MakeMaterial`은 JSON의 `Parameters` · `Textures` · `Samplers`를 위 함수들로 순서대로 적용하며, 하나라도 `false`이면 `delete Material` 후 `nullptr`을 돌려줍니다 (텍스처는 `HasTextureData` / `HasTextureArrayData`로 에셋 존재도 먼저 확인).
 
@@ -2694,6 +2812,7 @@ Assets/
 ├── Texture/       *.json                텍스처 정의 (이미지 경로 + 로드 방식)
 ├── TextureResource/ *.dds *.bmp …       이미지 원본 (DxTex로 DDS 변환 가능)
 ├── RasterizerState/ *.json              Rasterizer State (FillMode · CullMode · FrontCounterClockwise …)
+├── SamplerState/  *.json                SamplerState (Filter · AddressU/V/W · ComparisonFunc · BorderColor · MaxAnisotropy …)
 ├── Shader/        *.json                셰이더 등록 정보 (Name · Path · InputLayout)
 └── ShaderResource/ *.vsh *.psh *.hlsli  HLSL 소스
     └── bin/       *.vso *.pso           컴파일 결과 (빌드 시 생성)
@@ -2738,7 +2857,7 @@ Assets/
 |---|---|
 | `GameName` | 창 클래스/타이틀로 쓰임 (`FPGameProjectSetting::WinClassName` / `WinName`) |
 | `Graphics.MSAA` | 스왑체인·깊이버퍼 `SampleDesc.Count`. **짝수이고 8 이하**가 아니면 `1`(AA off)로 대체 |
-| `Graphics.AnisotropicFiltering` | Anisotropic 샘플러의 `MaxAnisotropy`. **짝수이고 16 이하**가 아니면 `1`로 대체 |
+| `Graphics.AnisotropicFiltering` | `RenderingDevice::SetAF()`로 `dwAF`에 저장되지만 **현재 아무 샘플러에도 반영되지 않습니다**(Sampler가 JSON 에셋이 되면서 `dwAF`를 읽는 코드가 사라짐). **짝수이고 16 이하**가 아니면 `1`로 대체 |
 | `Graphics.VSync` *(신규)* | `RenderingDevice::SetVSync()`에 전달 → `SwapChain->Present(IsVSync ? 1 : 0, 0)`의 SyncInterval |
 | `Graphics.Hz` *(신규)* | `RenderingDevice::SetHz()`. 현재는 값만 보관하며 SwapChain 생성 시 refresh rate로 직접 쓰이진 않음 |
 | `Graphics.Resolution.Width` / `Height` | 창 크기(`WinWidth` / `WinHeight`), `DisplayAspect` 계산에도 사용 |
@@ -2753,11 +2872,11 @@ flowchart LR
     GSD -->|"GetGameSettingData"| PS["FPGameProjectSetting::ProjectSetting()<br/>창 크기 · MSAA · AF · FullScreen"]
     PS -->|"GetMSAA / GetAF"| RD["RenderingDevice::SetMSAA / SetAF<br/>(dwAA · dwAF)"]
     RD -->|"CreateSwapChain / CreateDepthStencil"| SC["SwapChain · DepthStencil<br/>SampleDesc = dwAA"]
-    RD -->|"CreateSamplers"| SMP["Anisotropic 샘플러<br/>MaxAnisotropy = dwAF"]
+    RD -.->|"dwAF는 저장만 됨"| SMP["(사용처 없음)<br/>이방성은 SamplerState JSON의 MaxAnisotropy"]
 ```
 
 > [!IMPORTANT]
-> `RenderDevice->SetMSAA()` / `SetAF()`는 `Renderer::InitializeRenderer()`(스왑체인·깊이버퍼 생성) **전에**, `CreateSamplers()`는 그 **후에** 호출해야 값이 반영됩니다. `ForestPearlEngine::PreInitialize()`가 이미 이 순서로 호출하므로, 부팅 순서를 바꿀 때는 이 제약을 지켜야 합니다.
+> `RenderDevice->SetMSAA()` / `SetAF()`는 `Renderer::InitializeRenderer()`(스왑체인·깊이버퍼 생성) **전에** 호출해야 MSAA 값이 반영됩니다. `ForestPearlEngine::PreInitialize()`가 이미 이 순서로 호출하므로, 부팅 순서를 바꿀 때는 이 제약을 지켜야 합니다. (예전의 `CreateSamplers()`는 삭제됐습니다 — [SamplerState JSON 에셋](#samplerstate-json-에셋))
 
 ### 로딩 파이프라인
 
@@ -2878,6 +2997,9 @@ Material JSON의 `TwoSided`는 `FPMaterialData` → `FPMaterial::SetTwoSided()` 
 | [DepthStencil](#scenecapture--rendertarget-mirror-데모) | `DepthStencil/` | `LoadDepthStencil(file, owner)` | DepthStencil 1개 |
 | [DepthStencilState](#scenecapture--rendertarget-mirror-데모) | `DepthStencilState/` | `LoadDepthStencilState(file, owner)` | DepthStencilState 1개(엔진 기본 9종: `DS_DEPTH_ON`/`OFF`/`WRITE_OFF` + 스텐실 6종). Mesh · SceneCapture는 서브 패스가 이름을 정함 |
 | [BlendState](#8-blendstate-json) | `BlendState/` | `LoadBlendState(file, owner)` | BlendState 1개(엔진 기본 2종: `BS_DEFAULT` / `BS_ADD`) |
+| [RasterizerState](#9-rasterizerstate-json) | `RasterizerState/` | `LoadRasterizerState(file, owner)` | Rasterizer State 1개(엔진 기본 12종) |
+| [SamplerState](#10-samplerstate-json) | `SamplerState/` | `LoadSamplerState(file, owner)` | SamplerState 1개(엔진 기본 37종) |
+| [DepthStencilArray](#11-depthstencilarray-json) | `DepthStencilArray/` | `LoadDepthStencilArray(file, owner)` | DepthStencil Texture2DArray 1개 (**현재 호출하는 곳 없음**) |
 
 > [!NOTE]
 > 모든 파일은 **JSON 문법을 정확히 지켜야** 합니다 (주석 · 후행 쉼표 불가 — 아래 예시의 `//` 주석은 설명용이므로 실제 파일에는 넣지 마세요). 파일을 열지 못하거나 파싱에 실패하면 콘솔에 메시지만 출력하고 그 에셋은 등록되지 않습니다. 필수 키가 없으면 로드 중 예외가 발생합니다.
@@ -2916,7 +3038,7 @@ void LoadAssets()
 |---|:-:|---|
 | `GameSetting.GameName` | ✔ | 문자열 — 창 제목 · 프로젝트 이름 |
 | `Graphics.MSAA` | ✔ | 정수. **짝수이고 8 이하**여야 함(`2`, `4`, `8`). 홀수이거나 8 초과면 메시지 출력 후 `1`(끔)로 대체 |
-| `Graphics.AnisotropicFiltering` | ✔ | 정수. **짝수이고 16 이하**(`2`, `4`, `8`, `16`). 아니면 `1`로 대체 |
+| `Graphics.AnisotropicFiltering` | ✔ | 정수. **짝수이고 16 이하**(`2`, `4`, `8`, `16`). 아니면 `1`로 대체. **현재는 읽기만 하고 샘플러에 반영되지 않음**(이방성은 SamplerState JSON의 `MaxAnisotropy`) |
 | `Graphics.Resolution.Width` / `Height` | ✔ | 정수 (창 클라이언트 크기) |
 | `Graphics.FullScreen` | ✔ | `true` / `false` |
 
@@ -3136,29 +3258,30 @@ float4 c = TerrainLayers.Sample(Smpler, float3(uv, 2));   // 2번 슬라이스 (
 | `Parameters[].Values.<변수>` | 숫자 1개(`float`) 또는 숫자 배열(`float2`=2개, `float3`=3개, `float4`=4개, 배열 변수는 요소 값을 이어서 `Components × ArrayCount`개) |
 | `Textures[].TextureType` | `"Texture2D"` · `"Texture2DArray"` · `"CubeMap"` · `"RenderTargetTexture2D"` · `"DepthStencilTexture2D"` · `"StencilTexture2D"` (그 밖의 값이면 메시지 출력 후 `Texture2D`). `"CubeMap"`은 `HasTextureData`로 에셋 존재를 확인하고 `GetTextureData().ShaderResourceView`로 바인딩 |
 | `Textures[].ArrayIndex` / `Samplers[].ArrayIndex` | 0 이상의 정수 (HLSL **배열** 변수의 요소 번호, 생략 시 0) |
-| `Samplers[].SamplerType` | 아래 36개 중 하나 (그 밖의 값은 `Filter_Tri_Linear_Sampler_CLAMP`) |
+| `Samplers[].SamplerType` | 로드된 **SamplerState 에셋의 `Name`** — 엔진 기본은 아래 36개 + `Filter_Shadow_Comparison_Sampler`. 없는 이름이면 오류 없이 `nullptr` 샘플러(D3D 기본: Linear · Clamp) |
 | `TwoSided` | `true` · `false` (생략 시 `false`) |
 | `BlendState` | 로드된 [BlendState 에셋](#8-blendstate-json)의 `Name` (생략 시 `"BS_ADD"`). 엔진 기본: `BS_DEFAULT` · `BS_ADD` |
 | `Details` | `"Opaque"`(생략 시) · `"Masked"` · `"Translucent"`. 그 밖의 문자열은 `Opaque` |
 | `bIsSky` | `true` / `false`(생략 시). `true`이면 Sky 서브 패스. (이전의 `DepthStencilState` 키는 더 이상 읽지 않음) |
 | `bUsePlanarForwardReflections` | `true` / `false`(생략 시). 반사면 Material이면 `true` ([Planar Reflection](#planar-reflection-평면-반사)) |
 
-**`SamplerType` 전체 목록** — `Filter_<필터>_Sampler_<주소모드>` 조합 (4 × 9 = 36개)
+**엔진 기본 SamplerState 이름** — `Filter_<필터>_Sampler_<주소모드>` 조합 (4 × 9 = 36개, 예전 열거형 이름과 동일) + `Filter_Shadow_Comparison_Sampler`
 
-| 필터(`Filter_…`) | 설명 |
-|---|---|
-| `Point` | `MIN_MAG_MIP_POINT` |
-| `Bi_Linear` | `MIN_MAG_LINEAR_MIP_POINT` |
-| `Tri_Linear` | `MIN_MAG_MIP_LINEAR` |
-| `Anistropy_Linear` | `ANISOTROPIC` (최대 이방성은 GameSetting의 `AnisotropicFiltering`). **철자가 `Anisotropy`가 아니라 `Anistropy`** |
+| 필터(`Filter_…`) | JSON `Filter` | D3D11 필터 |
+|---|---|---|
+| `Point` | `"Point"` | `MIN_MAG_MIP_POINT` |
+| `Bi_Linear` | `"BiLinear"` | `MIN_MAG_LINEAR_MIP_POINT` |
+| `Tri_Linear` | `"TriLinear"` | `MIN_MAG_MIP_LINEAR` |
+| `Anistropy_Linear` | `"Anisotropic"` | `ANISOTROPIC`, JSON `MaxAnisotropy: 8`. **이름 철자가 `Anisotropy`가 아니라 `Anistropy`** |
+| (`Filter_Shadow_Comparison_Sampler`) | `"ComparisonBiLinear"` | `COMPARISON_MIN_MAG_LINEAR_MIP_POINT`, `ComparisonFunc: LESS_EQUAL`, `BORDER` 흰색 — CSM의 PCF용 |
 
-| 주소 모드(`…Sampler_…`) | 설명 |
-|---|---|
-| `CLAMP` · `Wrap` · `Mirror` · `Mirror_Once` | 대소문자 주의: `CLAMP`만 대문자 |
-| `Border` | 경계색 흰색 |
-| `BorderColor_RED` · `BorderColor_BLUE` · `BorderColor_GREEN` · `BorderColor_MAGENTA` | 경계색 지정 |
+| 주소 모드(`…Sampler_…`) | JSON `AddressU/V/W` | 설명 |
+|---|---|---|
+| `CLAMP` · `Wrap` · `Mirror` · `Mirror_Once` | `CLAMP` · `WRAP` · `MIRROR` · `MIRROR_ONCE` | 이름의 대소문자 주의: `CLAMP`만 대문자 |
+| `Border` | `BORDER` | 경계색 흰색 |
+| `BorderColor_RED` · `BorderColor_BLUE` · `BorderColor_GREEN` · `BorderColor_MAGENTA` | `BORDER` + `BorderColor` | 경계색 지정 |
 
-예) `Filter_Point_Sampler_CLAMP`, `Filter_Bi_Linear_Sampler_Mirror_Once`, `Filter_Tri_Linear_Sampler_Wrap`, `Filter_Anistropy_Linear_Sampler_BorderColor_RED` …
+예) `Filter_Point_Sampler_CLAMP`, `Filter_Bi_Linear_Sampler_Mirror_Once`, `Filter_Tri_Linear_Sampler_Wrap`, `Filter_Anistropy_Linear_Sampler_BorderColor_RED` … 직접 만든 SamplerState 에셋의 이름도 쓸 수 있습니다 ([10. SamplerState JSON](#10-samplerstate-json)).
 
 **① 최소 — 기본 Mesh 셰이더 (Parameters만, 텍스처 · 샘플러 없음)**
 
@@ -3562,6 +3685,58 @@ Mat.SetIsSky(false);
 | `DepthBias` · `DepthBiasClamp` · `SlopeScaledDepthBias` | | 생략 시 `0` · `0.0` · `0.0` |
 | `DepthClipEnable` · `MultisampleEnable` · `AntialiasedLineEnable` | | 생략 시 `true` |
 | `ScissorEnable` | | 생략 시 `false` |
+
+#### 10. SamplerState JSON
+
+`Assets/SamplerState/*.json` (`LoadSamplerState(file, owner)`, 엔진 기본 37종은 `LoadEngineAssets()`가 로드). 동작은 [SamplerState JSON 에셋](#samplerstate-json-에셋)을 참고하세요.
+
+```json
+{
+  "Name": "Filter_Shadow_Comparison_Sampler",
+  "Filter": "ComparisonBiLinear",
+  "AddressU": "BORDER",
+  "AddressV": "BORDER",
+  "AddressW": "BORDER",
+  "ComparisonFunc": "LESS_EQUAL",
+  "BorderColor": [1.0, 1.0, 1.0, 1.0],
+  "MaxAnisotropy": 1,
+  "MinLOD": 0.0,
+  "MipLODBias": 0.0
+}
+```
+
+| 키 | 필수 | 설명 |
+|---|:-:|---|
+| `Name` | ✔ | 등록 이름 = Material `Samplers[].SamplerType`에 적는 값. 중복이면 `Duplicate SamplerState name.` 출력 후 무시 |
+| `Filter` | ✔ | `"Point"` · `"BiLinear"` · `"TriLinear"` · `"Anisotropic"` · `"ComparisonBiLinear"`. 그 밖의 값은 `TriLinear`. **없으면 JSON 접근에서 예외가 날 수 있습니다**(`operator[]`로 읽음) |
+| `AddressU` · `AddressV` · `AddressW` | | `"CLAMP"` · `"WRAP"` · `"MIRROR"` · `"MIRROR_ONCE"` · `"BORDER"`. 생략 또는 그 밖의 값은 `CLAMP` |
+| `ComparisonFunc` | | DepthStencilState와 같은 이름(`"LESS_EQUAL"` 등). 생략 시 `"NERVER"`(코드의 철자 그대로 — `NEVER`). `ComparisonBiLinear`에서만 의미 있음 |
+| `BorderColor` | | `[r, g, b, a]`. 생략 시 `[1, 1, 1, 1]` |
+| `MaxAnisotropy` | | 생략 시 `1`. 엔진 이방성 샘플러는 `8` |
+| `MinLOD` · `MaxLOD` · `MipLODBias` | | 생략 시 `0.0` · `3.402823466e+38`(FLT_MAX) · `0.0`. 엔진 JSON에는 `MaxLOD`가 없어 FLT_MAX |
+
+#### 11. DepthStencilArray JSON
+
+`Assets/DepthStencilArray/*.json` (`LoadDepthStencilArray(file, owner)`). DepthStencil의 **Texture2DArray** 버전으로, 슬라이스마다 DSV를 하나씩 만들고 SRV는 배열 전체를 봅니다. **지금은 이 함수를 부르는 곳이 없고**, 엔진의 `EX)DepthStencilArray.json`도 예시일 뿐 로드되지 않습니다. Cascade Shadow Map은 JSON이 아니라 `FPAssetManager::CreateCascadeShadowMap()`이 같은 `FPDepthStencilArrayInfo`를 코드로 채워 만듭니다([Cascade Shadow Map](#cascade-shadow-map-csm)).
+
+```json
+{
+  "Name": "CSM_DepthStencilArray",
+  "SizeX": 2048,
+  "SizeY": 2048,
+  "DepthStencilFormat": "D32F",
+  "ArraySize": 4,
+  "ClearDepth": 1.0,
+  "ClearStencil": 0,
+  "MSAA": 1,
+  "ShaderResource": true
+}
+```
+
+| 키 | 설명 |
+|---|---|
+| `Name` · `SizeX` · `SizeY` · `DepthStencilFormat` · `ClearDepth` · `ClearStencil` · `MSAA` · `ShaderResource` | [DepthStencil](#depthstencil--depthstencilstate-에셋)과 같음. **모두 필수**(`operator[]`로 읽음). `ScaleX`/`ScaleY`는 구조체에만 있고 읽지 않음 |
+| `ArraySize` | 슬라이스 개수(= DSV 개수) |
 
 ### FBX 변환 도구 (FBXToStaticMeshJsonTranslator)
 
@@ -4011,6 +4186,7 @@ void Player::Tick()
 | 증분 | `AddLocalOffset`, `AddLocalRotation`(자신의 축 기준 회전), `AddRelativeLocation`, `AddRelativeRotation`(부모 축 기준 회전), `AddWorldOffset`, `AddWorldRotation` |
 | 조회 | `GetComponentTransform / Location / Rotation / Quat / Scale`, `GetRelativeTransform / Location / Rotation / Scale3D`, `GetSocketTransform(name)` |
 | 방향 벡터 | `GetForwardVector()` · `GetRightVector()` · `GetUpVector()` — 월드 회전 행렬의 행(DX 왼손 좌표계: Right `+X`, Up `+Y`, Forward `+Z`). `FPActor`에도 `GetActorForwardVector()` · `GetActorRightVector()` · `GetActorUpVector()`가 있고 RootComponent의 값을 돌려줍니다 |
+| Bounds | `GetBounds()` — 로컬 Bounds(`CalculateBounds()`, 기본은 원점 · 반지름 1 상자)를 월드 행렬(`Scale × Rotation × Location`)로 변환한 `FPBoxSphereBounds`를 **호출할 때마다 다시 계산**해 반환. `FPStaticMeshComponent`는 메시의 AABB를 씀. `FPActor::GetBounds()` · `FPWorld::GetBounds()`도 있음 ([Bounds](#bounds-aabb--boxspherebounds)) |
 
 월드 변환은 `Scale = 부모 × 로컬`, `Rotation = 부모 사원수 × 로컬 사원수`, `Location = 부모 위치 + Rotate(부모 회전, 로컬 위치 × 부모 스케일)`로 계산합니다. Socket에 붙은 경우 부모 대신 Socket의 월드 Transform을 사용합니다.
 
@@ -4024,6 +4200,7 @@ auto* Body = new FPStaticMeshComponent(this, "Windmill_Body_StaticMesh");  // Lo
 |---|---|
 | `SetActive(bool)` | 렌더링 On/Off. `false`면 Render List 생성 단계에서 제외됨 |
 | `SetPriority(int)` | 값이 **작은** 항목부터 그려짐 |
+| `SetCastShadow(bool)` | Cascade Shadow Map에 그릴지 여부(`FPMeshComponent`, 기본 `true`). `false`여도 **그림자를 받는 것**은 PS가 결정하므로 계속 받습니다 ([Cascade Shadow Map](#cascade-shadow-map-csm)) |
 | `SetMaterial(FPMaterialInterface*)` | Material 교체 ([상수 버퍼 운용 시 유의사항](#8-커스텀-material과-상수-버퍼)) |
 | `SetStaticMesh(name)` | 메시 교체. 현재는 이전 메시의 렌더 항목이 남아 함께 그려짐 ([알려진 문제](#-알려진-문제--소멸-처리)) |
 | `SetCustomDepthStencil(bool)` / `GetCustomDepthStencil()` | 이 메시를 `CustomDepthStencilPass`(Opaque만)에 그릴지 여부. 기본 `false` ([Depth Pre-Pass](#depth-pre-pass)) |
@@ -4219,7 +4396,7 @@ Mat.SetNamedSampler(FPShaderType::PS, "Smpler", Filter_Tri_Linear_Sampler_Wrap);
 | `GetParameter(Type, CB, Name, Out)` | 위와 같은 타입으로 읽기 (`const`) |
 | `SetParameterElement` / `GetParameterElement` | 배열 변수의 `ArrayIndex`번째 요소만 쓰기 / 읽기 |
 | `SetNamedTexture(Type, HLSL이름, 에셋이름, TextureType, ArrayIndex = 0)` | 텍스처 변수에 에셋 연결. 변수가 없거나 `TextureType`이 셰이더 선언과 다르면 `false` |
-| `SetNamedSampler(Type, HLSL이름, SamplerType, ArrayIndex = 0)` | 샘플러 변수에 `FPSamplerType` 지정. PS 샘플러만 허용 |
+| `SetNamedSampler(Type, HLSL이름, SamplerType, ArrayIndex = 0)` | 샘플러 변수에 SamplerState 에셋 이름(`std::string`) 지정. PS 샘플러만 허용 |
 | `SetTwoSided` / `GetTwoSided` | 양면 렌더링 |
 | `SetBlendState` / `GetBlendState` | 이 Material이 쓸 BlendState 에셋 이름 (기본 `"BS_ADD"`). `Get`은 `std::string*` |
 | `SetDetail` / `GetDetail` | 그리는 서브 패스 `FPMaterialDetail`(`Opaque`(기본) · `Masked` · `Translucent`) |
@@ -4297,7 +4474,7 @@ SamplerState Smpler    : register(s0);
 | **텍스처를 연결하지 않은 변수는 비어 있다** | 셰이더가 읽는 모든 텍스처 변수를 JSON에서 연결하세요. Pass는 텍스처를 **해제하지 않으므로**, 연결되지 않은 변수는 에셋 이름이 비어 null SRV가 바인딩됩니다 |
 | **쓰지 않는 텍스처 변수는 셰이더에서 지운다** | 선언된 텍스처 변수는 연결이 필요합니다. 기본 PS에서 쓰지 않던 `TexDiff2` 선언을 제거하고 Material JSON의 해당 항목도 지운 것이 그 예입니다 |
 | **텍스처는 Material 단위다** | 같은 Material 객체를 여러 메시에 `SetMaterial`하면 텍스처도 함께 바뀝니다 |
-| **샘플러 이름은 열거형 이름 그대로 적는다** | JSON `Samplers[].SamplerType`은 `StringToSamplerType`으로 변환됩니다. 목록에 없는 이름은 오류 없이 `Filter_Tri_Linear_Sampler_CLAMP`가 되므로, 기대한 필터 · 주소 모드가 아니라면 철자를 확인하세요 (`Filter_Anistropy_Linear_Sampler_Wrap` 등). 코드의 `SetNamedSampler`로도 바꿀 수 있습니다 |
+| **샘플러 이름은 SamplerState 에셋 이름 그대로 적는다** | JSON `Samplers[].SamplerType`은 문자열 그대로 [SamplerState 에셋](#samplerstate-json-에셋)을 찾습니다. 없는 이름이면 오류 없이 `nullptr` 샘플러(D3D 기본 상태)가 바인딩되므로, 기대한 필터 · 주소 모드가 아니라면 철자를 확인하세요 (`Filter_Anistropy_Linear_Sampler_Wrap` 등). 코드의 `SetNamedSampler`로도 바꿀 수 있습니다 |
 | **메시 그리는 Pass(`MeshRenderPass` · `SceneCaptureRenderPass` · `PostProcessRenderPass`)에서만 동작한다** | Gizmo · Normal · UI Pass는 텍스처를 바인딩하지 않습니다 |
 | **큰 텍스처는 DDS(밉맵 포함)로 변환해 쓴다** | `Tool/DXTexViewer/DxTex.exe`로 변환할 수 있습니다. 텍스처 변수 수만큼 SRV 바인딩이 *메시 × 카메라*마다 일어납니다 |
 
@@ -4323,12 +4500,12 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 
 | 클래스 | 수 | 베이스 | 구성 | 설명 |
 |---|:-:|---|---|---|
-| `Terrain` | 1 | `FPActor` | StaticMesh | 128×128 지형. `Terrain_Material`(Two Sided, `Field_micro02_dds` Wrap, 전용 `TerrainVertexShader`로 UV ×20 타일링) |
+| `Terrain` | 1 | `FPActor` | StaticMesh | 128×128 지형. `Terrain_Material`(Two Sided, `Field_micro02_dds` Wrap, 전용 `TerrainVertexShader`로 UV ×20 타일링) **`SetCastShadow(false)`** — Shadow Map에는 그리지 않고 그림자를 받기만 함 |
 | `Tree` | 300 | `FPActor` | StaticMesh × 2 (잎 · 줄기) | 나무. `Tree_Material`(Two Sided, `Tree01s_dds`, `TreePixelShader`) |
 | `ABox` | 1 | `FPActor` | StaticMesh | [계절 전환](#계절-전환-season) 테스트용 상자. `Box_Material`(`TexDiff` + `TexGrass`/`TexGrassMask` + `TexSnowMask`, `BoxPixelShader`) |
 | `Grid` | 1 | `FPActor` | Gizmo | 128×128 그리드 |
 | `Axis` | 1 | `FPActor` | Gizmo | 월드 축 |
-| `ADirectionalLight` | 1 | `FPActor` | DirectionalLight | 씬 전체를 비추는 Directional Light. Direction `(0, -0.64, 0.64)`(`SetDirection`이 정규화). <kbd>F7</kbd>로 `LightColor`를 4색(흰색 · 주황 · 짙은 파랑 · 연한 남색) 순환 |
+| `ADirectionalLight` | 1 | `FPActor` | DirectionalLight | 씬 전체를 비추는 Directional Light. Direction `(0.43, -0.64, 0.64)`(`SetDirection`이 정규화. 이전에 `(0, -0.64, 0.64)`로 덮어쓰던 줄이 삭제됨). 그림자 설정은 모두 기본값(Cascade 4장 · 2048² · 거리 150)으로 [Cascade Shadow Map](#cascade-shadow-map-csm)을 만듦. <kbd>F7</kbd>로 `LightColor`를 4색(흰색 · 주황 · 짙은 파랑 · 연한 남색) 순환 |
 | `UI` | 1 | `FPActor` | Text × 22 | FPS, 도움말, GPU / 해상도 / 렌더 상태, 조명 색(F7) · Torch(1) · 계절(F8) 상태 |
 | `Player` | 1 | `FPPawn` | StaticMesh + ShieldPivot + SpringArm + Camera | 시작 시 Possess. 제자리에서 계속 회전 `GetPlayerCamera()`로 `PlayerCamera`를 돌려줌(투영 토글에서 사용) |
 | `Windmill` | 2 | `FPPawn` | StaticMesh (몸체) | 이동 / 회전 / 크기 조절. `WindmillBody_Material`(`Windmill_jpg` t0 + `Windmill_a_jpg` t1, `WindmillWingBody_PixelShader`) |
@@ -4507,7 +4684,7 @@ Tri_World처럼 *레벨 하나를 열어 종료할 때까지 유지*하는 흐�
 
 | 소유자 | 해제되지 않는 대상 | 현재 소멸자 |
 |---|---|---|
-| `FPGameInstance` | 생성자에서 `new`한 SubSystem 15개 | `= default` |
+| `FPGameInstance` | 생성자에서 `new`한 SubSystem 16개 | `= default` |
 | `FPWorld` | `GameActorList`의 모든 액터 | `= default`. `Finalize()` / `UnLoadData()`를 직접 호출해야만 삭제됨 |
 | `FPGameInstance::OpenLevel` | 이전 World의 액터 전부 | `World.reset()`만 호출하고 `Finalize()`를 호출하지 않음 |
 | `FPAGameMode` | `GameController`의 Controller들 | `= default` |
@@ -4517,8 +4694,9 @@ Tri_World처럼 *레벨 하나를 열어 종료할 때까지 유지*하는 흐�
 | `FPStaticMesh` | `Material`. 생성자에서 만든 `FPMaterial`이 곧바로 `SetMaterial()`로 덮어써져 즉시 누수 | 없음 |
 | `FPMaterial` | `VBLayout`(InputLayout). `SetVertexShader()`를 호출하면 이전 레이아웃도 해제되지 않음 | 없음 |
 | `FPGizmoComponent` | `Material`, 직접 만든 VertexBuffer | 렌더 목록 해제만 수행 |
+| `FPDirectionalLightComponent` | `FPCascadeShadowRenderList` 등록(`CascadeShadowRenderItem`)과 Cascade Shadow Map(`CascadeShadowMap_N` DepthStencilArray) | 비어 있음 — 등록 해제도 하지 않아, Light가 삭제되면 목록에 해제된 멤버를 가리키는 포인터가 남음 |
 | `FPAssetManager` | `void*`로 보관하는 VertexBuffer(스트림 5종: Position · Normal · Color · UV · Tangent) · IndexBuffer, Shader 객체, Shader 바이트코드, 텍스처 SRV와 `new`로 만든 `D3D11_TEXTURE2D_DESC`(`FPTextureData`) | `= default` |
-| `RenderingDevice` | 상수 버퍼 28개(VS 14 · PS 14), SamplerState 36개(생성 시. RasterizerState는 이제 `FPAssetManager`가 JSON 에셋으로 만들어 소유), 열거한 `IDXGIAdapter1`, `IDXGIAdapter4` | 없음 |
+| `RenderingDevice` | 상수 버퍼 28개(VS 14 · PS 14)(SamplerState · RasterizerState는 이제 `FPAssetManager`가 JSON 에셋으로 만들어 소유 — SamplerState도 해제하는 코드 없음), 열거한 `IDXGIAdapter1`, `IDXGIAdapter4` | 없음 |
 | `ForestPearlEngine` | `Renderer` | `Finalize()`만 호출 |
 | `FPWorld::CreateClassInstnce<T>` | `dynamic_cast`가 실패한 객체 (`release()` 후 버려짐) | — |
 | 게임 코드 (`UI` 등) | 직접 `new`한 `FPTextComponent` | 없음 |

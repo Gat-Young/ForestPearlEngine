@@ -4,6 +4,9 @@
 // b2 : Light,  b3 : Material
 #include "PixelLight.hlsli"
 
+//Shadow 운용
+#include "CascadeShadow.hlsli"
+
 //상수 버퍼
 cbuffer ObejctConstBuffer : register(b0)
 {
@@ -83,6 +86,11 @@ float4 PS_Main(
     float4 AmbientLit;
     
     CalculateLight(posv, N, mView, mInverseView, DiffuseLit, SpecularLit, EmissiveLit, AmbientLit);
+    
+    float Shadow = CalculateShadow(mul(mInverseView, posv), posv.z, N.xyz);
+    
+    DiffuseLit = DiffuseLit * Shadow;
+    SpecularLit = SpecularLit * Shadow;
     
     float4 tex = TexDiff.Sample(Smpler, uv);
     float4 texSnowMask = TexSnowMask.Sample(Smpler, uv);

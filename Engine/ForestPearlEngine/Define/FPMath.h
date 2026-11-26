@@ -89,6 +89,20 @@ struct FPVector3
 };
 
 
+//Box 구조체
+struct FPAABB
+{
+	FPVector3 Min;
+	FPVector3 Max;
+};
+
+struct FPBoxSphereBounds
+{
+	FPVector3 Origin;			//중심
+	FPVector3 BoxExtent;		//각축 절반 길이
+	float SphereRadius;			//Bounding Sphere의 반지름
+};
+
 struct FPVector4
 {
 	float x = 0;
@@ -260,6 +274,18 @@ FPMatrix MatrixReflect(const FPVector4& Plane);
 FPMatrix MatrixInverse(FPMatrix& Matrix);
 
 FPMatrix Transpose(FPMatrix& Matrix);
+
+//Matrix로 Point 변환 (Perspective Divide 포함)
+FPVector3 TransformCoord(const FPVector3& Point, const FPMatrix& Matrix);
+
+//Matrix로 BoxSphereBounds 변환 (Box 8개 코너 변환 후 재계산)
+FPBoxSphereBounds TransformBounds(const FPBoxSphereBounds& Bounds, const FPMatrix& Matrix);
+
+//FPAABB(Min/Max)로 FPBoxSphereBounds 생성
+FPBoxSphereBounds BoundsFromAABB(const FPAABB& AABB);
+
+//Box Union (두 BoxSphereBounds를 하나로 합침)
+FPBoxSphereBounds CombineBounds(const FPBoxSphereBounds& A, const FPBoxSphereBounds& B);
 
 FPQuaternion Conjugate(const FPQuaternion& quat);
 

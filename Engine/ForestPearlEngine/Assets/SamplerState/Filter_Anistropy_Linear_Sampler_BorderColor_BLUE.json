@@ -1,0 +1,11 @@
+{
+  "Name": "Filter_Anistropy_Linear_Sampler_BorderColor_BLUE",
+  "Filter": "Anisotropic",
+  "AddressU": "BORDER",
+  "AddressV": "BORDER",
+  "AddressW": "BORDER",
+  "BorderColor": [0.0, 0.0, 1.0, 1.0],
+  "MaxAnisotropy": 8,
+  "MinLOD": 0.0,
+  "MipLODBias": 0.0
+}

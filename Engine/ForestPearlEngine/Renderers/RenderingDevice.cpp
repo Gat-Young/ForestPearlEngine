@@ -328,6 +328,51 @@ D3D11_CULL_MODE RenderingDevice::FPCullModeToD3DCullMode(FPCullMode& CullMode)
 	return D3D11_CULL_NONE;
 }
 
+D3D11_FILTER RenderingDevice::FPSamplerFilterTypeToD3DFilter(FPSamplerFilterType& FilterType)
+{
+	static const std::unordered_map<FPSamplerFilterType, D3D11_FILTER> FilterMap =
+	{
+		{ FPSamplerFilterType::Point,              D3D11_FILTER_MIN_MAG_MIP_POINT },
+		{ FPSamplerFilterType::BiLinear,           D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT },
+		{ FPSamplerFilterType::TriLinear,          D3D11_FILTER_MIN_MAG_MIP_LINEAR },
+		{ FPSamplerFilterType::Anisotropic,        D3D11_FILTER_ANISOTROPIC },
+		{ FPSamplerFilterType::ComparisonBiLinear, D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT },
+	};
+
+	auto it = FilterMap.find(FilterType);
+
+	if (it != FilterMap.end())
+	{
+		return it->second;
+	}
+
+	//Default : TriLinear
+	return D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+}
+
+D3D11_TEXTURE_ADDRESS_MODE RenderingDevice::FPTextureAddressModeToD3DAddressMode(FPTextureAddressMode& AddressMode)
+{
+	static const std::unordered_map<FPTextureAddressMode, D3D11_TEXTURE_ADDRESS_MODE> AddressMap =
+	{
+		{ FPTextureAddressMode::CLAMP,       D3D11_TEXTURE_ADDRESS_CLAMP },
+		{ FPTextureAddressMode::WRAP,        D3D11_TEXTURE_ADDRESS_WRAP },
+		{ FPTextureAddressMode::MIRROR,      D3D11_TEXTURE_ADDRESS_MIRROR },
+		{ FPTextureAddressMode::MIRROR_ONCE, D3D11_TEXTURE_ADDRESS_MIRROR_ONCE },
+		{ FPTextureAddressMode::BORDER,      D3D11_TEXTURE_ADDRESS_BORDER },
+	};
+
+	auto it = AddressMap.find(AddressMode);
+
+	if (it != AddressMap.end())
+	{
+		return it->second;
+	}
+
+	//Default : CLAMP
+	return D3D11_TEXTURE_ADDRESS_CLAMP;
+}
+
+
 //싱글톤 렌더링 디바이스 객체 가져오기
 RenderingDevice& RenderingDevice::GetRenderingDevice()
 {
@@ -717,6 +762,149 @@ HRESULT RenderingDevice::CreateDepthStencilStencilSRView(FPDepthStencilFormat& D
 
 	hr = Device->CreateShaderResourceView(DSTex, &SRVDesc, &DSSRV);
 	if (FAILED(hr)) { std::cout << "Stencil DSSRV Create Fail!" << "\n"; return hr; }
+
+	*OutDSSRView = DSSRV;
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateDepthStencilArrayTexture(UINT SizeX, UINT SizeY, UINT ArraySize, UINT MSAA, bool ShaderResource, FPDepthStencilFormat& DepthStencilFormat, void** OutDSTex)
+{
+	HRESULT hr = S_OK;
+
+	//Cascade Shadow Map 등 Depth-Stencil Texture2DArray용 정보 구성
+	D3D11_TEXTURE2D_DESC TextureDesc;
+	TextureDesc.Width = SizeX;
+	TextureDesc.Height = SizeY;
+	TextureDesc.MipLevels = 1;
+	TextureDesc.ArraySize = ArraySize;
+	TextureDesc.Format = FPDepthStencilFormatToDXGI_FORMAT(DepthStencilFormat);						//깊이 버퍼 Format
+	TextureDesc.SampleDesc = { MSAA, 0 };				//MSAA 설정
+	TextureDesc.Usage = D3D11_USAGE_DEFAULT;
+	TextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;	//깊이-스텐실 버퍼용으로 설정
+	TextureDesc.CPUAccessFlags = 0;
+	TextureDesc.MiscFlags = 0;
+
+	if (ShaderResource)
+	{
+		TextureDesc.Format = DSVFormatToTextureFormat(TextureDesc.Format);			//ShaderResource로도 사용된다면 해당 해당 타입으로 변환
+		TextureDesc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;						//ShaderResource Binding 추가
+	}
+
+	ID3D11Texture2D* Texture;
+	hr = Device->CreateTexture2D(&TextureDesc, NULL, &Texture);
+	if (FAILED(hr)) { std::cout << "DepthStencil Array Texture Create Fail!" << "\n"; return hr; }
+	*OutDSTex = Texture;
+
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateDepthStencilArrayViews(FPDepthStencilFormat& DepthStencilFormat, UINT MSAA, UINT ArraySize, void* InDSTex, std::vector<void*>* OutDSViews)
+{
+	HRESULT hr = S_OK;
+
+	ID3D11Texture2D* DSTex = static_cast<ID3D11Texture2D*>(InDSTex);
+	OutDSViews->clear();
+	OutDSViews->reserve(ArraySize);
+
+	//Cascade마다 1개씩, Array Slice별 DSV 생성
+	for (UINT i = 0; i < ArraySize; i++)
+	{
+		D3D11_DEPTH_STENCIL_VIEW_DESC DSVDesc = {};
+		DSVDesc.Format = FPDepthStencilFormatToDXGI_FORMAT(DepthStencilFormat);
+		DSVDesc.Flags = 0;
+
+		if (MSAA > 1)
+		{
+			DSVDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY;
+			DSVDesc.Texture2DMSArray.FirstArraySlice = i;
+			DSVDesc.Texture2DMSArray.ArraySize = 1;
+		}
+		else
+		{
+			DSVDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+			DSVDesc.Texture2DArray.MipSlice = 0;
+			DSVDesc.Texture2DArray.FirstArraySlice = i;
+			DSVDesc.Texture2DArray.ArraySize = 1;
+		}
+
+		ID3D11DepthStencilView* DSV;
+		hr = Device->CreateDepthStencilView(DSTex, &DSVDesc, &DSV);
+		if (FAILED(hr)) { std::cout << "DepthStencil Array DSV Create Fail!" << "\n"; return hr; }
+
+		OutDSViews->push_back(DSV);
+	}
+
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateDepthStencilArraySRView(FPDepthStencilFormat& DepthStencilFormat, bool ShaderResource, UINT MSAA, UINT ArraySize, void* InDSTex, void** OutDSSRView)
+{
+	HRESULT hr = S_OK;
+	if (!ShaderResource) return hr;
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+	DXGI_FORMAT DSVFormat = FPDepthStencilFormatToDXGI_FORMAT(DepthStencilFormat);
+	SRVDesc.Format = DSVFormatToSRVFormat(DSVFormat);
+
+	if (MSAA > 1)
+	{
+		SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY;
+		SRVDesc.Texture2DMSArray.FirstArraySlice = 0;
+		SRVDesc.Texture2DMSArray.ArraySize = ArraySize;
+	}
+	else
+	{
+		SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+		SRVDesc.Texture2DArray.MostDetailedMip = 0;
+		SRVDesc.Texture2DArray.MipLevels = 1;
+		SRVDesc.Texture2DArray.FirstArraySlice = 0;
+		SRVDesc.Texture2DArray.ArraySize = ArraySize;
+	}
+
+	ID3D11ShaderResourceView* DSSRV;
+	ID3D11Texture2D* DSTex = static_cast<ID3D11Texture2D*>(InDSTex);
+
+	hr = Device->CreateShaderResourceView(DSTex, &SRVDesc, &DSSRV);
+	if (FAILED(hr)) { std::cout << "DepthStencil Array DSSRV Create Fail!" << "\n"; return hr; }
+
+	*OutDSSRView = DSSRV;
+	return hr;
+}
+
+HRESULT RenderingDevice::CreateDepthStencilArrayStencilSRView(FPDepthStencilFormat& DepthStencilFormat, bool ShaderResource, UINT MSAA, UINT ArraySize, void* InDSTex, void** OutDSSRView)
+{
+	HRESULT hr = S_OK;
+	if (!ShaderResource) return hr;
+
+	DXGI_FORMAT DSVFormat = FPDepthStencilFormatToDXGI_FORMAT(DepthStencilFormat);
+	DXGI_FORMAT StencilSRVFormat = DSVFormatToStencilSRVFormat(DSVFormat);
+
+	//No stencil channel for this format (D16, D32F, etc.) : skip SRV creation
+	if (StencilSRVFormat == DXGI_FORMAT_UNKNOWN) return hr;
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+	SRVDesc.Format = StencilSRVFormat;
+
+	if (MSAA > 1)
+	{
+		SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY;
+		SRVDesc.Texture2DMSArray.FirstArraySlice = 0;
+		SRVDesc.Texture2DMSArray.ArraySize = ArraySize;
+	}
+	else
+	{
+		SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+		SRVDesc.Texture2DArray.MostDetailedMip = 0;
+		SRVDesc.Texture2DArray.MipLevels = 1;
+		SRVDesc.Texture2DArray.FirstArraySlice = 0;
+		SRVDesc.Texture2DArray.ArraySize = ArraySize;
+	}
+
+	ID3D11ShaderResourceView* DSSRV;
+	ID3D11Texture2D* DSTex = static_cast<ID3D11Texture2D*>(InDSTex);
+
+	hr = Device->CreateShaderResourceView(DSTex, &SRVDesc, &DSSRV);
+	if (FAILED(hr)) { std::cout << "Stencil DepthStencil Array DSSRV Create Fail!" << "\n"; return hr; }
 
 	*OutDSSRView = DSSRV;
 	return hr;
@@ -1336,447 +1524,38 @@ void RenderingDevice::OMSetDepthStencilState(void* InDepthStencilState, UINT Ste
 	DeviceContext->OMSetDepthStencilState(DepthStencilState, StencilRef);
 }
 
-HRESULT RenderingDevice::CreateSamplers()
+HRESULT RenderingDevice::CreateSamplerState(FPSamplerStateInfo& SamplerStateInfo, void** OutSamplerState)
 {
 	HRESULT hr = S_OK;
-	//샘플러 정보 설정
-	D3D11_SAMPLER_DESC sd = {};
-	
-	//기본값 설정
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	sd.BorderColor[0] = 1;
-	sd.BorderColor[1] = 1;
-	sd.BorderColor[2] = 1;
-	sd.BorderColor[3] = 1;
 
-	//텍스처 어드레스 모드
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// 
-	//Clamp
-	sd.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-	sd.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-	sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	D3D11_SAMPLER_DESC Desc = {};
+	Desc.Filter = FPSamplerFilterTypeToD3DFilter(SamplerStateInfo.Filter);
+	Desc.AddressU = FPTextureAddressModeToD3DAddressMode(SamplerStateInfo.AddressU);
+	Desc.AddressV = FPTextureAddressModeToD3DAddressMode(SamplerStateInfo.AddressV);
+	Desc.AddressW = FPTextureAddressModeToD3DAddressMode(SamplerStateInfo.AddressW);
+	Desc.ComparisonFunc = FPCompraisionFuncToD3DComparisonFunc(SamplerStateInfo.ComparisonFunc);
+	Desc.BorderColor[0] = SamplerStateInfo.BorderColor.x;
+	Desc.BorderColor[1] = SamplerStateInfo.BorderColor.y;
+	Desc.BorderColor[2] = SamplerStateInfo.BorderColor.z;
+	Desc.BorderColor[3] = SamplerStateInfo.BorderColor.w;
+	Desc.MaxAnisotropy = SamplerStateInfo.MaxAnisotropy;
+	Desc.MinLOD = SamplerStateInfo.MinLOD;
+	Desc.MaxLOD = SamplerStateInfo.MaxLOD;
+	Desc.MipLODBias = SamplerStateInfo.MipLODBias;
 
-	//Point
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Point_Sampler_CLAMP]);
-	if (FALSE(hr)) { std::cout << "Filter_Point_Sampler_CLAMP 샘플러 생성 실패\n"; }
+	ID3D11SamplerState* State;
+	hr = Device->CreateSamplerState(&Desc, &State);
+	if (FAILED(hr)) { std::cout << "SamplerState Create Fail!" << "\n"; return hr; }
 
-	//Bi Linear
-	sd.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Bi_Linear_Sampler_CLAMP]);
-	if (FALSE(hr)) { std::cout << "Filter_Bi_Linear_Sampler_CLAMP 샘플러 생성 실패\n"; }
-
-	//Tri Linear (기본값)
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Tri_Linear_Sampler_CLAMP]);
-	if (FALSE(hr)) { std::cout << "Filter_Tri_Linear_Sampler_CLAMP 샘플러 생성 실패\n"; }
-
-
-	//Anistropy
-	sd.Filter = D3D11_FILTER_ANISOTROPIC;
-	sd.MaxAnisotropy = dwAF;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Anistropy_Linear_Sampler_CLAMP]);
-	if (FALSE(hr)) { std::cout << "Filter_Anistropy_Linear_Sampler_CLAMP 샘플러 생성 실패\n"; }
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-	// 
-	//Wrap
-	sd.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	sd.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	sd.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-
-	//Point
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Point_Sampler_Wrap]);
-	if (FALSE(hr)) { std::cout << "Filter_Point_Sampler_Wrap 샘플러 생성 실패\n"; }
-
-	//Bi Linear
-	sd.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Bi_Linear_Sampler_Wrap]);
-	if (FALSE(hr)) { std::cout << "Filter_Bi_Linear_Sampler_Wrap 샘플러 생성 실패\n"; }
-
-	//Tri Linear (기본값)
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Tri_Linear_Sampler_Wrap]);
-	if (FALSE(hr)) { std::cout << "Filter_Tri_Linear_Sampler_Wrap 샘플러 생성 실패\n"; }
-
-
-	//Anistropy
-	sd.Filter = D3D11_FILTER_ANISOTROPIC;
-	sd.MaxAnisotropy = dwAF;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Anistropy_Linear_Sampler_Wrap]);
-	if (FALSE(hr)) { std::cout << "Filter_Anistropy_Linear_Sampler_Wrap 샘플러 생성 실패\n"; }
-
-	///////////////////////////////////////////////////////////////////////////////////////////////
-	// 
-	//Mirror
-	sd.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
-	sd.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
-	sd.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
-
-	//Point
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Point_Sampler_Mirror]);
-	if (FALSE(hr)) { std::cout << "Filter_Point_Sampler_Mirror 샘플러 생성 실패\n"; }
-
-	//Bi Linear
-	sd.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Bi_Linear_Sampler_Mirror]);
-	if (FALSE(hr)) { std::cout << "Filter_Bi_Linear_Sampler_Mirror 샘플러 생성 실패\n"; }
-
-	//Tri Linear (기본값)
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Tri_Linear_Sampler_Mirror]);
-	if (FALSE(hr)) { std::cout << "Filter_Tri_Linear_Sampler_Mirror 샘플러 생성 실패\n"; }
-
-
-	//Anistropy
-	sd.Filter = D3D11_FILTER_ANISOTROPIC;
-	sd.MaxAnisotropy = dwAF;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Anistropy_Linear_Sampler_Mirror]);
-	if (FALSE(hr)) { std::cout << "Filter_Anistropy_Linear_Sampler_Mirror 샘플러 생성 실패\n"; }
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// 
-	//Mirror-Once
-	sd.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
-	sd.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
-	sd.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
-
-	//Point
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Point_Sampler_Mirror_Once]);
-	if (FALSE(hr)) { std::cout << "Filter_Point_Sampler_Mirror_Once 샘플러 생성 실패\n"; }
-
-	//Bi Linear
-	sd.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Bi_Linear_Sampler_Mirror_Once]);
-	if (FALSE(hr)) { std::cout << "Filter_Bi_Linear_Sampler_Mirror_Once 샘플러 생성 실패\n"; }
-
-	//Tri Linear (기본값)
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Tri_Linear_Sampler_Mirror_Once]);
-	if (FALSE(hr)) { std::cout << "Filter_Tri_Linear_Sampler_Mirror_Once 샘플러 생성 실패\n"; }
-
-
-	//Anistropy
-	sd.Filter = D3D11_FILTER_ANISOTROPIC;
-	sd.MaxAnisotropy = dwAF;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Anistropy_Linear_Sampler_Mirror_Once]);
-	if (FALSE(hr)) { std::cout << "Filter_Anistropy_Linear_Sampler_Mirror_Once 샘플러 생성 실패\n"; }
-	
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	// 
-	//Border BasicSet
-	sd.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-	sd.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-	sd.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-	sd.BorderColor[0] = 1;
-	sd.BorderColor[1] = 1;
-	sd.BorderColor[2] = 1;
-	sd.BorderColor[3] = 1;
-
-	//Point
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Point_Sampler_Border]);
-	if (FALSE(hr)) { std::cout << "Filter_Point_Sampler_Border 샘플러 생성 실패\n"; }
-
-	//Bi Linear
-	sd.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Bi_Linear_Sampler_Border]);
-	if (FALSE(hr)) { std::cout << "Filter_Bi_Linear_Sampler_Border 샘플러 생성 실패\n"; }
-
-	//Tri Linear (기본값)
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Tri_Linear_Sampler_Border]);
-	if (FALSE(hr)) { std::cout << "Filter_Tri_Linear_Sampler_Border 샘플러 생성 실패\n"; }
-
-
-	//Anistropy
-	sd.Filter = D3D11_FILTER_ANISOTROPIC;
-	sd.MaxAnisotropy = dwAF;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Anistropy_Linear_Sampler_Border]);
-	if (FALSE(hr)) { std::cout << "Filter_Anistropy_Linear_Sampler_Border 샘플러 생성 실패\n"; }
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////////
-	// 
-	//BorderColor Red
-	sd.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-	sd.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-	sd.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-	sd.BorderColor[0] = 1;
-	sd.BorderColor[1] = 0;
-	sd.BorderColor[2] = 0;
-	sd.BorderColor[3] = 1;
-
-	//Point
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Point_Sampler_BorderColor_RED]);
-	if (FALSE(hr)) { std::cout << "Filter_Point_Sampler_BorderColor_RED 샘플러 생성 실패\n"; }
-
-	//Bi Linear
-	sd.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Bi_Linear_Sampler_BorderColor_RED]);
-	if (FALSE(hr)) { std::cout << "Filter_Bi_Linear_Sampler_BorderColor_RED 샘플러 생성 실패\n"; }
-
-	//Tri Linear (기본값)
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Tri_Linear_Sampler_BorderColor_RED]);
-	if (FALSE(hr)) { std::cout << "Filter_Tri_Linear_Sampler_BorderColor_RED 샘플러 생성 실패\n"; }
-
-
-	//Anistropy
-	sd.Filter = D3D11_FILTER_ANISOTROPIC;
-	sd.MaxAnisotropy = dwAF;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Anistropy_Linear_Sampler_BorderColor_RED]);
-	if (FALSE(hr)) { std::cout << "Filter_Anistropy_Linear_Sampler_BorderColor_RED 샘플러 생성 실패\n"; }
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// 
-	//BorderColor Blue
-	sd.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-	sd.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-	sd.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-	sd.BorderColor[0] = 0;
-	sd.BorderColor[1] = 0;
-	sd.BorderColor[2] = 1;
-	sd.BorderColor[3] = 1;
-
-	//Point
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Point_Sampler_BorderColor_BLUE]);
-	if (FALSE(hr)) { std::cout << "Filter_Point_Sampler_BorderColor_BLUE 샘플러 생성 실패\n"; }
-
-	//Bi Linear
-	sd.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Bi_Linear_Sampler_BorderColor_BLUE]);
-	if (FALSE(hr)) { std::cout << "Filter_Bi_Linear_Sampler_BorderColor_BLUE 샘플러 생성 실패\n"; }
-
-	//Tri Linear (기본값)
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Tri_Linear_Sampler_BorderColor_BLUE]);
-	if (FALSE(hr)) { std::cout << "Filter_Tri_Linear_Sampler_BorderColor_BLUE 샘플러 생성 실패\n"; }
-
-
-	//Anistropy
-	sd.Filter = D3D11_FILTER_ANISOTROPIC;
-	sd.MaxAnisotropy = dwAF;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Anistropy_Linear_Sampler_BorderColor_BLUE]);
-	if (FALSE(hr)) { std::cout << "Filter_Anistropy_Linear_Sampler_BorderColor_BLUE 샘플러 생성 실패\n"; }
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// 
-	//BorderColor Green
-	sd.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-	sd.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-	sd.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-	sd.BorderColor[0] = 0;
-	sd.BorderColor[1] = 1;
-	sd.BorderColor[2] = 0;
-	sd.BorderColor[3] = 1;
-
-	//Point
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Point_Sampler_BorderColor_GREEN]);
-	if (FALSE(hr)) { std::cout << "Filter_Point_Sampler_BorderColor_GREEN 샘플러 생성 실패\n"; }
-
-	//Bi Linear
-	sd.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Bi_Linear_Sampler_BorderColor_GREEN]);
-	if (FALSE(hr)) { std::cout << "Filter_Bi_Linear_Sampler_BorderColor_GREEN 샘플러 생성 실패\n"; }
-
-	//Tri Linear (기본값)
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Tri_Linear_Sampler_BorderColor_GREEN]);
-	if (FALSE(hr)) { std::cout << "Filter_Tri_Linear_Sampler_BorderColor_GREEN 샘플러 생성 실패\n"; }
-
-
-	//Anistropy
-	sd.Filter = D3D11_FILTER_ANISOTROPIC;
-	sd.MaxAnisotropy = dwAF;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Anistropy_Linear_Sampler_BorderColor_GREEN]);
-	if (FALSE(hr)) { std::cout << "Filter_Anistropy_Linear_Sampler_BorderColor_GREEN 샘플러 생성 실패\n"; }
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// 
-	//BorderColor Magenta
-	sd.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-	sd.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-	sd.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-	sd.BorderColor[0] = 1;
-	sd.BorderColor[1] = 0;
-	sd.BorderColor[2] = 1;
-	sd.BorderColor[3] = 1;
-
-	//Point
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Point_Sampler_BorderColor_MAGENTA]);
-	if (FALSE(hr)) { std::cout << "Filter_Point_Sampler_BorderColor_MAGENTA 샘플러 생성 실패\n"; }
-
-	//Bi Linear
-	sd.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Bi_Linear_Sampler_BorderColor_MAGENTA]);
-	if (FALSE(hr)) { std::cout << "Filter_Bi_Linear_Sampler_BorderColor_MAGENTA 샘플러 생성 실패\n"; }
-
-	//Tri Linear (기본값)
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sd.MaxAnisotropy = 1;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Tri_Linear_Sampler_BorderColor_MAGENTA]);
-	if (FALSE(hr)) { std::cout << "Filter_Tri_Linear_Sampler_BorderColor_MAGENTA 샘플러 생성 실패\n"; }
-
-
-	//Anistropy
-	sd.Filter = D3D11_FILTER_ANISOTROPIC;
-	sd.MaxAnisotropy = dwAF;
-	sd.MinLOD = 0;
-	sd.MaxLOD = D3D11_FLOAT32_MAX;
-	sd.MipLODBias = 0;
-	hr = Device->CreateSamplerState(&sd, &SamplerState[Filter_Anistropy_Linear_Sampler_BorderColor_MAGENTA]);
-	if (FALSE(hr)) { std::cout << "Filter_Anistropy_Linear_Sampler_BorderColor_MAGENTA 샘플러 생성 실패\n"; }
-
+	*OutSamplerState = State;
 	return hr;
 }
 
-HRESULT RenderingDevice::PSSetSamplers(UINT Slot, UINT NumSamplers, FPSamplerType SamplerType)
+HRESULT RenderingDevice::PSSetSamplers(UINT Slot, UINT NumSamplers, void* InSamplerState)
 {
-	DeviceContext->PSSetSamplers(Slot, NumSamplers, &SamplerState[SamplerType]);
+	ID3D11SamplerState* pSamplerState = static_cast<ID3D11SamplerState*>(InSamplerState);
+	ID3D11SamplerState* const* ppSamplerState = &pSamplerState;
+	DeviceContext->PSSetSamplers(Slot, NumSamplers, ppSamplerState);
 	return S_OK;
 }
 

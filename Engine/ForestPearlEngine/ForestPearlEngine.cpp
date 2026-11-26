@@ -11,6 +11,7 @@
 #include "FPAssetManager.h"
 #include <iostream>
 #include "MCLOG.h"
+#include "../ForestPearlEngine/Utility/FPSystemTimer.h"
 
 //싱글톤 엔진 객체 가져오기
 ForestPearlEngine& ForestPearlEngine::GetGameEngine()
@@ -23,12 +24,26 @@ ForestPearlEngine& ForestPearlEngine::GetGameEngine()
 //엔진 부팅 및 기본 설정 모듈 불러오기
 bool ForestPearlEngine::PreInitialize()
 {
+    unsigned int profileID1 = FPSystemTimer::Get().StartProfileTimer();
+
     FPGameInstance::Get();
+
+    FPSystemTimer::Get().EndProfileTimer("[ForestPearlEngine] FPGameInstance::Get() : ", profileID1);
+
+    unsigned int profileID2 = FPSystemTimer::Get().StartProfileTimer();
 
     RegistProjectName();
 
+    FPSystemTimer::Get().EndProfileTimer("[ForestPearlEngine] RegistProjectName() : ", profileID2);
+
+    unsigned int profileID3 = FPSystemTimer::Get().StartProfileTimer();
+
     FPGameProjectSetting* GameProjectSetting = static_cast<FPGameProjectSetting*>(FPGameInstance::Get().GetGameProjectSetting());
     GameProjectSetting->ProjectSetting();
+
+    FPSystemTimer::Get().EndProfileTimer("[ForestPearlEngine] ProjectSetting() : ", profileID3);
+
+    unsigned int profileID4 = FPSystemTimer::Get().StartProfileTimer();
 
     //윈도우 생성
     Hwnd = CreateFPEWindow(
@@ -40,6 +55,8 @@ bool ForestPearlEngine::PreInitialize()
     GameProjectSetting->SetHWND(Hwnd);
     GameProjectSetting->CalculateDisplaySize();
 
+    FPSystemTimer::Get().EndProfileTimer("[ForestPearlEngine] CreateFPEWindow : ", profileID4);
+
     if (Hwnd == nullptr)
     {
         //std::cout << "윈도우 생성 실패" << std::endl;
@@ -47,8 +64,14 @@ bool ForestPearlEngine::PreInitialize()
         return false;
     }
 
+    unsigned int profileID5 = FPSystemTimer::Get().StartProfileTimer();
+
     // InputSystem 만들기
     RegisterFPRawInputDevices();
+
+    FPSystemTimer::Get().EndProfileTimer("[ForestPearlEngine] RegisterFPRawInputDevices : ", profileID5);
+
+    unsigned int profileID6 = FPSystemTimer::Get().StartProfileTimer();
 
     // RenderDevice 생성
     RenderDevice = &RenderingDevice::GetRenderingDevice();
@@ -58,20 +81,48 @@ bool ForestPearlEngine::PreInitialize()
     RenderDevice->SetHz(GameProjectSetting->GetHz());
     RenderDevice->SetSwapChainRect(GameProjectSetting->GetDisplayWidth(), GameProjectSetting->GetDeisplayHeight());
 
+    FPSystemTimer::Get().EndProfileTimer("[ForestPearlEngine] RenderDevice 생성 : ", profileID6);
+
+    unsigned int profileID7 = FPSystemTimer::Get().StartProfileTimer();
+
     //Render 등록
     Render = new Renderer(*RenderDevice);
     Render->InitializeRenderer(Hwnd);
 
+    FPSystemTimer::Get().EndProfileTimer("[ForestPearlEngine] Render 등록 : ", profileID7);
+
+    unsigned int profileID8 = FPSystemTimer::Get().StartProfileTimer();
+
     LoadEngineAssets();
 
+    FPSystemTimer::Get().EndProfileTimer("[ForestPearlEngine] LoadEngineAssets() : ", profileID8);
+
+    unsigned int profileID9 = FPSystemTimer::Get().StartProfileTimer();
+
     LoadLevel();
+
+    FPSystemTimer::Get().EndProfileTimer("[ForestPearlEngine] LoadLevel() : ", profileID9);
+
+    unsigned int profileID10 = FPSystemTimer::Get().StartProfileTimer();
+
     LoadClassRegist();
+
+    FPSystemTimer::Get().EndProfileTimer("[ForestPearlEngine] LoadLevel() : ", profileID10);
+
+    unsigned int profileID11 = FPSystemTimer::Get().StartProfileTimer();
+
     LoadAssets();
+
+    FPSystemTimer::Get().EndProfileTimer("[ForestPearlEngine] LoadAssets() : ", profileID11);
+
+    unsigned int profileID12 = FPSystemTimer::Get().StartProfileTimer();
 
     //등록된 모든 Asset Data 객체 만들기
     FPAssetManager* AssetManager = static_cast<FPAssetManager*>(FPGameInstance::Get().GetAssetManager());
 
     AssetManager->AllAssetDataCreate();
+
+    FPSystemTimer::Get().EndProfileTimer("[ForestPearlEngine] AllAssetDataCreate() : ", profileID12);
 
     return true;
 }

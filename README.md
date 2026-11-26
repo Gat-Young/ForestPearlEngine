@@ -208,7 +208,8 @@ Engine/ForestPearlEngine/
 │       └── DOHWA/ , DOHWARHI/        #   소프트웨어 렌더러 "DOHWA(圖畵)"
 ├── Utility/
 │   ├── FPPathManager.h / .cpp        # 에셋 경로 해석 (Debug / Release)
-│   └── FPGameplayStatics.h / .cpp    # 액터 검색 유틸
+│   ├── FPGameplayStatics.h / .cpp    # 액터 검색 유틸
+│   └── FPSystemTimer.h / .cpp        # 프로파일링용 싱글톤 타이머 (StartProfileTimer / EndProfileTimer)
 ├── Assets/
 │   ├── Model/Primitive_Model/        # Cube / Sphere / Plane / SkyBoxQuad .fbx
 │   ├── StaticMesh/                   # Cube / Sphere / Plane / SkyBoxQuad _StaticMesh.json
@@ -417,6 +418,7 @@ FPAssetLoader* AssetLoader =
 | `FPPawn` | `Object/FPPawn.h/.cpp` | `PossessedBy / UnPossesed`, `GetController`, `AddControllerYaw/Pitch/RollInput` |
 | `FPGameplayStatics` | `Utility/FPGameplayStatics.h/.cpp` | `GetActorOfClass`, `GetAllActorsOfClass`, `GetAllActors`. 클래스 이름은 `FPGameProjectClassRegistry::GetClassType()`이 돌려주는 `std::type_index`로 비교하며, 등록되지 않은 이름이면 `nullptr`을 반환 |
 | `FPPathManager` | `Utility/FPPathManager.h/.cpp` | 구성(Debug/Release)에 따른 에셋 경로, `StringToWString` |
+| `FPSystemTimer` | `Utility/FPSystemTimer.h/.cpp` | 프로파일링용 싱글톤. `StartProfileTimer()`가 `std::chrono::steady_clock`으로 시작 시각을 기록하고 발급한 `ProfileID`(`unsigned int`, 호출마다 증가)를 돌려주면, `EndProfileTimer(LogText, ProfileID)`가 경과 시간(ms)을 `LogText` 뒤에 붙여 `std::cout`으로 출력하고 그 항목을 지움. 여러 구간을 동시에 잴 수 있도록 `ProfileID`별로 시작 시각을 `unordered_map`에 보관 |
 | `MCLOG` | `MCLOG.h` | `MCLOG(LogMC, "fmt %d", v)` → `Log: [Class::Func] 메시지` |
 
 </details>
@@ -459,6 +461,9 @@ void Runner::Run()
     FPEngine.Finalize();                     // 종료
 }
 ```
+
+> [!NOTE]
+> 실제 `Runner.cpp`는 `PreInitialize()` 호출 구간을 `FPSystemTimer::StartProfileTimer()` / `EndProfileTimer("[TEST Log] 엔진 PreInitializer Time : ", ProfileID)`로 감싸 걸린 시간(ms)을 `std::cout`에 출력합니다 — 부팅 과정을 프로파일링하기 위한 테스트 로그이며 엔진의 부팅 순서나 동작에는 영향을 주지 않습니다 ([`FPSystemTimer`](#엔진-구성-요소-전체-목록)).
 
 ### 부팅 순서
 

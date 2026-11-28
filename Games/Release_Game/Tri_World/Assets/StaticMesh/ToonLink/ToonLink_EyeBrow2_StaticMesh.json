@@ -1,6 +1,6 @@
 {
     "Name": "ToonLink_EyeBrow2_StaticMesh",
-    "NodeName": "_014_toonlink_Eyebrow1__VIS_O_OBJ_",
+    "NodeName": "ToonLink__014_toonlink_Eyebrow1__VIS_O_OBJ_",
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",

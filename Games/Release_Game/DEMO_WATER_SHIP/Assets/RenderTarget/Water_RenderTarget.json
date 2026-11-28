@@ -1,0 +1,10 @@
+{
+  "Name": "Water_RenderTarget",
+  "Type": "Texture2D",
+  "SizeX": 1280,
+  "SizeY": 800,
+  "RenderTargetFormat": "RGBA8",
+  "ClearColor": [ 1.0, 0.0, 1.0, 1.0 ],
+  "MSAA": 1,
+  "MipMap": false
+}

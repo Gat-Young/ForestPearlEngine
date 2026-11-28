@@ -1,6 +1,6 @@
 {
     "Name": "ToonLink_Buckle_StaticMesh",
-    "NodeName": "_006_Gamemodel_",
+    "NodeName": "ToonLink__006_Gamemodel_",
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",

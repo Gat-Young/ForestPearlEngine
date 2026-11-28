@@ -1,0 +1,51 @@
+{
+    "Material": {
+        "Name": "Water_Material",
+        "VertexShader": "WaterVertexShader",
+        "PixelShader": "WaterPixelShader",
+        "TwoSided": false,
+        "BlendState": "BS_DEFAULT",
+        "Details": "Opaque",
+        "bIsSky": false,
+        "bUsePlanarForwardReflections": true,
+        "Parameters": [
+            {
+                "Type": "PS",
+                "ConstantBuffer": "WaterSettings",
+                "Values": {
+                    "FlowOffset": [ 0.0 ],
+                    "DistortionStrength": [ 0.8 ],
+                    "Tiling": [ 2.0 ],
+                    "ReflectionAmount": [ 0.8 ],
+                    "WaterColor": [ 0.035, 0.18, 0.24, 1.0 ]
+                }
+            }
+        ],
+        "Textures": [
+            {
+                "Type": "PS",
+                "Parameter": "BumpMap",
+                "Asset": "WaterBump",
+                "TextureType": "Texture2D"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "ReflectionTex",
+                "Asset": "Water_RenderTarget",
+                "TextureType": "RenderTargetTexture2D"
+            }
+        ],
+        "Samplers": [
+            {
+                "Type": "PS",
+                "Parameter": "BumpWrap",
+                "SamplerType": "Filter_Bi_Linear_Sampler_Wrap"
+            },
+            {
+                "Type": "PS",
+                "Parameter": "ReflectionClamp",
+                "SamplerType": "Filter_Bi_Linear_Sampler_CLAMP"
+            }
+        ]
+    }
+}

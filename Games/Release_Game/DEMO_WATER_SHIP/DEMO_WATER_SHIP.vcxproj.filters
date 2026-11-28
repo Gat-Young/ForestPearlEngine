@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{b1f4e4f0-1111-4a9c-9a1a-111111111112}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{b1f4e4f0-2222-4a9c-9a1a-222222222223}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{b1f4e4f0-3333-4a9c-9a1a-333333333334}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{b1f4e4f0-4444-4a9c-9a1a-444444444445}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ADirectionalLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ASkyLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ASkyBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AWater.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AColorBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameMode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ADirectionalLight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ASkyLight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ASkyBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AWater.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AColorBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameMode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameProjectLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\GameSetting\GameSetting.json">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\Level\DemoWaterShip.json">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\Material\Water\Water_Material.json">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\Material\Box\Box_Red_Material.json">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\Material\Box\Box_Green_Material.json">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\Material\Box\Box_Blue_Material.json">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\Material\Box\Box_Orange_Material.json">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\Shader\WaterVertexShader.json">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\Shader\WaterPixelShader.json">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\Texture\Water\WaterBump.json">
+      <Filter>Assets</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Assets\ShaderResource\WaterVertexShader.vsh">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Assets\ShaderResource\WaterPixelShader.psh">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>

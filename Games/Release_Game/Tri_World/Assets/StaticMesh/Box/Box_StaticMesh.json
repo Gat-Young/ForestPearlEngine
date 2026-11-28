@@ -1,6 +1,6 @@
 {
     "Name": "Box_StaticMesh",
-    "NodeName": "Cube",
+    "NodeName": "Box_Cube",
     "MeshData": [
         {
             "Path": "Box/Box.fbx",

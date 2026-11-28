@@ -81,7 +81,7 @@ float4 PS_Main(
     
     float4 tex = TexDiff.Sample(Smpler, uv);
     
-    col = col * DiffuseLit * tex + SpecularLit + EmissiveLit + col * AmbientLit * DiffuseLit;
+    col = col * DiffuseLit * tex + SpecularLit + EmissiveLit + col * AmbientLit;
     
     col.a = tex.a;
 

@@ -30,6 +30,7 @@
 [VS 설정](#visual-studio-설정) ·
 [사용 가이드](#-콘텐츠-프로그래머-가이드) ·
 [Demo](#-demo-프로젝트--tri_world) ·
+[Demo (Water Ship)](#-demo-프로젝트--demo_water_ship) ·
 [알려진 문제](#-알려진-문제--소멸-처리)
 
 </div>
@@ -94,7 +95,8 @@ ForestPearlEngine/
 │   └── Runner/                    # 실행 파일 프로젝트 (main)
 ├── Games/
 │   └── Release_Game/              # 엔진 현재 버전과 연결되는 게임 프로젝트
-│       └── Tri_World/             #   ★ Demo 프로젝트 (솔루션에 포함, 엔진이 현재 참조 중 — 실제로 빌드/실행되는 게임). 이전의 `Test_SphereMap` · `Car` · `Ship` · `Lambert_Light` · `ShaderCode_Triangle` 더미 프로젝트는 **삭제됨**
+│       ├── Tri_World/             #   ★ 메인 Demo 프로젝트. 이전의 `Test_SphereMap` · `Car` · `Ship` · `Lambert_Light` · `ShaderCode_Triangle` 더미 프로젝트는 **삭제됨**
+│       └── DEMO_WATER_SHIP/       #   Water · Frigate/Cannon 데모 (이 브랜치의 솔루션이 현재 참조 중. 엔진 참조를 Tri_World로 되돌리는 방법은 "실행할 게임 바꾸기" 참고)
 ├── Tool/
 │   ├── DXTexViewer/                # DxTex.exe — 이미지 → DDS 변환·확인 도구 (d3dx9 DLL 포함)
 │   └── FBXToStaticMeshJsonTranslator/  # FBX 폴더 → StaticMesh / Material / Texture JSON 일괄 변환 콘솔 툴 (ufbx + nlohmann json). EXE/ 폴더에 빌드된 실행 파일 포함
@@ -104,7 +106,7 @@ ForestPearlEngine/
 │   └── SampleMaterial.json           # Material JSON 샘플
 └── x64/                           # 빌드 산출물 (git 미추적)
     ├── Debug/
-    └── Release/                   #   Tri_World.exe + Assets/
+    └── Release/                   #   Tri_World.exe + Assets/ (이 브랜치에서는 DEMO_WATER_SHIP.exe — 아래 Release 패키징 참고)
 ```
 
 ### Engine/ForestPearlEngine
@@ -463,7 +465,7 @@ void Runner::Run()
 ```
 
 > [!NOTE]
-> 실제 `Runner.cpp`는 `PreInitialize()` 호출 구간을 `FPSystemTimer::StartProfileTimer()` / `EndProfileTimer("[TEST Log] 엔진 PreInitializer Time : ", ProfileID)`로 감싸 걸린 시간(ms)을 `std::cout`에 출력합니다 — 부팅 과정을 프로파일링하기 위한 테스트 로그이며 엔진의 부팅 순서나 동작에는 영향을 주지 않습니다 ([`FPSystemTimer`](#엔진-구성-요소-전체-목록)).
+> 실제 `Runner.cpp`는 `PreInitialize()` 호출 구간을 `FPSystemTimer::StartProfileTimer()` / `EndProfileTimer("[Runner] 엔진 PreInitializer Time : ", ProfileID)`로 감싸 걸린 시간(ms)을 `std::cout`에 출력합니다. `PreInitialize()` 내부도 `FPGameInstance::Get()` · `RegistProjectName()` · `ProjectSetting()` · `CreateFPEWindow` · `RegisterFPRawInputDevices` · `RenderDevice` 생성 · `Render` 생성 · `LoadEngineAssets()` · `LoadLevel()` · `LoadClassRegist()` · `LoadAssets()` · `AllAssetDataCreate()` 각 단계를 `"[ForestPearlEngine] 단계 : "` 꼴로 개별 프로파일링합니다. `AllAssetDataCreate()`도 Mesh Buffer · Vertex/Pixel Shader · RenderTarget · DepthStencil · Texture · (Texture Array) · BlendState · RasterizerState · SamplerState · FBX Load(`LoadFbxData` 호출마다 1개씩 추가) 등 자산 종류별로 `"[FPAssetManager] 단계 : "`로 나눠 찍습니다 — 모두 부팅 과정을 프로파일링하기 위한 로그이며 엔진의 부팅 순서나 동작에는 영향을 주지 않습니다 ([`FPSystemTimer`](#엔진-구성-요소-전체-목록)).
 
 ### 부팅 순서
 
@@ -868,7 +870,8 @@ flowchart TD
 struct RenderItem            // Mesh용. Material의 상수 버퍼 · 리플렉션 정보를 포인터로 들고 있음
 {
     int*  Priority;   bool* Active;
-    std::string* MeshPath;                              // AssetManager의 VertexBuffer · IndexBuffer 키
+    std::string* MeshPath;                              // FBX 경로 (참고용)
+    std::string* NodeName;                               // AssetManager의 VertexBuffer · IndexBuffer 키
     FPMatrix* Location; FPMatrix* Rotation; FPMatrix* Scale;
     std::string* VertexShaderPath; std::string* PixelShaderPath;   // Material의 셰이더 이름
     bool* TwoSided;
@@ -909,7 +912,7 @@ struct UIContextItem         // 텍스트 1줄
 `MeshRenderItem`은 값 복사본에 Material의 상수 버퍼 데이터와 `Resources` · `Samplers`(리플렉션된 텍스처 · 샘플러 목록)를 복사해 가집니다 ([Material JSON](#material-json), [Texture](#texture)).
 
 렌더러는 위 항목을 `RenderingData::MeshRenderItem` · `GizmoRenderItem` · `NormalRenderItem` · `LightRenderItem` · `CameraItem` · `UIContextItem`로 **값 복사**해 Render List에 보관합니다.
-메시 / 기즈모 / Normal Line은 `MeshPath`로 `FPAssetManager`에서 스트림별 VertexBuffer 목록과 IndexBuffer 목록을, 셰이더 이름으로 VS · PS · InputLayout을 찾아 사용합니다.
+메시 / 기즈모 / Normal Line은 셰이더 이름으로 VS · PS · InputLayout을 찾아 사용합니다. VertexBuffer · IndexBuffer 목록은 `MeshPath`가 아니라 **`NodeName`**으로 찾습니다 — `FPAssetManager::MakeMeshBuffer`가 버퍼를 `MeshData.NodeName`(FBX 노드 단위로 고유) 기준으로 등록하기 때문입니다. `MeshPath`(FBX 파일 경로)는 **하나의 FBX에 여러 StaticMesh/노드가 들어 있으면 값이 겹치므로** 더 이상 버퍼 조회 키로 쓰지 않습니다(이전에는 `MeshPath`를 키로 썼고, 매 조회마다 문자열 비교 비용도 더 컸음). `RenderItem::NodeName` → `RenderingData::MeshRenderItem::NodeName`으로 전달되어 `DrawMeshRenderItem` / `DrawSceneCaptureMeshItem`과 Quad2D(`"Quad2D"`, Built-In Quad2D StaticMesh JSON의 `NodeName`)가 이 값으로 버퍼를 가져옵니다. Gizmo · Normal Line Pass는 아직 `MeshPath` 필드로 조회하며, `FPStaticMeshComponent`가 Normal Line에는 `StaticMesh->GetNodeName()`(즉 `NodeName` 값)을 넘겨 버퍼 키와 맞춥니다 ([FBX 변환 도구의 NodeName 구성](#fbx-변환-도구-fbxtostaticmeshjsontranslator) 참고).
 
 ### 초기화 (`Renderer::InitializeRenderer`)
 
@@ -2936,7 +2939,7 @@ flowchart LR
 ```json
 {
   "Name": "ToonLink_Hair_StaticMesh",
-  "NodeName": "_043_Gamemodel_",
+  "NodeName": "ToonLink__043_Gamemodel_",
   "MeshData": [
     { "Path": "ToonLink/ToonLink.fbx", "Topology": "TRIANGLELIST" }
   ],
@@ -2959,7 +2962,7 @@ flowchart LR
 | 키 | 설명 |
 |---|---|
 | `Name` | 이 StaticMesh의 등록 이름(파일명과 일치시키는 것이 관례). 변환된 메시 버퍼도 이 이름으로 저장됨 |
-| `NodeName` | FBX 씬에서 이 메시를 찾을 **노드 이름**. `LoadFbxData`가 전체 노드 중 이름이 같은 것을 찾아 그 메시만 변환 (여러 StaticMesh가 같은 FBX의 다른 노드를 각각 가리킬 수 있음) |
+| `NodeName` | FBX 씬에서 이 메시를 찾을 **노드 이름**. `"<FBX 파일명(Stem)>_<FBX 노드 이름>"` 형태(예시의 `ToonLink__043_Gamemodel_`는 `ToonLink.fbx`의 `_043_Gamemodel_` 노드)로, 서로 다른 FBX의 같은 이름 노드(`Cube` · `Plane` 등)가 섞이지 않게 합니다. `LoadFbxData`가 전체 노드 중 이름이 같은 것을 찾아 그 메시만 변환하며(여러 StaticMesh가 같은 FBX의 다른 노드를 각각 가리킬 수 있음), 이 값이 그대로 `FPAssetManager`의 Mesh Buffer 조회 키로도 쓰입니다 ([렌더러에 전달되는 데이터](#렌더러에-전달되는-데이터) 참고) |
 | `MeshData[].Path` | `Model/` 기준 FBX 경로. 배열이지만 **마지막 항목만** 사용됨 |
 | `MeshData[].Topology` | `TRIANGLELIST` / `TRIANGLESTRIP` / `LINELIST` |
 | `Sockets[]` | 메시 로컬 기준 부착 지점. 비워 둘 수 있음 |
@@ -3756,7 +3759,7 @@ FBXToStaticMeshJsonTranslator.exe [FBX입력폴더] [Json출력폴더]
 
 | 단계 | 하는 일 |
 |---|---|
-| FBX 스캔 | 입력 폴더의 모든 `.fbx`를 읽어, **메시를 가진 노드마다** StaticMesh JSON 하나를 생성 (`Name` = 파일명 그대로, `NodeName` = FBX 노드 이름) |
+| FBX 스캔 | 입력 폴더의 모든 `.fbx`를 읽어, **메시를 가진 노드마다** StaticMesh JSON 하나를 생성 (`Name` = 파일명 그대로, `NodeName` = `"<FBX 파일명(Stem)>_<FBX 노드 이름>"` — 서로 다른 FBX의 같은 노드 이름이 엔진의 NodeName 기준 메시 버퍼 캐시에서 충돌하지 않도록 파일명을 붙임) |
 | 소켓 | 메시가 없는 자식 노드(로케이터/더미)는 `Sockets[]`로 변환 |
 | Material | 메시에 연결된 첫 머티리얼마다 **기본 Material**(`<재질명>_Material.json`, 재질당 1번만 저장, `Parameters`만)과 **Material Instance**(`<재질명>_<StaticMesh이름>_MaterialInstance.json`, 메시마다 저장, 같은 `Parameters` + `Textures[]` · `Samplers[]`)를 함께 기록. `VertexShader` / `PixelShader`는 FBX에 정보가 없으므로 `DefaultVertexShader` / `DefaultPixelShader`로 채우고, `Parameters`는 엔진이 항상 읽는 `MaterialConstBuffer`(PS: `Material.BaseColor` / `Diffuse` / `Ambient` / `Emissive`)만 고정으로 생성 |
 | Texture | 머티리얼에 연결된 텍스처를 **실제 이미지 파일 기준으로 중복 없이** Texture JSON으로 저장 (DDS면 `"DDS"`, 그 외엔 `"WIC"`). Material Instance의 `Textures[]`에는 FBX 텍스처 속성 이름(`material_prop`)을 `Parameter`로, 같은 속성에 텍스처가 여러 장이면 `ArrayIndex`를 붙여 기록. `Samplers[]`에는 FBX의 Wrap 설정을 `"Filter_Tri_Linear_" + Sampler_Wrap/CLAMP`로 기록 (필터 정보는 FBX에 없어 항상 Tri-Linear). 같은 `Parameter`에서 `SamplerType`이 겹치는 샘플러는 하나로 합침 Texture JSON에는 FBX에서 큐브맵을 구분할 수 없어 항상 `"CubeMap": false`를 기록 |
@@ -3974,7 +3977,7 @@ x64/Release/
 > `Runners/Runner/ReleaseGameProject.props`에는 `GameProjectName`, `GameAssetDir` 매크로가 정의되어 있으나, 현재 패키징은 이 파일이 아니라 엔진 프로젝트의 참조를 기준으로 동작합니다.
 
 > [!NOTE]
-> `Games/Release_Game`에는 현재 **`Tri_World` 하나뿐**입니다. 예전에 있던 더미 프로젝트(`Test_SphereMap` · `Car` · `Ship` · `Lambert_Light` · `ShaderCode_Triangle`)는 삭제됐고, `ForestPearlEngine.sln`과 `Engine/ForestPearlEngine/ForestPearlEngine.vcxproj`의 **`ProjectReference`도 `Tri_World.vcxproj` 하나**입니다. 다른 게임을 실행하려면 위 절차 1~2번대로 새 프로젝트를 만들어 솔루션에 **기존 프로젝트로 추가**하고 그 참조를 바꿔야 하며, 두 게임을 동시에 실행할 수는 없습니다.
+> `Games/Release_Game`의 **메인 Demo 프로젝트는 `Tri_World`**이며, 현재 `DEMO_WATER_SHIP`(Water · Frigate/Cannon 데모)이 함께 있습니다. 다만 이 브랜치에서는 `ForestPearlEngine.sln`과 `Engine/ForestPearlEngine/ForestPearlEngine.vcxproj`의 **`ProjectReference`가 일시적으로 `DEMO_WATER_SHIP.vcxproj`를 가리키고 있어**(`Tri_World.vcxproj`는 솔루션·참조에서 빠졌지만 폴더·파일은 그대로 남아 있음), 지금 그대로 빌드하면 `Tri_World.exe`가 아니라 `DEMO_WATER_SHIP.exe`가 만들어집니다. `Tri_World`로 되돌리려면(또는 다른 게임을 실행하려면) 위 절차 1~2번대로 참조를 원하는 프로젝트로 바꿔야 하며, 두 게임을 동시에 참조할 수는 없습니다. 예전에 있던 더미 프로젝트(`Test_SphereMap` · `Car` · `Ship` · `Lambert_Light` · `ShaderCode_Triangle`)는 삭제됐습니다.
 
 ---
 
@@ -4487,7 +4490,7 @@ SamplerState Smpler    : register(s0);
 
 ## 🎬 Demo 프로젝트 — Tri_World
 
-> 위치: [`Games/Release_Game/Tri_World`](Games/Release_Game/Tri_World)
+> 위치: [`Games/Release_Game/Tri_World`](Games/Release_Game/Tri_World) · 엔진의 **메인 Demo 프로젝트**입니다.
 
 SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 장면에서 확인하는 데모입니다.
 
@@ -4497,6 +4500,9 @@ SpringArm 카메라, Possess 전환, Socket 부착, 계층 트랜스폼을 한 �
 |---|---|
 | 패키지 실행 | `Release\|x64` 빌드 → `x64/Release/Tri_World.exe` |
 | 디버그 실행 | `Debug\|x64`, 시작 프로젝트 **Runner** → F5 |
+
+> [!NOTE]
+> 이 브랜치에서는 엔진의 `ProjectReference`가 일시적으로 [`DEMO_WATER_SHIP`](#-demo-프로젝트--demo_water_ship)을 가리키고 있어, 지금 그대로 빌드하면 `Tri_World.exe`가 아니라 `DEMO_WATER_SHIP.exe`가 만들어집니다. 이 데모를 빌드하려면 [실행할 게임 바꾸기](#실행할-게임-바꾸기) 절차대로 엔진의 `ProjectReference`를 `Tri_World.vcxproj`로 되돌려야 합니다.
 
 > [!NOTE]
 > `GameProjectLoader.cpp`의 `ReturnStartLevel()`은 다시 **`"TriWorld"`**를 반환합니다 (`//return "ToonLink";`은 주석 처리). ToonLink 캐릭터 단독 데모(`Assets/Level/ToonLink.json` — `Terrain` · `Axis` · `Grid` · `UI` · `ADirectionalLight` + `Link`)를 보려면 두 줄의 주석을 바꾸면 됩니다. `Player`는 `BodyAndHat` · `Hair` · `Face` · `Eye` · `EyeBrow` · `Mouth` · `Hand` · `Buckle` · `MasterSword_*`(4개) · `Shield_*`(2개) 등 StaticMeshComponent 15개로 구성되며, 각 서브메시는 [FBX 변환 도구](#fbx-변환-도구-fbxtostaticmeshjsontranslator)가 만든 StaticMesh + Material Instance + Texture JSON을 사용합니다 ([Material JSON](#material-json), [Alpha Blend](#alpha-blend--blendstate) 참고).
@@ -4669,6 +4675,78 @@ flowchart LR
 | `IA_ZoomCamera` | 마우스 휠 | — | Pressed | `Player::CameraZoom` |
 
 </details>
+
+---
+
+## 🎬 Demo 프로젝트 — DEMO_WATER_SHIP
+
+> 위치: [`Games/Release_Game/DEMO_WATER_SHIP`](Games/Release_Game/DEMO_WATER_SHIP) · 메인 Demo([Tri_World](#-demo-프로젝트--tri_world))와 별도로 추가된 데모이며, 이 브랜치에서는 솔루션이 이 프로젝트를 참조하고 있어 그대로 빌드하면 이 게임이 만들어집니다.
+
+[Water 평면 반사 셰이더](#water-material--planar-reflection), 다른 FBX 소스의 외부 모델(범선 `frigate.fbx`)을 엔진 파이프라인에 올리는 과정, 포탄 발사 이펙트(파티클 없이 StaticMesh 빌보드로 구현)를 한 장면에서 보여주는 데모입니다. 3인칭 카메라 하나로 조작하며 Possess 전환은 없습니다.
+
+### 실행
+
+| 방법 | 절차 |
+|---|---|
+| 패키지 실행 | `Release\|x64` 빌드 → `x64/Release/DEMO_WATER_SHIP.exe` |
+| 디버그 실행 | `Debug\|x64`, 시작 프로젝트 **Runner** → F5 |
+
+> 그래픽 옵션은 `Assets/GameSetting/GameSetting.json`에서 `MSAA: 4`, `AnisotropicFiltering: 16`, `Resolution: 1280×800`, `VSync: true`로 설정되어 있습니다 ([GameSetting](#gamesetting) 참고).
+
+### 씬 구성 (`Assets/Level/DemoWaterShip.json`)
+
+| 클래스 | 수 | 베이스 | 구성 | 설명 |
+|---|:-:|---|---|---|
+| `Player` | 1 | `FPPawn` | StaticMesh(`Cube_StaticMesh`, 표식용) + SpringArm + Camera | 시작 시 Possess. WASD로 이동, IJKL/오른쪽 마우스로 카메라 회전, 마우스 휠로 줌(`TargetArmLength` 4~60 클램프) |
+| `AWater` | 1 | `FPActor` | StaticMesh(`Plane_StaticMesh`, Scale 250) + `FPPlanarReflectionComponent` | 흐르는 물 표면. [Water Material · Planar Reflection](#water-material--planar-reflection) 참고 |
+| `ADirectionalLight` | 1 | `FPActor` | DirectionalLight | Direction `(-0.43, -0.64, -0.64)`, `SetShadowBias(0.45f)`로 CSM 그림자 Bias를 기본값보다 키움 ([Cascade Shadow Map](#cascade-shadow-map-csm) 참고) |
+| `ASkyLight` | 1 | `FPActor` | `FPSkyLightComponent` | 환경맵(큐브맵)을 씬 전체 메시에 입힘 ([Environment Mapping](#environment-mapping-sky-light--cube-map) 참고) |
+| `ASkyBox` | 1 | `FPActor` | StaticMesh(`SkyBoxQuad_StaticMesh`) | 배경 큐브맵. `SetPriority(-999)`로 Sky 서브 패스에서 가장 먼저 그려짐 ([SkyBox](#skybox)) |
+| `AColorBox` × 4 | 4 | `FPActor` | StaticMesh | `Box_Red` · `Box_Green` · `Box_Blue` · `Box_Orange`. 액터 이름에 포함된 색 문자열로 `ColorBox_<색>_StaticMesh`를 고르고, 물 평면 반사가 비추는 테스트용 오브젝트로 물 주위에 배치됨 |
+| `Frigate` | 1 | `FPActor` | StaticMesh × 41 (`Object_2`~`Object_42_StaticMesh`, `frigate.fbx`) | 범선 모델. [Frigate · Cannon · 발사 이펙트](#frigate--cannon--발사-이펙트) 참고 |
+| `Cannon` | 1 | `FPActor` | StaticMesh(`Canon_1_StaticMesh`, Scale 0.33) | 별도 대포(`Canon_T2.fbx`) 1정. 레벨의 `CannonSocket` 액터를 자기 총구로 붙여 씀 |
+| `CannonSocket` | 1 | `FPActor` | (메시 없음) | `Cannon01`의 총구 위치 · 방향(레벨 JSON의 월드 transform)만 제공하는 소켓 액터. 이름이 `"<Cannon 이름>_Muzzle"`이어야 짝이 맞음 |
+| `CannonFireFX` | 1 | `FPActor` | StaticMesh(Plane) 풀 | 연기 · 섬광 · 점광원 이펙트 풀. 레벨에 1개만 두고 모든 `Frigate` · `Cannon`이 공유 |
+| `CannonBall` | 1 | `FPActor` | StaticMesh(`Sphere_StaticMesh`) 풀 | 포탄(중력 낙하) 오브젝트 풀. `Frigate` · `Cannon`이 공유 |
+
+### Water Material · Planar Reflection
+
+`AWater`는 `Plane_StaticMesh`에 `Water_Material`(`WaterVertexShader` + `WaterPixelShader`)을 입히고, 물 표면과 분리된 `FPPlanarReflectionComponent`(Forward가 평면 법선이라 `-90°` 회전해 둠, [Planar Reflection](#planar-reflection-평면-반사) 공유 구현)로 주변(`AColorBox` 등)을 비춥니다.
+
+| 항목 | 내용 |
+|---|---|
+| `WaterSettings`(`AWater.h`) | `FlowSpeed`(0.3) · `DistortionStrength`(0.8) · `Tiling`(20) · `ReflectionAmount`(0.8) · `WaterColor`(짙은 청록) — 기본값. `Tick()`마다 `FlowPhase`를 `[0,1)`로 누적해 UV를 흘려보냄 |
+| 전달 | `AWater::ApplyWaterParameters()`가 매 프레임 `Material.SetParameter(PS, "WaterSettings", ...)`로 위 값을 Water Material의 PS 상수 버퍼에 그대로 올림 |
+| 반사 제외 | `Reflection->AddHiddenActor(this)`로 물 자신은 자기 반사 목록에서 빠짐(무한 반사 방지) |
+| 에셋 | `WaterPixelShader.psh` / `WaterVertexShader.vsh`(신규), `Water_RenderTarget.json` / `Water_DepthStencil.json`(반사 전용 RT), `Water/WaterBump.json`(흐름 왜곡용 범프 텍스처) |
+
+### Frigate · Cannon · 발사 이펙트
+
+`frigate.fbx`는 Blender에서 만든 외부 모델로, [FBX 변환 도구](#fbx-변환-도구-fbxtostaticmeshjsontranslator)가 노드(`Object_2`~`Object_42`, 41개) · 텍스처(`Image_0`~`Image_63`, 64장) · Material Instance 전체를 JSON으로 뽑아낸 뒤 `GameProjectLoader::LoadAssets()`가 반복문으로 한꺼번에 로드합니다. `Frigate::Initialize()`는 같은 번호 범위로 StaticMeshComponent 41개를 만들어 한 루트(`FPSceneComponent`)에 붙입니다.
+
+| 항목 | 내용 |
+|---|---|
+| 좌표계 변환 | Blender(Z-Up, 오른손) → 엔진(Y-Up, 왼손)은 **y · z를 맞바꿈**(위치 `(x,y,z)→(x,z,y)`, 쿼터니언 `(w,x,y,z)→(w,-x,-z,-y)`). `Frigate.cpp` 상단 주석에 공식이 정리되어 있음 |
+| 포구(Muzzle) | 소켓 컴포넌트를 쓰지 않고, Blender에서 내보낸 `Assets/Model/KM/frigate/Cannon_Muzzles.json`(배 모델 기준 로컬 좌표)을 `Frigate::LoadMuzzles()`가 읽어 포구 34개의 위치 · 회전을 보관. 발사 때마다 배의 **그 순간 월드 transform**을 곱해 월드 포구 위치 · 방향을 구하므로, 배가 움직이거나 돌아도 포구가 따라감 |
+| `Frigate::Fire(ESide)` | `ESide::All` / `Left`(모델 x < 0) / `Right`로 포구를 걸러 쏨. 쏠 때마다 `CannonFireFX::Fire(위치, 방향)` + `CannonBall::Launch(위치, 방향)`를 포구마다 호출하고 쏜 개수를 반환 |
+| `Cannon`(별도 대포) | `Canon_T2.fbx` 1정. `BeginPlay()`에서 이름이 `"<자기 이름>_Muzzle"`인 `CannonSocket`을 찾아 **지금 월드 위치를 유지한 채** 대포 메시에 붙이고(`AttachKeepWorld`), `Fire()` 시 그 소켓의 월드 transform만 읽어 같은 FireFX · Ball 풀을 씀 |
+| `Ship` 부착 | 둘 다 `BeginPlay()`에서 `"Ship"` 클래스 액터를 찾아 있으면 자신을 붙이지만, 이 데모의 레벨 JSON에는 `Ship` 액터가 없어 **둘 다 레벨에 놓인 위치에 고정**됨(조종 가능한 배가 있는 프로젝트로 그대로 포팅 가능하게 남겨 둔 경로) |
+| `CannonFireFX` | 연기(`Puff`, 최대 448칸) · 섬광(정면별 + 옆불꽃, 최대 40쌍) · 점광원(최대 40개)을 각각 고정 배열로 돌려쓰는 오브젝트 풀. `Fire(Pos, Dir, bLight)` 한 번에 연기 1개 + 섬광 1쌍(+ 빛 1개)을 비어 있는 칸에 배정 |
+| `CannonBall` | 포탄도 고정 배열 풀(`Ball[]`). `Launch`로 발사(속도 20m/s, 중력 9.8m/s² 낙하 적용), 수면(`GROUND_Y = 0`, `AWater`의 y) 아래로 내려가거나 10초가 지나면 비활성화돼 재사용됨. 포탄마다 `AssetManager->MakeMaterial("DefaultMaterial")`로 **자신만의 Material 인스턴스**를 만들어 색(짙은 쇠색)을 입힘 — 엔진 `DefaultMaterial`을 직접 고치면 그걸 쓰는 다른 메시도 같이 바뀌기 때문 |
+
+### 조작법
+
+| 키 | 동작 |
+|:-:|---|
+| <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> | 이동 (카메라가 보는 방향 기준: 전/후는 Pitch 포함 Forward, 좌/우는 수평 Right) |
+| <kbd>I</kbd> <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd> | 카메라 Pitch / Yaw 회전 |
+| **마우스 휠** | 카메라 줌 (SpringArm 길이 4~60) |
+| <kbd>Enter</kbd> | 모든 `Frigate` · `Cannon`에서 전체(All) 포구 발사 |
+| <kbd>Enter</kbd> + <kbd>2</kbd> | `Frigate`의 **왼쪽 뱃전**만 발사 (`Cannon`은 그대로 전체 발사) |
+| <kbd>Enter</kbd> + <kbd>3</kbd> | `Frigate`의 **오른쪽 뱃전**만 발사 |
+| **게임패드** L-Stick / R-Stick | 이동 / 카메라 회전, LT·RT로 줌 |
+
+> 숫자 키(<kbd>1</kbd>~<kbd>3</kbd>)는 <kbd>Enter</kbd>와 함께 눌러야 효과가 있습니다. `GameController::FireCannon`이 `IsDown(VK_RETURN)`을 먼저 확인하고, 숫자 키 상태로 `Frigate::ESide`만 바꿉니다 — 숫자 키 단독 입력은 아무 동작도 하지 않습니다.
 
 ---
 

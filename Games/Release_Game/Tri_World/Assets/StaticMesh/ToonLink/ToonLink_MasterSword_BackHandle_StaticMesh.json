@@ -1,6 +1,6 @@
 {
     "Name": "ToonLink_MasterSword_BackHandle_StaticMesh",
-    "NodeName": "_002_KenMb_VIS_O_OBJ_",
+    "NodeName": "ToonLink__002_KenMb_VIS_O_OBJ_",
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",

@@ -1,6 +1,6 @@
 {
     "Name": "ToonLink_Shield_Back_StaticMesh",
-    "NodeName": "_004_TateMb_VIS_O_OBJ_",
+    "NodeName": "ToonLink__004_TateMb_VIS_O_OBJ_",
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",

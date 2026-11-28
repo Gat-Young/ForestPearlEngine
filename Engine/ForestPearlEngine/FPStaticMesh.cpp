@@ -4,7 +4,7 @@
 #include "FPMaterial.h"
 #include <iostream>
 
-FPStaticMesh::FPStaticMesh(std::string StaticMeshPath) : MeshPath(StaticMeshPath)
+FPStaticMesh::FPStaticMesh(std::string StaticMeshPath, std::string InNodeName) : MeshPath(StaticMeshPath), NodeName(InNodeName)
 {
 	if (Material == nullptr) { Material = new FPMaterial(); }
 }
@@ -25,6 +25,12 @@ std::string* FPStaticMesh::GetMeshPath()
 {
 	return &MeshPath;
 }
+
+std::string* FPStaticMesh::GetNodeName()
+{
+	return &NodeName;
+}
+
 
 bool FPStaticMesh::GetSocketTransform(std::string SocketName, FTransform& OutSocketTransform)
 {

@@ -1,6 +1,6 @@
 {
     "Name": "UtaTeapot_Up_StaticMesh",
-    "NodeName": "UtaTeapot_Up",
+    "NodeName": "UtaTeapot_UtaTeapot_Up",
     "MeshData": [
         {
             "Path": "UtaTeapot/UtaTeapot.fbx",

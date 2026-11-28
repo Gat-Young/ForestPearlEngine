@@ -87,7 +87,7 @@ float4 PS_Main(
 
     CalculateLight(posv, float4(BumpNormal, 0.0f), mView, mInverseView, DiffuseLit, SpecularLit, EmissiveLit, AmbientLit);
 
-    float Shadow = CalculateShadow(mul(mInverseView, posv), posv.z, BumpNormal);
+    float Shadow = CalculateShadow(mul(mInverseView, posv), posv.z, N.xyz);
 
     DiffuseLit = DiffuseLit * Shadow;
     SpecularLit = SpecularLit * Shadow;
@@ -95,7 +95,7 @@ float4 PS_Main(
     float4 BaseCol = DiffuseLit * col * DiffMap;
     float4 SpecularCol = SpecularLit;
 
-    col = BaseCol + SpecularCol + EmissiveLit + col * AmbientLit * DiffuseLit;
+    col = BaseCol + SpecularCol + EmissiveLit + col * AmbientLit;
 
     col.a = DiffMap.a;
 

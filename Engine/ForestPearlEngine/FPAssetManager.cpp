@@ -1,5 +1,6 @@
 #include "FPAssetManager.h"
 #include <iostream>
+#include <filesystem>
 #include <set>
 #include "Utility/FPPathManager.h"
 #include "FPGameInstance.h"
@@ -642,6 +643,9 @@ void FPAssetManager::LoadFbxData(FPStaticMeshData& StaticMeshData)
 	std::string FilePath = (FPPathManager::Get().GetAssetPath("Model/" + StaticMeshData.MeshPath));
 	if (StaticMeshData.Owner == AssetOwner::Engine) FilePath = (FPPathManager::Get().GetEngineAssetPath("Model/" + StaticMeshData.MeshPath));
 
+	//Tool(FBXToStaticMeshJsonTranslator)이 NodeName을 "<FbxFileStem>_<FBX 노드 이름>" 형태로 만들므로, 여기서도 동일한 Stem을 붙여야 Json의 NodeName과 일치함
+	const std::string FbxFileStem = std::filesystem::path(StaticMeshData.MeshPath).stem().string();
+
 	ufbx_scene* Scene = ufbx_load_file(FilePath.c_str(), &Opts, &Error);
 	if (!Scene)
 	{
@@ -653,7 +657,8 @@ void FPAssetManager::LoadFbxData(FPStaticMeshData& StaticMeshData)
 	{
 		if (!Node) { continue; }
 
-		const std::string NodeName = ConvertUfbxString(Node->name);
+		const std::string NodeName = FbxFileStem + "_" + ConvertUfbxString(Node->name);
+
 		//std::cout << NodeName << "\n";
 
 		// 본, 카메라, 라이트, 빈 노드 등 메시가 없는 요소는 건너 뜀
@@ -666,10 +671,8 @@ void FPAssetManager::LoadFbxData(FPStaticMeshData& StaticMeshData)
 		MeshData.Name = NodeName;
 
 
-		if (MeshData.NodeName.empty())
-		{
-			MeshData.NodeName = NodeName;
-		}
+		//ConvertUfbxMesh가 Result.NodeName을 원본(raw) 노드 이름으로 채워두므로, MakeMeshBuffer가 쓰는 합성 NodeName으로 덮어씀
+		MeshData.NodeName = NodeName;
 
 		AddMeshData(NodeName, MeshData);
 	}

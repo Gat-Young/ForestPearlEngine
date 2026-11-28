@@ -1,6 +1,6 @@
 {
     "Name": "ToonLink_Harfblink3_StaticMesh",
-    "NodeName": "_028_toonlink_Harfblink3_VIS_O_OBJ_",
+    "NodeName": "ToonLink__028_toonlink_Harfblink3_VIS_O_OBJ_",
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",

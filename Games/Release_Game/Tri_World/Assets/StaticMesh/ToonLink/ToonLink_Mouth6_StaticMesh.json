@@ -1,6 +1,6 @@
 {
     "Name": "ToonLink_Mouth6_StaticMesh",
-    "NodeName": "_023_toonlink_StepPose_VIS_O_OBJ_",
+    "NodeName": "ToonLink__023_toonlink_StepPose_VIS_O_OBJ_",
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",

@@ -1,6 +1,6 @@
 {
     "Name": "ToonLink_Face_StaticMesh",
-    "NodeName": "_007_Face_O_OBJ_",
+    "NodeName": "ToonLink__007_Face_O_OBJ_",
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",

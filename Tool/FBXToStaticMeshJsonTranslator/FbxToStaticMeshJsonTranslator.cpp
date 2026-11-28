@@ -157,7 +157,7 @@ bool FbxToStaticMeshJsonTranslator::TranslateFbxFile(const std::filesystem::path
 		// 머티리얼 -> 기본 Material.json(재질당 1회) + Material Instance json(메쉬당 1회) 생성 및 참조 정보
 		const json MaterialJson = ExportMeshMaterial(Mesh, StaticMeshName, FbxFileStem, JsonOutputDirectory, ExportedMaterialNames, ExportedTextureNames);
 
-		const json StaticMeshJson = BuildStaticMeshJson(*Node, StaticMeshName, MeshDataPath, SocketsJson, MaterialJson);
+		const json StaticMeshJson = BuildStaticMeshJson(*Node, StaticMeshName, FbxFileStem, MeshDataPath, SocketsJson, MaterialJson);
 
 		const std::filesystem::path OutputPath = JsonOutputDirectory / "StaticMesh" / (StaticMeshName + ".json");
 		SaveJsonToFile(StaticMeshJson, OutputPath);
@@ -172,12 +172,15 @@ bool FbxToStaticMeshJsonTranslator::TranslateFbxFile(const std::filesystem::path
 	return bAnyMeshExported;
 }
 
-json FbxToStaticMeshJsonTranslator::BuildStaticMeshJson(const ufbx_node& Node, const std::string& StaticMeshName, const std::string& MeshDataPath, const json& SocketsJson, const json& MaterialJson)
+json FbxToStaticMeshJsonTranslator::BuildStaticMeshJson(const ufbx_node& Node, const std::string& StaticMeshName, const std::string& FbxFileStem, const std::string& MeshDataPath, const json& SocketsJson, const json& MaterialJson)
 {
 	json Result;
 
 	Result["Name"] = StaticMeshName;
-	Result["NodeName"] = ConvertUfbxString(Node.name);
+
+	// "<FbxFileStem>_<FBX 노드 이름>" 형태로 만들어, 서로 다른 FBX 파일의 동일한 노드 이름("Cube", "Plane" 등)이
+	// 엔진의 NodeName 기준 메쉬 버퍼 캐시에서 충돌하지 않도록 한다.
+	Result["NodeName"] = FbxFileStem + "_" + ConvertUfbxString(Node.name);
 
 	// 실제 정점/인덱스 버퍼 리소스는 이 json이 아니라 엔진이 FBX에서 직접 읽어오므로,
 	// Path에는 엔진 AssetLoader가 찾아갈 원본 FBX의 상대 경로를 채운다.

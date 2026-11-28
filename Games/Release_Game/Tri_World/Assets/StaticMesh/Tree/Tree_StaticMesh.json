@@ -1,6 +1,6 @@
 {
     "Name": "Tree_StaticMesh",
-    "NodeName": "Tree",
+    "NodeName": "Tree_Tree",
     "MeshData": [
         {
             "Path": "Tree/Tree.fbx",

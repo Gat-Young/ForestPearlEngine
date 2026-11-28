@@ -1,6 +1,6 @@
 {
     "Name": "Object_2_StaticMesh",
-    "NodeName": "Object_2",
+    "NodeName": "frigate_Object_2",
     "MeshData": [
         {
             "Path": "KM/frigate/frigate.fbx",

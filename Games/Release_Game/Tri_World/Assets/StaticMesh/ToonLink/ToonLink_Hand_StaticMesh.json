@@ -1,6 +1,6 @@
 {
     "Name": "ToonLink_Hand_StaticMesh",
-    "NodeName": "_008_Gamemodel_",
+    "NodeName": "ToonLink__008_Gamemodel_",
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",

@@ -16,7 +16,7 @@ void Runner::Run()
     unsigned int profileID1 = FPSystemTimer::Get().StartProfileTimer();
     bIsSuccess = FPEngine.PreInitialize();
 
-    FPSystemTimer::Get().EndProfileTimer("[TEST Log] 엔진 PreInitializer Time : ", profileID1);
+    FPSystemTimer::Get().EndProfileTimer("[Runner] 엔진 PreInitializer Time : ", profileID1);
 
     if (!bIsSuccess)
         return;

@@ -14,7 +14,7 @@ FPStaticMeshComponent::FPStaticMeshComponent(FPActor* Owner, std::string StaticM
 	StencilRefValue = StaticMesh->GetStencilRefValue();
 	bCustomDepthStencil = StaticMesh->GetCustomDepthStencil();
 
-	GizmoNormalLine = new FPGizmoNormalLineComponent(this->GetOwner(), *(StaticMesh->GetMeshPath()));
+	GizmoNormalLine = new FPGizmoNormalLineComponent(this->GetOwner(), *(StaticMesh->GetNodeName()));
 
 	GizmoNormalLine->SetupAttachment(this);
 
@@ -34,6 +34,7 @@ void FPStaticMeshComponent::SetRenderItemData()
 
 	RenderItem->OwnActor = (this->Owner);
 	RenderItem->MeshPath = StaticMesh->GetMeshPath();
+	RenderItem->NodeName = StaticMesh->GetNodeName();
 
 	RenderItem->Location = &(this->WorldTransform.LocationMatrix);
 	RenderItem->Rotation = &(this->WorldTransform.RotationMatrix);
@@ -116,7 +117,7 @@ void FPStaticMeshComponent::SetStaticMesh(std::string StaticMeshName)
 	StaticMesh = AssetManager->GetStaticMeshData(StaticMeshName);
 	StencilRefValue = StaticMesh->GetStencilRefValue();
 	bCustomDepthStencil = StaticMesh->GetCustomDepthStencil();
-	GizmoNormalLine->SetMeshPath(*(StaticMesh->GetMeshPath()));
+	GizmoNormalLine->SetMeshPath(*(StaticMesh->GetNodeName()));
 	RegistMeshRenderList();
 }
 

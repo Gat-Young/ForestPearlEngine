@@ -1,6 +1,6 @@
 {
   "Name": "Windmill_Wing_StaticMesh",
-  "NodeName": "Windmill_Wing",
+  "NodeName": "Windmill_Windmill_Wing",
   "MeshData": [
     {
       "Path": "Windmill/Windmill.fbx",

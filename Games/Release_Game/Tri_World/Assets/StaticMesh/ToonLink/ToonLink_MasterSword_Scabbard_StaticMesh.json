@@ -1,6 +1,6 @@
 {
     "Name": "ToonLink_MasterSword_Scabbard_StaticMesh",
-    "NodeName": "_003_SayaM_VIS_O_OBJ_",
+    "NodeName": "ToonLink__003_SayaM_VIS_O_OBJ_",
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",

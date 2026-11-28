@@ -1,6 +1,6 @@
 {
     "Name": "ToonLink_MasterSword_Blade_StaticMesh",
-    "NodeName": "_000_KenEdgeM_VIS_O_OBJ_",
+    "NodeName": "ToonLink__000_KenEdgeM_VIS_O_OBJ_",
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",

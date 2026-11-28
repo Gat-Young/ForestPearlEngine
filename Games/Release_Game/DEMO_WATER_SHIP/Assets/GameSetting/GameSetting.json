@@ -1,0 +1,16 @@
+{
+  "GameSetting": {
+    "GameName": "DEMO_WATER_SHIP",
+    "Graphics": {
+      "MSAA": 4,
+      "AnisotropicFiltering": 16,
+      "VSync": true,
+      "Hz": 60,
+      "Resolution": {
+        "Width": 1280,
+        "Height": 800
+      },
+      "FullScreen": false
+    }
+  }
+}

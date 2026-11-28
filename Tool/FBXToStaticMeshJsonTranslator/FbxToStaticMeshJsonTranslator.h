@@ -30,7 +30,9 @@ private:
 	static bool TranslateFbxFile(const std::filesystem::path& FbxFilePath, const std::filesystem::path& JsonOutputDirectory, std::set<std::string>& ExportedMaterialNames, std::set<std::string>& ExportedTextureNames);
 
 	// 메쉬를 가진 노드 하나를 static_mesh.json 양식으로 변환한다. (Texture 필드는 포함하지 않음 - Material Instance 쪽에만 존재)
-	static nlohmann::ordered_json BuildStaticMeshJson(const ufbx_node& Node, const std::string& StaticMeshName, const std::string& MeshDataPath, const nlohmann::ordered_json& SocketsJson, const nlohmann::ordered_json& MaterialJson);
+	// NodeName 필드는 "<FbxFileStem>_<FBX 노드 이름>" 형태로 만든다. 서로 다른 FBX 파일에 같은 노드 이름("Cube", "Plane" 등)이
+	// 흔해서, 엔진이 NodeName만으로 메쉬 버퍼를 조회/캐싱할 때 다른 FBX의 메쉬와 충돌하는 것을 막기 위함.
+	static nlohmann::ordered_json BuildStaticMeshJson(const ufbx_node& Node, const std::string& StaticMeshName, const std::string& FbxFileStem, const std::string& MeshDataPath, const nlohmann::ordered_json& SocketsJson, const nlohmann::ordered_json& MaterialJson);
 
 	// 노드의 자식 노드들 중 메쉬가 없는 노드(로케이터/더미 노드)를 소켓 목록으로 변환한다.
 	static nlohmann::ordered_json BuildSocketsJson(const ufbx_node& Node);

@@ -1,6 +1,6 @@
 {
     "Name": "Dwarf.x_SceneRoot_Armor_StaticMesh",
-    "NodeName": "Dwarf.x_SceneRoot_Armor",
+    "NodeName": "Dwarf_Dwarf.x_SceneRoot_Armor",
     "MeshData": [
         {
             "Path": "Dwarf/Dwarf.fbx",

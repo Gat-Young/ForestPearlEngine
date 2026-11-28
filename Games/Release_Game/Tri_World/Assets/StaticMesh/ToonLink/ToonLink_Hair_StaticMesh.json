@@ -1,6 +1,6 @@
 {
     "Name": "ToonLink_Hair_StaticMesh",
-    "NodeName": "_043_Gamemodel_",
+    "NodeName": "ToonLink__043_Gamemodel_",
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",

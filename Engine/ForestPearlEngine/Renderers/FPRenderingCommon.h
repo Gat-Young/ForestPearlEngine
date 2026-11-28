@@ -727,6 +727,7 @@ struct RenderItem
 	void* OwnActor = nullptr;
 
 	std::string* MeshPath = nullptr;
+	std::string* NodeName = nullptr;
 	
 	//핵심 데이터
 	bool* TwoSided = nullptr;
@@ -1214,6 +1215,7 @@ namespace RenderingData
 
 		std::string ActorName;
 		std::string MeshPath;
+		std::string NodeName;
 
 		//주요 정보
 		bool TwoSided;

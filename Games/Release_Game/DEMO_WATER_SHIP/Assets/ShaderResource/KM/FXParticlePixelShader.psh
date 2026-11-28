@@ -1,0 +1,20 @@
+//
+// FX 파티클 PixelShader : 색 = 텍스처 × Color   (조명 안 받음 = 스스로 빛나는 판)
+//
+//  연기 (알파 섞기)  : a = tex.a × Color.a  → 투명도
+//  섬광 (더하기 섞기) : 알파를 안 씀 → 세기를 Color.rgb 에 곱해서 줌 (검정 바탕 = 0 = 안 보임)
+
+//머티리얼 JSON 의 "FXPixelCB" 와 이름이 같아야 함
+cbuffer FXPixelCB : register(b3)
+{
+    float4 Color;
+};
+
+Texture2D TexDiff : register(t0);
+SamplerState Smp  : register(s0);
+
+float4 PS_Main(float4 pos : SV_POSITION, float2 uv : TEXCOORD0) : SV_TARGET
+{
+    float4 tex = TexDiff.Sample(Smp, uv);
+    return float4(tex.rgb * Color.rgb, tex.a * Color.a);
+}

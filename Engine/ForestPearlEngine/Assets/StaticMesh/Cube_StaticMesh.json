@@ -1,6 +1,6 @@
 {
   "Name": "Cube_StaticMesh",
-  "NodeName": "Cube",
+  "NodeName": "Cube_Cube",
 
   "MeshData": [
     {

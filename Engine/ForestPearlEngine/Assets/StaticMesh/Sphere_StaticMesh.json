@@ -1,6 +1,6 @@
 {
   "Name": "Sphere_StaticMesh",
-  "NodeName": "Sphere",
+  "NodeName": "Sphere_Sphere",
 
   "MeshData": [
     {

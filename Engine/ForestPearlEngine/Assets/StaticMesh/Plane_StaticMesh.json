@@ -1,6 +1,6 @@
 {
   "Name": "Plane_StaticMesh",
-  "NodeName": "Plane",
+  "NodeName": "Plane_Plane",
 
   "MeshData": [
     {

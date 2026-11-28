@@ -1,0 +1,17 @@
+{
+  "Name": "ColorBox_Red_StaticMesh",
+  "NodeName": "Cube_Cube",
+
+  "MeshData": [
+    {
+      "Path": "Primitive_Model/Cube.fbx",
+      "Topology": "TRIANGLELIST"
+    }
+  ],
+
+  "Sockets": [],
+
+  "Material": {
+    "Name": "Box_Red_Material"
+  }
+}

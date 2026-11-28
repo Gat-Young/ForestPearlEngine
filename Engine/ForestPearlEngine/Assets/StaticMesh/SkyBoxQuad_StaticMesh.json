@@ -1,6 +1,6 @@
 {
   "Name": "SkyBoxQuad_StaticMesh",
-  "NodeName": "SkyBoxQuad",
+  "NodeName": "SkyBoxQuad_SkyBoxQuad",
 
   "MeshData": [
     {

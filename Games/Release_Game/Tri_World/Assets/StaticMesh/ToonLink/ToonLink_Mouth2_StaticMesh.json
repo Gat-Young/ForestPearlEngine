@@ -1,6 +1,6 @@
 {
     "Name": "ToonLink_Mouth2_StaticMesh",
-    "NodeName": "_019_toonlink_Ouch_VIS_O_OBJ_",
+    "NodeName": "ToonLink__019_toonlink_Ouch_VIS_O_OBJ_",
     "MeshData": [
         {
             "Path": "ToonLink/ToonLink.fbx",

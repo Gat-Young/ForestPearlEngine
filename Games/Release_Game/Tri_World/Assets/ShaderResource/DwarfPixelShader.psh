@@ -96,7 +96,7 @@ float4 PS_Main(
     
     float4 BaseCol = DiffuseLit * col * DiffMap;
     float4 SpecularCol = SpecMap * SpecularLit;
-    float4 EnvColor = col * AmbientLit * SpecMap * DiffuseLit * 0.5;
+    float4 EnvColor = col * AmbientLit * SpecMap * 0.5;
     
     col = BaseCol + SpecularCol + EmissiveLit + EnvColor;
     

@@ -160,12 +160,12 @@ void Renderer::Quad2DRenderPass(std::string& InRenderTarget)
 	Device.PSSetSamplers(0, 1, AssetManager->GetSamplerStateData("Filter_Tri_Linear_Sampler_CLAMP").SamplerStateData);
 
 	//Quad Mesh Setting
-	FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer("Quad2D_Mesh");
-	FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer("Quad2D_Mesh");
-	FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer("Quad2D_Mesh");
-	FPVertexBufferData UVVB = AssetManager->GetUVVertexBuffer("Quad2D_Mesh");
-	FPIndexBufferData IndexB = AssetManager->GetIndexBuffer("Quad2D_Mesh");
-	FPVertexBufferData TangentVB = AssetManager->GetTangentVertexBuffer("Quad2D_Mesh");
+	FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer("Quad2D");
+	FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer("Quad2D");
+	FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer("Quad2D");
+	FPVertexBufferData UVVB = AssetManager->GetUVVertexBuffer("Quad2D");
+	FPIndexBufferData IndexB = AssetManager->GetIndexBuffer("Quad2D");
+	FPVertexBufferData TangentVB = AssetManager->GetTangentVertexBuffer("Quad2D");
 
 	Device.IASetVertexBuffers(0, 1, PositionVB.VertexBuffer, &(PositionVB.Stride), &(PositionVB.Offset));
 	Device.IASetVertexBuffers(1, 1, NormalVB.VertexBuffer, &(NormalVB.Stride), &(NormalVB.Offset));
@@ -244,6 +244,7 @@ void Renderer::CreateMeshRenderList()
 		MeshRenderData.Priority = *(RenderItemData.Priority);
 		MeshRenderData.ActorName = static_cast<FPActor*>(RenderItemData.OwnActor)->GetName();		//살짝 맘에 들지는 않네...
 		MeshRenderData.MeshPath = *(RenderItemData.MeshPath);
+		MeshRenderData.NodeName = *(RenderItemData.NodeName);
 		MeshRenderData.Location = *(RenderItemData.Location);
 		MeshRenderData.Rotation = *(RenderItemData.Rotation);
 		MeshRenderData.Scale = *(RenderItemData.Scale);
@@ -1233,12 +1234,12 @@ void Renderer::DrawSceneCaptureMeshItem(const RenderingData::MeshRenderItem& Ren
 	Device.UpdatePixelShaderSubresource(13, reinterpret_cast<const uint8_t*>(&ShadowItem), 0, sizeof(RenderingData::CascadeShadowConstBuffer));
 	Device.PSSetShaderResources(126, 1, CSMTextureData);
 	Device.PSSetSamplers(14, 1, AssetManager->GetSamplerStateData("Filter_Shadow_Comparison_Sampler").SamplerStateData);
-	FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
-	FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.MeshPath);
-	FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);
-	FPVertexBufferData UVVB = AssetManager->GetUVVertexBuffer(RenderItem.MeshPath);
-	FPIndexBufferData IndexB = AssetManager->GetIndexBuffer(RenderItem.MeshPath);
-	FPVertexBufferData TangentVB = AssetManager->GetTangentVertexBuffer(RenderItem.MeshPath);
+	FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.NodeName);
+	FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.NodeName);
+	FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.NodeName);
+	FPVertexBufferData UVVB = AssetManager->GetUVVertexBuffer(RenderItem.NodeName);
+	FPIndexBufferData IndexB = AssetManager->GetIndexBuffer(RenderItem.NodeName);
+	FPVertexBufferData TangentVB = AssetManager->GetTangentVertexBuffer(RenderItem.NodeName);
 
 	//World/View/Proj 행렬 계산 (HLSL은 행 기준이므로 연산 순서는 HLSL과 반대로)
 	MVPCB.WorldMatrix = ((RenderItem.Scale) * (RenderItem.Rotation) * (RenderItem.Location)).Matrix;
@@ -1515,12 +1516,12 @@ void Renderer::DrawMeshRenderItem(const RenderingData::MeshRenderItem& RenderIte
 	Device.PSSetShaderResources(126, 1, CSMTextureData);
 	Device.PSSetSamplers(14, 1, AssetManager->GetSamplerStateData("Filter_Shadow_Comparison_Sampler").SamplerStateData);
 
-	FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.MeshPath);
-	FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.MeshPath);
-	FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.MeshPath);
-	FPVertexBufferData UVVB = AssetManager->GetUVVertexBuffer(RenderItem.MeshPath);
-	FPIndexBufferData IndexB = AssetManager->GetIndexBuffer(RenderItem.MeshPath);
-	FPVertexBufferData TangentVB = AssetManager->GetTangentVertexBuffer(RenderItem.MeshPath);
+	FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer(RenderItem.NodeName);
+	FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer(RenderItem.NodeName);
+	FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer(RenderItem.NodeName);
+	FPVertexBufferData UVVB = AssetManager->GetUVVertexBuffer(RenderItem.NodeName);
+	FPIndexBufferData IndexB = AssetManager->GetIndexBuffer(RenderItem.NodeName);
+	FPVertexBufferData TangentVB = AssetManager->GetTangentVertexBuffer(RenderItem.NodeName);
 	/*
 	std::cout << "<VB Size>" << "\n";
 	std::cout << PositionVB.VB_Cnt << "\n";
@@ -2384,12 +2385,12 @@ void Renderer::PostProcessRenderPass()
 		}
 
 		//Quad Mesh 설정
-		FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer("Quad2D_Mesh");
-		FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer("Quad2D_Mesh");
-		FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer("Quad2D_Mesh");
-		FPVertexBufferData UVVB = AssetManager->GetUVVertexBuffer("Quad2D_Mesh");
-		FPIndexBufferData IndexB = AssetManager->GetIndexBuffer("Quad2D_Mesh");
-		FPVertexBufferData TangentVB = AssetManager->GetTangentVertexBuffer("Quad2D_Mesh");
+		FPVertexBufferData PositionVB = AssetManager->GetPositionVertexBuffer("Quad2D");
+		FPVertexBufferData NormalVB = AssetManager->GetNormalVertexBuffer("Quad2D");
+		FPVertexBufferData ColorVB = AssetManager->GetColorVertexBuffer("Quad2D");
+		FPVertexBufferData UVVB = AssetManager->GetUVVertexBuffer("Quad2D");
+		FPIndexBufferData IndexB = AssetManager->GetIndexBuffer("Quad2D");
+		FPVertexBufferData TangentVB = AssetManager->GetTangentVertexBuffer("Quad2D");
 
 		Device.IASetVertexBuffers(0, 1, PositionVB.VertexBuffer, &(PositionVB.Stride), &(PositionVB.Offset));
 		Device.IASetVertexBuffers(1, 1, NormalVB.VertexBuffer, &(NormalVB.Stride), &(NormalVB.Offset));

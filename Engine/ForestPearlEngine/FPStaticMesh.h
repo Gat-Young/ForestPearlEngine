@@ -13,6 +13,7 @@ class FPStaticMesh : public FPStreamableRenderAsset
 	private:
 		//Mesh Data 정보
 		std::string MeshPath;
+		std::string NodeName;
 
 		//Mesh가 가지는 소켓 정보
 		std::map<std::string, FTransform> Sockets;
@@ -30,7 +31,7 @@ class FPStaticMesh : public FPStreamableRenderAsset
 		FPBoxSphereBounds Bounds;
 
 	public:
-		FPStaticMesh(std::string StaticMeshPath);
+		FPStaticMesh(std::string StaticMeshPath, std::string NodeName);
 
 		void AddSocketData(std::string SocketName, FTransform SocketTransform);
 		void SetMaterial(FPMaterialInterface* Material);
@@ -42,6 +43,7 @@ class FPStaticMesh : public FPStreamableRenderAsset
 		bool GetCustomDepthStencil();
 
 		std::string* GetMeshPath();
+		std::string* GetNodeName();
 		bool GetSocketTransform(std::string SocketName, FTransform& OutSocketTransform);
 
 		void SetBoundingBox(FPAABB BoundingBox);

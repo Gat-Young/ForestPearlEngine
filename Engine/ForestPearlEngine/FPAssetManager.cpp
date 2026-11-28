@@ -10,6 +10,8 @@
 #include "Renderers/RenderingDevice.h"
 #include "Shader/ShaderFactory.h"
 
+#include "../ForestPearlEngine/Utility/FPSystemTimer.h"
+
 
 ////////////////////////////
 //
@@ -68,12 +70,12 @@ void FPAssetManager::MakeMeshBuffer(FPMeshData& MeshData)
 	void* TangentVB = MakeTangentVertexBuffer(MeshData.Tangent_Vertices);
 
 	//버퍼 생성 후 Map에 정보 등록 
-	AddPositionVertexBuffer(MeshData.Name, PositionVB, MeshData.Position_Vertices.size() * sizeof(POSITION_VERTEX), MeshData.Position_Vertices.size(), sizeof(POSITION_VERTEX), 0);
-	AddColorVertexBuffer(MeshData.Name, ColorVB, MeshData.Color_Vertices.size() * sizeof(COLOR_VERTEX), MeshData.Color_Vertices.size(), sizeof(COLOR_VERTEX), 0);
-	AddNormalVertexBuffer(MeshData.Name, NormalVB, MeshData.Normal_Vertices.size() * sizeof(NORMAL_VERTEX), MeshData.Normal_Vertices.size(), sizeof(NORMAL_VERTEX), 0);
-	AddUVVertexBuffer(MeshData.Name, UVVB, MeshData.UV_Vertices.size() * sizeof(UV_VERTEX), MeshData.UV_Vertices.size(), sizeof(UV_VERTEX), 0);
-	AddIndexBuffer(MeshData.Name, Index32B, MeshData.Index.size() * sizeof(INDEX_32BIT), MeshData.Index.size() * 3, MeshData.Index.size(), sizeof(INDEX_32BIT), 0);
-	AddTangentVertexBuffer(MeshData.Name, TangentVB, MeshData.Tangent_Vertices.size() * sizeof(TANGENT_VERTEX), MeshData.Tangent_Vertices.size(), sizeof(TANGENT_VERTEX), 0);
+	AddPositionVertexBuffer(MeshData.NodeName, PositionVB, MeshData.Position_Vertices.size() * sizeof(POSITION_VERTEX), MeshData.Position_Vertices.size(), sizeof(POSITION_VERTEX), 0);
+	AddColorVertexBuffer(MeshData.NodeName, ColorVB, MeshData.Color_Vertices.size() * sizeof(COLOR_VERTEX), MeshData.Color_Vertices.size(), sizeof(COLOR_VERTEX), 0);
+	AddNormalVertexBuffer(MeshData.NodeName, NormalVB, MeshData.Normal_Vertices.size() * sizeof(NORMAL_VERTEX), MeshData.Normal_Vertices.size(), sizeof(NORMAL_VERTEX), 0);
+	AddUVVertexBuffer(MeshData.NodeName, UVVB, MeshData.UV_Vertices.size() * sizeof(UV_VERTEX), MeshData.UV_Vertices.size(), sizeof(UV_VERTEX), 0);
+	AddIndexBuffer(MeshData.NodeName, Index32B, MeshData.Index.size() * sizeof(INDEX_32BIT), MeshData.Index.size() * 3, MeshData.Index.size(), sizeof(INDEX_32BIT), 0);
+	AddTangentVertexBuffer(MeshData.NodeName, TangentVB, MeshData.Tangent_Vertices.size() * sizeof(TANGENT_VERTEX), MeshData.Tangent_Vertices.size(), sizeof(TANGENT_VERTEX), 0);
 }
 
 //Vertex Shader 제작
@@ -120,11 +122,17 @@ void FPAssetManager::MakePixelShader(FPPixelShaderData& PixelShaderData)
 //모든 Asset Data 객체를 생성
 void FPAssetManager::AllAssetDataCreate()
 {
+	unsigned int profileID1 = FPSystemTimer::Get().StartProfileTimer();
+
 	//BuiltIn Mesh Buffer 생성
 	for (auto& [AssetName, Asset] : LoadedBuiltInMesh)
 	{
 		MakeMeshBuffer(Asset);
 	}
+
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakeMeshBuffer() : ", profileID1);
+
+	unsigned int profileID2 = FPSystemTimer::Get().StartProfileTimer();
 
 	//BuiltIn Vertex Shader 생성
 	for (auto& [AssetName, Asset] : LoadedBuiltInVertexShaderData)
@@ -132,11 +140,19 @@ void FPAssetManager::AllAssetDataCreate()
 		MakeVertexShader(Asset);
 	}
 
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakeVertexShader() : ", profileID2);
+
+	unsigned int profileID3 = FPSystemTimer::Get().StartProfileTimer();
+
 	//BuiltIn Pixel Shader 생성
 	for (auto& [AssetName, Asset] : LoadedBuiltInPixelShaderData)
 	{
 		MakePixelShader(Asset);
 	}
+
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakePixelShader() : ", profileID3);
+
+	unsigned int profileID4 = FPSystemTimer::Get().StartProfileTimer();
 
 	//BuiltIn Render Target 생성
 	for (auto& [AssetName, Asset] : LoadedBuiltInRenderTargetTexture2DData)
@@ -144,11 +160,20 @@ void FPAssetManager::AllAssetDataCreate()
 		MakeBuiltInRenderTarget(Asset);
 	}
 
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakeBuiltInRenderTarget() : ", profileID4);
+
+	unsigned int profileID5 = FPSystemTimer::Get().StartProfileTimer();
+
 	//BuiltIn DepthStencil 생성
 	for (auto& [AssetName, Asset] : LoadedBuiltInDepthStencilData)
 	{
 		MakeBuiltInDepthStencil(Asset);
 	}
+
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakeBuiltInDepthStencil() : ", profileID5);
+
+
+	unsigned int profileID6 = FPSystemTimer::Get().StartProfileTimer();
 
 	//Texture 생성
 	for (auto& [AssetName, Asset] : LoadedTextureData)
@@ -156,11 +181,19 @@ void FPAssetManager::AllAssetDataCreate()
 		MakeTexture(Asset);
 	}
 
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakeTexture() : ", profileID6);
+
+	unsigned int profileID7 = FPSystemTimer::Get().StartProfileTimer();
+
 	//Texture Array 생성
 	for (auto& [AssetName, Asset] : LoadedTextureArrayData)
 	{
 		MakeTextureArray(Asset);
 	}
+
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakeTextureArray() : ", profileID7);
+
+	unsigned int profileID8 = FPSystemTimer::Get().StartProfileTimer();
 
 	//RenderTarget 생성
 	for (auto& [AssetName, Asset] : LoadedRenderTargetTexture2DData)
@@ -168,11 +201,19 @@ void FPAssetManager::AllAssetDataCreate()
 		MakeRenderTarget(Asset);
 	}
 
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakeRenderTarget() : ", profileID8);
+
+	unsigned int profileID9 = FPSystemTimer::Get().StartProfileTimer();
+
 	//DepthStencil 생성
 	for (auto& [AssetName, Asset] : LoadedDepthStencilData)
 	{
 		MakeDepthStencil(Asset);
 	}
+
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakeDepthStencil() : ", profileID9);
+
+	unsigned int profileID10 = FPSystemTimer::Get().StartProfileTimer();
 
 	//DepthStencil Array 생성
 	for (auto& [AssetName, Asset] : LoadedDepthStencilArrayData)
@@ -180,11 +221,20 @@ void FPAssetManager::AllAssetDataCreate()
 		MakeDepthStencilArray(Asset);
 	}
 
+
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakeDepthStencilArray() : ", profileID10);
+
+	unsigned int profileID11 = FPSystemTimer::Get().StartProfileTimer();
+
 	//DepthStencilState 생성
 	for (auto& [AssetName, Asset] : LoadedDepthStencilStateData)
 	{
 		MakeDepthStencilState(Asset);
 	}
+
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakeDepthStencilState() : ", profileID11);
+
+	unsigned int profileID12 = FPSystemTimer::Get().StartProfileTimer();
 
 	//BlendState 생성
 	for (auto& [AssetName, Asset] : LoadedBlendStateData)
@@ -192,21 +242,41 @@ void FPAssetManager::AllAssetDataCreate()
 		MakeBlendState(Asset);
 	}
 
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakeBlendState() : ", profileID12);
+
+	unsigned int profileID13 = FPSystemTimer::Get().StartProfileTimer();
+
 	for (auto& [AssetName, Asset] : LoadedRasterizerStateData)
 	{
 		MakeRasterizerState(Asset);
 	}
+
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakeRasterizerState() : ", profileID13);
+
+	unsigned int profileID14 = FPSystemTimer::Get().StartProfileTimer();
 
 	for (auto& [AssetName, Asset] : LoadedSamplerStateData)
 	{
 		MakeSamplerState(Asset);
 	}
 
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakeSamplerState() : ", profileID14);
+
+	unsigned int profileID15 = FPSystemTimer::Get().StartProfileTimer();
+
 	//Fbx Load
 	for (auto& [AssetName, Asset] : LoadedStaticMeshData)
 	{
+		unsigned int profileID15_1 = FPSystemTimer::Get().StartProfileTimer();
+
 		LoadFbxData(Asset);
+
+		FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] LoadFbxData() {" + std::to_string(profileID15_1) + "} : ", profileID15_1);
 	}
+
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] LoadFbxData() : ", profileID15);
+
+	unsigned int profileID16 = FPSystemTimer::Get().StartProfileTimer();
 
 	//Mesh Buffer 생성
 	for (auto& [AssetName, Asset] : LoadedMeshData)
@@ -214,17 +284,30 @@ void FPAssetManager::AllAssetDataCreate()
 		MakeMeshBuffer(Asset);
 	}
 
+
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakeMeshBuffer() : ", profileID16);
+
+	unsigned int profileID17 = FPSystemTimer::Get().StartProfileTimer();
+
 	//Vertex Buffer 생성
 	for (auto& [AssetName, Asset] : LoadedVertexShaderData)
 	{
 		MakeVertexShader(Asset);
 	}
 
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakeVertexShader() : ", profileID17);
+
+
+	unsigned int profileID18 = FPSystemTimer::Get().StartProfileTimer();
+
+
 	//Pixel Buffer 생성
 	for (auto& [AssetName, Asset] : LoadedPixelShaderData)
 	{
 		MakePixelShader(Asset);
 	}
+
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] MakePixelShader() : ", profileID18);
 }
 
 ////////////////////////////
@@ -241,6 +324,7 @@ void FPAssetManager::MakeGizmoVertexBuffer(std::vector<struct VERTEX>& Mesh, con
 
 	FPMeshData MeshData;
 	MeshData.Name = GizemoMeshPath;
+	MeshData.NodeName = GizemoMeshPath;
 
 	//Gizmo가 필요한 정보만 모아서 Vertex Buffer를 생성
 	std::vector<POSITION_VERTEX> PositionVertex;
@@ -536,6 +620,18 @@ FPVertexBufferData FPAssetManager::GetTangentVertexBuffer(std::string MeshPath)
 //
 void FPAssetManager::LoadFbxData(FPStaticMeshData& StaticMeshData)
 {
+	unsigned int Profileid = FPSystemTimer::Get().StartProfileTimer();
+
+	bool hasMesh = HasMeshData(StaticMeshData.NodeName);
+	
+	//NodeName 기준으로 이미 Load 된 적 있으면 넘어감
+	if (hasMesh)
+	{
+		return;
+	}
+
+	FPSystemTimer::Get().EndProfileTimer("[FPAssetManager] HasMeshData() " + std::to_string(hasMesh) + " : ", Profileid);
+
 	//fbx Load 옵션 설정
 	ufbx_load_opts Opts = {};
 	Opts.target_axes = ufbx_axes_left_handed_y_up;
@@ -550,6 +646,7 @@ void FPAssetManager::LoadFbxData(FPStaticMeshData& StaticMeshData)
 	if (!Scene)
 	{
 		fprintf(stderr, "Failed to load Scene : %s\n", Error.description.data);
+		return;
 	}
 
 	for (ufbx_node* Node : Scene->nodes)
@@ -559,8 +656,6 @@ void FPAssetManager::LoadFbxData(FPStaticMeshData& StaticMeshData)
 		const std::string NodeName = ConvertUfbxString(Node->name);
 		//std::cout << NodeName << "\n";
 
-		if (NodeName != StaticMeshData.NodeName) { continue; }
-
 		// 본, 카메라, 라이트, 빈 노드 등 메시가 없는 요소는 건너 뜀
 		if (!Node->mesh) { continue; }
 
@@ -568,7 +663,7 @@ void FPAssetManager::LoadFbxData(FPStaticMeshData& StaticMeshData)
 
 		//메시 정점 추출
 		FPMeshData MeshData = ConvertUfbxMesh(Mesh, Node);
-		MeshData.Name = StaticMeshData.Name;
+		MeshData.Name = NodeName;
 
 
 		if (MeshData.NodeName.empty())
@@ -576,7 +671,7 @@ void FPAssetManager::LoadFbxData(FPStaticMeshData& StaticMeshData)
 			MeshData.NodeName = NodeName;
 		}
 
-		AddMeshData(StaticMeshData.Name, MeshData);
+		AddMeshData(NodeName, MeshData);
 	}
 	ufbx_free_scene(Scene);
 }
@@ -1236,7 +1331,7 @@ FPMeshData FPAssetManager::ConvertUfbxMesh(const ufbx_mesh* Mesh, const ufbx_nod
 FPStaticMesh* FPAssetManager::GetStaticMeshData(std::string StaticMeshName)
 {
 	FPStaticMeshData StaticMeshData = LoadedStaticMeshData[StaticMeshName];
-	FPStaticMesh* StaticMesh = new FPStaticMesh(StaticMeshData.Name);
+	FPStaticMesh* StaticMesh = new FPStaticMesh(StaticMeshData.Name, StaticMeshData.NodeName);
 
 	for (SOCKET_TRANSFORM& Socket : StaticMeshData.Sockets)
 	{
@@ -1262,7 +1357,7 @@ FPStaticMesh* FPAssetManager::GetStaticMeshData(std::string StaticMeshName)
 	StaticMesh->SetCustomDepthStencil(StaticMeshData.bCustomDepthStencil);
 
 	//Mesh의 BoundingBox(AABB)를 StaticMesh에 반영
-	FPMeshData& MeshData = GetMeshData(StaticMeshData.Name);
+	FPMeshData& MeshData = GetMeshData(StaticMeshData.NodeName);
 	StaticMesh->SetBoundingBox(MeshData.BoundingBox);
 
 	return StaticMesh;
